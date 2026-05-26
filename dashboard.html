@@ -1830,44 +1830,126 @@
             }
             if (!folderId) folderId = DRIVE_ROOT_FOLDER_ID || null;
 
-            // 2. Base64 Direct Upload for maximum speed
-            let currentPct = 0;
-            const progressInterval = setInterval(() => {
-                if (currentPct < 90) {
-                    currentPct += Math.floor(Math.random() * 10) + 5;
-                    if (currentPct > 90) currentPct = 90;
-                    fillEl.style.width = currentPct + '%';
-                    percentEl.textContent = currentPct + '%';
-                }
-            }, 200);
-
+            // 2. ขอ Upload URL จาก GAS สำหรับอัพโหลดไฟล์ตรง (Resumable Upload)
             try {
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-                    reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
-                    reader.readAsDataURL(file);
-                });
-
-                const payload = {
-                    filename: file.name,
-                    mimeType: file.type || 'application/octet-stream',
-                    base64: base64,
-                    folderId: folderId
-                };
-
-                const uploadRes = await fetch(GAS_URL, {
+                const initRes = await fetch(GAS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify({
+                        action: 'getUploadUrl',
+                        filename: file.name,
+                        mimeType: file.type || 'application/octet-stream',
+                        folderId: folderId
+                    }),
                     redirect: 'follow'
                 });
+                const initResult = await initRes.json();
+                
+                if (initResult.uploadUrl) {
+                    // 3. อัพโหลดไฟล์ตรงไปยัง Google Drive พร้อม Progress Bar จริง
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('PUT', initResult.uploadUrl, true);
+                        
+                        xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable) {
+                                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                                fillEl.style.width = percentComplete + '%';
+                                percentEl.textContent = percentComplete + '%';
+                            }
+                        };
+                        
+                        xhr.onload = async () => {
+                            if (xhr.status === 200 || xhr.status === 201) {
+                                fillEl.style.width = '100%';
+                                percentEl.textContent = '100%';
+                                const driveResponse = JSON.parse(xhr.responseText);
+                                
+                                // บันทึกข้อมูลลง Firestore (จำลองว่าสำเร็จ)
+                                const fileData = {
+                                    name: file.name,
+                                    url: `https://drive.google.com/file/d/${driveResponse.id}/view`,
+                                    fileId: driveResponse.id,
+                                    uploadedAt: new Date().toISOString()
+                                };
+                                const projectRef = doc(db, 'projects', projectId);
+                                await updateDoc(projectRef, {
+                                    files: arrayUnion(fileData)
+                                });
 
-                clearInterval(progressInterval);
-                const result = await uploadRes.json();
+                                resolve();
+                            } else {
+                                reject(new Error('อัพโหลดไฟล์ไปยัง Drive ล้มเหลว Status: ' + xhr.status));
+                            }
+                        };
+                        
+                        xhr.onerror = () => reject(new Error('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่ายขณะอัพโหลด'));
+                        xhr.send(file);
+                    });
+                    
+                    showToast('อัพโหลดไฟล์สำเร็จ');
+                    setTimeout(() => {
+                        progressEl.style.display = 'none';
+                        document.getElementById('fileInput').value = '';
+                    }, 1000);
+                } else {
+                    // Fallback ไปใช้วิธีเดิมถ้า GAS ยังไม่รองรับ getUploadUrl
+                    const base64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                        reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
+                        reader.readAsDataURL(file);
+                    });
+                    
+                    let currentPct = 0;
+                    const progressInterval = setInterval(() => {
+                        if (currentPct < 90) {
+                            currentPct += Math.floor(Math.random() * 10) + 5;
+                            fillEl.style.width = currentPct + '%';
+                            percentEl.textContent = currentPct + '%';
+                        }
+                    }, 200);
 
-                if (result.status === 'success' || result.fileId) {
-                    fillEl.style.width = '100%';
+                    const uploadRes = await fetch(GAS_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            mimeType: file.type || 'application/octet-stream',
+                            base64: base64,
+                            folderId: folderId
+                        }),
+                        redirect: 'follow'
+                    });
+
+                    clearInterval(progressInterval);
+                    const result = await uploadRes.json();
+
+                    if (result.status === 'success' || result.fileId) {
+                        fillEl.style.width = '100%';
+                        percentEl.textContent = '100%';
+                        
+                        const fileData = {
+                            name: file.name,
+                            url: result.fileUrl || `https://drive.google.com/file/d/${result.fileId}/view`,
+                            fileId: result.fileId,
+                            uploadedAt: new Date().toISOString()
+                        };
+                        const projectRef = doc(db, 'projects', projectId);
+                        await updateDoc(projectRef, {
+                            files: arrayUnion(fileData)
+                        });
+
+                        showToast('อัพโหลดไฟล์สำเร็จ');
+                        setTimeout(() => {
+                            progressEl.style.display = 'none';
+                            document.getElementById('fileInput').value = '';
+                        }, 1000);
+                    } else {
+                        throw new Error(result.message || 'Server error');
+                    }
+                }
+
                     percentEl.textContent = '100%';
                     setTimeout(() => {
                         progressEl.style.display = 'none';
@@ -2224,65 +2306,126 @@
                 }
             };
 
-            // อัปเดตเปอเซ็นต์แบบลื่นไหล
-            let currentPct = 0;
-            const progressInterval = setInterval(() => {
-                if (currentPct < 92) {
-                    currentPct += Math.floor(Math.random() * 10) + 3;
-                    if (currentPct > 92) currentPct = 92;
-                    fillEl.style.width = currentPct + '%';
-                    percentEl.textContent = currentPct + '%';
-                }
-            }, 250);
-
             try {
                 const folderId = await getOrCreateProjectFolder();
                 if (!folderId) throw new Error('ไม่พบโฟลเดอร์สำหรับจัดเก็บไฟล์');
 
-                // แปลงไฟล์เป็น Base64 แบบประสิทธิภาพสูง
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-                    reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
-                    reader.readAsDataURL(file);
-                });
-
-                const payload = {
-                    action: 'uploadFileDirect',
-                    filename: file.name,
-                    mimeType: file.type || 'application/octet-stream',
-                    base64: base64,
-                    folderId: folderId
-                };
-
-                const uploadRes = await fetch(GAS_URL, {
+                // ขอ Upload URL จาก GAS สำหรับอัพโหลดไฟล์ตรง (Resumable Upload)
+                const initRes = await fetch(GAS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify({
+                        action: 'getUploadUrl',
+                        filename: file.name,
+                        mimeType: file.type || 'application/octet-stream',
+                        folderId: folderId
+                    }),
                     redirect: 'follow'
                 });
-
-                clearInterval(progressInterval);
-
-                const rawText = await uploadRes.text();
-                let result;
-                try {
-                    result = JSON.parse(rawText);
-                } catch {
-                    console.error('GAS returned non-JSON:', rawText.substring(0, 300));
-                    cleanup(false);
-                    showToast('Server ตอบกลับผิดรูปแบบ ตรวจสอบ Google Apps Script', 'error');
-                    return;
-                }
-
-                if (result.status === 'success' || result.fileId) {
+                
+                const initResult = await initRes.json();
+                
+                if (initResult.uploadUrl) {
+                    // อัพโหลดไฟล์ตรงไปยัง Google Drive พร้อม Progress Bar จริง
+                    await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('PUT', initResult.uploadUrl, true);
+                        
+                        xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable) {
+                                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                                fillEl.style.width = percentComplete + '%';
+                                percentEl.textContent = percentComplete + '%';
+                            }
+                        };
+                        
+                        xhr.onload = () => {
+                            if (xhr.status === 200 || xhr.status === 201) {
+                                fillEl.style.width = '100%';
+                                percentEl.textContent = '100%';
+                                const driveResponse = JSON.parse(xhr.responseText);
+                                
+                                // สร้าง event แจ้งเตือนว่าอัพโหลดเสร็จแล้ว เพื่อให้ refresh รายการ
+                                const event = new CustomEvent('projectFileUploaded', {
+                                    detail: {
+                                        name: file.name,
+                                        url: `https://drive.google.com/file/d/${driveResponse.id}/view`,
+                                        fileId: driveResponse.id,
+                                        uploadedAt: new Date().toISOString()
+                                    }
+                                });
+                                document.dispatchEvent(event);
+                                
+                                resolve();
+                            } else {
+                                reject(new Error('อัพโหลดไฟล์ไปยัง Drive ล้มเหลว Status: ' + xhr.status));
+                            }
+                        };
+                        
+                        xhr.onerror = () => reject(new Error('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่ายขณะอัพโหลด'));
+                        xhr.send(file);
+                    });
+                    
                     cleanup(true);
                 } else {
-                    cleanup(false);
-                    showToast('อัพโหลดล้มเหลว: ' + (result.message || 'unknown error'), 'error');
+                    // Fallback แบบเดิมถ้า GAS ไม่รองรับ getUploadUrl
+                    let currentPct = 0;
+                    const progressInterval = setInterval(() => {
+                        if (currentPct < 92) {
+                            currentPct += Math.floor(Math.random() * 10) + 3;
+                            if (currentPct > 92) currentPct = 92;
+                            fillEl.style.width = currentPct + '%';
+                            percentEl.textContent = currentPct + '%';
+                        }
+                    }, 250);
+
+                    const base64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                        reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
+                        reader.readAsDataURL(file);
+                    });
+
+                    const payload = {
+                        action: 'uploadFileDirect',
+                        filename: file.name,
+                        mimeType: file.type || 'application/octet-stream',
+                        base64: base64,
+                        folderId: folderId
+                    };
+
+                    const uploadRes = await fetch(GAS_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload),
+                        redirect: 'follow'
+                    });
+
+                    clearInterval(progressInterval);
+                    const rawText = await uploadRes.text();
+                    let result;
+                    try {
+                        result = JSON.parse(rawText);
+                    } catch {
+                        throw new Error('Server ตอบกลับผิดรูปแบบ');
+                    }
+
+                    if (result.status === 'success' || result.fileId) {
+                        const event = new CustomEvent('projectFileUploaded', {
+                            detail: {
+                                name: file.name,
+                                url: result.fileUrl || `https://drive.google.com/file/d/${result.fileId}/view`,
+                                fileId: result.fileId,
+                                uploadedAt: new Date().toISOString()
+                            }
+                        });
+                        document.dispatchEvent(event);
+                        cleanup(true);
+                    } else {
+                        throw new Error(result.message || 'unknown error');
+                    }
                 }
             } catch (err) {
-                clearInterval(progressInterval);
                 cleanup(false);
                 console.error('File upload error:', err);
                 showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
