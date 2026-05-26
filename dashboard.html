@@ -1830,7 +1830,7 @@
             }
             if (!folderId) folderId = DRIVE_ROOT_FOLDER_ID || null;
 
-            // 2. FormData Binary Upload for maximum speed
+            // 2. Base64 Direct Upload for maximum speed
             let currentPct = 0;
             const progressInterval = setInterval(() => {
                 if (currentPct < 90) {
@@ -1842,12 +1842,24 @@
             }, 200);
 
             try {
-                const formData = new FormData();
-                formData.append('file', file);
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                    reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
+                    reader.readAsDataURL(file);
+                });
 
-                const uploadRes = await fetch(`${GAS_URL}?folderId=${folderId}`, {
+                const payload = {
+                    filename: file.name,
+                    mimeType: file.type || 'application/octet-stream',
+                    base64: base64,
+                    folderId: folderId
+                };
+
+                const uploadRes = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: formData,
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
                     redirect: 'follow'
                 });
 
@@ -2212,28 +2224,41 @@
                 }
             };
 
-            // แสดงจำลองการอัพโหลดจริงให้ลื่นไหล (99%)
+            // อัปเดตเปอเซ็นต์แบบลื่นไหล
             let currentPct = 0;
             const progressInterval = setInterval(() => {
-                if (currentPct < 95) {
-                    currentPct += Math.floor(Math.random() * 8) + 3;
-                    if (currentPct > 95) currentPct = 95;
+                if (currentPct < 92) {
+                    currentPct += Math.floor(Math.random() * 10) + 3;
+                    if (currentPct > 92) currentPct = 92;
                     fillEl.style.width = currentPct + '%';
                     percentEl.textContent = currentPct + '%';
                 }
-            }, 300);
+            }, 250);
 
             try {
                 const folderId = await getOrCreateProjectFolder();
                 if (!folderId) throw new Error('ไม่พบโฟลเดอร์สำหรับจัดเก็บไฟล์');
 
-                // ส่งแบบ FormData (Binary Stream) เพื่อความเร็วสูงสุดและไม่ค้าง 85%
-                const formData = new FormData();
-                formData.append('file', file);
+                // แปลงไฟล์เป็น Base64 แบบประสิทธิภาพสูง
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                    reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
+                    reader.readAsDataURL(file);
+                });
 
-                const uploadRes = await fetch(`${GAS_URL}?folderId=${folderId}`, {
+                const payload = {
+                    action: 'uploadFileDirect',
+                    filename: file.name,
+                    mimeType: file.type || 'application/octet-stream',
+                    base64: base64,
+                    folderId: folderId
+                };
+
+                const uploadRes = await fetch(GAS_URL, {
                     method: 'POST',
-                    body: formData,
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload),
                     redirect: 'follow'
                 });
 
