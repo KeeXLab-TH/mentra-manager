@@ -1830,67 +1830,76 @@
             }
             if (!folderId) folderId = DRIVE_ROOT_FOLDER_ID || null;
 
-            // 2. Base64 Upload using Fetch (CORS Safe)
-            const progressInterval = setInterval(() => {
-                let currentPct = parseInt(percentEl.textContent) || 0;
-                if (currentPct < 90) {
-                    currentPct += Math.floor(Math.random() * 15) + 5;
-                    if (currentPct > 90) currentPct = 90;
-                    fillEl.style.width = currentPct + '%';
-                    percentEl.textContent = currentPct + '%';
-                }
-            }, 250);
-
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 minutes timeout
-
+            // 2. Base64 Chunked Upload using Fetch
             try {
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-                    reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
-                    reader.readAsDataURL(file);
-                });
+                const chunkSize = 1024 * 1024; // 1MB chunk size
+                const totalChunks = Math.ceil(file.size / chunkSize);
+                let fileId = null;
 
-                const uploadRes = await fetch(GAS_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
-                    },
-                    body: JSON.stringify({
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * chunkSize;
+                    const end = Math.min(start + chunkSize, file.size);
+                    const chunk = file.slice(start, end);
+
+                    const chunkBase64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                        reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์บางส่วนได้'));
+                        reader.readAsDataURL(chunk);
+                    });
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 min per chunk
+
+                    const payload = {
+                        action: 'uploadChunk',
                         filename: file.name,
                         mimeType: file.type || 'application/octet-stream',
-                        base64,
+                        chunk: chunkBase64,
                         folderId,
-                    }),
-                    redirect: 'follow',
-                    signal: controller.signal
-                });
+                        fileId,
+                        isFirst: i === 0,
+                        isLast: i === totalChunks - 1
+                    };
 
-                clearTimeout(timeoutId);
-                clearInterval(progressInterval);
-                const result = await uploadRes.json();
+                    const uploadRes = await fetch(GAS_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8'
+                        },
+                        body: JSON.stringify(payload),
+                        redirect: 'follow',
+                        signal: controller.signal
+                    });
 
-                if (result.status === 'success') {
-                    fillEl.style.width = '100%';
-                    percentEl.textContent = '100%';
-                    setTimeout(() => {
+                    clearTimeout(timeoutId);
+                    const result = await uploadRes.json();
+
+                    if (result.status === 'success') {
+                        fileId = result.fileId;
+                        
+                        const currentPct = Math.round(((i + 1) / totalChunks) * 100);
+                        fillEl.style.width = currentPct + '%';
+                        percentEl.textContent = currentPct + '%';
+
+                        if (i === totalChunks - 1) {
+                            setTimeout(() => {
+                                progressEl.style.display = 'none';
+                            }, 500);
+                            return result;
+                        }
+                    } else {
                         progressEl.style.display = 'none';
-                    }, 500);
-                    return result;
-                } else {
-                    progressEl.style.display = 'none';
-                    throw new Error(result.message || 'Upload failed');
+                        throw new Error(result.message || 'Upload failed');
+                    }
                 }
             } catch (err) {
-                clearTimeout(timeoutId);
-                clearInterval(progressInterval);
                 progressEl.style.display = 'none';
                 console.error('Upload error:', err);
                 if (err.name === 'AbortError') {
-                    throw new Error('การอัพโหลดใช้เวลานานเกินไป (Timeout 5m) กรุณาลองใหม่อีกครั้ง หรือตรวจสอบขนาดไฟล์');
+                    throw new Error('การอัพโหลดใช้เวลานานเกินไป (Timeout 1m per chunk) กรุณาลองใหม่อีกครั้ง');
                 } else {
-                    throw new Error('Network error - อัพโหลดไฟล์ล้มเหลว กรุณาตรวจสอบอินเทอร์เน็ต หรือสถานะการทำงานของ Google Apps Script');
+                    throw new Error('Network error - อัพโหลดไฟล์ล้มเหลว: ' + err.message);
                 }
             }
         }
@@ -2217,20 +2226,8 @@
             percentEl.textContent = '0%';
             fillEl.style.width = '0%';
 
-            // Simulate progress up to 85%
-            const progressInterval = setInterval(() => {
-                let currentPct = parseInt(percentEl.textContent) || 0;
-                if (currentPct < 85) {
-                    currentPct += Math.floor(Math.random() * 10) + 3;
-                    if (currentPct > 85) currentPct = 85;
-                    fillEl.style.width = currentPct + '%';
-                    percentEl.textContent = currentPct + '%';
-                }
-            }, 400);
-
             // Helper to cleanup UI
             const cleanup = (success = false) => {
-                clearInterval(progressInterval);
                 if (success) {
                     fillEl.style.width = '100%';
                     percentEl.textContent = '100%';
@@ -2250,62 +2247,86 @@
                 const folderId = await getOrCreateProjectFolder();
                 if (!folderId) throw new Error('ไม่พบโฟลเดอร์สำหรับจัดเก็บไฟล์');
 
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-                    reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
-                    reader.readAsDataURL(file);
-                });
+                // กำหนดขนาด Chunk (1MB เพื่อให้เหมาะสมและรวดเร็ว)
+                const chunkSize = 1024 * 1024; 
+                const totalChunks = Math.ceil(file.size / chunkSize);
+                let fileId = null;
 
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 300000); // 5 min
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * chunkSize;
+                    const end = Math.min(start + chunkSize, file.size);
+                    const chunk = file.slice(start, end);
 
-                let uploadRes;
-                try {
-                    uploadRes = await fetch(GAS_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({
-                            filename: file.name,
-                            mimeType: file.type || 'application/octet-stream',
-                            base64,
-                            folderId,
-                        }),
-                        redirect: 'follow',
-                        signal: controller.signal
+                    // แปลง Chunk เป็น Base64
+                    const chunkBase64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                        reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์บางส่วนได้'));
+                        reader.readAsDataURL(chunk);
                     });
-                } catch (fetchErr) {
-                    clearTimeout(timeoutId);
-                    cleanup(false);
-                    if (fetchErr.name === 'AbortError') {
-                        showToast('การอัพโหลดใช้เวลานานเกินไป กรุณาลองใหม่', 'error');
-                    } else {
-                        showToast('เชื่อมต่อ Google Apps Script ไม่ได้: ' + fetchErr.message, 'error');
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 min per chunk
+
+                    const payload = {
+                        action: 'uploadChunk',
+                        filename: file.name,
+                        mimeType: file.type || 'application/octet-stream',
+                        chunk: chunkBase64,
+                        folderId,
+                        fileId,
+                        isFirst: i === 0,
+                        isLast: i === totalChunks - 1
+                    };
+
+                    let uploadRes;
+                    try {
+                        uploadRes = await fetch(GAS_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify(payload),
+                            redirect: 'follow',
+                            signal: controller.signal
+                        });
+                    } catch (fetchErr) {
+                        clearTimeout(timeoutId);
+                        cleanup(false);
+                        if (fetchErr.name === 'AbortError') {
+                            showToast(`การอัปโหลดส่วนที่ ${i+1} หมดเวลา กรุณาลองใหม่`, 'error');
+                        } else {
+                            showToast('เชื่อมต่อ Google Apps Script ไม่ได้: ' + fetchErr.message, 'error');
+                        }
+                        return;
                     }
-                    return;
+
+                    clearTimeout(timeoutId);
+
+                    const rawText = await uploadRes.text();
+                    let result;
+                    try {
+                        result = JSON.parse(rawText);
+                    } catch {
+                        console.error('GAS returned non-JSON:', rawText.substring(0, 300));
+                        cleanup(false);
+                        showToast('Server ตอบกลับผิดรูปแบบ ตรวจสอบ Google Apps Script', 'error');
+                        return;
+                    }
+
+                    if (result.status === 'success') {
+                        fileId = result.fileId; // เก็บ id ไว้ส่งต่อ chunk ถัดไป
+                        
+                        // อัปเดต Progress จริงตามจำนวณ Chunk ที่ส่งเสร็จแล้ว
+                        const currentPct = Math.round(((i + 1) / totalChunks) * 100);
+                        fillEl.style.width = currentPct + '%';
+                        percentEl.textContent = currentPct + '%';
+                    } else {
+                        cleanup(false);
+                        showToast('อัพโหลดล้มเหลว: ' + (result.message || 'unknown error'), 'error');
+                        return;
+                    }
                 }
 
-                clearTimeout(timeoutId);
-
-                // Parse as text first to handle HTML/non-JSON responses
-                const rawText = await uploadRes.text();
-                let result;
-                try {
-                    result = JSON.parse(rawText);
-                } catch {
-                    // GAS returned HTML or non-JSON (e.g. redirect/error page)
-                    console.error('GAS returned non-JSON:', rawText.substring(0, 300));
-                    cleanup(false);
-                    showToast('Server ตอบกลับผิดรูปแบบ ตรวจสอบ Google Apps Script', 'error');
-                    return;
-                }
-
-                if (result.status === 'success') {
-                    cleanup(true);
-                } else {
-                    cleanup(false);
-                    showToast('อัพโหลดล้มเหลว: ' + (result.message || 'unknown error'), 'error');
-                }
+                cleanup(true);
             } catch (err) {
                 cleanup(false);
                 console.error('File upload error:', err);
