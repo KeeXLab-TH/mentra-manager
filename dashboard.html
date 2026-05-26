@@ -1806,7 +1806,7 @@
             };
         }
         if (!GAS_URL) {
-            GAS_URL = 'https://script.google.com/macros/s/AKfycbzTV_m4iz2jvDlhwwTOFUSi-VeHtbkp_YYvckc011Nk2y-94Yl2tD25fXbtzuse43nH/exec';
+            GAS_URL = 'https://script.google.com/macros/s/AKfycbwRIcnykIL630Op5cf6qWO_zpbkzqYfY_pDEyOf0vA_cpaxio9Gu813nfxuuufHhZXW/exec';
         }
         if (!DRIVE_ROOT_FOLDER_ID) {
             DRIVE_ROOT_FOLDER_ID = '1a0B6l56PAVCZ4v8lzSeIRslq78XSJh8e';
@@ -2630,62 +2630,7 @@
 
                     cleanup(true);
                 } else {
-                    // Fallback แบบเดิมถ้า GAS ไม่รองรับ getUploadUrl
-                    let currentPct = 0;
-                    const progressInterval = setInterval(() => {
-                        if (currentPct < 92) {
-                            currentPct += Math.floor(Math.random() * 10) + 3;
-                            if (currentPct > 92) currentPct = 92;
-                            fillEl.style.width = currentPct + '%';
-                            percentEl.textContent = currentPct + '%';
-                        }
-                    }, 250);
-
-                    const base64 = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-                        reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
-                        reader.readAsDataURL(file);
-                    });
-
-                    const payload = {
-                        action: 'uploadFileDirect',
-                        filename: file.name,
-                        mimeType: file.type || 'application/octet-stream',
-                        base64: base64,
-                        folderId: folderId
-                    };
-
-                    const uploadRes = await fetch(GAS_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(payload),
-                        redirect: 'follow'
-                    });
-
-                    clearInterval(progressInterval);
-                    const rawText = await uploadRes.text();
-                    let result;
-                    try {
-                        result = JSON.parse(rawText);
-                    } catch {
-                        throw new Error('Server ตอบกลับผิดรูปแบบ');
-                    }
-
-                    if (result.status === 'success' || result.fileId) {
-                        const event = new CustomEvent('projectFileUploaded', {
-                            detail: {
-                                name: file.name,
-                                url: result.fileUrl || `https://drive.google.com/file/d/${result.fileId}/view`,
-                                fileId: result.fileId,
-                                uploadedAt: new Date().toISOString()
-                            }
-                        });
-                        document.dispatchEvent(event);
-                        cleanup(true);
-                    } else {
-                        throw new Error(result.message || 'unknown error');
-                    }
+                    throw new Error('กรุณาอัปเดต Google Apps Script และ Deploy เป็นเวอร์ชันใหม่! (ระบบต้องการฟังก์ชัน getUploadUrl สำหรับอัปโหลดไฟล์ขนาดใหญ่)');
                 }
             } catch (err) {
                 cleanup(false);
