@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentra Manager — เข้าสู่ระบบ</title>
+    <meta name="description" content="ระบบจัดการโครงการ บริษัท เมนทร้า โซลูชั่น จำกัด">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --blue: #1A6FBF;
+            --blue-dark: #145999;
+            --blue-light: #e8f1fb;
+            --orange: #E07B2F;
+            --orange-dark: #c4681f;
+            --orange-light: #fdf0e6;
+            --text: #1a202c;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg: #f5f7fa;
+            --white: #ffffff;
+            --success: #10b981;
+            --error: #ef4444;
+            --shadow: 0 4px 24px rgba(26, 111, 191, 0.10);
+            --shadow-lg: 0 8px 40px rgba(26, 111, 191, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ===== LEFT PANEL ===== */
+        .brand-panel {
+            width: 45%;
+            background: linear-gradient(145deg, #0e4a85 0%, var(--blue) 45%, #1e8a6e 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 48px;
+            overflow: hidden;
+        }
+
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 320px;
+            height: 320px;
+            background: var(--orange);
+            border-radius: 50%;
+            opacity: 0.12;
+        }
+
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -60px;
+            width: 280px;
+            height: 280px;
+            background: #ffffff;
+            border-radius: 50%;
+            opacity: 0.06;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .brand-logo {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            background: white;
+            border-radius: 28px;
+            padding: 16px;
+            margin-bottom: 32px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .brand-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.2;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-title span {
+            color: var(--orange);
+        }
+
+        .brand-subtitle {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 400;
+            line-height: 1.6;
+            margin-bottom: 48px;
+        }
+
+        .brand-features {
+            list-style: none;
+            text-align: left;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .brand-features li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+            font-weight: 500;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-features li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .brand-footer {
+            position: absolute;
+            bottom: 28px;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 12px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* ===== RIGHT PANEL (FORM) ===== */
+        .form-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 32px;
+            overflow-y: auto;
+        }
+
+        .form-card {
+            width: 100%;
+            max-width: 440px;
+        }
+
+        .form-header {
+            margin-bottom: 36px;
+        }
+
+        .form-header h2 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .form-header p {
+            font-size: 15px;
+            color: var(--text-muted);
+        }
+
+        /* TABS */
+        .tab-switcher {
+            display: flex;
+            background: var(--border);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 32px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.25s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-btn.active {
+            background: var(--white);
+            color: var(--blue);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        /* FORM FIELDS */
+        .field-group {
+            margin-bottom: 20px;
+        }
+
+        .field-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .field-group label span {
+            color: var(--error);
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap svg {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text);
+            background: var(--white);
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+
+        .input-wrap input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px rgba(26, 111, 191, 0.10);
+        }
+
+        .input-wrap input::placeholder {
+            color: #a0aec0;
+        }
+
+        .input-wrap .toggle-pw {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ALERT MESSAGE */
+        .alert {
+            display: none;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert.show {
+            display: flex;
+        }
+
+        .alert.error {
+            background: #fef2f2;
+            color: var(--error);
+            border: 1px solid #fecaca;
+        }
+
+        .alert.success {
+            background: #f0fdf4;
+            color: var(--success);
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert.info {
+            background: var(--blue-light);
+            color: var(--blue);
+            border: 1px solid #bfdbfe;
+        }
+
+        /* SUBMIT BUTTON */
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--blue), #1e8a6e);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 111, 191, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .divider {
+            text-align: center;
+            position: relative;
+            margin: 24px 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 42%;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .form-tab-content {
+            display: none;
+        }
+
+        .form-tab-content.active {
+            display: block;
+        }
+
+        .forgot-link {
+            text-align: right;
+            margin-top: -12px;
+            margin-bottom: 20px;
+        }
+
+        .forgot-link a {
+            font-size: 13px;
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .brand-panel {
+                display: none;
+            }
+
+            .form-panel {
+                padding: 32px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .field-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-card {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LEFT: Brand Panel -->
+    <div class="brand-panel">
+        <div class="brand-content">
+            <img src="logo.png" alt="Mentra Solution" class="brand-logo" onerror="this.style.display='none'">
+            <div class="brand-title">Mentra<br><span>Manager</span></div>
+            <p class="brand-subtitle">ระบบจัดการโครงการ<br>บริษัท เมนทร้า โซลูชั่น จำกัด</p>
+            <ul class="brand-features">
+                <li>
+                    <div class="feature-icon">📁</div>
+                    จัดการโครงการและเอกสาร
+                </li>
+                <li>
+                    <div class="feature-icon">☁️</div>
+                    เก็บไฟล์บน Google Drive
+                </li>
+                <li>
+                    <div class="feature-icon">📊</div>
+                    ติดตามงบประมาณและสถานะ
+                </li>
+                <li>
+                    <div class="feature-icon">👥</div>
+                    รองรับหลายผู้ใช้งาน
+                </li>
+            </ul>
+        </div>
+        <div class="brand-footer">
+            115/123 ม.12 ต.บางแก้ว อ.บางพลี<br>จ.สมุทรปราการ 10540
+        </div>
+    </div>
+
+    <!-- RIGHT: Form Panel -->
+    <div class="form-panel">
+        <div class="form-card">
+            <div class="form-header">
+                <h2 id="formHeading">ยินดีต้อนรับ</h2>
+                <p id="formSubheading">เข้าสู่ระบบเพื่อจัดการโครงการของคุณ</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="tab-switcher">
+                <button class="tab-btn active" id="loginTabBtn" onclick="switchTab('login')">เข้าสู่ระบบ</button>
+                <button class="tab-btn" id="signupTabBtn" onclick="switchTab('signup')">สมัครสมาชิก</button>
+            </div>
+
+            <!-- Alert Box -->
+            <div class="alert" id="alertBox">
+                <span id="alertIcon">⚠️</span>
+                <span id="alertText"></span>
+            </div>
+
+            <!-- ===== LOGIN FORM ===== -->
+            <div class="form-tab-content active" id="loginTab">
+                <div class="field-group">
+                    <label for="loginIdentifier">อีเมล หรือ ชื่อผู้ใช้ <span>*</span></label>
+                    <div class="input-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <input type="text" id="loginIdentifier" placeholder="กรอกอีเมล หรือ username"
+                            autocomplete="username">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label for="loginPassword">รหัสผ่าน <span>*</span></label>
+                    <div class="input-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <input type="password" id="loginPassword" placeholder="กรอกรหัสผ่าน"
+                            autocomplete="current-password">
+                        <button class="toggle-pw" type="button" onclick="togglePw('loginPassword', this)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="forgot-link">
+                    <a href="#" onclick="forgotPassword(); return false;">ลืมรหัสผ่าน?</a>
+                </div>
+                <button class="btn-primary" id="loginBtn" onclick="handleLogin()">
+                    <div class="btn-spinner" id="loginSpinner"></div>
+                    <span id="loginBtnText">เข้าสู่ระบบ</span>
+                </button>
+            </div>
+
+            <!-- ===== SIGNUP FORM ===== -->
+            <div class="form-tab-content" id="signupTab">
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="signupFirstName">ชื่อ <span>*</span></label>
+                        <div class="input-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <input type="text" id="signupFirstName" placeholder="ชื่อจริง">
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label for="signupLastName">นามสกุล <span>*</span></label>
+                        <div class="input-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <input type="text" id="signupLastName" placeholder="นามสกุล">
+                        </div>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label for="signupUsername">ชื่อผู้ใช้ (Username) <span>*</span></label>
+                    <div class="input-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 8v4l3 3"></path>
+                        </svg>
+                        <input type="text" id="signupUsername" placeholder="ตัวอักษรและตัวเลข ไม่มีช่องว่าง">
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label for="signupEmail">อีเมล <span>*</span></label>
+                    <div class="input-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
+                            </path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        <input type="email" id="signupEmail" placeholder="example@email.com" autocomplete="email">
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label for="signupPassword">รหัสผ่าน <span>*</span></label>
+                        <div class="input-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <input type="password" id="signupPassword" placeholder="อย่างน้อย 8 ตัวอักษร"
+                                autocomplete="new-password">
+                            <button class="toggle-pw" type="button" onclick="togglePw('signupPassword', this)">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label for="signupConfirm">ยืนยันรหัสผ่าน <span>*</span></label>
+                        <div class="input-wrap">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <input type="password" id="signupConfirm" placeholder="พิมพ์รหัสผ่านอีกครั้ง"
+                                autocomplete="new-password">
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-primary" id="signupBtn" onclick="handleSignup()">
+                    <div class="btn-spinner" id="signupSpinner"></div>
+                    <span id="signupBtnText">สมัครสมาชิก</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { initializeFirestore, doc, setDoc, getDoc, collection, query, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        // Load config from firebase-config.js (ใช้ globalThis เพราะ module scope)
+        const configScript = await import('./firebase-config.js').catch(() => null);
+
+        let firebaseConfig = null;
+        if (configScript) {
+            firebaseConfig = configScript.FIREBASE_CONFIG || configScript.default?.FIREBASE_CONFIG;
+        }
+        if (!firebaseConfig) {
+            firebaseConfig = {
+                apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
+                authDomain: "mentra-manager-e039f.firebaseapp.com",
+                projectId: "mentra-manager-e039f",
+                storageBucket: "mentra-manager-e039f.firebasestorage.app",
+                messagingSenderId: "563604754745",
+                appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
+            };
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = initializeFirestore(app, {
+            experimentalAutoDetectLongPolling: true
+        });
+
+        // ===== SHOW ALERT =====
+        function showAlert(message, type = 'error') {
+            const box = document.getElementById('alertBox');
+            const text = document.getElementById('alertText');
+            const icon = document.getElementById('alertIcon');
+            text.textContent = message;
+            icon.textContent = type === 'error' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
+            box.className = `alert show ${type}`;
+        }
+
+        function hideAlert() {
+            document.getElementById('alertBox').className = 'alert';
+        }
+
+        function setLoading(btn, spinner, btnText, loading) {
+            btn.disabled = loading;
+            spinner.style.display = loading ? 'block' : 'none';
+            btnText.style.display = loading ? 'none' : 'inline';
+        }
+
+        // ===== CHECK IF FIRST USER =====
+        async function isFirstUser() {
+            const usersRef = collection(db, 'users');
+            const q = query(usersRef, limit(1));
+            const snap = await getDocs(q);
+            return snap.empty;
+        }
+
+        // ===== LOGIN =====
+        window.handleLogin = async function () {
+            const identifier = document.getElementById('loginIdentifier').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            const spinner = document.getElementById('loginSpinner');
+            const btnText = document.getElementById('loginBtnText');
+
+            hideAlert();
+            if (!identifier || !password) {
+                showAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+                return;
+            }
+
+            setLoading(btn, spinner, btnText, true);
+
+            try {
+                let email = identifier;
+
+                // ถ้าไม่ใช่ email ให้หา email จาก username
+                if (!identifier.includes('@')) {
+                    const usernameDoc = await getDoc(doc(db, 'usernames', identifier.toLowerCase()));
+                    if (!usernameDoc.exists()) {
+                        showAlert('ไม่พบชื่อผู้ใช้นี้ในระบบ', 'error');
+                        setLoading(btn, spinner, btnText, false);
+                        return;
+                    }
+                    email = usernameDoc.data().email;
+                }
+
+                await signInWithEmailAndPassword(auth, email, password);
+                showAlert('เข้าสู่ระบบสำเร็จ กำลังโหลด...', 'success');
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
+
+            } catch (err) {
+                const msgs = {
+                    'auth/user-not-found': 'ไม่พบบัญชีผู้ใช้นี้',
+                    'auth/wrong-password': 'รหัสผ่านไม่ถูกต้อง',
+                    'auth/invalid-email': 'รูปแบบอีเมลไม่ถูกต้อง',
+                    'auth/invalid-credential': 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+                    'auth/too-many-requests': 'พยายามเข้าสู่ระบบมากเกินไป กรุณาลองใหม่ภายหลัง',
+                };
+                showAlert(msgs[err.code] || `เกิดข้อผิดพลาด: ${err.message}`, 'error');
+                setLoading(btn, spinner, btnText, false);
+            }
+        };
+
+        // ===== SIGNUP =====
+        window.handleSignup = async function () {
+            const firstName = document.getElementById('signupFirstName').value.trim();
+            const lastName = document.getElementById('signupLastName').value.trim();
+            const username = document.getElementById('signupUsername').value.trim().toLowerCase();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirm = document.getElementById('signupConfirm').value;
+            const btn = document.getElementById('signupBtn');
+            const spinner = document.getElementById('signupSpinner');
+            const btnText = document.getElementById('signupBtnText');
+
+            hideAlert();
+
+            if (!firstName || !lastName || !username || !email || !password || !confirm) {
+                showAlert('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+                return;
+            }
+            if (!/^[a-z0-9_]+$/.test(username)) {
+                showAlert('Username ใช้ได้เฉพาะตัวอักษรภาษาอังกฤษ ตัวเลข และ _ เท่านั้น', 'error');
+                return;
+            }
+            if (password.length < 8) {
+                showAlert('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร', 'error');
+                return;
+            }
+            if (password !== confirm) {
+                showAlert('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน', 'error');
+                return;
+            }
+
+            setLoading(btn, spinner, btnText, true);
+            window.isSigningUp = true;
+
+            try {
+                // ตรวจสอบว่า username ถูกใช้แล้วหรือยัง
+                const usernameSnap = await getDoc(doc(db, 'usernames', username));
+                if (usernameSnap.exists()) {
+                    showAlert('ชื่อผู้ใช้นี้ถูกใช้งานแล้ว กรุณาเลือกชื่ออื่น', 'error');
+                    setLoading(btn, spinner, btnText, false);
+                    window.isSigningUp = false;
+                    return;
+                }
+
+                // ตรวจสอบว่าเป็นคนแรกหรือไม่ → กำหนด role และ status
+                const firstUser = await isFirstUser();
+                const role = firstUser ? 'admin' : 'user';
+                const status = firstUser ? 'approved' : 'pending';
+
+                // สร้างบัญชีใน Firebase Auth
+                const cred = await createUserWithEmailAndPassword(auth, email, password);
+                const uid = cred.user.uid;
+
+                // บันทึกข้อมูลใน Firestore
+                await Promise.all([
+                    setDoc(doc(db, 'users', uid), {
+                        uid,
+                        firstName,
+                        lastName,
+                        displayName: `${firstName} ${lastName}`,
+                        username,
+                        email,
+                        role,
+                        status,
+                        createdAt: new Date().toISOString(),
+                    }),
+                    setDoc(doc(db, 'usernames', username), { email, uid }),
+                ]);
+
+                window.isSigningUp = false;
+                const roleMsg = role === 'admin'
+                    ? ' (คุณได้รับสิทธิ์ Admin เนื่องจากเป็นผู้ลงทะเบียนคนแรก)'
+                    : ' (อยู่ระหว่างรอผู้ดูแลระบบอนุมัติบัญชี)';
+                showAlert(`สมัครสมาชิกสำเร็จ!${roleMsg} กำลังเข้าสู่ระบบ...`, 'success');
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+
+            } catch (err) {
+                window.isSigningUp = false;
+                const msgs = {
+                    'auth/email-already-in-use': 'อีเมลนี้ถูกใช้งานแล้ว',
+                    'auth/invalid-email': 'รูปแบบอีเมลไม่ถูกต้อง',
+                    'auth/weak-password': 'รหัสผ่านไม่แข็งแรงพอ',
+                };
+                showAlert(msgs[err.code] || `เกิดข้อผิดพลาด: ${err.message}`, 'error');
+                setLoading(btn, spinner, btnText, false);
+            }
+        };
+
+        // ===== FORGOT PASSWORD =====
+        window.forgotPassword = async function () {
+            const identifier = document.getElementById('loginIdentifier').value.trim();
+            if (!identifier || !identifier.includes('@')) {
+                showAlert('กรุณากรอกอีเมลในช่องด้านบนก่อน', 'info');
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, identifier);
+                showAlert('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว', 'success');
+            } catch (err) {
+                showAlert('ไม่สามารถส่งอีเมลได้ กรุณาตรวจสอบอีเมลของคุณ', 'error');
+            }
+        };
+
+        // ===== CHECK URL QUERY PARAMETERS & AUTO REDIRECT =====
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const msg = params.get('msg');
+            if (msg === 'pending') {
+                showAlert('บัญชีของคุณอยู่ระหว่างการรออนุมัติจากผู้ดูแลระบบ โปรดลองเข้าสู่ระบบอีกครั้งในภายหลัง', 'warning');
+            } else if (msg === 'rejected') {
+                showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ', 'error');
+            }
+        });
+
+        // ===== AUTO REDIRECT IF LOGGED IN =====
+        auth.onAuthStateChanged((user) => {
+            if (user && !window.isSigningUp) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+    </script>
+
+    <script>
+        // ===== TAB SWITCHER =====
+        function switchTab(tab) {
+            document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+            document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
+            document.getElementById('loginTabBtn').classList.toggle('active', tab === 'login');
+            document.getElementById('signupTabBtn').classList.toggle('active', tab === 'signup');
+            document.getElementById('formHeading').textContent = tab === 'login' ? 'ยินดีต้อนรับ' : 'สร้างบัญชีใหม่';
+            document.getElementById('formSubheading').textContent = tab === 'login'
+                ? 'เข้าสู่ระบบเพื่อจัดการโครงการของคุณ'
+                : 'กรอกข้อมูลเพื่อสร้างบัญชีผู้ใช้';
+            document.getElementById('alertBox').className = 'alert';
+        }
+
+        // ===== TOGGLE PASSWORD VISIBILITY ====
+        function togglePw(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const isText = input.type === 'text';
+            input.type = isText ? 'password' : 'text';
+            btn.innerHTML = isText
+                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+        }
+
+        // Enter key support
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const activeTab = document.getElementById('loginTab').classList.contains('active');
+                if (activeTab) handleLogin();
+                else handleSignup();
+            }
+        });
+    </script>
+</body>
+
+</html>
