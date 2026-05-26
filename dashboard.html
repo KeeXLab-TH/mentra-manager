@@ -2630,12 +2630,69 @@
 
                     cleanup(true);
                 } else {
-                    throw new Error('กรุณาอัปเดต Google Apps Script และ Deploy เป็นเวอร์ชันใหม่! (ระบบต้องการฟังก์ชัน getUploadUrl สำหรับอัปโหลดไฟล์ขนาดใหญ่)');
+                    throw new Error('getUploadUrl_failed');
                 }
             } catch (err) {
-                cleanup(false);
-                console.error('File upload error:', err);
-                showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+                // ---- FALLBACK: Chunked Base64 Upload (ทำงานได้เสมอ ไม่ต้องการ OAuth พิเศษ) ----
+                try {
+                    const folderIdFb = await getOrCreateProjectFolder();
+                    if (!folderIdFb) throw new Error('ไม่พบโฟลเดอร์สำหรับจัดเก็บไฟล์');
+
+                    const CHUNK_SIZE = 3 * 1024 * 1024; // 3MB ต่อชิ้น
+                    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+                    let fileId = null;
+
+                    for (let i = 0; i < totalChunks; i++) {
+                        const start = i * CHUNK_SIZE;
+                        const end = Math.min(start + CHUNK_SIZE, file.size);
+
+                        const chunkBase64 = await new Promise((res, rej) => {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => res(ev.target.result.split(',')[1]);
+                            reader.onerror = () => rej(new Error('อ่านไฟล์ไม่ได้'));
+                            reader.readAsDataURL(file.slice(start, end));
+                        });
+
+                        // อัพเดต Progress Bar ตามชิ้นที่ส่งไป
+                        const pct = Math.round(((i + 1) / totalChunks) * 100);
+                        fillEl.style.width = pct + '%';
+                        percentEl.textContent = pct + '%';
+
+                        const chunkRes = await fetch(GAS_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({
+                                action: 'uploadChunk',
+                                folderId: folderIdFb,
+                                filename: file.name,
+                                mimeType: file.type || 'application/octet-stream',
+                                chunk: chunkBase64,
+                                fileId: fileId,
+                                isFirst: i === 0,
+                                isLast: i === totalChunks - 1
+                            }),
+                            redirect: 'follow'
+                        });
+
+                        const chunkResult = await chunkRes.json();
+                        if (chunkResult.status !== 'success') throw new Error(chunkResult.message || 'Chunk upload ล้มเหลว');
+                        fileId = chunkResult.fileId;
+                    }
+
+                    document.dispatchEvent(new CustomEvent('projectFileUploaded', {
+                        detail: {
+                            name: file.name,
+                            url: `https://drive.google.com/file/d/${fileId}/view`,
+                            fileId: fileId,
+                            uploadedAt: new Date().toISOString()
+                        }
+                    }));
+                    cleanup(true);
+                } catch (fallbackErr) {
+                    cleanup(false);
+                    console.error('File upload error:', fallbackErr);
+                    showToast('เกิดข้อผิดพลาด: ' + fallbackErr.message, 'error');
+                }
             }
         };
 
