@@ -1832,7 +1832,7 @@
 
             // 2. Base64 Chunked Upload using Fetch
             try {
-                const chunkSize = 1024 * 1024; // 1MB chunk size
+                const chunkSize = 10 * 1024 * 1024; // เปลี่ยนขนาด Chunk เป็น 10MB เพื่อความเร็ว
                 const totalChunks = Math.ceil(file.size / chunkSize);
                 let fileId = null;
 
@@ -2247,8 +2247,8 @@
                 const folderId = await getOrCreateProjectFolder();
                 if (!folderId) throw new Error('ไม่พบโฟลเดอร์สำหรับจัดเก็บไฟล์');
 
-                // กำหนดขนาด Chunk (1MB เพื่อให้เหมาะสมและรวดเร็ว)
-                const chunkSize = 1024 * 1024; 
+                // กำหนดขนาด Chunk เป็น 10MB เพื่อให้ส่งเร็วขึ้นและเหมาะสมกับเน็ตความเร็วสูง
+                const chunkSize = 10 * 1024 * 1024; 
                 const totalChunks = Math.ceil(file.size / chunkSize);
                 let fileId = null;
 
