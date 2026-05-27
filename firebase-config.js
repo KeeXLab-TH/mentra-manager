@@ -19,7 +19,7 @@ export const FIREBASE_CONFIG = {
 // Google Apps Script — สำหรับอัพโหลดไฟล์ไปยัง Google Drive
 // วาง URL จาก Google Apps Script Web App Deployment ที่นี่
 // ==============================================================================
-export const GAS_URL = 'https://script.google.com/macros/s/AKfycbz2ic6kan0qPLcknq9hf7Y1GVQHPJFlMfargM7wY2NRfwNc00bJdzTs49zCnLY13tpl/exec';
+export const GAS_URL = 'https://script.google.com/macros/s/AKfycby-Q79yBdqDtQ2Z0v8GpnWom002dyiRqxYNH_anXplvLEk4f7NWFdR66pkRmBUTKJnQ/exec';
 
 // ==============================================================================
 // Google Drive Root Folder ID — โฟลเดอร์หลักที่จะสร้าง sub-folder แยกตามโครงการ
