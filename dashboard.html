@@ -2072,22 +2072,18 @@
             percentEl.textContent = '0%';
             fillEl.style.width = '0%';
 
-            // Defensive check
             if (!GAS_URL) {
-                console.error('GAS_URL is not configured. File upload aborted.');
                 progressEl.style.display = 'none';
-                throw new Error('GAS_URL ไม่ได้รับการตั้งค่าในระบบ กรุณาตรวจสอบไฟล์ firebase-config.js');
+                throw new Error('GAS_URL ไม่ได้รับการตั้งค่า');
             }
 
-            // 1. Get or create separate project folder
+            // 1. สร้าง folder ใน Drive
             let folderId = null;
             const folderName = `${projectNo}_${projectName}`;
             try {
                 const res = await fetch(GAS_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
-                    },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({
                         action: 'createFolder',
                         folderName,
@@ -2105,9 +2101,9 @@
             }
             if (!folderId) folderId = DRIVE_ROOT_FOLDER_ID || null;
 
-            // 2. ขอ Upload URL จาก GAS สำหรับอัพโหลดไฟล์ตรง (Resumable Upload)
+            // 2. ขอ OAuth Token จาก GAS
             try {
-                const initRes = await fetch(GAS_URL, {
+                const gasRes = await fetch(GAS_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({
@@ -2118,117 +2114,91 @@
                     }),
                     redirect: 'follow'
                 });
-                const initResult = await initRes.json();
+                const gasResult = await gasRes.json();
 
-                if (initResult.uploadUrl) {
-                    // 3. อัพโหลดไฟล์ตรงไปยัง Google Drive พร้อม Progress Bar จริง
-                    await new Promise((resolve, reject) => {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('PUT', initResult.uploadUrl, true);
-
-                        xhr.upload.onprogress = (e) => {
-                            if (e.lengthComputable) {
-                                const percentComplete = Math.round((e.loaded / e.total) * 100);
-                                fillEl.style.width = percentComplete + '%';
-                                percentEl.textContent = percentComplete + '%';
-                            }
-                        };
-
-                        xhr.onload = async () => {
-                            if (xhr.status === 200 || xhr.status === 201) {
-                                fillEl.style.width = '100%';
-                                percentEl.textContent = '100%';
-                                const driveResponse = JSON.parse(xhr.responseText);
-
-                                // บันทึกข้อมูลลง Firestore (จำลองว่าสำเร็จ)
-                                const fileData = {
-                                    name: file.name,
-                                    url: `https://drive.google.com/file/d/${driveResponse.id}/view`,
-                                    fileId: driveResponse.id,
-                                    uploadedAt: new Date().toISOString()
-                                };
-                                const projectRef = doc(db, 'projects', projectId);
-                                await updateDoc(projectRef, {
-                                    files: arrayUnion(fileData)
-                                });
-
-                                resolve();
-                            } else {
-                                reject(new Error('อัพโหลดไฟล์ไปยัง Drive ล้มเหลว Status: ' + xhr.status));
-                            }
-                        };
-
-                        xhr.onerror = () => reject(new Error('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่ายขณะอัพโหลด'));
-                        xhr.send(file);
-                    });
-
-                    showToast('อัพโหลดไฟล์สำเร็จ');
-                    setTimeout(() => {
-                        progressEl.style.display = 'none';
-                        document.getElementById('fileInput').value = '';
-                    }, 1000);
-                } else {
-                    // Fallback ไปใช้วิธีเดิมถ้า GAS ยังไม่รองรับ getUploadUrl
-                    const base64 = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result.split(',')[1]);
-                        reader.onerror = () => reject(new Error('ไม่สามารถอ่านไฟล์ได้'));
-                        reader.readAsDataURL(file);
-                    });
-
-                    let currentPct = 0;
-                    const progressInterval = setInterval(() => {
-                        if (currentPct < 90) {
-                            currentPct += Math.floor(Math.random() * 10) + 5;
-                            fillEl.style.width = currentPct + '%';
-                            percentEl.textContent = currentPct + '%';
-                        }
-                    }, 200);
-
-                    const uploadRes = await fetch(GAS_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({
-                            filename: file.name,
-                            mimeType: file.type || 'application/octet-stream',
-                            base64: base64,
-                            folderId: folderId
-                        }),
-                        redirect: 'follow'
-                    });
-
-                    clearInterval(progressInterval);
-                    const result = await uploadRes.json();
-
-                    if (result.status === 'success' || result.fileId) {
-                        fillEl.style.width = '100%';
-                        percentEl.textContent = '100%';
-
-                        const fileData = {
-                            name: file.name,
-                            url: result.fileUrl || `https://drive.google.com/file/d/${result.fileId}/view`,
-                            fileId: result.fileId,
-                            uploadedAt: new Date().toISOString()
-                        };
-                        const projectRef = doc(db, 'projects', projectId);
-                        await updateDoc(projectRef, {
-                            files: arrayUnion(fileData)
-                        });
-
-                        showToast('อัพโหลดไฟล์สำเร็จ');
-                        setTimeout(() => {
-                            progressEl.style.display = 'none';
-                            document.getElementById('fileInput').value = '';
-                        }, 1000);
-                    } else {
-                        throw new Error(result.message || 'Server error');
-                    }
+                if (gasResult.status !== 'success' || !gasResult.token) {
+                    throw new Error(gasResult.message || 'GAS ไม่ส่ง token');
                 }
+
+                // 3. Browser สร้าง resumable upload session ตรงกับ Drive API
+                const uploadMimeType = file.type || 'application/octet-stream';
+                const initRes = await fetch(
+                    'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + gasResult.token,
+                            'Content-Type': 'application/json',
+                            'X-Upload-Content-Type': uploadMimeType,
+                            'X-Upload-Content-Length': file.size
+                        },
+                        body: JSON.stringify({
+                            name: file.name,
+                            parents: [folderId],
+                            mimeType: uploadMimeType
+                        })
+                    }
+                );
+
+                if (!initRes.ok) {
+                    const errText = await initRes.text();
+                    throw new Error('Drive API error ' + initRes.status);
+                }
+
+                const uploadUrl = initRes.headers.get('Location');
+                if (!uploadUrl) throw new Error('Drive API ไม่ส่ง upload URL');
+
+                // 4. PUT ไฟล์ตรงไป Drive พร้อม progress bar
+                await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('PUT', uploadUrl, true);
+                    xhr.setRequestHeader('Content-Type', uploadMimeType);
+
+                    xhr.upload.onprogress = (e) => {
+                        if (e.lengthComputable) {
+                            const pct = Math.round((e.loaded / e.total) * 100);
+                            fillEl.style.width = pct + '%';
+                            percentEl.textContent = pct + '%';
+                        }
+                    };
+
+                    xhr.onload = async () => {
+                        if (xhr.status === 200 || xhr.status === 201) {
+                            fillEl.style.width = '100%';
+                            percentEl.textContent = '100%';
+                            let driveResponse;
+                            try { driveResponse = JSON.parse(xhr.responseText); } catch { driveResponse = {}; }
+
+                            const fileData = {
+                                name: file.name,
+                                url: `https://drive.google.com/file/d/${driveResponse.id}/view`,
+                                fileId: driveResponse.id,
+                                uploadedAt: new Date().toISOString()
+                            };
+                            await updateDoc(doc(db, 'projects', projectId), {
+                                files: arrayUnion(fileData)
+                            });
+                            resolve();
+                        } else {
+                            reject(new Error('อัพโหลดล้มเหลว Status: ' + xhr.status));
+                        }
+                    };
+
+                    xhr.onerror = () => reject(new Error('เครือข่ายผิดพลาด'));
+                    xhr.send(file);
+                });
+
+                showToast('อัพโหลดไฟล์สำเร็จ');
+                setTimeout(() => {
+                    progressEl.style.display = 'none';
+                    const fi = document.getElementById('fileInput');
+                    if (fi) fi.value = '';
+                }, 1000);
+
             } catch (err) {
-                clearInterval(progressInterval);
                 progressEl.style.display = 'none';
                 console.error('Upload error:', err);
-                throw new Error('Network error - อัพโหลดไฟล์ล้มเหลว: ' + err.message);
+                throw new Error('อัพโหลดไฟล์ล้มเหลว: ' + err.message);
             }
         }
 
@@ -2580,15 +2550,15 @@
                 const folderId = await getOrCreateProjectFolder();
                 if (!folderId) throw new Error('ไม่พบโฟลเดอร์สำหรับจัดเก็บไฟล์');
 
-                console.log('[Upload] Requesting resumable upload URL from GAS...');
+                console.log('[Upload] Step 1: Requesting OAuth token from GAS...');
                 percentEl.textContent = 'กำลังเตรียม...';
 
-                // ขอ Resumable Upload URL จาก GAS พร้อม timeout 30s
+                // ── Step 1: ขอ OAuth Token จาก GAS (ไม่ใช้ UrlFetchApp) ──
                 const ctrl = new AbortController();
                 const tid = setTimeout(() => ctrl.abort(), 30000);
-                let initResult;
+                let gasResult;
                 try {
-                    const initRes = await fetch(GAS_URL, {
+                    const gasRes = await fetch(GAS_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({
@@ -2601,29 +2571,63 @@
                         signal: ctrl.signal
                     });
                     clearTimeout(tid);
-                    const rawText = await initRes.text();
-                    console.log('[Upload] GAS response:', rawText.slice(0, 200));
-                    initResult = JSON.parse(rawText);
+                    const rawText = await gasRes.text();
+                    console.log('[Upload] GAS response:', rawText.slice(0, 100));
+                    gasResult = JSON.parse(rawText);
                 } catch (gasErr) {
                     clearTimeout(tid);
-                    console.error('[Upload] Failed to get uploadUrl from GAS:', gasErr);
-                    throw new Error('GAS ไม่ตอบสนอง: ' + gasErr.message + ' — กรุณาตรวจสอบ Google Apps Script');
+                    throw new Error('GAS ไม่ตอบสนอง: ' + gasErr.message);
                 }
 
-                if (!initResult.uploadUrl) {
-                    console.error('[Upload] GAS did not return uploadUrl. Response:', initResult);
-                    const hint = initResult.error || initResult.message || JSON.stringify(initResult);
-                    throw new Error('GAS ไม่ส่ง uploadUrl กลับมา: ' + hint + ' — กรุณาอัพเดต Apps Script ให้รองรับ action: getUploadUrl');
+                if (gasResult.status !== 'success' || !gasResult.token) {
+                    const hint = gasResult.error || gasResult.message || JSON.stringify(gasResult);
+                    throw new Error('GAS error: ' + hint);
                 }
 
-                console.log('[Upload] Got uploadUrl, uploading directly to Drive...');
+                const oauthToken = gasResult.token;
+                console.log('[Upload] Step 2: Creating resumable upload session from browser...');
+                percentEl.textContent = 'กำลังเตรียมอัพโหลด...';
+
+                // ── Step 2: Browser สร้าง Resumable Upload Session ตรงกับ Drive API ──
+                const uploadMimeType = file.type || 'application/octet-stream';
+                const initRes = await fetch(
+                    'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + oauthToken,
+                            'Content-Type': 'application/json',
+                            'X-Upload-Content-Type': uploadMimeType,
+                            'X-Upload-Content-Length': file.size
+                        },
+                        body: JSON.stringify({
+                            name: file.name,
+                            parents: [folderId],
+                            mimeType: uploadMimeType
+                        })
+                    }
+                );
+
+                if (!initRes.ok) {
+                    const errText = await initRes.text();
+                    console.error('[Upload] Drive API init failed:', initRes.status, errText);
+                    throw new Error('Drive API error ' + initRes.status + ': ' + errText.slice(0, 200));
+                }
+
+                const uploadUrl = initRes.headers.get('Location');
+                if (!uploadUrl) {
+                    throw new Error('Drive API ไม่ส่ง upload URL กลับมา');
+                }
+
+                console.log('[Upload] Step 3: Uploading file directly to Drive...');
                 percentEl.textContent = '0%';
 
-                // ส่งไฟล์ตรงไปยัง Google Drive API พร้อม Progress Bar จริง
-                let uploadStartTime = Date.now();
+                // ── Step 3: PUT ไฟล์ตรงไป Google Drive ── เร็วมาก! ──
+                const uploadStartTime = Date.now();
                 await new Promise((resolve, reject) => {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('PUT', initResult.uploadUrl, true);
+                    xhr.open('PUT', uploadUrl, true);
+                    xhr.setRequestHeader('Content-Type', uploadMimeType);
 
                     xhr.upload.onprogress = (e) => {
                         if (e.lengthComputable) {
@@ -2631,7 +2635,6 @@
                             fillEl.style.width = pct + '%';
                             percentEl.textContent = pct + '%';
 
-                            // แสดงความเร็ว upload
                             if (speedEl) {
                                 const elapsed = (Date.now() - uploadStartTime) / 1000;
                                 if (elapsed > 0.5) {
@@ -2659,15 +2662,15 @@
                                     uploadedAt: new Date().toISOString()
                                 }
                             }));
-                            console.log('[Upload] Direct upload complete. File ID:', driveResponse.id);
+                            console.log('[Upload] ✅ Direct upload complete. File ID:', driveResponse.id);
                             resolve();
                         } else {
-                            console.error('[Upload] Drive PUT failed, status:', xhr.status, xhr.responseText);
+                            console.error('[Upload] Drive PUT failed:', xhr.status, xhr.responseText);
                             reject(new Error('อัพโหลดไปยัง Drive ล้มเหลว (HTTP ' + xhr.status + ')'));
                         }
                     };
 
-                    xhr.onerror = () => reject(new Error('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่ายขณะอัพโหลด'));
+                    xhr.onerror = () => reject(new Error('เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย'));
                     xhr.send(file);
                 });
 
