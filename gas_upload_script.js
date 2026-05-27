@@ -88,10 +88,10 @@ function handleGetUploadUrl(body) {
   }
 
   try {
-    // ตรวจสอบว่า folder มีอยู่จริง
-    const folder = DriveApp.getFolderById(folderId);
+    // ตรวจสอบว่า folder มีอยู่จริง (ใช้ DriveApp ซึ่งมีสิทธิ์เสมอ)
+    DriveApp.getFolderById(folderId);
 
-    // สร้าง Resumable Upload session ผ่าน Drive API v3
+    // ดึง OAuth token ของ script (ต้องมี scope: drive + script.external_request)
     const token = ScriptApp.getOAuthToken();
     const uploadMimeType = mimeType || 'application/octet-stream';
 
@@ -102,7 +102,9 @@ function handleGetUploadUrl(body) {
       mimeType: uploadMimeType
     };
 
-    // เรียก Drive API เพื่อขอ resumable session URI
+    // เรียก Drive API v3 เพื่อขอ Resumable Upload session URI
+    // ต้องการ scope: https://www.googleapis.com/auth/script.external_request
+    // → เพิ่มใน appsscript.json แล้ว Re-authorize script
     const response = UrlFetchApp.fetch(
       'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name,webViewLink,mimeType',
       {
@@ -110,7 +112,8 @@ function handleGetUploadUrl(body) {
         headers: {
           'Authorization': 'Bearer ' + token,
           'Content-Type': 'application/json',
-          'X-Upload-Content-Type': uploadMimeType
+          'X-Upload-Content-Type': uploadMimeType,
+          'X-Upload-Content-Length': ''
         },
         payload: JSON.stringify(metadata),
         muteHttpExceptions: true
@@ -121,7 +124,7 @@ function handleGetUploadUrl(body) {
     const headers = response.getHeaders();
 
     // Drive API จะ return 200 พร้อม Location header ที่เป็น upload URL
-    if (responseCode === 200 && headers['Location']) {
+    if ((responseCode === 200 || responseCode === 201) && headers['Location']) {
       return jsonResponse({
         status: 'success',
         uploadUrl: headers['Location']
@@ -133,8 +136,7 @@ function handleGetUploadUrl(body) {
     Logger.log('Drive API error: ' + responseCode + ' — ' + respText);
     return jsonResponse({
       status: 'error',
-      message: 'Drive API returned ' + responseCode,
-      detail: respText.slice(0, 300)
+      message: 'Drive API returned ' + responseCode + ': ' + respText.slice(0, 200)
     });
 
   } catch (err) {
