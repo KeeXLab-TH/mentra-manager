@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,14 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <!-- Boxicons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
+
     <style>
         :root {
             --primary-color: #1A6FBF;
@@ -69,7 +72,8 @@
             flex-direction: column;
             height: 100vh;
             position: fixed;
-            left: 0; top: 0;
+            left: 0;
+            top: 0;
             z-index: 100;
             transition: width var(--t-slow), transform var(--t-slow);
             overflow: hidden;
@@ -103,7 +107,7 @@
 
         .sidebar-logo {
             padding: 20px 18px;
-            border-bottom: 1px solid rgba(255,255,255,0.10);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -113,16 +117,20 @@
         }
 
         .sidebar-logo img {
-            width: 40px; height: 40px;
+            width: 40px;
+            height: 40px;
             object-fit: contain;
             background: white;
             border-radius: 10px;
             padding: 4px;
             flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .sidebar-logo-text { transition: opacity var(--t-normal), width var(--t-normal); overflow: hidden; }
+        .sidebar-logo-text {
+            transition: opacity var(--t-normal), width var(--t-normal);
+            overflow: hidden;
+        }
 
         .sidebar-logo-text .app-name {
             font-size: 15px;
@@ -134,7 +142,7 @@
 
         .sidebar-logo-text .app-sub {
             font-size: 10.5px;
-            color: rgba(255,255,255,0.50);
+            color: rgba(255, 255, 255, 0.50);
             font-weight: 400;
             margin-top: 2px;
             white-space: nowrap;
@@ -145,7 +153,8 @@
             right: -12px;
             top: 50%;
             transform: translateY(-50%);
-            width: 24px; height: 24px;
+            width: 24px;
+            height: 24px;
             background: white;
             border: none;
             border-radius: 50%;
@@ -154,12 +163,14 @@
             justify-content: center;
             cursor: pointer;
             color: var(--primary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             z-index: 10;
             transition: background var(--t-fast), transform var(--t-normal);
         }
 
-        .collapse-btn:hover { background: var(--primary-light); }
+        .collapse-btn:hover {
+            background: var(--primary-light);
+        }
 
         .sidebar-nav {
             flex: 1;
@@ -173,7 +184,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.2px;
-            color: rgba(255,255,255,0.38);
+            color: rgba(255, 255, 255, 0.38);
             padding: 8px 12px 4px;
             margin-top: 10px;
             white-space: nowrap;
@@ -187,7 +198,7 @@
             padding: 11px 13px;
             border-radius: var(--radius-md);
             cursor: pointer;
-            color: rgba(255,255,255,0.70);
+            color: rgba(255, 255, 255, 0.70);
             font-size: 13.5px;
             font-weight: 500;
             transition: background var(--t-fast), color var(--t-fast);
@@ -203,12 +214,12 @@
         }
 
         .nav-item:hover {
-            background: rgba(255,255,255,0.10);
+            background: rgba(255, 255, 255, 0.10);
             color: white;
         }
 
         .nav-item.active {
-            background: rgba(255,255,255,0.16);
+            background: rgba(255, 255, 255, 0.16);
             color: white;
             font-weight: 600;
         }
@@ -216,7 +227,9 @@
         .nav-item.active::before {
             content: '';
             position: absolute;
-            left: 0; top: 20%; bottom: 20%;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
             width: 3px;
             background: var(--secondary);
             border-radius: 0 3px 3px 0;
@@ -224,13 +237,14 @@
 
         .nav-item.active .nav-icon {
             background: var(--secondary);
-            box-shadow: 0 2px 8px rgba(224,123,47,0.4);
+            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.4);
         }
 
         .nav-icon {
-            width: 32px; height: 32px;
+            width: 32px;
+            height: 32px;
             border-radius: var(--radius-sm);
-            background: rgba(255,255,255,0.10);
+            background: rgba(255, 255, 255, 0.10);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -246,7 +260,7 @@
 
         .sidebar-user {
             padding: 14px;
-            border-top: 1px solid rgba(255,255,255,0.10);
+            border-top: 1px solid rgba(255, 255, 255, 0.10);
             flex-shrink: 0;
         }
 
@@ -256,14 +270,15 @@
             gap: 10px;
             padding: 10px 12px;
             border-radius: var(--radius-md);
-            background: rgba(255,255,255,0.07);
+            background: rgba(255, 255, 255, 0.07);
             margin-bottom: 10px;
             overflow: hidden;
             transition: justify-content var(--t-normal);
         }
 
         .user-avatar {
-            width: 38px; height: 38px;
+            width: 38px;
+            height: 38px;
             border-radius: 10px;
             background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
             display: flex;
@@ -273,10 +288,13 @@
             font-weight: 700;
             color: white;
             flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(224,123,47,0.35);
+            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.35);
         }
 
-        .user-info { min-width: 0; }
+        .user-info {
+            min-width: 0;
+        }
+
         .user-info .user-name {
             font-size: 13px;
             font-weight: 600;
@@ -285,7 +303,11 @@
             white-space: nowrap;
         }
 
-        .user-info .user-role { font-size: 11px; color: rgba(255,255,255,0.50); margin-top: 2px; }
+        .user-info .user-role {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.50);
+            margin-top: 2px;
+        }
 
         .role-badge {
             display: inline-block;
@@ -297,14 +319,21 @@
             letter-spacing: 0.5px;
         }
 
-        .role-badge.admin { background: var(--secondary); color: white; }
-        .role-badge.user  { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.8); }
+        .role-badge.admin {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .role-badge.user {
+            background: rgba(255, 255, 255, 0.18);
+            color: rgba(255, 255, 255, 0.8);
+        }
 
         .btn-logout {
             width: 100%;
             padding: 9px 12px;
-            background: rgba(239,68,68,0.13);
-            border: 1px solid rgba(239,68,68,0.28);
+            background: rgba(239, 68, 68, 0.13);
+            border: 1px solid rgba(239, 68, 68, 0.28);
             border-radius: var(--radius-sm);
             color: #fca5a5;
             font-size: 13px;
@@ -319,8 +348,15 @@
             overflow: hidden;
         }
 
-        .btn-logout:hover { background: rgba(239, 68, 68, 0.28); color: white; }
-        .btn-logout-text { white-space: nowrap; transition: opacity var(--t-normal); }
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.28);
+            color: white;
+        }
+
+        .btn-logout-text {
+            white-space: nowrap;
+            transition: opacity var(--t-normal);
+        }
 
         .main-wrapper {
             flex: 1;
@@ -342,12 +378,25 @@
             justify-content: space-between;
             flex-shrink: 0;
             z-index: 90;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
-        .topbar-breadcrumb { display: flex; flex-direction: column; }
-        .breadcrumb-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
-        .breadcrumb-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .topbar-breadcrumb {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .breadcrumb-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .breadcrumb-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
 
         .content-area {
             flex: 1;
@@ -368,7 +417,7 @@
         .form-content {
             background: white !important;
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
             border: 1px solid var(--border-color);
             padding: 24px !important;
         }
@@ -538,17 +587,29 @@
             transition: all 0.2s;
             background-color: #fff;
         }
-        
+
         .table-input:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
-        .col-qty { width: 65px; }
-        .col-unit { width: 80px; }
-        .col-price { width: 110px; }
-        .col-action { width: 50px; text-align: center; }
+        .col-qty {
+            width: 65px;
+        }
+
+        .col-unit {
+            width: 80px;
+        }
+
+        .col-price {
+            width: 110px;
+        }
+
+        .col-action {
+            width: 50px;
+            text-align: center;
+        }
 
         .summary-section {
             display: flex;
@@ -582,8 +643,11 @@
 
         .loading-overlay {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.8);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -593,10 +657,12 @@
             opacity: 0;
             transition: all 0.3s ease;
         }
+
         .loading-overlay.active {
             visibility: visible;
             opacity: 1;
         }
+
         .spinner {
             width: 40px;
             height: 40px;
@@ -605,10 +671,15 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
 
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body>
 
     <!-- ===== SIDEBAR ===== -->
@@ -622,7 +693,7 @@
             <!-- Desktop collapse toggle -->
             <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M15 18l-6-6 6-6"/>
+                    <path d="M15 18l-6-6 6-6" />
                 </svg>
             </button>
         </div>
@@ -647,7 +718,8 @@
                     <div class="nav-icon">👥</div>
                     <span class="nav-label">จัดการผู้ใช้งาน</span>
                 </button>
-                <button class="nav-item" onclick="window.location.href='dashboard.html?action=new-project'" id="nav-add-project">
+                <button class="nav-item" onclick="window.location.href='dashboard.html?action=new-project'"
+                    id="nav-add-project">
                     <div class="nav-icon">➕</div>
                     <span class="nav-label">เพิ่มโครงการใหม่</span>
                 </button>
@@ -687,10 +759,12 @@
                 <div class="breadcrumb-sub">สร้างและจัดการใบเสนอราคาสำหรับ Mentra Solution</div>
             </div>
             <div style="display: flex; gap: 0.75rem;">
-                <button class="btn btn-outline" onclick="window.location.href='dashboard.html'" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                <button class="btn btn-outline" onclick="window.location.href='dashboard.html'"
+                    style="padding: 0.5rem 1rem; font-size: 0.9rem;">
                     <i class='bx bx-arrow-back'></i> กลับ Dashboard
                 </button>
-                <button class="btn btn-primary" onclick="exportToPDF()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                <button class="btn btn-primary" onclick="exportToPDF()"
+                    style="padding: 0.5rem 1rem; font-size: 0.9rem;">
                     <i class='bx bxs-file-pdf'></i> Export PDF
                 </button>
             </div>
@@ -699,304 +773,407 @@
         <main class="content-area">
             <div class="container">
                 <div class="form-content">
-            <!-- Top Section -->
-            <div class="grid-2">
-                <!-- Info Left -->
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-                        <h3 class="section-title" style="margin-bottom: 0;">ข้อมูลผู้รับ (To)</h3>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <select id="savedRecipientsSelect" class="form-control" style="width: 200px; padding: 0.4rem 0.8rem; font-size: 0.85rem;" onchange="loadSavedRecipient()">
-                                <option value="">-- เลือกผู้รับที่บันทึกไว้ --</option>
-                            </select>
-                            <button class="btn btn-primary" onclick="saveCurrentRecipient()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background: var(--success-color); color: white;">
-                                <i class='bx bx-save'></i> บันทึกผู้รับนี้
-                            </button>
-                            <button id="deleteRecipientBtn" class="btn btn-danger" onclick="deleteSelectedRecipient()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; display: none;">
-                                <i class='bx bx-trash'></i>
-                            </button>
+                    <!-- Top Section -->
+                    <div class="grid-2">
+                        <!-- Info Left -->
+                        <div>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                                <h3 class="section-title" style="margin-bottom: 0;">ข้อมูลผู้รับ (To)</h3>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <select id="savedRecipientsSelect" class="form-control"
+                                        style="width: 200px; padding: 0.4rem 0.8rem; font-size: 0.85rem;"
+                                        onchange="loadSavedRecipient()">
+                                        <option value="">-- เลือกผู้รับที่บันทึกไว้ --</option>
+                                    </select>
+                                    <button class="btn btn-primary" onclick="saveCurrentRecipient()"
+                                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background: var(--success-color); color: white;">
+                                        <i class='bx bx-save'></i> บันทึกผู้รับนี้
+                                    </button>
+                                    <button id="deleteRecipientBtn" class="btn btn-danger"
+                                        onclick="deleteSelectedRecipient()"
+                                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; display: none;">
+                                        <i class='bx bx-trash'></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>ชื่อบริษัท / ผู้รับ</label>
+                                <input type="text" class="form-control" id="toCompany"
+                                    placeholder="บริษัท เอบีซี จำกัด">
+                            </div>
+                            <div class="form-group">
+                                <label>ที่อยู่</label>
+                                <textarea class="form-control" id="toAddress"
+                                    placeholder="123 ถนนสุขุมวิท แขวงคลองเตย..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>ผู้ติดต่อ (Attn)</label>
+                                <input type="text" class="form-control" id="toAttn" placeholder="คุณสมชาย">
+                            </div>
+                            <div class="grid-2" style="gap: 1rem; margin-bottom: 0;">
+                                <div class="form-group">
+                                    <label>เบอร์โทรศัพท์ (Tel)</label>
+                                    <input type="text" class="form-control" id="toTel" placeholder="02-XXX-XXXX">
+                                </div>
+                                <div class="form-group">
+                                    <label>อีเมล (Email)</label>
+                                    <input type="email" class="form-control" id="toEmail"
+                                        placeholder="email@example.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info Right -->
+                        <div>
+                            <h3 class="section-title">รายละเอียดเอกสาร</h3>
+                            <div class="grid-2" style="gap: 1rem; margin-bottom: 0;">
+                                <div class="form-group">
+                                    <label>เลขที่เอกสาร (Ref No.)</label>
+                                    <input type="text" class="form-control" id="refNo" style="font-weight: 600;"
+                                        placeholder="เช่น MTQ260528001">
+                                </div>
+                                <div class="form-group">
+                                    <label>วันที่ (Date)</label>
+                                    <input type="date" class="form-control" id="docDate">
+                                </div>
+                            </div>
+
+                            <h3 class="section-title" style="margin-top: 1rem;">เงื่อนไข (Terms)</h3>
+                            <div class="form-group">
+                                <label>กำหนดยืนราคา (Validity)</label>
+                                <input type="text" class="form-control" id="termValidity" value="30 วัน">
+                            </div>
+                            <div class="form-group">
+                                <label>กำหนดส่งมอบ (Delivery)</label>
+                                <input type="text" class="form-control" id="termDelivery" value="15-30 วัน">
+                            </div>
+                            <div class="form-group">
+                                <label>เงื่อนไขชำระเงิน (Payment)</label>
+                                <input type="text" class="form-control" id="termPayment" value="Cash on Delivery">
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>ชื่อบริษัท / ผู้รับ</label>
-                        <input type="text" class="form-control" id="toCompany" placeholder="บริษัท เอบีซี จำกัด">
+
+                    <!-- Table Section -->
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 class="section-title" style="margin-bottom: 0;">รายการสินค้า</h3>
+                        <button class="btn btn-outline" onclick="addTableRow()"
+                            style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                            <i class='bx bx-plus'></i> เพิ่มรายการ
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label>ที่อยู่</label>
-                        <textarea class="form-control" id="toAddress" placeholder="123 ถนนสุขุมวิท แขวงคลองเตย..."></textarea>
+
+                    <div class="table-responsive">
+                        <table id="itemsTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px; text-align: center; letter-spacing: normal !important;">
+                                        ลำดับ</th>
+                                    <th style="letter-spacing: normal !important;">รายการสินค้า / รายละเอียด
+                                        (Description)</th>
+                                    <th class="col-qty" style="letter-spacing: normal !important;">จำนวน</th>
+                                    <th class="col-unit" style="letter-spacing: normal !important;">หน่วย</th>
+                                    <th class="col-price" style="letter-spacing: normal !important;">ราคา/หน่วย</th>
+                                    <th class="col-price" style="letter-spacing: normal !important;">จำนวนเงิน</th>
+                                    <th class="col-action">ลบ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsBody">
+                                <!-- Rows will be added here via JS -->
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="form-group">
-                        <label>ผู้ติดต่อ (Attn)</label>
-                        <input type="text" class="form-control" id="toAttn" placeholder="คุณสมชาย">
-                    </div>
-                    <div class="grid-2" style="gap: 1rem; margin-bottom: 0;">
-                        <div class="form-group">
-                            <label>เบอร์โทรศัพท์ (Tel)</label>
-                            <input type="text" class="form-control" id="toTel" placeholder="02-XXX-XXXX">
+
+                    <!-- Summary Section -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div style="flex: 1; margin-right: 2rem;">
+                            <label
+                                style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500; display: block; margin-bottom: 0.4rem;">หมายเหตุ
+                                (Remark)</label>
+                            <textarea class="form-control" id="remark" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
                         </div>
-                        <div class="form-group">
-                            <label>อีเมล (Email)</label>
-                            <input type="email" class="form-control" id="toEmail" placeholder="email@example.com">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Info Right -->
-                <div>
-                    <h3 class="section-title">รายละเอียดเอกสาร</h3>
-                    <div class="grid-2" style="gap: 1rem; margin-bottom: 0;">
-                        <div class="form-group">
-                            <label>เลขที่เอกสาร (Ref No.)</label>
-                            <input type="text" class="form-control" id="refNo" style="font-weight: 600;" placeholder="เช่น MTQ260528001">
-                        </div>
-                        <div class="form-group">
-                            <label>วันที่ (Date)</label>
-                            <input type="date" class="form-control" id="docDate">
-                        </div>
-                    </div>
-                    
-                    <h3 class="section-title" style="margin-top: 1rem;">เงื่อนไข (Terms)</h3>
-                    <div class="form-group">
-                        <label>กำหนดยืนราคา (Validity)</label>
-                        <input type="text" class="form-control" id="termValidity" value="30 วัน">
-                    </div>
-                    <div class="form-group">
-                        <label>กำหนดส่งมอบ (Delivery)</label>
-                        <input type="text" class="form-control" id="termDelivery" value="15-30 วัน">
-                    </div>
-                    <div class="form-group">
-                        <label>เงื่อนไขชำระเงิน (Payment)</label>
-                        <input type="text" class="form-control" id="termPayment" value="Cash on Delivery">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Table Section -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 class="section-title" style="margin-bottom: 0;">รายการสินค้า</h3>
-                <button class="btn btn-outline" onclick="addTableRow()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                    <i class='bx bx-plus'></i> เพิ่มรายการ
-                </button>
-            </div>
-
-            <div class="table-responsive">
-                <table id="itemsTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px; text-align: center; letter-spacing: normal !important;">ลำดับ</th>
-                            <th style="letter-spacing: normal !important;">รายการสินค้า / รายละเอียด (Description)</th>
-                            <th class="col-qty" style="letter-spacing: normal !important;">จำนวน</th>
-                            <th class="col-unit" style="letter-spacing: normal !important;">หน่วย</th>
-                            <th class="col-price" style="letter-spacing: normal !important;">ราคา/หน่วย</th>
-                            <th class="col-price" style="letter-spacing: normal !important;">จำนวนเงิน</th>
-                            <th class="col-action">ลบ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="itemsBody">
-                        <!-- Rows will be added here via JS -->
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Summary Section -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                <div style="flex: 1; margin-right: 2rem;">
-                    <label style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500; display: block; margin-bottom: 0.4rem;">หมายเหตุ (Remark)</label>
-                    <textarea class="form-control" id="remark" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
-                </div>
-                <div class="summary-box">
-                    <div class="summary-row">
-                        <span>รวมเป็นเงิน (Sub Total)</span>
-                        <span id="subTotalDisplay">0.00</span>
-                    </div>
-                    <div class="summary-row" style="color: var(--text-muted); font-size: 0.85rem;">
-                        <span>*คำนวณแบบรวมภาษีมูลค่าเพิ่มแล้ว (VAT Inclusive)</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>ภาษีมูลค่าเพิ่ม 7% (VAT)</span>
-                        <span id="vatDisplay">0.00</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>จำนวนเงินรวมทั้งสิ้น</span>
-                        <span id="grandTotalDisplay">0.00</span>
-                    </div>
-                    <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; background: var(--bg-color); padding: 0.5rem; border-radius: 4px;" id="thaiBahtText">
-                        (ศูนย์บาทถ้วน)
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- Hidden Print Template for html2pdf -->
-    <div id="printArea" style="display: none; background: #ffffff;">
-        <div style="width: 715px; min-height: 1020px; padding: 14px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column;">
-
-            <!-- ══ HEADER ══ -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid #1A6FBF;">
-                <!-- Left: Logo + Company -->
-                <div style="display: flex; gap: 14px; align-items: flex-start; flex: 1;">
-                    <img src="logo.png" style="height: 56px; max-width: 110px; object-fit: contain; flex-shrink: 0; padding-right: 14px; border-right: 1px solid #e2e8f0;" alt="Mentra Logo">
-                    <div>
-                        <div style="font-size: 14.5px; font-weight: 700; color: #1e1b4b; line-height: 1.3; white-space: nowrap; letter-spacing: normal;">บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
-                        <div style="font-size: 10.5px; font-weight: 600; color: #E07B2F; margin: 1px 0 4px 0; white-space: nowrap;">MENTRA SOLUTION CO., LTD. (Head Office)</div>
-                        <div style="font-size: 11px; color: #6b7280; line-height: 1.5; letter-spacing: normal;">
-                            115/123 ม.12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540
-                        </div>
-                        <div style="font-size: 11px; color: #6b7280; letter-spacing: normal;">
-                            <span style="color: #1A6FBF; font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;
-                            <span style="color: #1A6FBF; font-weight: 600;">EMAIL:</span> wattanachai966@gmail.com &nbsp;
-                            <span style="color: #1A6FBF; font-weight: 600;">TAX ID:</span> 0115568026644
+                        <div class="summary-box">
+                            <div class="summary-row">
+                                <span>รวมเป็นเงิน (Sub Total)</span>
+                                <span id="subTotalDisplay">0.00</span>
+                            </div>
+                            <div class="summary-row" style="color: var(--text-muted); font-size: 0.85rem;">
+                                <span>*คำนวณแบบรวมภาษีมูลค่าเพิ่มแล้ว (VAT Inclusive)</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>ภาษีมูลค่าเพิ่ม 7% (VAT)</span>
+                                <span id="vatDisplay">0.00</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>จำนวนเงินรวมทั้งสิ้น</span>
+                                <span id="grandTotalDisplay">0.00</span>
+                            </div>
+                            <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; background: var(--bg-color); padding: 0.5rem; border-radius: 4px;"
+                                id="thaiBahtText">
+                                (ศูนย์บาทถ้วน)
+                            </div>
                         </div>
                     </div>
-                </div>
-                <!-- Right: Doc Title -->
-                <div style="text-align: right; padding-left: 16px; border-left: 3px solid #1A6FBF; flex-shrink: 0; padding-top: 4px;">
-                    <div style="font-size: 21px; font-weight: 800; color: #1A6FBF; line-height: 1.1; white-space: nowrap; letter-spacing: normal;">ใบเสนอราคา</div>
-                    <div style="font-size: 11px; color: #E07B2F; font-weight: 700; letter-spacing: 2px; margin-top: 3px;">QUOTATION</div>
+
                 </div>
             </div>
 
-            <!-- ══ RECIPIENT + DOC INFO ══ -->
-            <div style="display: flex; gap: 0; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e8edf5;">
-                <!-- Left: Recipient -->
-                <div style="flex: 1.4; padding: 0 20px 0 0;">
-                    <div style="font-size: 9px; font-weight: 700; color: #1A6FBF; letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">RECIPIENT INFORMATION</div>
-                    <table style="width: 100%; border-collapse: collapse; border: none !important; margin: 0; padding: 0;">
-                        <tr style="border: none !important;">
-                            <td style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">ชื่อ / To:</td>
-                            <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; font-weight: 700; color: #1e1b4b; line-height: 1.4; font-family: 'Sarabun', sans-serif;" id="pToCompany"></td>
-                        </tr>
-                        <tr style="border: none !important;">
-                            <td style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.5; font-family: 'Sarabun', sans-serif;">ที่อยู่:</td>
-                            <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.5; word-break: break-word; white-space: normal; font-family: 'Sarabun', sans-serif;" id="pToAddress"></td>
-                        </tr>
-                        <tr style="border: none !important;">
-                            <td style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">ติดต่อ / Attn:</td>
-                            <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4; font-family: 'Sarabun', sans-serif;" id="pToAttn"></td>
-                        </tr>
-                        <tr style="border: none !important;">
-                            <td style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">โทร / Tel:</td>
-                            <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
-                                <span id="pToTel"></span>
-                                <span style="margin: 0 5px; color: #d1d5db;">|</span>
-                                <span style="color: #6b7280; font-weight: 600;">อีเมล: </span><span id="pToEmail"></span>
-                            </td>
-                        </tr>
+            <!-- Hidden Print Template for html2pdf -->
+            <div id="printArea" style="display: none; background: #ffffff;">
+                <div
+                    style="width: 715px; min-height: 1020px; padding: 14px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column;">
+
+                    <!-- ══ HEADER ══ -->
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid #1A6FBF;">
+                        <!-- Left: Logo + Company -->
+                        <div style="display: flex; gap: 14px; align-items: flex-start; flex: 1;">
+                            <img src="logo.png"
+                                style="height: 56px; max-width: 110px; object-fit: contain; flex-shrink: 0; padding-right: 14px; border-right: 1px solid #e2e8f0;"
+                                alt="Mentra Logo">
+                            <div>
+                                <div
+                                    style="font-size: 14.5px; font-weight: 700; color: #1e1b4b; line-height: 1.3; white-space: nowrap; letter-spacing: normal;">
+                                    บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
+                                <div
+                                    style="font-size: 10.5px; font-weight: 600; color: #E07B2F; margin: 1px 0 4px 0; white-space: nowrap;">
+                                    MENTRA SOLUTION CO., LTD. (Head Office)</div>
+                                <div style="font-size: 11px; color: #6b7280; line-height: 1.5; letter-spacing: normal;">
+                                    115/123 ม.12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540
+                                </div>
+                                <div style="font-size: 11px; color: #6b7280; letter-spacing: normal;">
+                                    <span style="color: #1A6FBF; font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;
+                                    <span style="color: #1A6FBF; font-weight: 600;">EMAIL:</span>
+                                    wattanachai966@gmail.com &nbsp;
+                                    <span style="color: #1A6FBF; font-weight: 600;">TAX ID:</span> 0115568026644
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Right: Doc Title -->
+                        <div
+                            style="text-align: right; padding-left: 16px; border-left: 3px solid #1A6FBF; flex-shrink: 0; padding-top: 4px;">
+                            <div
+                                style="font-size: 21px; font-weight: 800; color: #1A6FBF; line-height: 1.1; white-space: nowrap; letter-spacing: normal;">
+                                ใบเสนอราคา</div>
+                            <div
+                                style="font-size: 11px; color: #E07B2F; font-weight: 700; letter-spacing: 2px; margin-top: 3px;">
+                                QUOTATION</div>
+                        </div>
+                    </div>
+
+                    <!-- ══ RECIPIENT + DOC INFO ══ -->
+                    <div
+                        style="display: flex; gap: 0; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e8edf5;">
+                        <!-- Left: Recipient -->
+                        <div style="flex: 1.4; padding: 0 20px 0 0;">
+                            <div
+                                style="font-size: 9px; font-weight: 700; color: #1A6FBF; letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">
+                                RECIPIENT INFORMATION</div>
+                            <table
+                                style="width: 100%; border-collapse: collapse; border: none !important; margin: 0; padding: 0;">
+                                <tr style="border: none !important;">
+                                    <td
+                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
+                                        ชื่อ / To:</td>
+                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; font-weight: 700; color: #1e1b4b; line-height: 1.4; font-family: 'Sarabun', sans-serif;"
+                                        id="pToCompany"></td>
+                                </tr>
+                                <tr style="border: none !important;">
+                                    <td
+                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.5; font-family: 'Sarabun', sans-serif;">
+                                        ที่อยู่:</td>
+                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.5; word-break: break-word; white-space: normal; font-family: 'Sarabun', sans-serif;"
+                                        id="pToAddress"></td>
+                                </tr>
+                                <tr style="border: none !important;">
+                                    <td
+                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
+                                        ติดต่อ / Attn:</td>
+                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4; font-family: 'Sarabun', sans-serif;"
+                                        id="pToAttn"></td>
+                                </tr>
+                                <tr style="border: none !important;">
+                                    <td
+                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
+                                        โทร / Tel:</td>
+                                    <td
+                                        style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
+                                        <span id="pToTel"></span>
+                                        <span style="margin: 0 5px; color: #d1d5db;">|</span>
+                                        <span style="color: #6b7280; font-weight: 600;">อีเมล: </span><span
+                                            id="pToEmail"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <!-- Right: Doc Details -->
+                        <div style="flex: 0.6; padding: 0 0 0 20px; border-left: 1px solid #e8edf5;">
+                            <div
+                                style="font-size: 9px; font-weight: 700; color: #1A6FBF; letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">
+                                DOCUMENT DETAILS</div>
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
+                                <span style="color: #6b7280; font-weight: 600;">เลขที่ / Ref. No:</span>
+                                <span style="font-weight: 700; color: #1A6FBF; letter-spacing: normal;"
+                                    id="pRefNo"></span>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
+                                <span style="color: #6b7280; font-weight: 600;">วันที่ / Date:</span>
+                                <span style="color: #1f2937; letter-spacing: normal;" id="pDocDate"></span>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
+                                <span style="color: #6b7280; font-weight: 600;">ยืนราคา / Validity:</span>
+                                <span style="color: #1f2937; letter-spacing: normal;" id="pValidity"></span>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
+                                <span style="color: #6b7280; font-weight: 600;">ส่งมอบ / Delivery:</span>
+                                <span style="color: #1f2937; letter-spacing: normal;" id="pDelivery"></span>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; font-size: 11px; letter-spacing: normal;">
+                                <span style="color: #6b7280; font-weight: 600;">ชำระเงิน / Payment:</span>
+                                <span style="color: #1f2937; letter-spacing: normal;" id="pPayment"></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- ══ INTRO ══ -->
+                    <p style="margin-bottom: 10px; font-size: 11px; color: #374151; letter-spacing: normal;">ทางบริษัทฯ
+                        มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:</p>
+
+                    <!-- ══ ITEMS TABLE ══ -->
+                    <table
+                        style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal; border: 1px solid #e0e7ff; border-radius: 6px; overflow: hidden;">
+                        <thead>
+                            <tr style="background-color: #1A6FBF;">
+                                <th
+                                    style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">
+                                    ลำดับ</th>
+                                <th
+                                    style="padding: 9px 7px; text-align: left; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; border-right: 1px solid rgba(255,255,255,0.18);">
+                                    รายการสินค้า / รายละเอียด</th>
+                                <th
+                                    style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">
+                                    จำนวน</th>
+                                <th
+                                    style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">
+                                    หน่วย</th>
+                                <th
+                                    style="padding: 9px 7px; text-align: right; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 95px;">
+                                    ราคา/หน่วย</th>
+                                <th
+                                    style="padding: 9px 7px; text-align: right; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; width: 110px;">
+                                    จำนวนเงิน</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pItemsBody" style="letter-spacing: normal;">
+                            <!-- Dynamic print items -->
+                        </tbody>
                     </table>
-                </div>
-                <!-- Right: Doc Details -->
-                <div style="flex: 0.6; padding: 0 0 0 20px; border-left: 1px solid #e8edf5;">
-                    <div style="font-size: 9px; font-weight: 700; color: #1A6FBF; letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">DOCUMENT DETAILS</div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                        <span style="color: #6b7280; font-weight: 600;">เลขที่ / Ref. No:</span>
-                        <span style="font-weight: 700; color: #1A6FBF; letter-spacing: normal;" id="pRefNo"></span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                        <span style="color: #6b7280; font-weight: 600;">วันที่ / Date:</span>
-                        <span style="color: #1f2937; letter-spacing: normal;" id="pDocDate"></span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                        <span style="color: #6b7280; font-weight: 600;">ยืนราคา / Validity:</span>
-                        <span style="color: #1f2937; letter-spacing: normal;" id="pValidity"></span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                        <span style="color: #6b7280; font-weight: 600;">ส่งมอบ / Delivery:</span>
-                        <span style="color: #1f2937; letter-spacing: normal;" id="pDelivery"></span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; letter-spacing: normal;">
-                        <span style="color: #6b7280; font-weight: 600;">ชำระเงิน / Payment:</span>
-                        <span style="color: #1f2937; letter-spacing: normal;" id="pPayment"></span>
-                    </div>
-                </div>
-            </div>
 
-
-            <!-- ══ INTRO ══ -->
-            <p style="margin-bottom: 10px; font-size: 11px; color: #374151; letter-spacing: normal;">ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:</p>
-
-            <!-- ══ ITEMS TABLE ══ -->
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal; border: 1px solid #e0e7ff; border-radius: 6px; overflow: hidden;">
-                <thead>
-                    <tr style="background-color: #1A6FBF;">
-                        <th style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">ลำดับ</th>
-                        <th style="padding: 9px 7px; text-align: left; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; border-right: 1px solid rgba(255,255,255,0.18);">รายการสินค้า / รายละเอียด</th>
-                        <th style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">จำนวน</th>
-                        <th style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">หน่วย</th>
-                        <th style="padding: 9px 7px; text-align: right; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 95px;">ราคา/หน่วย</th>
-                        <th style="padding: 9px 7px; text-align: right; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; width: 110px;">จำนวนเงิน</th>
-                    </tr>
-                </thead>
-                <tbody id="pItemsBody" style="letter-spacing: normal;">
-                    <!-- Dynamic print items -->
-                </tbody>
-            </table>
-
-            <!-- ══ SUMMARY + REMARK ══ -->
-            <div style="display: flex; gap: 18px; align-items: flex-start;">
-                <!-- Remark -->
-                <div style="flex: 1;">
-                    <div style="font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 5px; letter-spacing: normal;">หมายเหตุ (Remark):</div>
-                    <div id="pRemark" style="font-size: 11px; color: #4b5563; padding: 9px 12px; background: #f9fafb; border-radius: 5px; border: 1px solid #e5e7eb; min-height: 52px; white-space: normal; line-height: 1.6; letter-spacing: normal;">-</div>
-                </div>
-                <!-- Totals -->
-                <div style="flex: 0.85; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal;">
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 6px 12px; color: #6b7280; letter-spacing: normal;">รวมเงิน (Sub Total):</td>
-                            <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;" id="pSubTotal">0.00</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 6px 12px; color: #6b7280; white-space: nowrap; letter-spacing: normal;">ภาษีมูลค่าเพิ่ม 7% (VAT):</td>
-                            <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;" id="pVat">0.00</td>
-                        </tr>
-                        <tr style="background: #e8f1fb;">
-                            <td style="padding: 8px 12px; color: #1A6FBF; font-weight: 700; font-size: 12px; white-space: nowrap; letter-spacing: normal;">จำนวนเงินรวมทั้งสิ้น:</td>
-                            <td style="padding: 8px 12px; text-align: right; color: #1A6FBF; font-weight: 700; font-size: 12px; letter-spacing: normal;" id="pGrandTotal">0.00</td>
-                        </tr>
-                    </table>
-                    <div id="pBahtText" style="text-align: center; font-weight: 600; font-size: 11px; color: #1A6FBF; padding: 6px 12px; background: #fff; border-top: 1px solid #e2e8f0; letter-spacing: normal;">
-                        (ศูนย์บาทถ้วน)
-                    </div>
-                </div>
-            </div>
-
-            <!-- ══ SPACER ══ -->
-            <div style="flex-grow: 1;"></div>
-
-            <!-- ══ SIGNATURE BLOCK ══ -->
-            <div style="border-top: 1px solid #cbd5e1; padding-top: 16px; margin-top: 18px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px;">
-                    <!-- Left: Buyer -->
-                    <div style="width: 280px; text-align: left;">
-                        <div style="font-weight: 700; font-size: 12px; color: #1e1b4b; margin-bottom: 34px; text-align: center; font-family: 'Sarabun', sans-serif;">ผู้สั่งซื้อ</div>
-                        <div style="display: flex; align-items: flex-end; margin-bottom: 8px; font-size: 11px; color: #374151; font-family: 'Sarabun', sans-serif;">
-                            <span style="white-space: nowrap; margin-right: 4px; font-weight: 600;">ลงนาม / Signature:</span>
-                            <div style="flex: 1; border-bottom: 1px solid #9ca3af; height: 16px;"></div>
+                    <!-- ══ SUMMARY + REMARK ══ -->
+                    <div style="display: flex; gap: 18px; align-items: flex-start;">
+                        <!-- Remark -->
+                        <div style="flex: 1;">
+                            <div
+                                style="font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 5px; letter-spacing: normal;">
+                                หมายเหตุ (Remark):</div>
+                            <div id="pRemark"
+                                style="font-size: 11px; color: #4b5563; padding: 9px 12px; background: #f9fafb; border-radius: 5px; border: 1px solid #e5e7eb; min-height: 52px; white-space: normal; line-height: 1.6; letter-spacing: normal;">
+                                -</div>
                         </div>
-                        <div style="font-size: 11px; color: #374151; margin-bottom: 8px; text-align: center; padding-left: 90px; letter-spacing: 0.5px; font-family: 'Sarabun', sans-serif;">
-                            (............................................................)
-                        </div>
-                        <div style="display: flex; align-items: flex-end; font-size: 11px; color: #374151; font-family: 'Sarabun', sans-serif;">
-                            <span style="white-space: nowrap; margin-right: 4px; font-weight: 600;">วันที่ / Date:</span>
-                            <div style="flex: 1; border-bottom: 1px dashed #9ca3af; height: 16px; margin-bottom: 1px;"></div>
+                        <!-- Totals -->
+                        <div style="flex: 0.85; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden;">
+                            <table
+                                style="width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal;">
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 6px 12px; color: #6b7280; letter-spacing: normal;">รวมเงิน (Sub
+                                        Total):</td>
+                                    <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
+                                        id="pSubTotal">0.00</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td
+                                        style="padding: 6px 12px; color: #6b7280; white-space: nowrap; letter-spacing: normal;">
+                                        ภาษีมูลค่าเพิ่ม 7% (VAT):</td>
+                                    <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
+                                        id="pVat">0.00</td>
+                                </tr>
+                                <tr style="background: #e8f1fb;">
+                                    <td
+                                        style="padding: 8px 12px; color: #1A6FBF; font-weight: 700; font-size: 12px; white-space: nowrap; letter-spacing: normal;">
+                                        จำนวนเงินรวมทั้งสิ้น:</td>
+                                    <td style="padding: 8px 12px; text-align: right; color: #1A6FBF; font-weight: 700; font-size: 12px; letter-spacing: normal;"
+                                        id="pGrandTotal">0.00</td>
+                                </tr>
+                            </table>
+                            <div id="pBahtText"
+                                style="text-align: center; font-weight: 600; font-size: 11px; color: #1A6FBF; padding: 6px 12px; background: #fff; border-top: 1px solid #e2e8f0; letter-spacing: normal;">
+                                (ศูนย์บาทถ้วน)
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Right: Seller -->
-                    <div style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                        <div style="font-weight: 700; font-size: 12px; color: #1e1b4b; margin-bottom: 10px; font-family: 'Sarabun', sans-serif;">ขอแสดงความนับถือ / Sincerely Yours,</div>
-                        <!-- Signature Space -->
-                        <div style="height: 40px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 10px;"></div>
-                        <div style="font-size: 11px; color: #374151; margin-top: 6px; font-weight: 600; font-family: 'Sarabun', sans-serif;">( นายวัฒนชัย เตียวแก )</div>
-                        <div style="font-size: 11.5px; color: #1A6FBF; margin-top: 4px; font-weight: 700; font-family: 'Sarabun', sans-serif;">ผู้เสนอราคา</div>
+                    <!-- ══ SPACER ══ -->
+                    <div style="flex-grow: 1;"></div>
+
+                    <!-- ══ SIGNATURE BLOCK ══ -->
+                    <div style="border-top: 1px solid #cbd5e1; padding-top: 16px; margin-top: 18px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px;">
+                            <!-- Left: Buyer -->
+                            <div style="width: 280px; text-align: left;">
+                                <div
+                                    style="font-weight: 700; font-size: 12px; color: #1e1b4b; margin-bottom: 34px; text-align: center; font-family: 'Sarabun', sans-serif;">
+                                    ผู้สั่งซื้อ</div>
+                                <div
+                                    style="display: flex; align-items: flex-end; margin-bottom: 8px; font-size: 11px; color: #374151; font-family: 'Sarabun', sans-serif;">
+                                    <span style="white-space: nowrap; margin-right: 4px; font-weight: 600;">ลงนาม /
+                                        Signature:</span>
+                                    <div style="flex: 1; border-bottom: 1px solid #9ca3af; height: 16px;"></div>
+                                </div>
+                                <div
+                                    style="font-size: 11px; color: #374151; margin-bottom: 8px; text-align: center; padding-left: 90px; letter-spacing: 0.5px; font-family: 'Sarabun', sans-serif;">
+                                    (............................................................)
+                                </div>
+                                <div
+                                    style="display: flex; align-items: flex-end; font-size: 11px; color: #374151; font-family: 'Sarabun', sans-serif;">
+                                    <span style="white-space: nowrap; margin-right: 4px; font-weight: 600;">วันที่ /
+                                        Date:</span>
+                                    <div
+                                        style="flex: 1; border-bottom: 1px dashed #9ca3af; height: 16px; margin-bottom: 1px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Seller -->
+                            <div
+                                style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+                                <div
+                                    style="font-weight: 700; font-size: 12px; color: #1e1b4b; margin-bottom: 10px; font-family: 'Sarabun', sans-serif;">
+                                    ขอแสดงความนับถือ / Sincerely Yours,</div>
+                                <!-- Signature Space -->
+                                <div
+                                    style="height: 40px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 10px;">
+                                </div>
+                                <div
+                                    style="font-size: 11px; color: #374151; margin-top: 6px; font-weight: 600; font-family: 'Sarabun', sans-serif;">
+                                    ( นายวัฒนชัย เตียวแก )</div>
+                                <div
+                                    style="font-size: 11.5px; color: #1A6FBF; margin-top: 4px; font-weight: 700; font-family: 'Sarabun', sans-serif;">
+                                    ผู้เสนอราคา</div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
-
-        </div>
-    </div>
         </main>
     </div>
 
@@ -1032,7 +1209,7 @@
         const app = initializeApp(FIREBASE_CONFIG);
         const auth = getAuth(app);
         const db = initializeFirestore(app, {
-            localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+            localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
         });
 
         let currentUser = null;
@@ -1043,7 +1220,7 @@
             generateRefNo();
             addTableRow(); // Add 1 empty row by default
             loadSavedRecipientsDropdown(); // Load saved recipient profiles
-            
+
             // Restore sidebar collapse state
             const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
             if (isCollapsed) {
@@ -1060,17 +1237,17 @@
                     const snap = await getDoc(doc(db, 'users', user.uid));
                     if (snap.exists()) {
                         const userData = snap.data();
-                        
+
                         // Populate User Profile in Sidebar
                         const { displayName, role, firstName } = userData;
                         const initials = (firstName || displayName || 'U').charAt(0).toUpperCase();
                         document.getElementById('userAvatar').textContent = initials;
                         document.getElementById('userName').textContent = displayName || firstName || '-';
-                        
+
                         const badge = document.getElementById('userRoleBadge');
                         badge.textContent = role === 'admin' ? 'Admin' : 'User';
                         badge.className = `role-badge ${role}`;
-                        
+
                         if (role === 'admin') {
                             document.getElementById('adminMenu').style.display = 'block';
                         }
@@ -1112,7 +1289,7 @@
             sidebar.classList.toggle('collapsed');
             const isCollapsed = sidebar.classList.contains('collapsed');
             localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
-            
+
             const wrapper = document.querySelector('.main-wrapper');
             if (isCollapsed) {
                 wrapper.style.marginLeft = 'var(--sidebar-w-collapsed)';
@@ -1143,7 +1320,7 @@
         function addTableRow() {
             const tbody = document.getElementById('itemsBody');
             const rowCount = tbody.children.length;
-            
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; font-size: 0.95rem;">${rowCount + 1}</td>
@@ -1196,14 +1373,14 @@
             const price = parseFloat(tr.querySelector('.item-price').value) || 0;
             const total = qty * price;
             tr.querySelector('.item-total-text').innerText = formatNumber(total);
-            tr.dataset.total = total; 
+            tr.dataset.total = total;
             calculateAll();
         }
 
         function calculateAll() {
             const rows = document.getElementById('itemsBody').children;
             let grandTotal = 0;
-            
+
             for (let i = 0; i < rows.length; i++) {
                 const tr = rows[i];
                 const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
@@ -1217,7 +1394,7 @@
             document.getElementById('subTotalDisplay').innerText = formatNumber(subTotal);
             document.getElementById('vatDisplay').innerText = formatNumber(vat);
             document.getElementById('grandTotalDisplay').innerText = formatNumber(grandTotal);
-            
+
             document.getElementById('thaiBahtText').innerText = `(${ArabicNumberToText(grandTotal.toFixed(2))})`;
         }
 
@@ -1227,7 +1404,7 @@
             let SplitNum = NumberStr.split('.');
             let BahtNum = SplitNum[0];
             let SatangNum = SplitNum.length > 1 ? SplitNum[1] : "00";
-            
+
             if (SatangNum.length == 1) SatangNum += "0";
             if (BahtNum == "0" && SatangNum == "00") return "ศูนย์บาทถ้วน";
 
@@ -1245,7 +1422,7 @@
                             text += "สิบ";
                         } else if (digit === 1 && n === 2) {
                             text += "ยี่สิบ";
-                        } else if (digit === 0 && n === 1 && len > 1 && numStr.charAt(i-1) != '0') {
+                        } else if (digit === 0 && n === 1 && len > 1 && numStr.charAt(i - 1) != '0') {
                             text += "เอ็ด";
                         } else {
                             text += TxtNumArr[n] + TxtDigitArr[digit];
@@ -1257,7 +1434,7 @@
 
             let BahtText = "";
             if (parseInt(BahtNum) > 0) {
-                if(BahtNum.length > 6) {
+                if (BahtNum.length > 6) {
                     let millions = BahtNum.substring(0, BahtNum.length - 6);
                     let rest = BahtNum.substring(BahtNum.length - 6);
                     BahtText = ConvertText(millions) + "ล้าน" + ConvertText(rest) + "บาท";
@@ -1265,7 +1442,7 @@
                     BahtText = ConvertText(BahtNum) + "บาท";
                 }
             }
-            
+
             let SatangText = "";
             if (parseInt(SatangNum) > 0) {
                 SatangText = ConvertText(SatangNum) + "สตางค์";
@@ -1286,20 +1463,20 @@
             document.getElementById('pToAttn').innerText = document.getElementById('toAttn').value || '-';
             document.getElementById('pToTel').innerText = document.getElementById('toTel').value || '-';
             document.getElementById('pToEmail').innerText = document.getElementById('toEmail').value || '-';
-            
+
             document.getElementById('pRefNo').innerText = document.getElementById('refNo').value;
-            
+
             // Format Date for print template
             const docDateVal = document.getElementById('docDate').value;
             let dateObj = new Date(docDateVal);
             document.getElementById('pDocDate').innerText = isNaN(dateObj.getTime()) ? '-' : `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
-            
+
             document.getElementById('pValidity').innerText = document.getElementById('termValidity').value || '-';
             document.getElementById('pDelivery').innerText = document.getElementById('termDelivery').value || '-';
             document.getElementById('pPayment').innerText = document.getElementById('termPayment').value || '-';
-            
+
             document.getElementById('pRemark').innerHTML = (document.getElementById('remark').value || '-').replace(/\n/g, '<br>');
-            
+
             document.getElementById('pSubTotal').innerText = document.getElementById('subTotalDisplay').innerText;
             document.getElementById('pVat').innerText = document.getElementById('vatDisplay').innerText;
             document.getElementById('pGrandTotal').innerText = document.getElementById('grandTotalDisplay').innerText;
@@ -1371,11 +1548,11 @@
 
                     // Configure html2pdf options
                     const opt = {
-                        margin:       [6, 10, 10, 10],
-                        filename:     filenameStr,
-                        image:        { type: 'jpeg', quality: 0.98 },
-                        html2canvas:  { scale: 2, useCORS: true, logging: false },
-                        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        margin: [6, 10, 10, 10],
+                        filename: filenameStr,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true, logging: false },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                     };
 
                     // Generate and save
@@ -1400,7 +1577,7 @@
             const select = document.getElementById('savedRecipientsSelect');
             const deleteBtn = document.getElementById('deleteRecipientBtn');
             select.innerHTML = '<option value="">-- เลือกผู้รับที่บันทึกไว้ --</option>';
-            
+
             const recipients = getSavedRecipients();
             recipients.forEach((r, index) => {
                 const opt = document.createElement('option');
@@ -1408,7 +1585,7 @@
                 opt.innerText = r.toCompany;
                 select.appendChild(opt);
             });
-            
+
             deleteBtn.style.display = 'none'; // Hide delete button initially
         }
 
@@ -1452,7 +1629,7 @@
             } else {
                 alert(`บันทึกข้อมูลผู้รับ "${toCompany}" สำเร็จในเครื่องนี้ (กรุณาเข้าสู่ระบบเพื่อใช้งานข้ามเครื่อง)`);
             }
-            
+
             // Auto select newly saved recipient
             const updatedRecipients = getSavedRecipients();
             const newIndex = updatedRecipients.findIndex(r => r.toCompany === toCompany);
@@ -1475,7 +1652,7 @@
 
             const recipients = getSavedRecipients();
             const r = recipients[selectedVal];
-            
+
             if (r) {
                 document.getElementById('toCompany').value = r.toCompany;
                 document.getElementById('toAddress').value = r.toAddress;
@@ -1498,14 +1675,14 @@
             if (r && confirm(`คุณต้องการลบข้อมูลผู้รับ "${r.toCompany}" ใช่หรือไม่?`)) {
                 recipients.splice(selectedVal, 1);
                 localStorage.setItem('saved_recipients', JSON.stringify(recipients));
-                
+
                 // Clear fields
                 document.getElementById('toCompany').value = '';
                 document.getElementById('toAddress').value = '';
                 document.getElementById('toAttn').value = '';
                 document.getElementById('toTel').value = '';
                 document.getElementById('toEmail').value = '';
-                
+
                 loadSavedRecipientsDropdown();
 
                 // Sync delete to Firestore if logged in
@@ -1531,4 +1708,5 @@
         window.deleteSelectedRecipient = deleteSelectedRecipient;
     </script>
 </body>
+
 </html>

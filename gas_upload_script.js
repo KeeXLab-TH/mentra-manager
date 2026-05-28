@@ -41,10 +41,10 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
     var action = body.action;
 
-    if (action === 'getUploadUrl')  return handleGetUploadToken(body);
-    if (action === 'createFolder')  return handleCreateFolder(body);
-    if (action === 'uploadChunk')   return handleUploadChunk(body);
-    if (action === 'deleteFile')    return handleDeleteFile(body);
+    if (action === 'getUploadUrl') return handleGetUploadToken(body);
+    if (action === 'createFolder') return handleCreateFolder(body);
+    if (action === 'uploadChunk') return handleUploadChunk(body);
+    if (action === 'deleteFile') return handleDeleteFile(body);
 
     // Legacy: base64 upload
     if (body.base64 && body.filename) return handleLegacyUpload(body);
