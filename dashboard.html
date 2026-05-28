@@ -1433,6 +1433,52 @@
         @media (max-width: 600px) {
             .stats-grid { grid-template-columns: 1fr 1fr; }
         }
+        /* CREATOR FOOTER */
+        .creator-footer {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(11, 49, 86, 0.85); /* Deep dark blue glass */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 9999;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            font-weight: 400;
+        }
+        .creator-footer:hover {
+            background: rgba(11, 49, 86, 0.95);
+            transform: translateY(-4px) scale(1.02);
+            border-color: #FFB067;
+            box-shadow: 0 16px 40px rgba(224, 123, 47, 0.25);
+            color: #ffffff;
+        }
+        .creator-footer span {
+            color: #FFB067;
+            font-weight: 600;
+        }
+        @media (max-width: 900px) {
+            .creator-footer {
+                bottom: 16px;
+                right: 50%;
+                transform: translateX(50%);
+                padding: 8px 16px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+            .creator-footer:hover {
+                transform: translateX(50%) translateY(-2px);
+            }
+        }
     </style>
 
 </head>
@@ -3013,6 +3059,9 @@
 
 
     </script>
+    <a href="https://keexlab-th.github.io/" target="_blank" rel="noopener noreferrer" class="creator-footer">
+        ✨ จัดทำโดย <span>นายธนภูมิ แดงประดับ</span>
+    </a>
 </body>
 
 </html>
