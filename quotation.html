@@ -35,22 +35,346 @@
             font-family: 'Sarabun', 'Tahoma', sans-serif;
         }
 
+        /* ================================================
+           SIDEBAR & MAIN LAYOUT (From dashboard.html)
+           ================================================ */
+        :root {
+            --sidebar-w: 260px;
+            --sidebar-w-collapsed: 72px;
+            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
+            --header-h: 68px;
+            --primary: #1A6FBF;
+            --primary-light: #e8f1fb;
+            --secondary: #E07B2F;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --t-fast: 0.15s ease;
+            --t-normal: 0.25s ease;
+            --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         body {
+            display: flex;
+            min-height: 100vh;
             background-color: var(--bg-color);
             color: var(--text-main);
-            padding: 2rem;
-            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Kanit', 'Sarabun', sans-serif !important;
+        }
+
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0; top: 0;
+            z-index: 100;
+            transition: width var(--t-slow), transform var(--t-slow);
+            overflow: hidden;
+            will-change: width, transform;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-w-collapsed);
+        }
+
+        .sidebar.collapsed .sidebar-logo-text,
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .user-info,
+        .sidebar.collapsed .btn-logout-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-logo {
+            justify-content: center;
+            padding-right: 0;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+        }
+
+        .sidebar-logo {
+            padding: 20px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.10);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: var(--header-h);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo img {
+            width: 40px; height: 40px;
+            object-fit: contain;
+            background: white;
+            border-radius: 10px;
+            padding: 4px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-logo-text { transition: opacity var(--t-normal), width var(--t-normal); overflow: hidden; }
+
+        .sidebar-logo-text .app-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .sidebar-logo-text .app-sub {
+            font-size: 10.5px;
+            color: rgba(255,255,255,0.50);
+            font-weight: 400;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        .collapse-btn {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px; height: 24px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 10;
+            transition: background var(--t-fast), transform var(--t-normal);
+        }
+
+        .collapse-btn:hover { background: var(--primary-light); }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .nav-section-title {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: rgba(255,255,255,0.38);
+            padding: 8px 12px 4px;
+            margin-top: 10px;
+            white-space: nowrap;
+            transition: opacity var(--t-normal);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 13px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: rgba(255,255,255,0.70);
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: background var(--t-fast), color var(--t-fast);
+            margin-bottom: 2px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: 'Kanit', sans-serif;
+            position: relative;
+            white-space: nowrap;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.10);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.16);
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 20%; bottom: 20%;
+            width: 3px;
+            background: var(--secondary);
+            border-radius: 0 3px 3px 0;
+        }
+
+        .nav-item.active .nav-icon {
+            background: var(--secondary);
+            box-shadow: 0 2px 8px rgba(224,123,47,0.4);
+        }
+
+        .nav-icon {
+            width: 32px; height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+            transition: background var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .nav-label {
+            transition: opacity var(--t-normal);
+            overflow: hidden;
+        }
+
+        .sidebar-user {
+            padding: 14px;
+            border-top: 1px solid rgba(255,255,255,0.10);
+            flex-shrink: 0;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            background: rgba(255,255,255,0.07);
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: justify-content var(--t-normal);
+        }
+
+        .user-avatar {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(224,123,47,0.35);
+        }
+
+        .user-info { min-width: 0; }
+        .user-info .user-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .user-info .user-role { font-size: 11px; color: rgba(255,255,255,0.50); margin-top: 2px; }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-badge.admin { background: var(--secondary); color: white; }
+        .role-badge.user  { background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.8); }
+
+        .btn-logout {
+            width: 100%;
+            padding: 9px 12px;
+            background: rgba(239,68,68,0.13);
+            border: 1px solid rgba(239,68,68,0.28);
+            border-radius: var(--radius-sm);
+            color: #fca5a5;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background var(--t-fast), color var(--t-fast);
+            font-family: 'Kanit', sans-serif;
+            overflow: hidden;
+        }
+
+        .btn-logout:hover { background: rgba(239, 68, 68, 0.28); color: white; }
+        .btn-logout-text { white-space: nowrap; transition: opacity var(--t-normal); }
+
+        .main-wrapper {
+            flex: 1;
+            margin-left: var(--sidebar-w);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            min-width: 0;
+            transition: margin-left var(--t-slow);
+        }
+
+        .topbar {
+            height: var(--header-h);
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 90;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .topbar-breadcrumb { display: flex; flex-direction: column; }
+        .breadcrumb-title { font-size: 16px; font-weight: 700; color: var(--text-main); }
+        .breadcrumb-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        .content-area {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background-color: var(--bg-color);
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: var(--card-bg);
+            max-width: 100% !important;
+            margin: 0 !important;
+            background: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+
+        .form-content {
+            background: white !important;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            padding: 24px !important;
+        }
+
+        .header-actions {
+            display: none !important;
         }
 
         .header-actions {
@@ -287,23 +611,94 @@
 </head>
 <body>
 
-    <div class="container">
-        <div class="header-actions">
-            <div class="header-title">
-                <i class='bx bx-file'></i>
-                ระบบออกใบเสนอราคา (Quotation)
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <div class="sidebar-logo-text">
+                <div class="app-name">Mentra Manager</div>
+                <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
             </div>
-            <div style="display: flex; gap: 1rem;">
-                <button class="btn btn-outline" onclick="window.location.href='index.html'">
-                    <i class='bx bx-arrow-back'></i> กลับหน้าหลัก
+            <!-- Desktop collapse toggle -->
+            <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">เมนูหลัก</div>
+            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard">
+                <div class="nav-icon">🏠</div>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?tab=projects'" id="nav-projects">
+                <div class="nav-icon">📁</div>
+                <span class="nav-label">โครงการทั้งหมด</span>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='quotation.html'" id="nav-quotation">
+                <div class="nav-icon">📄</div>
+                <span class="nav-label">ใบเสนอราคา</span>
+            </button>
+            <div id="adminMenu" style="display:none;">
+                <div class="nav-section-title">จัดการระบบ</div>
+                <button class="nav-item" onclick="window.location.href='dashboard.html?tab=users'" id="nav-users">
+                    <div class="nav-icon">👥</div>
+                    <span class="nav-label">จัดการผู้ใช้งาน</span>
                 </button>
-                <button class="btn btn-primary" onclick="exportToPDF()">
+                <button class="nav-item" onclick="window.location.href='dashboard.html?action=new-project'" id="nav-add-project">
+                    <div class="nav-icon">➕</div>
+                    <span class="nav-label">เพิ่มโครงการใหม่</span>
+                </button>
+                <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                    <div class="nav-icon">🛠️</div>
+                    <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-user">
+            <div class="user-card">
+                <div class="user-avatar" id="userAvatar">M</div>
+                <div class="user-info">
+                    <div class="user-name" id="userName">กำลังโหลด...</div>
+                    <div class="user-role">
+                        <span class="role-badge" id="userRoleBadge">-</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="handleLogout()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span class="btn-logout-text">ออกจากระบบ</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="topbar-breadcrumb">
+                <div class="breadcrumb-title">ระบบออกใบเสนอราคา (Quotation)</div>
+                <div class="breadcrumb-sub">สร้างและจัดการใบเสนอราคาสำหรับ Mentra Solution</div>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="btn btn-outline" onclick="window.location.href='dashboard.html'" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    <i class='bx bx-arrow-back'></i> กลับ Dashboard
+                </button>
+                <button class="btn btn-primary" onclick="exportToPDF()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
                     <i class='bx bxs-file-pdf'></i> Export PDF
                 </button>
             </div>
-        </div>
+        </header>
 
-        <div class="form-content">
+        <main class="content-area">
+            <div class="container">
+                <div class="form-content">
             <!-- Top Section -->
             <div class="grid-2">
                 <!-- Info Left -->
@@ -602,44 +997,13 @@
 
         </div>
     </div>
-
-                </div>
-            </div>
-
-            <!-- ═══ SPACER: pushes signature to bottom ═══ -->
-            <div style="flex-grow: 1;"></div>
-
-            <!-- ═══ SIGNATURE BLOCK ═══ -->
-            <div style="border-top: 1px solid #e0e7ff; padding-top: 16px; margin-top: 20px;">
-                <div style="display: flex; justify-content: space-between; text-align: center;">
-                    <div style="width: 200px;">
-                        <div style="height: 52px; border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
-                        <div style="font-weight: 600; font-size: 10.5px; color: #374151;">ผู้เสนอราคา (Prepared By)</div>
-                        <div style="font-size: 9.5px; color: #9ca3af; margin-top: 4px;">วันที่ ........../........../..........
-                        </div>
-                    </div>
-                    <div style="width: 200px;">
-                        <div style="height: 52px; border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
-                        <div style="font-weight: 600; font-size: 10.5px; color: #374151;">ผู้อนุมัติ (Authorized By)</div>
-                        <div style="font-size: 9.5px; color: #9ca3af; margin-top: 4px;">วันที่ ........../........../..........
-                        </div>
-                    </div>
-                    <div style="width: 200px;">
-                        <div style="height: 52px; border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
-                        <div style="font-weight: 600; font-size: 10.5px; color: #374151;">ผู้อนุมัติสั่งซื้อ (Accepted By)</div>
-                        <div style="font-size: 9.5px; color: #9ca3af; margin-top: 4px;">วันที่ ........../........../..........
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+        </main>
     </div>
 
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
             initializeFirestore, doc, getDoc, setDoc,
             persistentLocalCache, persistentMultipleTabManager
@@ -679,6 +1043,13 @@
             generateRefNo();
             addTableRow(); // Add 1 empty row by default
             loadSavedRecipientsDropdown(); // Load saved recipient profiles
+            
+            // Restore sidebar collapse state
+            const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+            if (isCollapsed) {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.querySelector('.main-wrapper').style.marginLeft = 'var(--sidebar-w-collapsed)';
+            }
         });
 
         // --- Firebase Auth Guard & Cloud Sync Listener ---
@@ -689,17 +1060,70 @@
                     const snap = await getDoc(doc(db, 'users', user.uid));
                     if (snap.exists()) {
                         const userData = snap.data();
+                        
+                        // Populate User Profile in Sidebar
+                        const { displayName, role, firstName } = userData;
+                        const initials = (firstName || displayName || 'U').charAt(0).toUpperCase();
+                        document.getElementById('userAvatar').textContent = initials;
+                        document.getElementById('userName').textContent = displayName || firstName || '-';
+                        
+                        const badge = document.getElementById('userRoleBadge');
+                        badge.textContent = role === 'admin' ? 'Admin' : 'User';
+                        badge.className = `role-badge ${role}`;
+                        
+                        if (role === 'admin') {
+                            document.getElementById('adminMenu').style.display = 'block';
+                        }
+
                         if (userData && userData.savedRecipients) {
                             // Sync Firestore cloud data down to local machine storage
                             localStorage.setItem('saved_recipients', JSON.stringify(userData.savedRecipients));
                             loadSavedRecipientsDropdown();
                         }
+                    } else {
+                        // Fallback user data
+                        document.getElementById('userAvatar').textContent = user.email.charAt(0).toUpperCase();
+                        document.getElementById('userName').textContent = user.email;
+                        document.getElementById('userRoleBadge').textContent = 'User';
+                        document.getElementById('userRoleBadge').className = 'role-badge user';
                     }
                 } catch (err) {
-                    console.error("Error loading recipients from Firestore:", err);
+                    console.error("Error loading user profile:", err);
                 }
+            } else {
+                window.location.href = 'index.html'; // Auth Guard
             }
         });
+
+        // --- Logout & Sidebar Toggle Helpers ---
+        async function handleLogout() {
+            if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+                try {
+                    await signOut(auth);
+                    window.location.href = 'index.html';
+                } catch (e) {
+                    console.error('Logout failed:', e);
+                }
+            }
+        }
+
+        function toggleSidebarCollapse() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+            
+            const wrapper = document.querySelector('.main-wrapper');
+            if (isCollapsed) {
+                wrapper.style.marginLeft = 'var(--sidebar-w-collapsed)';
+            } else {
+                wrapper.style.marginLeft = 'var(--sidebar-w)';
+            }
+        }
+
+        // Expose to window scope
+        window.handleLogout = handleLogout;
+        window.toggleSidebarCollapse = toggleSidebarCollapse;
 
         // --- Core Functions ---
         function generateRefNo() {
