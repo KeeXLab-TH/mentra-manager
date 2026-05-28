@@ -609,11 +609,40 @@
         @media (max-width: 900px) {
             .brand-panel { display: none; }
             body { 
-                background: linear-gradient(135deg, var(--primary), var(--primary-darker));
+                background: var(--primary-darker);
                 position: relative;
-                overflow: auto; /* Allow normal scrolling */
+                overflow: auto;
             }
             
+            /* High-end animated mesh gradient background */
+            body::before, body::after {
+                content: '';
+                position: absolute;
+                border-radius: 50%;
+                filter: blur(80px);
+                z-index: 0;
+                animation: premiumFloat 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+                pointer-events: none;
+            }
+            body::before {
+                top: -5%; left: -20%;
+                width: 350px; height: 400px;
+                background: var(--primary);
+                opacity: 0.6;
+            }
+            body::after {
+                bottom: -5%; right: -20%;
+                width: 400px; height: 350px;
+                background: #E07B2F; /* Mentra Orange */
+                opacity: 0.35;
+                animation-delay: -7s;
+            }
+            
+            @keyframes premiumFloat {
+                0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+                100% { transform: translate(30px, 50px) scale(1.1) rotate(10deg); }
+            }
+
             .form-panel { 
                 background: transparent; 
                 padding: 40px 16px; 
@@ -623,82 +652,148 @@
                 align-items: center;
                 min-height: 100vh;
                 justify-content: center;
+                flex-direction: column;
             }
             
-            /* Single Unified White Card */
+            /* Premium Dark Glassmorphism Card */
             .form-card { 
-                background: var(--white);
+                background: rgba(11, 49, 86, 0.4); /* Deep dark blue glass */
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                border: 1px solid rgba(255, 255, 255, 0.12);
                 padding: 40px 24px;
-                border-radius: 32px;
-                box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+                border-radius: 36px;
+                box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
                 width: 100%;
-                max-width: 440px;
+                max-width: 420px;
                 position: relative;
-                animation: formFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+                animation: formFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
             }
 
-            /* Inside the White Card */
+            @keyframes formFadeInUp {
+                from { opacity: 0; transform: translateY(40px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            /* Inside the Glass Card */
             .form-mobile-logo { 
                 display: flex; 
                 flex-direction: column;
                 align-items: center;
-                margin-bottom: 24px;
+                margin-bottom: 28px;
                 text-align: center;
             }
             .form-mobile-logo img {
-                width: 68px; height: 68px;
-                border-radius: 18px;
-                margin-bottom: 16px;
-                box-shadow: 0 8px 24px rgba(26, 111, 191, 0.15);
+                width: 76px; height: 76px;
+                border-radius: 20px;
+                margin-bottom: 20px;
+                box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+                background: rgba(255, 255, 255, 0.9);
+                padding: 4px;
+                border: 1px solid rgba(255,255,255,0.3);
             }
             .form-mobile-logo-text {
-                color: var(--text); /* Dark text for readability */
-                font-size: 26px;
+                color: #ffffff;
+                font-size: 28px;
                 font-weight: 800;
                 letter-spacing: -0.5px;
+                text-shadow: 0 2px 10px rgba(0,0,0,0.5);
             }
             .form-mobile-logo-text span {
-                color: var(--primary);
+                color: #FFB067; /* Brighter orange for dark glass */
             }
             .form-mobile-desc {
-                color: var(--text-secondary); /* Dark gray text */
-                font-size: 14.5px;
-                margin-top: 6px;
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 15px;
+                margin-top: 8px;
                 line-height: 1.5;
             }
             .form-mobile-badges {
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: center;
-                gap: 8px;
-                margin-top: 16px;
+                gap: 10px;
+                margin-top: 20px;
             }
             .m-badge {
-                background: var(--primary-light);
-                color: var(--primary-dark);
-                border: 1px solid rgba(26, 111, 191, 0.1);
+                background: rgba(255, 255, 255, 0.08);
+                color: rgba(255,255,255,0.95);
+                border: 1px solid rgba(255, 255, 255, 0.15);
                 font-size: 12px;
-                padding: 6px 14px;
+                padding: 8px 16px;
                 border-radius: 20px;
-                font-weight: 600;
+                font-weight: 500;
+                backdrop-filter: blur(10px);
             }
 
-            /* Hide duplicate welcome text to save vertical space and fit the screen */
-            .form-header { display: none; }
+            .form-header { display: none; } /* Hidden on mobile */
+
+            /* Redesign form elements for Dark Glass */
+            .field-group label {
+                color: rgba(255, 255, 255, 0.9);
+            }
+            
+            .tab-switcher {
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255,255,255,0.08);
+            }
+            .tab-btn {
+                color: rgba(255, 255, 255, 0.5);
+            }
+            .tab-btn.active {
+                color: var(--primary-darker);
+            }
+            .tab-indicator {
+                background: rgba(255, 255, 255, 0.95);
+            }
+
+            .input-wrap input {
+                background: rgba(255, 255, 255, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #ffffff;
+                backdrop-filter: blur(12px);
+            }
+            .input-wrap input::placeholder {
+                color: rgba(255, 255, 255, 0.4);
+            }
+            .input-wrap input:focus {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: #FFB067;
+                box-shadow: 0 0 0 4px rgba(224, 123, 47, 0.2);
+            }
+            .input-wrap .input-icon {
+                color: rgba(255, 255, 255, 0.5);
+            }
+            .input-wrap input:focus + .input-icon, .input-wrap:focus-within .input-icon {
+                color: #FFB067;
+            }
+            .input-wrap .toggle-pw {
+                color: rgba(255, 255, 255, 0.5);
+            }
+
+            .btn-primary {
+                background: linear-gradient(135deg, #FFB067, #E07B2F);
+                box-shadow: 0 8px 24px rgba(224, 123, 47, 0.4);
+                border: none;
+                color: white;
+            }
+            .btn-primary:active {
+                transform: translateY(2px);
+                box-shadow: 0 4px 12px rgba(224, 123, 47, 0.3);
+            }
+
+            .forgot-link a { color: #FFB067; }
+            .forgot-link a:hover { background: rgba(255,255,255,0.1); }
         }
 
         @media (max-width: 480px) {
             .field-row { grid-template-columns: 1fr; }
-            .form-panel { 
-                padding: 24px 16px; 
-            }
+            .form-panel { padding: 20px 12px; }
             .form-card { 
                 padding: 32px 20px; 
-                border-radius: 28px;
+                border-radius: 32px;
             }
-            .form-mobile-logo {
-                margin-bottom: 24px;
-            }
+            .form-mobile-logo { margin-bottom: 24px; }
         }
     </style>
 </head>
