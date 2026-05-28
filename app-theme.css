@@ -1,0 +1,785 @@
+/* ================================================================
+   MENTRA MANAGER — PREMIUM UI OVERLAY THEME
+   app-theme.css
+   
+   Senior-level Enterprise Design System overlay.
+   สวมทับ CSS เดิมเพื่อเพิ่มความหรูหราและทันสมัย
+   ไม่ยุ่งกับ HTML หรือ business logic ใดๆ
+   
+   Features:
+   ✦ Dark / Light Mode via CSS Variables
+   ✦ Glassmorphism topbar & modals
+   ✦ GPU-accelerated micro-animations
+   ✦ Ripple button effect (via app-ui.js)
+   ✦ Premium shadows & depth system
+   ✦ Mobile-first responsive refinements
+   ================================================================ */
+
+/* ================================================================
+   I. ENHANCED DESIGN TOKEN LAYER
+   ================================================================ */
+:root {
+    /* ── Depth & Dimension ── */
+    --depth-1: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+    --depth-2: 0 4px 14px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03);
+    --depth-3: 0 10px 32px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    --depth-4: 0 20px 48px rgba(0,0,0,0.10), 0 8px 20px rgba(0,0,0,0.05);
+    --depth-glow-blue: 0 4px 20px rgba(26,111,191,0.22);
+    --depth-glow-orange: 0 4px 20px rgba(224,123,47,0.20);
+    --depth-float: 0 16px 56px rgba(15,23,42,0.18);
+
+    /* ── Glass ── */
+    --glass-bg: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.30);
+    --glass-blur: 16px;
+
+    /* ── Overlay Background Grain ── */
+    --grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+
+    /* ── Motion ── */
+    --ease-out-expo: cubic-bezier(0.16,1,0.3,1);
+    --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+    --dur-fast: 0.12s;
+    --dur-normal: 0.22s;
+    --dur-slow: 0.36s;
+
+    /* ── Border Radius Premium ── */
+    --pill: 100px;
+
+    /* ── Focus Ring ── */
+    --focus-ring: 0 0 0 3px rgba(26,111,191,0.20);
+    --focus-ring-danger: 0 0 0 3px rgba(239,68,68,0.18);
+
+    /* ── Scrollbar ── */
+    --scrollbar-thumb: rgba(148,163,184,0.35);
+    --scrollbar-track: transparent;
+}
+
+
+/* ================================================================
+   II. DARK MODE DESIGN TOKENS
+   ================================================================ */
+[data-theme="dark"] {
+    --primary-light: rgba(26,111,191,0.18);
+    --primary-glow: rgba(26,111,191,0.22);
+    --secondary-light: rgba(224,123,47,0.18);
+
+    --success-light: rgba(16,185,129,0.15);
+    --warning-light: rgba(245,158,11,0.15);
+    --danger-light: rgba(239,68,68,0.15);
+    --info-light: rgba(59,130,246,0.15);
+
+    --text: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: rgba(255,255,255,0.08);
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --white: #1e293b;
+
+    --glass-bg: rgba(30,41,59,0.72);
+    --glass-border: rgba(255,255,255,0.06);
+    --scrollbar-thumb: rgba(148,163,184,0.20);
+
+    --depth-1: 0 1px 3px rgba(0,0,0,0.25);
+    --depth-2: 0 4px 14px rgba(0,0,0,0.30);
+    --depth-3: 0 10px 32px rgba(0,0,0,0.35);
+    --depth-4: 0 20px 48px rgba(0,0,0,0.40);
+    --depth-float: 0 16px 56px rgba(0,0,0,0.50);
+    --focus-ring: 0 0 0 3px rgba(26,111,191,0.35);
+}
+
+/* Dark mode overrides for inline colors */
+[data-theme="dark"] body {
+    background-color: var(--bg);
+    color: var(--text);
+}
+
+[data-theme="dark"] .main-wrapper {
+    background-color: var(--bg);
+}
+
+[data-theme="dark"] .topbar {
+    background: rgba(15,23,42,0.82) !important;
+    border-bottom-color: rgba(255,255,255,0.05);
+}
+
+[data-theme="dark"] th {
+    background: #1e293b;
+    color: var(--text-secondary);
+    border-bottom-color: rgba(255,255,255,0.06);
+}
+
+[data-theme="dark"] td {
+    border-top-color: rgba(255,255,255,0.05);
+}
+
+[data-theme="dark"] tr:hover td {
+    background: rgba(255,255,255,0.03);
+}
+
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .section-card,
+[data-theme="dark"] .modal,
+[data-theme="dark"] .modal-container {
+    background: var(--bg-card);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .modal-header,
+[data-theme="dark"] .section-header,
+[data-theme="dark"] .modal-footer {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
+}
+
+[data-theme="dark"] .field-group input,
+[data-theme="dark"] .field-group select,
+[data-theme="dark"] .field-group textarea,
+[data-theme="dark"] .filter-bar select,
+[data-theme="dark"] .filter-bar input {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.10);
+    color: var(--text);
+}
+
+[data-theme="dark"] .btn-outline {
+    border-color: rgba(255,255,255,0.12);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .btn-outline:hover:not(:disabled) {
+    background: rgba(26,111,191,0.12);
+    border-color: var(--primary);
+}
+
+[data-theme="dark"] .btn-danger {
+    background: rgba(239,68,68,0.15);
+    border-color: rgba(239,68,68,0.25);
+}
+
+[data-theme="dark"] .toast-item {
+    background: #1e293b;
+    box-shadow: var(--depth-3);
+}
+
+[data-theme="dark"] .upload-drop-area {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.10);
+}
+
+[data-theme="dark"] .file-list-item {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.08);
+}
+
+[data-theme="dark"] .info-block {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.06);
+}
+
+[data-theme="dark"] .empty-state,
+[data-theme="dark"] .empty-records-card,
+[data-theme="dark"] #emptyRecordsCard {
+    background: var(--bg-card);
+}
+
+
+/* ================================================================
+   III. CUSTOM SCROLLBAR
+   ================================================================ */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 100px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(148,163,184,0.55);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+
+/* ================================================================
+   IV. BODY & ROOT ENHANCEMENTS
+   ================================================================ */
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image: var(--grain);
+    opacity: 0.4;
+    z-index: 9998;
+    mix-blend-mode: overlay;
+}
+
+
+/* ================================================================
+   V. TOPBAR GLASSMORPHISM UPGRADE
+   ================================================================ */
+@supports (backdrop-filter: blur(1px)) {
+    .topbar {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(var(--glass-blur)) saturate(1.4) !important;
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4) !important;
+        border-bottom: 1px solid var(--glass-border) !important;
+    }
+}
+
+.breadcrumb-title {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+[data-theme="dark"] .breadcrumb-title {
+    background: linear-gradient(135deg, #93c5fd, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+
+/* ================================================================
+   VI. STAT CARDS — PREMIUM DEPTH
+   ================================================================ */
+.stat-card {
+    box-shadow: var(--depth-1);
+    transition: transform var(--dur-normal) var(--ease-out-expo),
+                box-shadow var(--dur-normal) var(--ease-out-expo);
+    will-change: transform;
+}
+
+.stat-card:hover {
+    box-shadow: var(--depth-3);
+    transform: translateY(-4px);
+}
+
+.stat-card:active {
+    transform: translateY(-1px);
+    box-shadow: var(--depth-2);
+}
+
+/* Subtle shimmer on stat numbers */
+.stat-num {
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* ================================================================
+   VII. SECTION CARDS & INFO BLOCKS
+   ================================================================ */
+.section-card {
+    box-shadow: var(--depth-1);
+    transition: box-shadow var(--dur-normal) var(--ease-out-expo);
+}
+
+.section-card:hover {
+    box-shadow: var(--depth-2);
+}
+
+.section-header {
+    background: linear-gradient(to bottom, rgba(248,250,252,0.8), rgba(255,255,255,0));
+}
+
+.info-block {
+    transition: transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+
+.info-block:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--depth-1);
+}
+
+
+/* ================================================================
+   VIII. BUTTONS — RIPPLE READY + ENHANCED HOVER
+   ================================================================ */
+
+/* Ripple container (injected by app-ui.js) */
+.btn {
+    isolation: isolate;
+}
+
+.btn .ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    transform: scale(0);
+    animation: rippleExpand 0.55s var(--ease-out-expo) forwards;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.btn-outline .ripple-effect,
+.btn-danger .ripple-effect {
+    background: rgba(26,111,191,0.12);
+}
+
+@keyframes rippleExpand {
+    to {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+/* Button press effect */
+.btn:active:not(:disabled) {
+    transform: scale(0.97) !important;
+}
+
+/* Enhanced primary button glow */
+.btn-primary {
+    box-shadow: var(--depth-glow-blue);
+}
+
+.btn-primary:hover:not(:disabled) {
+    box-shadow: 0 8px 28px rgba(26,111,191,0.35);
+}
+
+.btn-orange {
+    box-shadow: var(--depth-glow-orange);
+}
+
+.btn-orange:hover:not(:disabled) {
+    box-shadow: 0 8px 28px rgba(224,123,47,0.35);
+}
+
+/* Focus rings */
+.btn:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.btn-danger:focus-visible {
+    box-shadow: var(--focus-ring-danger);
+}
+
+
+/* ================================================================
+   IX. LOADING STATE — .is-loading
+   ================================================================ */
+.btn.is-loading {
+    pointer-events: none;
+    opacity: 0.75;
+    position: relative;
+    color: transparent !important;
+}
+
+.btn.is-loading::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255,255,255,0.30);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+    top: 50%;
+    left: 50%;
+    margin: -9px 0 0 -9px;
+}
+
+.btn-outline.is-loading::after,
+.btn-danger.is-loading::after {
+    border-color: rgba(0,0,0,0.10);
+    border-top-color: var(--primary);
+}
+
+
+/* ================================================================
+   X. FORMS — FOCUS & VALIDATION POLISH
+   ================================================================ */
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+    box-shadow: var(--focus-ring) !important;
+    border-color: var(--primary) !important;
+}
+
+/* Subtle float-up labels effect (add .has-value via JS) */
+.field-group label {
+    transition: color var(--dur-fast) ease;
+}
+
+.field-group:focus-within label {
+    color: var(--primary);
+}
+
+/* Validation error state */
+.field-group.has-error input,
+.field-group.has-error select,
+.field-group.has-error textarea {
+    border-color: var(--danger) !important;
+    box-shadow: var(--focus-ring-danger) !important;
+}
+
+.field-group.has-error label {
+    color: var(--danger);
+}
+
+
+/* ================================================================
+   XI. TABLE — ZEBRA + ROW HOVER POLISH
+   ================================================================ */
+tbody tr {
+    transition: background var(--dur-fast) ease;
+}
+
+tbody tr:nth-child(even) {
+    background: rgba(248,250,252,0.5);
+}
+
+[data-theme="dark"] tbody tr:nth-child(even) {
+    background: rgba(255,255,255,0.015);
+}
+
+tbody tr:hover td {
+    background: rgba(26,111,191,0.04);
+}
+
+[data-theme="dark"] tbody tr:hover td {
+    background: rgba(26,111,191,0.08);
+}
+
+
+/* ================================================================
+   XII. MODAL OVERLAY — ENHANCED GLASS
+   ================================================================ */
+@supports (backdrop-filter: blur(1px)) {
+    .modal-overlay.show {
+        backdrop-filter: blur(8px) saturate(1.2);
+        -webkit-backdrop-filter: blur(8px) saturate(1.2);
+    }
+}
+
+.modal,
+.modal-container {
+    box-shadow: var(--depth-float) !important;
+}
+
+
+/* ================================================================
+   XIII. TOAST NOTIFICATIONS — PREMIUM POLISH
+   ================================================================ */
+.toast-item {
+    box-shadow: var(--depth-3);
+    border-left-width: 5px;
+    border-radius: 16px;
+}
+
+.toast-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
+    pointer-events: none;
+}
+
+
+/* ================================================================
+   XIV. BADGES — PILL SHAPE + GLOW
+   ================================================================ */
+.badge {
+    border-radius: var(--pill);
+    backdrop-filter: blur(4px);
+    font-variant-numeric: tabular-nums;
+    transition: transform var(--dur-fast) ease;
+}
+
+.badge:hover {
+    transform: scale(1.04);
+}
+
+
+/* ================================================================
+   XV. SIDEBAR — NAV ITEM MICRO-ANIMATION
+   ================================================================ */
+.nav-item {
+    transition: background var(--dur-fast) ease,
+                color var(--dur-fast) ease,
+                transform var(--dur-fast) ease,
+                padding-left var(--dur-normal) var(--ease-out-expo);
+}
+
+.nav-item:hover {
+    padding-left: 16px;
+}
+
+.sidebar.collapsed .nav-item:hover {
+    padding-left: 12px;
+}
+
+.nav-item.active .nav-icon {
+    animation: navIconPop 0.4s var(--ease-spring);
+}
+
+@keyframes navIconPop {
+    0% { transform: scale(0.85); }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+
+/* ================================================================
+   XVI. FILE LIST ITEMS — DEPTH
+   ================================================================ */
+.file-list-item {
+    box-shadow: var(--depth-1);
+    transition: all var(--dur-normal) var(--ease-out-expo);
+}
+
+.file-list-item:hover {
+    box-shadow: var(--depth-2);
+    transform: translateX(3px);
+    border-color: var(--primary);
+}
+
+
+/* ================================================================
+   XVII. UPLOAD AREA — ANIMATED BORDER
+   ================================================================ */
+.upload-drop-area {
+    transition: all var(--dur-normal) var(--ease-out-expo);
+    background-image: linear-gradient(to bottom, rgba(248,250,252,0.5), rgba(248,250,252,0.9));
+}
+
+.upload-drop-area:hover,
+.upload-drop-area.dragging {
+    transform: scale(1.008);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+
+/* ================================================================
+   XVIII. PROGRESS BAR — GLOW UPGRADE
+   ================================================================ */
+.progress-fill {
+    box-shadow: 0 0 12px rgba(26,111,191,0.30);
+}
+
+
+/* ================================================================
+   XIX. DARK MODE TOGGLE BUTTON (injected by app-ui.js)
+   ================================================================ */
+.theme-toggle-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: var(--depth-2);
+    transition: transform var(--dur-normal) var(--ease-spring),
+                box-shadow var(--dur-normal) ease;
+    z-index: 9990;
+    color: var(--text);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.theme-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: var(--depth-3);
+}
+
+.theme-toggle-btn:active {
+    transform: scale(0.92);
+}
+
+
+/* ================================================================
+   XX. RESPONSIVE REFINEMENTS — MOBILE-FIRST
+   ================================================================ */
+@media (max-width: 900px) {
+    /* ── Touch-friendly targets ── */
+    .btn {
+        min-height: 44px;
+        padding: 10px 18px;
+    }
+
+    .nav-item {
+        min-height: 48px;
+        padding: 12px 14px;
+    }
+
+    .filter-bar select,
+    .filter-bar input {
+        min-height: 44px;
+        font-size: 16px; /* prevents iOS zoom */
+    }
+
+    .field-group input,
+    .field-group select,
+    .field-group textarea {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    /* ── Modal bottom sheet on mobile ── */
+    .modal-overlay.show {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .modal,
+    .modal-container {
+        border-radius: 24px 24px 0 0;
+        max-height: 90vh;
+        animation: modalSlideUp 0.35s var(--ease-out-expo) !important;
+    }
+
+    @keyframes modalSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ── Theme toggle repositioned ── */
+    .theme-toggle-btn {
+        bottom: 16px;
+        right: 16px;
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
+    }
+
+    /* ── Card spacing ── */
+    .stat-card {
+        padding: 16px 14px;
+    }
+
+    .stat-card:hover {
+        transform: none; /* Avoid hover effects on touch */
+        box-shadow: var(--depth-1);
+    }
+}
+
+@media (max-width: 640px) {
+    /* ── Stats grid single column ── */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+
+    .stat-card.purple-accent {
+        grid-column: span 2;
+    }
+
+    /* ── Table compact ── */
+    th, td {
+        padding: 10px 12px;
+        font-size: 12.5px;
+    }
+
+    /* ── Content padding ── */
+    .content-area,
+    .workspace {
+        padding: 16px 12px;
+    }
+}
+
+
+/* ================================================================
+   XXI. PRINT STYLES
+   ================================================================ */
+@media print {
+    .sidebar,
+    .topbar,
+    .theme-toggle-btn,
+    .btn-logout,
+    #toastContainer {
+        display: none !important;
+    }
+
+    .main-wrapper {
+        margin-left: 0 !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    .stat-card, .section-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+}
+
+
+/* ================================================================
+   XXII. ACCESSIBILITY — REDUCED MOTION
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .stat-card:hover {
+        transform: none;
+    }
+
+    .btn .ripple-effect {
+        display: none;
+    }
+}
+
+
+/* ================================================================
+   XXIII. PAGE TRANSITIONS — SMOOTH CONTENT ENTRY
+   ================================================================ */
+.page-view.active {
+    animation: premiumPageIn 0.4s var(--ease-out-expo);
+}
+
+@keyframes premiumPageIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+        filter: blur(3px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}

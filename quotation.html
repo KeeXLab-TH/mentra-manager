@@ -426,6 +426,125 @@
             display: none !important;
         }
 
+        /* ================================================
+           MOBILE & TABLET RESPONSIVE MEDIA QUERIES
+           ================================================ */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.45);
+            z-index: 99;
+            backdrop-filter: blur(2px);
+        }
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            transition: background var(--t-fast), color var(--t-fast);
+            margin-right: 12px;
+            align-items: center;
+            justify-content: center;
+        }
+        .hamburger:hover {
+            background: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: var(--sidebar-w);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-wrapper {
+                margin-left: 0 !important;
+            }
+            .hamburger {
+                display: flex !important;
+            }
+            .content-area {
+                padding: 20px 16px;
+            }
+            .topbar {
+                padding: 0 18px;
+            }
+            .collapse-btn {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                display: block;
+                overflow-x: hidden;
+                overflow-y: auto;
+                height: auto;
+            }
+            .main-wrapper {
+                display: block;
+                width: 100%;
+                height: auto;
+                overflow: visible;
+            }
+            .topbar {
+                padding: 0 16px;
+                gap: 10px;
+                flex-wrap: wrap;
+                height: auto;
+                padding-top: 12px;
+                padding-bottom: 12px;
+            }
+            .topbar-breadcrumb {
+                flex: 1;
+                min-width: 200px;
+            }
+            .content-area {
+                padding: 16px;
+                height: auto;
+                overflow: visible;
+            }
+            .grid-2 {
+                grid-template-columns: 1fr !important;
+                gap: 1rem !important;
+                margin-bottom: 1rem !important;
+            }
+            .table-responsive {
+                margin: 0 -16px;
+                padding: 0 16px;
+                width: calc(100% + 32px);
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+                -webkit-overflow-scrolling: touch;
+            }
+            .form-content {
+                padding: 16px !important;
+            }
+            .summary-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+            .remark-box {
+                width: 100%;
+            }
+            .summary-box {
+                width: 100% !important;
+                margin-top: 0;
+            }
+        }
+
         .header-actions {
             padding: 1.5rem 2rem;
             border-bottom: 1px solid var(--border-color);
@@ -613,8 +732,14 @@
 
         .summary-section {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: flex-end;
             margin-top: 2rem;
+            gap: 2rem;
+        }
+
+        .remark-box {
+            flex: 1;
         }
 
         .summary-box {
@@ -678,9 +803,17 @@
             }
         }
     </style>
+
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="app-theme.css">
+    <script src="app-ui.js" defer></script>
+
 </head>
 
 <body>
+
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
@@ -704,13 +837,21 @@
                 <div class="nav-icon">🏠</div>
                 <span class="nav-label">Dashboard</span>
             </button>
-            <button class="nav-item" onclick="window.location.href='dashboard.html?tab=projects'" id="nav-projects">
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=projects'" id="nav-projects">
                 <div class="nav-icon">📁</div>
                 <span class="nav-label">โครงการทั้งหมด</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=items'" id="nav-items">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">ราคาทุน / สิ่งของ</span>
             </button>
             <button class="nav-item active" onclick="window.location.href='quotation.html'" id="nav-quotation">
                 <div class="nav-icon">📄</div>
                 <span class="nav-label">ใบเสนอราคา</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
+                <div class="nav-icon">🎓</div>
+                <span class="nav-label">ระบบตารางจัดอบรม</span>
             </button>
             <div id="adminMenu" style="display:none;">
                 <div class="nav-section-title">จัดการระบบ</div>
@@ -754,6 +895,13 @@
     <!-- ===== MAIN CONTENT ===== -->
     <div class="main-wrapper">
         <header class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
             <div class="topbar-breadcrumb">
                 <div class="breadcrumb-title">ระบบออกใบเสนอราคา (Quotation)</div>
                 <div class="breadcrumb-sub">สร้างและจัดการใบเสนอราคาสำหรับ Mentra Solution</div>
@@ -887,8 +1035,8 @@
                     </div>
 
                     <!-- Summary Section -->
-                    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                        <div style="flex: 1; margin-right: 2rem;">
+                    <div class="summary-section">
+                        <div class="remark-box">
                             <label
                                 style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500; display: block; margin-bottom: 0.4rem;">หมายเหตุ
                                 (Remark)</label>
@@ -1252,9 +1400,36 @@
                             document.getElementById('adminMenu').style.display = 'block';
                         }
 
-                        if (userData && userData.savedRecipients) {
-                            // Sync Firestore cloud data down to local machine storage
-                            localStorage.setItem('saved_recipients', JSON.stringify(userData.savedRecipients));
+                        // Robust Local & Cloud Sync: Merge data instead of overwriting to prevent data loss
+                        const localRecipients = getSavedRecipients();
+                        if (userData && Array.isArray(userData.savedRecipients)) {
+                            const cloudRecipients = userData.savedRecipients;
+                            
+                            // Merge local and cloud based on unique company names (case-insensitive)
+                            const merged = [...localRecipients];
+                            cloudRecipients.forEach(cr => {
+                                const exists = merged.some(lr => lr.toCompany.toLowerCase() === cr.toCompany.toLowerCase());
+                                if (!exists) {
+                                    merged.push(cr);
+                                }
+                            });
+                            
+                            localStorage.setItem('saved_recipients', JSON.stringify(merged));
+                            loadSavedRecipientsDropdown();
+                            
+                            // If local had unique ones, push them up to update the cloud database
+                            if (merged.length > cloudRecipients.length) {
+                                setDoc(doc(db, 'users', user.uid), {
+                                    savedRecipients: merged
+                                }, { merge: true }).catch(err => console.error("Auto sync merged recipients failed:", err));
+                            }
+                        } else {
+                            // Cloud has no saved recipients, but local does: back up local storage to the cloud
+                            if (localRecipients.length > 0) {
+                                setDoc(doc(db, 'users', user.uid), {
+                                    savedRecipients: localRecipients
+                                }, { merge: true }).catch(err => console.error("Initial cloud backup failed:", err));
+                            }
                             loadSavedRecipientsDropdown();
                         }
                     } else {
@@ -1698,6 +1873,21 @@
             }
         }
 
+        // --- Mobile Sidebar Controls ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar) sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('show');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('show');
+        }
+
         // --- Expose functions to global window scope for inline HTML events ---
         window.addTableRow = addTableRow;
         window.removeTableRow = removeTableRow;
@@ -1706,6 +1896,8 @@
         window.saveCurrentRecipient = saveCurrentRecipient;
         window.loadSavedRecipient = loadSavedRecipient;
         window.deleteSelectedRecipient = deleteSelectedRecipient;
+        window.toggleSidebar = toggleSidebar;
+        window.closeSidebar = closeSidebar;
     </script>
 </body>
 

@@ -10,7 +10,7 @@
     <title>Mentra Manager — Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* ================================================
            MENTRA MANAGER — ENTERPRISE DASHBOARD UI
@@ -99,7 +99,7 @@
         }
 
         body {
-            font-family: 'Kanit', sans-serif;
+            font-family: 'Kanit', 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
@@ -1837,7 +1837,229 @@
         .static-footer .sf-bot a:hover {
             text-decoration: underline;
         }
+
+        /* CUSTOM DROPDOWN SYSTEM */
+        .custom-dropdown {
+            position: relative;
+            min-width: 320px;
+            font-family: 'Kanit', sans-serif;
+            z-index: 100;
+        }
+
+        .dropdown-trigger {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            gap: 10px;
+        }
+
+        .dropdown-trigger:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(26, 111, 191, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .custom-dropdown.active .dropdown-trigger {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(26, 111, 191, 0.15);
+        }
+
+        .trigger-icon {
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        .trigger-text {
+            flex: 1;
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .trigger-arrow {
+            width: 14px;
+            height: 14px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231A6FBF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat center;
+            background-size: contain;
+            transition: transform 0.25s;
+        }
+
+        .custom-dropdown.active .trigger-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 380px;
+            z-index: 101;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .custom-dropdown.active .dropdown-menu {
+            display: flex;
+        }
+
+        .dropdown-search-wrap {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            background: #f8fafc;
+        }
+
+        .dropdown-search-wrap input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .dropdown-search-wrap input:focus {
+            border-color: var(--primary);
+            background: #ffffff;
+        }
+
+        .dropdown-items-list {
+            overflow-y: auto;
+            max-height: 300px;
+            padding: 6px;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            gap: 10px;
+        }
+
+        .dropdown-item:hover {
+            background: var(--primary-light);
+        }
+
+        .dropdown-item.selected {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .dropdown-item.selected .item-no {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .dropdown-item.selected .item-name {
+            color: #ffffff;
+        }
+
+        .item-no {
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--primary);
+            background: rgba(26, 111, 191, 0.1);
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .dropdown-item:hover .item-no {
+            background: rgba(26, 111, 191, 0.15);
+        }
+
+        .dropdown-item.selected .item-no {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .item-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: #334155;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            text-align: left;
+        }
+
+        .dropdown-item.selected .item-name {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* DYNAMIC CUSTOM MODALS */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(8px);
+            z-index: 2500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            padding: 20px;
+        }
+ 
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+ 
+        .modal-container {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 680px;
+            box-shadow: var(--shadow-xl);
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+        }
+ 
+        .modal-overlay.show .modal-container {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
     </style>
+
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="app-theme.css">
+    <script src="app-ui.js" defer></script>
 
 </head>
 
@@ -1880,9 +2102,17 @@
                 <div class="nav-icon">📁</div>
                 <span class="nav-label">โครงการทั้งหมด</span>
             </button>
+            <button class="nav-item" onclick="navigateTo('items')" id="nav-items">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">ราคาทุน / สิ่งของ</span>
+            </button>
             <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
                 <div class="nav-icon">📄</div>
                 <span class="nav-label">ใบเสนอราคา</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
+                <div class="nav-icon">🎓</div>
+                <span class="nav-label">ระบบตารางจัดอบรม</span>
             </button>
             <div id="adminMenu" style="display:none;">
                 <div class="nav-section-title">จัดการระบบ</div>
@@ -2184,25 +2414,55 @@
                     </div>
                 </div>
 
-                <!-- ITEMS/EXPENSES SECTION -->
-                <div class="section-card" style="margin-top: 16px;">
-                    <div class="section-header"
-                        style="display: flex; justify-content: space-between; align-items: center;">
-                        <div class="section-title" style="display: flex; align-items: center; gap: 8px;">
-                            📦 รายการสิ่งของในโครงการ (ราคาทุนรวม)
+            </div>
+
+            <!-- ===== PROJECT ITEMS VIEW ===== -->
+            <div class="page-view" id="view-items">
+                <div class="section-card">
+                    <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="font-size: 24px; background: var(--primary-light); padding: 8px; border-radius: 12px; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;">📦</div>
+                            <div>
+                                <h2 style="font-family: 'Kanit', sans-serif; font-weight: 700; font-size: 18px; margin: 0; color: var(--primary);">ราคาทุนและสิ่งของรายโครงการ</h2>
+                                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">จัดการสิ่งของและราคาทุนสะสมแยกแต่ละโครงการ</p>
+                            </div>
                         </div>
-                        <button class="btn btn-primary btn-sm" onclick="openAddItemModal()">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" style="margin-right: 4px; vertical-align: middle;">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            เพิ่มรายการ
-                        </button>
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <label style="font-family: 'Kanit'; font-weight: 600; font-size: 14px; color: var(--text-secondary);">เลือกโครงการ:</label>
+                            <!-- Hidden input to maintain compatibility with existing JS logic -->
+                            <input type="hidden" id="itemsProjectSelect" value="" onchange="onItemsProjectChange()">
+                            
+                            <!-- Custom Beautiful Premium Dropdown -->
+                            <div class="custom-dropdown" id="itemsProjectDropdown">
+                                <div class="dropdown-trigger" onclick="toggleCustomDropdown(event)">
+                                    <span class="trigger-icon">📁</span>
+                                    <span class="trigger-text" id="selectedProjectText">-- กรุณาเลือกโครงการ --</span>
+                                    <span class="trigger-arrow"></span>
+                                </div>
+                                <div class="dropdown-menu" id="dropdownMenu" onclick="event.stopPropagation()">
+                                    <div class="dropdown-search-wrap">
+                                        <input type="text" id="dropdownSearch" placeholder="พิมพ์เพื่อค้นหาโครงการ..." oninput="filterDropdownItems(this.value)">
+                                    </div>
+                                    <div class="dropdown-items-list" id="dropdownItemsList">
+                                        <!-- Populated via JS -->
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="addItemBtnOnView" class="btn btn-primary" onclick="openAddItemModal()" style="display: none;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: middle;">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                เพิ่มรายการสิ่งของ
+                            </button>
+                        </div>
                     </div>
-                    <div id="projectItemsList"
-                        style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; background: #f8fafc; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
-                        <!-- Items list -->
+                    
+                    <div id="projectItemsViewContent" style="padding: 24px; min-height: 300px; background: #f8fafc; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+                        <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                            <div style="font-size: 48px; margin-bottom: 12px;">📁</div>
+                            <h3 style="font-size: 16px; font-weight: 600; color: var(--text-secondary);">กรุณาเลือกโครงการที่ต้องการเรียกดูรายการสิ่งของ</h3>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2688,7 +2948,15 @@
             }
 
             setupUI();
-            loadDashboard();
+            
+            // URL Param Routing
+            const params = new URLSearchParams(window.location.search);
+            const viewParam = params.get('view') || params.get('tab');
+            if (viewParam && ['dashboard', 'projects', 'users', 'items'].includes(viewParam)) {
+                navigateTo(viewParam);
+            } else {
+                loadDashboard();
+            }
         });
 
         function setupUI() {
@@ -2743,6 +3011,7 @@
                 dashboard: ['Dashboard', 'ภาพรวมโครงการทั้งหมด'],
                 projects: ['โครงการทั้งหมด', 'รายการโครงการและงบประมาณ'],
                 users: ['จัดการผู้ใช้งาน', 'รายชื่อสมาชิกในระบบ'],
+                items: ['ราคาทุน / สิ่งของ', 'ราคาทุนและสิ่งของสะสมแยกรายโครงการ'],
                 detail: ['รายละเอียดโครงการ', currentProjectData?.projectName || ''],
             };
             const [title, sub] = titles[page] || ['Dashboard', ''];
@@ -2752,6 +3021,7 @@
             if (page === 'projects') loadProjects();
             if (page === 'users') loadUsers();
             if (page === 'dashboard') loadDashboard();
+            if (page === 'items') loadItemsPage();
             closeSidebar();
         };
 
@@ -3718,7 +3988,11 @@
 
                 showToast('เพิ่มรายการเรียบร้อย ระบบได้คำนวณราคาทุนรวมใหม่แล้ว');
                 closeAddItemModal();
-                openProjectDetail(currentProjectId); // Refresh
+                if (document.getElementById('view-items').classList.contains('active')) {
+                    onItemsProjectChange();
+                } else {
+                    openProjectDetail(currentProjectId);
+                }
             } catch (err) {
                 console.error(err);
                 showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
@@ -3780,6 +4054,233 @@
             } catch (e) {
                 console.error(e);
                 showToast('ลบไม่สำเร็จ: ' + e.message, 'error');
+            }
+        };
+
+        // ==========================================
+        // PROJECT ITEMS DEDICATED VIEW LOGIC
+        // ==========================================
+        window.toggleCustomDropdown = function(e) {
+            if (e) e.stopPropagation();
+            const dd = document.getElementById('itemsProjectDropdown');
+            dd.classList.toggle('active');
+            if (dd.classList.contains('active')) {
+                document.getElementById('dropdownSearch').value = '';
+                filterDropdownItems('');
+                document.getElementById('dropdownSearch').focus();
+            }
+        };
+
+        window.selectDropdownItem = function(projectId, projectNo, projectName) {
+            const hiddenInput = document.getElementById('itemsProjectSelect');
+            hiddenInput.value = projectId;
+            
+            const textEl = document.getElementById('selectedProjectText');
+            if (projectId) {
+                textEl.innerHTML = `<span class="item-no" style="margin-right:8px;">${projectNo}</span> <span style="font-weight:600; color:#1e293b;">${projectName}</span>`;
+            } else {
+                textEl.textContent = '-- กรุณาเลือกโครงการ --';
+            }
+
+            // Update active state in list
+            document.querySelectorAll('.dropdown-item').forEach(el => {
+                if (el.getAttribute('data-id') === projectId) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+
+            // Close
+            const dd = document.getElementById('itemsProjectDropdown');
+            if (dd) dd.classList.remove('active');
+            
+            // Execute onchange logic
+            onItemsProjectChange();
+        };
+
+        window.filterDropdownItems = function(query) {
+            const lower = query.toLowerCase().trim();
+            document.querySelectorAll('.dropdown-item').forEach(el => {
+                const text = el.textContent.toLowerCase();
+                const dataId = el.getAttribute('data-id');
+                if (!dataId) {
+                    // Default empty selection is always visible
+                    el.style.display = lower === '' ? 'flex' : 'none';
+                    return;
+                }
+                if (text.includes(lower)) {
+                    el.style.display = 'flex';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        };
+
+        // Document click listener to dismiss the custom select dropdown list when clicking outside
+        document.addEventListener('click', function(e) {
+            const dd = document.getElementById('itemsProjectDropdown');
+            if (dd && !dd.contains(e.target)) {
+                dd.classList.remove('active');
+            }
+        });
+
+        async function loadItemsPage() {
+            // Reset Dropdown state
+            const hiddenInput = document.getElementById('itemsProjectSelect');
+            hiddenInput.value = '';
+            document.getElementById('selectedProjectText').textContent = '-- กรุณาเลือกโครงการ --';
+            document.getElementById('addItemBtnOnView').style.display = 'none';
+            document.getElementById('projectItemsViewContent').innerHTML = `
+                <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">📁</div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: var(--text-secondary);">กรุณาเลือกโครงการที่ต้องการเรียกดูรายการสิ่งของ</h3>
+                </div>
+            `;
+
+            // Fetch projects if not loaded
+            if (!allProjects || allProjects.length === 0) {
+                const snap = await getDocs(collection(db, 'projects'));
+                allProjects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                allProjects.sort((a, b) => (b.createdAt || '') > (a.createdAt || '') ? 1 : -1);
+            }
+
+            const listEl = document.getElementById('dropdownItemsList');
+            listEl.innerHTML = '';
+
+            // Add default empty option
+            const emptyItem = document.createElement('div');
+            emptyItem.className = 'dropdown-item selected';
+            emptyItem.setAttribute('data-id', '');
+            emptyItem.onclick = () => selectDropdownItem('', '', '');
+            emptyItem.innerHTML = `<span class="item-name" style="color:var(--text-secondary);">-- กรุณาเลือกโครงการ --</span>`;
+            listEl.appendChild(emptyItem);
+
+            allProjects.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'dropdown-item';
+                item.setAttribute('data-id', p.id);
+                item.onclick = () => selectDropdownItem(p.id, p.projectNo || '-', p.projectName);
+                item.innerHTML = `
+                    <span class="item-no">${p.projectNo || '-'}</span>
+                    <span class="item-name" title="${p.projectName}">${p.projectName}</span>
+                `;
+                listEl.appendChild(item);
+            });
+
+            // Handle auto-selected project from URL params if applicable
+            const params = new URLSearchParams(window.location.search);
+            const projectIdParam = params.get('projectId');
+            if (projectIdParam) {
+                const found = allProjects.find(p => p.id === projectIdParam);
+                if (found) {
+                    selectDropdownItem(found.id, found.projectNo || '-', found.projectName);
+                }
+            }
+        }
+
+        window.onItemsProjectChange = async function() {
+            const select = document.getElementById('itemsProjectSelect');
+            const projectId = select.value;
+            const contentEl = document.getElementById('projectItemsViewContent');
+            const addBtn = document.getElementById('addItemBtnOnView');
+
+            if (!projectId) {
+                addBtn.style.display = 'none';
+                contentEl.innerHTML = `
+                    <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">📁</div>
+                        <h3 style="font-size: 16px; font-weight: 600; color: var(--text-secondary);">กรุณาเลือกโครงการที่ต้องการเรียกดูรายการสิ่งของ</h3>
+                    </div>
+                `;
+                return;
+            }
+
+            currentProjectId = projectId;
+            addBtn.style.display = 'flex';
+            contentEl.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; min-height:150px; grid-column: 1 / -1;"><div class="btn-spinner" style="display:inline-block; border-color:var(--primary); border-bottom-color:transparent; width:32px; height:32px;"></div></div>';
+
+            // Load metadata
+            const projDoc = await getDoc(doc(db, 'projects', projectId));
+            if (projDoc.exists()) {
+                currentProjectData = projDoc.data();
+            }
+
+            // Fetch items
+            const q = query(collection(db, 'projects', projectId, 'items'), orderBy('createdAt', 'desc'));
+            const snap = await getDocs(q);
+            const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            if (items.length === 0) {
+                contentEl.style.display = 'block';
+                contentEl.innerHTML = '<div class="empty-state" style="padding: 60px 20px; text-align: center;"><div style="font-size: 48px; margin-bottom: 12px;">🛒</div><h3 style="font-size: 16px; font-weight: 600; color: var(--text-secondary);">ยังไม่มีรายการสิ่งของในโครงการนี้</h3><p style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">คลิกปุ่ม "เพิ่มรายการสิ่งของ" เพื่อเริ่มกรอกข้อมูล</p></div>';
+                return;
+            }
+
+            contentEl.style.display = 'grid';
+            contentEl.style.gridTemplateColumns = 'repeat(auto-fill, minmax(240px, 1fr))';
+            contentEl.style.gap = '20px';
+
+            contentEl.innerHTML = items.map(it => {
+                let imgUrl = it.imageUrl;
+                if (imgUrl && imgUrl.includes('export=download') && it.fileId) {
+                    imgUrl = `https://drive.google.com/thumbnail?id=${it.fileId}&sz=w1000`;
+                }
+                return `
+                <div style="background: white; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;" onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)';" onmouseleave="this.style.transform='none'; this.style.boxShadow='var(--shadow-sm)';">
+                    <div style="width: 100%; height: 160px; background: #f1f5f9; position: relative;">
+                        <img src="${imgUrl}" alt="${it.name}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">
+                    </div>
+                    <div style="padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 4px;">${it.name}</div>
+                            ${it.desc ? `<div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; line-height:1.5;">${it.desc}</div>` : ''}
+                            <div style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">จำนวน: <span style="color: var(--text); font-weight:600;">${it.qty || 1}</span></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight:600;">ราคาทุนรวม</div>
+                            <div style="color: var(--danger); font-weight: 800; font-size: 18px; margin-top: 2px;">฿${Number(it.price).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</div>
+                            ${it.note ? `<div style="font-size: 12px; color: var(--orange); margin-top: 8px; background: var(--secondary-light); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(224, 123, 47, 0.15); display: flex; align-items: center; gap: 6px;">📌 <span>${it.note}</span></div>` : ''}
+                            ${currentUserData?.role === 'admin' ? `
+                                <button onclick="deleteProjectItemOnItemsPage('${it.id}')" style="margin-top: 12px; font-size:12px; color:var(--danger); background:none; border:none; cursor:pointer; text-align:left; padding:0; font-family:'Kanit'; font-weight:600; display:flex; align-items:center; gap:4px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                                    🗑️ ลบรายการนี้
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        };
+
+        let pendingProjectItemId = null;
+
+        window.deleteProjectItemOnItemsPage = function(itemId) {
+            pendingProjectItemId = itemId;
+            openModal('deleteItemConfirmModal');
+        };
+
+        window.executeDeleteProjectItem = async function() {
+            if (!pendingProjectItemId) return;
+            const itemId = pendingProjectItemId;
+            closeModal('deleteItemConfirmModal');
+            try {
+                const itemsRef = collection(db, 'projects', currentProjectId, 'items');
+                await deleteDoc(doc(db, 'projects', currentProjectId, 'items', itemId));
+
+                // Recalculate Total Cost
+                const snap = await getDocs(itemsRef);
+                const items = snap.docs.map(d => d.data());
+                const totalCost = items.reduce((sum, it) => sum + Number(it.price || 0), 0);
+                await updateDoc(doc(db, 'projects', currentProjectId), { totalCost: totalCost });
+
+                showToast('ลบรายการเรียบร้อย ระบบได้คำนวณราคาทุนใหม่แล้ว');
+                onItemsProjectChange(); // Refresh
+            } catch (err) {
+                console.error(err);
+                showToast('เกิดข้อผิดพลาด: ' + err.message, 'error');
+            } finally {
+                pendingProjectItemId = null;
             }
         };
     </script>
@@ -3920,11 +4421,28 @@
             obs.observe(el, { childList: true, characterData: true, subtree: true });
         });
 
+        // ===== OPEN / CLOSE MODALS UTILITIES =====
+        window.openModal = function(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('show'), 10);
+            }
+        };
+
+        window.closeModal = function(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
+        };
+
         // ===== EVENT DELEGATION for generated elements =====
         document.addEventListener('click', function (e) {
             // Close modal on backdrop click
             if (e.target.classList.contains('modal-overlay')) {
-                e.target.classList.remove('show');
+                window.closeModal(e.target.id);
             }
         });
 
@@ -3932,7 +4450,7 @@
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 // Close any open modal
-                document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+                document.querySelectorAll('.modal-overlay.show').forEach(m => window.closeModal(m.id));
                 // Close mobile sidebar
                 closeSidebar();
             }
@@ -3940,6 +4458,23 @@
 
 
     </script>
+
+    <!-- BEAUTIFUL CUSTOM DELETION CONFIRMATION MODAL -->
+    <div class="modal-overlay" id="deleteItemConfirmModal" style="display: none;">
+        <div class="modal-container" style="max-width: 420px; text-align: center; border-radius: var(--radius-lg); overflow: hidden;">
+            <div class="modal-body" style="padding: 36px 28px 24px;">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: #fef2f2; color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 20px; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.15); border: 2px solid var(--danger);">
+                    <i class="fa-solid fa-trash-can"></i>
+                </div>
+                <h3 style="font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 10px; letter-spacing: -0.5px; font-family: 'Kanit';">ยืนยันการลบรายการสิ่งของ?</h3>
+                <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0; font-family: 'Kanit';">คุณต้องการลบรายการสิ่งของชิ้นนี้ออกจากโครงการอย่างถาวรใช่หรือไม่? (ระบบจะหักยอดเงินออกจากราคาทุนรวมด้วย)</p>
+            </div>
+            <footer class="modal-footer" style="justify-content: center; gap: 12px; padding: 18px 24px; background: #fafafa; border-top: 1px solid var(--border); display: flex;">
+                <button type="button" class="btn-cancel" style="flex: 1; padding: 10px; border-radius: var(--radius-md); font-family: 'Kanit';" onclick="closeModal('deleteItemConfirmModal')">ย้อนกลับ</button>
+                <button type="button" class="btn-save" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; box-shadow: none; border-radius: var(--radius-md); font-family: 'Kanit'; color: white;" onclick="executeDeleteProjectItem()">ยืนยันการลบ</button>
+            </footer>
+        </div>
+    </div>
 </body>
 
 </html>

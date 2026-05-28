@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentra Manager — เทมเพลตเกียรติบัตร (Certificate Template)</title>
+    
+    <!-- Google Fonts: Prompt for headings, Kanit for body/official text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ========================================================
+           MENTRA SOLUTION — PREMIUM CERTIFICATE STYLING (A4)
+           Theme: Modern Enterprise Technology (Navy Blue & Gold Accent)
+           ======================================================== */
+        :root {
+            --navy-dark: #0b3d6e;
+            --navy-primary: #1A6FBF;
+            --gold-accent: #E07B2F; /* Matching secondary brand color */
+            --gold-light: #fbeee3;
+            --text-dark: #2c3e50;
+            --text-muted: #5c6b73;
+            --border-color: rgba(26, 111, 191, 0.15);
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f0f4f8;
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Certificate Container (A4 Landscape proportions) */
+        .certificate-container {
+            width: 297mm;
+            height: 210mm;
+            background-color: var(--white);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20mm 25mm;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(11, 61, 110, 0.12);
+            border-radius: 4px;
+        }
+
+        /* ========================================================
+           GEOMETRIC TECHNOLOGY GRAPHICS (MODERN ENTERPRISE STYLE)
+           ======================================================== */
+        
+        /* Inner Border */
+        .certificate-inner-border {
+            position: absolute;
+            inset: 10mm;
+            border: 1px solid var(--border-color);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .certificate-inner-border::before {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border: 2px solid var(--navy-primary);
+            opacity: 0.85;
+        }
+
+        /* Corner Tech Accents */
+        .corner-accent {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-color: var(--gold-accent);
+            border-style: solid;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .top-left {
+            top: 10mm;
+            left: 10mm;
+            border-width: 4px 0 0 4px;
+        }
+
+        .top-right {
+            top: 10mm;
+            right: 10mm;
+            border-width: 4px 4px 0 0;
+        }
+
+        .bottom-left {
+            bottom: 10mm;
+            left: 10mm;
+            border-width: 0 0 4px 4px;
+        }
+
+        .bottom-right {
+            bottom: 10mm;
+            right: 10mm;
+            border-width: 0 4px 4px 0;
+        }
+
+        /* Abstract Tech Polygons & Gradients */
+        .bg-tech-polygon-left {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 320px;
+            height: 180px;
+            background: linear-gradient(135deg, var(--navy-dark) 0%, transparent 80%);
+            clip-path: polygon(0 0, 100% 100%, 0 100%);
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        .bg-tech-polygon-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 180px;
+            background: linear-gradient(-45deg, var(--navy-primary) 0%, transparent 80%);
+            clip-path: polygon(100% 0, 100% 100%, 0 0);
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        /* Top & Bottom Thin Accent Bars */
+        .top-accent-bar {
+            position: absolute;
+            top: 14mm;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold-accent), transparent);
+            z-index: 2;
+        }
+
+        /* ========================================================
+           CONTENT SECTIONS & LAYOUT (CENTER ALIGNMENT)
+           ======================================================== */
+        
+        .certificate-content {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Header / Logo */
+        .certificate-header {
+            margin-top: 5mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .company-logo {
+            width: 180px;
+            height: auto;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .company-name {
+            font-family: 'Prompt', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--navy-dark);
+            opacity: 0.9;
+        }
+
+        /* Main Body Texts */
+        .certificate-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .cert-intro {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .recipient-name {
+            font-family: 'Prompt', sans-serif;
+            font-size: 38px;
+            font-weight: 700;
+            color: var(--navy-dark);
+            letter-spacing: -0.5px;
+            margin: 5px 0;
+            position: relative;
+            display: inline-block;
+        }
+
+        .recipient-name::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 20%;
+            right: 20%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--navy-primary), transparent);
+        }
+
+        .cert-description {
+            font-size: 14.5px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            max-width: 600px;
+        }
+
+        .course-name-container {
+            margin: 5px 0;
+            padding: 8px 30px;
+            border-top: 1px dashed var(--border-color);
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .course-name {
+            font-family: 'Prompt', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--navy-primary);
+            letter-spacing: 0.5px;
+        }
+
+        .cert-date {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .highlight-date {
+            font-weight: 600;
+            color: var(--navy-dark);
+        }
+
+        /* ========================================================
+           SIGNATURES SECTION (BOTTOM)
+           ======================================================== */
+        
+        .certificate-footer {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin-bottom: 5mm;
+            padding: 0 40px;
+        }
+
+        .signature-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 220px;
+        }
+
+        /* Simulated Signature Line or Graphic */
+        .signature-placeholder {
+            width: 100%;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .simulated-signature {
+            font-family: 'Kanit', sans-serif;
+            font-style: italic;
+            font-size: 18px;
+            color: var(--navy-primary);
+            opacity: 0.75;
+            letter-spacing: 1px;
+            user-select: none;
+        }
+
+        .signature-line {
+            width: 100%;
+            border-top: 1.5px solid var(--navy-dark);
+            opacity: 0.35;
+        }
+
+        .signatory-name {
+            font-family: 'Prompt', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-top: 6px;
+        }
+
+        .signatory-title {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ========================================================
+           PRINT STYLING OPTIMIZATIONS (A4 LANDSCAPE)
+           ======================================================== */
+        @media print {
+            body {
+                background-color: var(--white);
+                padding: 0;
+            }
+
+            .certificate-container {
+                box-shadow: none;
+                margin: 0;
+                page-break-inside: avoid;
+                width: 297mm;
+                height: 210mm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- A4 Certificate Container -->
+    <div class="certificate-container" id="certificateFrame">
+        
+        <!-- Geometric Outer Corner Borders -->
+        <div class="corner-accent top-left"></div>
+        <div class="corner-accent top-right"></div>
+        <div class="corner-accent bottom-left"></div>
+        <div class="corner-accent bottom-right"></div>
+        
+        <!-- Double Border Framework -->
+        <div class="certificate-inner-border"></div>
+        <div class="top-accent-bar"></div>
+
+        <!-- Modern Abstract Tech Shapes in Background -->
+        <div class="bg-tech-polygon-left"></div>
+        <div class="bg-tech-polygon-right"></div>
+
+        <!-- Core Text Content Area -->
+        <div class="certificate-content">
+            
+            <!-- HEADER: Logo and branding -->
+            <header class="certificate-header">
+                <!-- Relative reference to existing logo.png in the root workspace folder -->
+                <img src="logo.png" alt="Mentra Solution Logo" class="company-logo">
+                <span class="company-name">Mentra Solution Co., Ltd.</span>
+            </header>
+
+            <!-- BODY: Main achievement details -->
+            <div class="certificate-body">
+                <p class="cert-intro">วุฒิบัตรฉบับนี้ให้ไว้เพื่อแสดงว่า</p>
+                
+                <!-- Recipient Name Placeholder -->
+                <h2 class="recipient-name">[ชื่อ-นามสกุลผู้เข้าอบรม]</h2>
+                
+                <p class="cert-description">ได้ผ่านการฝึกอบรมและทดสอบทักษะอย่างสมบูรณ์ตามหลักสูตร:</p>
+                
+                <!-- Course Name Placeholder -->
+                <div class="course-name-container">
+                    <h3 class="course-name">[ชื่อหลักสูตรอบรมพิเศษ]</h3>
+                </div>
+                
+                <!-- Date Placeholder -->
+                <p class="cert-date">ให้ไว้ ณ วันที่: <span class="highlight-date">[วันที่อบรมเสร็จสิ้น]</span></p>
+            </div>
+
+            <!-- FOOTER: Dual signatures -->
+            <footer class="certificate-footer">
+                
+                <!-- Signatory 1: Instructor / Trainer -->
+                <div class="signature-block">
+                    <div class="signature-placeholder">
+                        <!-- Space for real/digital signature image -->
+                        <span class="simulated-signature">Trainer Signature</span>
+                    </div>
+                    <div class="signature-line"></div>
+                    <span class="signatory-name">[ชื่อวิทยากรผู้อบรม]</span>
+                    <span class="signatory-title">วิทยากรผู้อบรม</span>
+                </div>
+
+                <!-- Signatory 2: Executive (e.g. Managing Director / Prompter) -->
+                <div class="signature-block">
+                    <div class="signature-placeholder">
+                        <!-- Space for real/digital signature image -->
+                        <span class="simulated-signature">Managing Director</span>
+                    </div>
+                    <div class="signature-line"></div>
+                    <span class="signatory-name">[ชื่อผู้ประสานงาน/กรรมการผู้จัดการ]</span>
+                    <span class="signatory-title">กรรมการผู้จัดการ</span>
+                </div>
+
+            </footer>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
