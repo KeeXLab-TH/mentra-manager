@@ -2142,7 +2142,12 @@
             } else {
                 budgetText = '฿' + totalBudget.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
             }
-            document.getElementById('statTotalBudget').textContent = budgetText;
+            
+            const budgetEl = document.getElementById('statTotalBudget');
+            budgetEl.textContent = budgetText;
+            // Add full number tooltip to the card
+            budgetEl.closest('.stat-card').title = 'ยอดเงินเต็ม: ฿' + totalBudget.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            budgetEl.closest('.stat-card').style.cursor = 'help';
 
             document.getElementById('statTotal').textContent = filteredProjects.length;
             document.getElementById('statActive').textContent = filteredProjects.filter(p => p.status === 'กำลังดำเนินการ').length;
