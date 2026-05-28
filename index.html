@@ -682,6 +682,36 @@
             .form-mobile-logo-text span {
                 color: var(--secondary);
             }
+            .form-mobile-desc {
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 15px;
+                text-align: center;
+                margin-top: 8px;
+                line-height: 1.5;
+                font-weight: 400;
+                animation: mobileFadeDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+                animation-delay: 0.1s;
+            }
+            .form-mobile-badges {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+                margin-top: 16px;
+                animation: mobileFadeDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+                animation-delay: 0.2s;
+            }
+            .m-badge {
+                background: rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: white;
+                font-size: 12px;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-weight: 500;
+            }
 
             @keyframes mobileFadeDown {
                 from { opacity: 0; transform: translateY(-40px); }
@@ -769,6 +799,12 @@
             <div class="form-mobile-logo">
                 <img src="logo.png" alt="Mentra" onerror="this.style.display='none'">
                 <div class="form-mobile-logo-text">Mentra <span>Manager</span></div>
+                <div class="form-mobile-desc">ระบบจัดการโครงการและเอกสาร<br>บริษัท เมนทร้า โซลูชั่น จำกัด</div>
+                <div class="form-mobile-badges">
+                    <span class="m-badge">📁 จัดการโครงการ</span>
+                    <span class="m-badge">☁️ Google Drive</span>
+                    <span class="m-badge">👥 สมาชิกในทีม</span>
+                </div>
             </div>
 
             <div class="form-header">
