@@ -648,20 +648,28 @@
                 padding: 40px 16px; 
                 position: relative;
                 z-index: 1;
+                display: flex;
                 align-items: center;
-                height: 100vh;
-                overflow-y: auto;
-                justify-content: flex-end;
+                min-height: 100vh;
+                justify-content: center;
                 flex-direction: column;
             }
             
-            /* Detached App Logo (Splash style) */
+            /* Detached App Logo inside a Glass Card */
             .form-mobile-logo { 
                 display: flex; 
                 flex-direction: column;
                 align-items: center;
-                margin-top: auto;
-                margin-bottom: 32px;
+                margin-bottom: 24px;
+                background: rgba(255, 255, 255, 0.06);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 32px;
+                padding: 36px 24px;
+                width: 100%;
+                max-width: 440px;
+                box-shadow: 0 16px 40px rgba(0,0,0,0.2);
                 animation: mobileFadeDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
             }
             .form-mobile-logo img {
@@ -678,12 +686,13 @@
                 font-size: 26px;
                 letter-spacing: -0.5px;
                 text-shadow: 0 4px 12px rgba(0,0,0,0.4);
+                text-align: center;
             }
             .form-mobile-logo-text span {
-                color: var(--secondary);
+                color: #FFB067; /* A brighter orange for dark glass bg */
             }
             .form-mobile-desc {
-                color: rgba(255, 255, 255, 0.9);
+                color: rgba(255, 255, 255, 0.95);
                 font-size: 15px;
                 text-align: center;
                 margin-top: 8px;
@@ -697,18 +706,16 @@
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 8px;
-                margin-top: 16px;
+                margin-top: 20px;
                 animation: mobileFadeDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
                 animation-delay: 0.2s;
             }
             .m-badge {
                 background: rgba(255, 255, 255, 0.15);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.25);
                 color: white;
                 font-size: 12px;
-                padding: 6px 12px;
+                padding: 6px 14px;
                 border-radius: 20px;
                 font-weight: 500;
             }
@@ -718,7 +725,7 @@
                 to   { opacity: 1; transform: translateY(0); }
             }
 
-            /* Bottom-sheet card */
+            /* Bottom-sheet card -> normal card */
             .form-card { 
                 background: var(--white);
                 padding: 40px 32px;
@@ -743,15 +750,15 @@
         @media (max-width: 480px) {
             .field-row { grid-template-columns: 1fr; }
             .form-panel { 
-                padding: 20px 0 0 0; 
+                padding: 24px 16px; 
             }
             .form-mobile-logo {
-                margin-bottom: 36px;
+                margin-top: 10px;
+                padding: 32px 20px;
             }
             .form-card { 
-                padding: 44px 24px 36px; 
-                border-radius: 44px 44px 0 0;
-                margin: 0;
+                padding: 36px 24px; 
+                border-radius: 32px;
             }
         }
     </style>
