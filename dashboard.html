@@ -554,11 +554,12 @@
         .stat-icon.purple { background: linear-gradient(135deg, #ede9fe, #c4b5fd); }
 
         .stat-info .stat-num {
-            font-size: 30px;
+            font-size: clamp(20px, 2.5vw, 26px);
             font-weight: 900;
             color: var(--text);
-            line-height: 1;
+            line-height: 1.1;
             font-variant-numeric: tabular-nums;
+            word-break: break-word;
         }
 
         .stat-info .stat-label {
@@ -2133,7 +2134,15 @@
             const filteredProjects = year ? projects.filter(p => String(p.year) === String(year)) : projects;
 
             const totalBudget = filteredProjects.reduce((sum, p) => sum + Number(p.budget || 0), 0);
-            document.getElementById('statTotalBudget').textContent = '฿' + totalBudget.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+            // Format budget compactly
+            let budgetText = '';
+            if (totalBudget >= 1000000) {
+                budgetText = '฿' + (totalBudget / 1000000).toLocaleString('th-TH', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + ' ล้าน';
+            } else {
+                budgetText = '฿' + totalBudget.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            }
+            document.getElementById('statTotalBudget').textContent = budgetText;
 
             document.getElementById('statTotal').textContent = filteredProjects.length;
             document.getElementById('statActive').textContent = filteredProjects.filter(p => p.status === 'กำลังดำเนินการ').length;
