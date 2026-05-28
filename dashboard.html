@@ -498,7 +498,7 @@
            =========================== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 18px;
             margin-bottom: 28px;
         }
@@ -535,6 +535,7 @@
         .stat-card.orange-accent::before { background: var(--secondary); }
         .stat-card.green-accent::before  { background: var(--success); }
         .stat-card.red-accent::before    { background: var(--danger); }
+        .stat-card.purple-accent::before { background: #8b5cf6; }
 
         .stat-icon {
             width: 52px; height: 52px;
@@ -550,6 +551,7 @@
         .stat-icon.orange { background: linear-gradient(135deg, #fdf0e6, #fad5b5); }
         .stat-icon.green  { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
         .stat-icon.red    { background: linear-gradient(135deg, #fee2e2, #fecaca); }
+        .stat-icon.purple { background: linear-gradient(135deg, #ede9fe, #c4b5fd); }
 
         .stat-info .stat-num {
             font-size: 30px;
@@ -1559,8 +1561,24 @@
 
             <!-- ===== DASHBOARD VIEW ===== -->
             <div class="page-view active" id="view-dashboard">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div style="font-size: 16px; font-weight: 600; color: var(--text-secondary);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        ปีงบประมาณ:
+                        <select id="dashboardYearFilter" onchange="loadDashboard()" style="margin-left: 8px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--white); font-family: 'Kanit'; color: var(--text); font-weight: 600;">
+                            <option value="">ทุกปี (ทั้งหมด)</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="stats-grid">
-        <div class="stat-card blue-accent">
+                    <div class="stat-card purple-accent">
+                        <div class="stat-icon purple">💰</div>
+                        <div class="stat-info">
+                            <div class="stat-num" id="statTotalBudget" style="color: #6d28d9;">฿0.00</div>
+                            <div class="stat-label">ยอดงบประมาณรวม</div>
+                        </div>
+                    </div>
+                    <div class="stat-card blue-accent">
                         <div class="stat-icon blue">📁</div>
                         <div class="stat-info">
                             <div class="stat-num" id="statTotal">0</div>
@@ -2044,15 +2062,19 @@
 
             // Populate year dropdowns
             const currentYear = new Date().getFullYear() + 543;
-            const yearSelects = [document.getElementById('filterYear'), document.getElementById('pYear')];
+            const yearSelects = [document.getElementById('filterYear'), document.getElementById('pYear'), document.getElementById('dashboardYearFilter')];
             yearSelects.forEach(sel => {
                 if (!sel) return;
+                if (sel.id === 'filterYear' || sel.id === 'dashboardYearFilter') {
+                    sel.innerHTML = '<option value="">ทุกปี (ทั้งหมด)</option>';
+                } else {
+                    sel.innerHTML = '';
+                }
                 for (let y = currentYear + 1; y >= currentYear - 5; y--) {
                     const opt = document.createElement('option');
                     opt.value = y;
                     opt.textContent = `พ.ศ. ${y}`;
-                    if (sel.id === 'filterYear') { opt.value = y; }
-                    else { opt.value = y; opt.selected = y === currentYear; }
+                    if (sel.id === 'pYear') { opt.selected = y === currentYear; }
                     sel.appendChild(opt);
                 }
             });
@@ -2095,12 +2117,30 @@
             const projects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             allProjects = projects;
 
-            document.getElementById('statTotal').textContent = projects.length;
-            document.getElementById('statActive').textContent = projects.filter(p => p.status === 'กำลังดำเนินการ').length;
-            document.getElementById('statDone').textContent = projects.filter(p => p.status === 'เสร็จสิ้น').length;
-            document.getElementById('statPending').textContent = projects.filter(p => p.status === 'รอดำเนินการ').length;
+            const dashYearFilter = document.getElementById('dashboardYearFilter');
+            let year = dashYearFilter.value;
+            
+            // Auto default to latest year on first load
+            if (!dashYearFilter.dataset.initialized && projects.length > 0) {
+                dashYearFilter.dataset.initialized = 'true';
+                const maxYear = Math.max(...projects.map(p => Number(p.year) || 0));
+                if (maxYear > 0) {
+                    year = String(maxYear);
+                    dashYearFilter.value = year;
+                }
+            }
 
-            const recent = [...projects].sort((a, b) => (b.createdAt || '') > (a.createdAt || '') ? 1 : -1).slice(0, 5);
+            const filteredProjects = year ? projects.filter(p => String(p.year) === String(year)) : projects;
+
+            const totalBudget = filteredProjects.reduce((sum, p) => sum + Number(p.budget || 0), 0);
+            document.getElementById('statTotalBudget').textContent = '฿' + totalBudget.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            document.getElementById('statTotal').textContent = filteredProjects.length;
+            document.getElementById('statActive').textContent = filteredProjects.filter(p => p.status === 'กำลังดำเนินการ').length;
+            document.getElementById('statDone').textContent = filteredProjects.filter(p => p.status === 'เสร็จสิ้น').length;
+            document.getElementById('statPending').textContent = filteredProjects.filter(p => p.status === 'รอดำเนินการ').length;
+
+            const recent = [...filteredProjects].sort((a, b) => (b.createdAt || '') > (a.createdAt || '') ? 1 : -1).slice(0, 5);
             renderProjectRows('recentProjectBody', recent, 6);
         }
 
