@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Generator</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #1A6FBF;
+            --primary-hover: #145999;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --success-color: #10b981;
+            --input-bg: #f9fafb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Sarabun', 'Tahoma', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-actions {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8fafc;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg-color);
+        }
+
+        .form-content {
+            padding: 2rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background-color: var(--input-bg);
+            transition: all 0.2s;
+            color: var(--text-main);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: #eef2ff;
+            padding: 0.9rem 1rem;
+            font-size: 0.95rem;
+            color: #312e81;
+            font-weight: 600;
+            border: 0.5px solid #cbd5e1;
+            border-bottom: 2px solid var(--primary-color);
+            letter-spacing: normal !important;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border: 0.5px solid #cbd5e1;
+            vertical-align: middle;
+        }
+
+        .table-input {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+        
+        .table-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .col-qty { width: 65px; }
+        .col-unit { width: 80px; }
+        .col-price { width: 110px; }
+        .col-action { width: 50px; text-align: center; }
+
+        .summary-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .summary-box {
+            width: 350px;
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .summary-row.total {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            border-top: 1px solid var(--border-color);
+            padding-top: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .loading-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-actions">
+            <div class="header-title">
+                <i class='bx bx-file'></i>
+                ระบบออกใบเสนอราคา (Quotation)
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-outline" onclick="window.location.href='index.html'">
+                    <i class='bx bx-arrow-back'></i> กลับหน้าหลัก
+                </button>
+                <button class="btn btn-primary" onclick="exportToPDF()">
+                    <i class='bx bxs-file-pdf'></i> Export PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="form-content">
+            <!-- Top Section -->
+            <div class="grid-2">
+                <!-- Info Left -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <h3 class="section-title" style="margin-bottom: 0;">ข้อมูลผู้รับ (To)</h3>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <select id="savedRecipientsSelect" class="form-control" style="width: 200px; padding: 0.4rem 0.8rem; font-size: 0.85rem;" onchange="loadSavedRecipient()">
+                                <option value="">-- เลือกผู้รับที่บันทึกไว้ --</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="saveCurrentRecipient()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background: var(--success-color); color: white;">
+                                <i class='bx bx-save'></i> บันทึกผู้รับนี้
+                            </button>
+                            <button id="deleteRecipientBtn" class="btn btn-danger" onclick="deleteSelectedRecipient()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; display: none;">
+                                <i class='bx bx-trash'></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>ชื่อบริษัท / ผู้รับ</label>
+                        <input type="text" class="form-control" id="toCompany" placeholder="บริษัท เอบีซี จำกัด">
+                    </div>
+                    <div class="form-group">
+                        <label>ที่อยู่</label>
+                        <textarea class="form-control" id="toAddress" placeholder="123 ถนนสุขุมวิท แขวงคลองเตย..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>ผู้ติดต่อ (Attn)</label>
+                        <input type="text" class="form-control" id="toAttn" placeholder="คุณสมชาย">
+                    </div>
+                    <div class="grid-2" style="gap: 1rem; margin-bottom: 0;">
+                        <div class="form-group">
+                            <label>เบอร์โทรศัพท์ (Tel)</label>
+                            <input type="text" class="form-control" id="toTel" placeholder="02-XXX-XXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>อีเมล (Email)</label>
+                            <input type="email" class="form-control" id="toEmail" placeholder="email@example.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Right -->
+                <div>
+                    <h3 class="section-title">รายละเอียดเอกสาร</h3>
+                    <div class="grid-2" style="gap: 1rem; margin-bottom: 0;">
+                        <div class="form-group">
+                            <label>เลขที่เอกสาร (Ref No.)</label>
+                            <input type="text" class="form-control" id="refNo" style="font-weight: 600;" placeholder="เช่น MTQ260528001">
+                        </div>
+                        <div class="form-group">
+                            <label>วันที่ (Date)</label>
+                            <input type="date" class="form-control" id="docDate">
+                        </div>
+                    </div>
+                    
+                    <h3 class="section-title" style="margin-top: 1rem;">เงื่อนไข (Terms)</h3>
+                    <div class="form-group">
+                        <label>กำหนดยืนราคา (Validity)</label>
+                        <input type="text" class="form-control" id="termValidity" value="30 Days">
+                    </div>
+                    <div class="form-group">
+                        <label>กำหนดส่งมอบ (Delivery)</label>
+                        <input type="text" class="form-control" id="termDelivery" value="15-30 Days">
+                    </div>
+                    <div class="form-group">
+                        <label>เงื่อนไขชำระเงิน (Payment)</label>
+                        <input type="text" class="form-control" id="termPayment" value="Cash on Delivery">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 class="section-title" style="margin-bottom: 0;">รายการสินค้า</h3>
+                <button class="btn btn-outline" onclick="addTableRow()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    <i class='bx bx-plus'></i> เพิ่มรายการ
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align: center; letter-spacing: normal !important;">ลำดับ</th>
+                            <th style="letter-spacing: normal !important;">รายการสินค้า / รายละเอียด (Description)</th>
+                            <th class="col-qty" style="letter-spacing: normal !important;">จำนวน</th>
+                            <th class="col-unit" style="letter-spacing: normal !important;">หน่วย</th>
+                            <th class="col-price" style="letter-spacing: normal !important;">ราคา/หน่วย</th>
+                            <th class="col-price" style="letter-spacing: normal !important;">จำนวนเงิน</th>
+                            <th class="col-action">ลบ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsBody">
+                        <!-- Rows will be added here via JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Summary Section -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div style="flex: 1; margin-right: 2rem;">
+                    <label style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500; display: block; margin-bottom: 0.4rem;">หมายเหตุ (Remark)</label>
+                    <textarea class="form-control" id="remark" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+                </div>
+                <div class="summary-box">
+                    <div class="summary-row">
+                        <span>รวมเป็นเงิน (Sub Total)</span>
+                        <span id="subTotalDisplay">0.00</span>
+                    </div>
+                    <div class="summary-row" style="color: var(--text-muted); font-size: 0.85rem;">
+                        <span>*คำนวณแบบรวมภาษีมูลค่าเพิ่มแล้ว (VAT Inclusive)</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>ภาษีมูลค่าเพิ่ม 7% (VAT)</span>
+                        <span id="vatDisplay">0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>จำนวนเงินรวมทั้งสิ้น</span>
+                        <span id="grandTotalDisplay">0.00</span>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; background: var(--bg-color); padding: 0.5rem; border-radius: 4px;" id="thaiBahtText">
+                        (ศูนย์บาทถ้วน)
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Hidden Print Template for html2pdf -->
+    <div id="printArea" style="display: none; background: #ffffff;">
+        <div style="width: 715px; min-height: 1020px; padding: 14px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column;">
+
+            <!-- ══ HEADER ══ -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid #1A6FBF;">
+                <!-- Left: Logo + Company -->
+                <div style="display: flex; gap: 14px; align-items: flex-start; flex: 1;">
+                    <img src="logo.png" style="height: 56px; max-width: 110px; object-fit: contain; flex-shrink: 0; padding-right: 14px; border-right: 1px solid #e2e8f0;" alt="Mentra Logo">
+                    <div>
+                        <div style="font-size: 14.5px; font-weight: 700; color: #1e1b4b; line-height: 1.3; white-space: nowrap; letter-spacing: normal;">บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
+                        <div style="font-size: 10.5px; font-weight: 600; color: #E07B2F; margin: 1px 0 4px 0; white-space: nowrap;">MENTRA SOLUTION CO., LTD. (Head Office)</div>
+                        <div style="font-size: 11px; color: #6b7280; line-height: 1.5; letter-spacing: normal;">
+                            115/123 ม.12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540
+                        </div>
+                        <div style="font-size: 11px; color: #6b7280; letter-spacing: normal;">
+                            <span style="color: #1A6FBF; font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;
+                            <span style="color: #1A6FBF; font-weight: 600;">EMAIL:</span> wattanachai966@gmail.com &nbsp;
+                            <span style="color: #1A6FBF; font-weight: 600;">TAX ID:</span> 0115568026644
+                        </div>
+                    </div>
+                </div>
+                <!-- Right: Doc Title -->
+                <div style="text-align: right; padding-left: 16px; border-left: 3px solid #1A6FBF; flex-shrink: 0; padding-top: 4px;">
+                    <div style="font-size: 21px; font-weight: 800; color: #1A6FBF; line-height: 1.1; white-space: nowrap; letter-spacing: normal;">ใบเสนอราคา</div>
+                    <div style="font-size: 11px; color: #E07B2F; font-weight: 700; letter-spacing: 2px; margin-top: 3px;">QUOTATION</div>
+                </div>
+            </div>
+
+            <!-- ══ RECIPIENT + DOC INFO ══ -->
+            <div style="display: flex; gap: 0; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e8edf5;">
+                <!-- Left: Recipient -->
+                <div style="flex: 1.4; padding: 0 20px 0 0;">
+                    <div style="font-size: 9px; font-weight: 700; color: #1A6FBF; letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">RECIPIENT INFORMATION</div>
+                    <table style="width: 100%; border-collapse: collapse; border: none !important; margin: 0; padding: 0;">
+                        <tr style="border: none !important;">
+                            <td style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">ชื่อ / To:</td>
+                            <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; font-weight: 700; color: #1e1b4b; line-height: 1.4; font-family: 'Sarabun', sans-serif;" id="pToCompany"></td>
+                        </tr>
+                        <tr style="border: none !important;">
+                            <td style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.5; font-family: 'Sarabun', sans-serif;">ที่อยู่:</td>
+                            <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.5; word-break: break-word; white-space: normal; font-family: 'Sarabun', sans-serif;" id="pToAddress"></td>
+                        </tr>
+                        <tr style="border: none !important;">
+                            <td style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">ติดต่อ / Attn:</td>
+                            <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4; font-family: 'Sarabun', sans-serif;" id="pToAttn"></td>
+                        </tr>
+                        <tr style="border: none !important;">
+                            <td style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">โทร / Tel:</td>
+                            <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
+                                <span id="pToTel"></span>
+                                <span style="margin: 0 5px; color: #d1d5db;">|</span>
+                                <span style="color: #6b7280; font-weight: 600;">อีเมล: </span><span id="pToEmail"></span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <!-- Right: Doc Details -->
+                <div style="flex: 0.6; padding: 0 0 0 20px; border-left: 1px solid #e8edf5;">
+                    <div style="font-size: 9px; font-weight: 700; color: #1A6FBF; letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">DOCUMENT DETAILS</div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
+                        <span style="color: #6b7280; font-weight: 600;">เลขที่ / Ref. No:</span>
+                        <span style="font-weight: 700; color: #1A6FBF; letter-spacing: normal;" id="pRefNo"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
+                        <span style="color: #6b7280; font-weight: 600;">วันที่ / Date:</span>
+                        <span style="color: #1f2937; letter-spacing: normal;" id="pDocDate"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
+                        <span style="color: #6b7280; font-weight: 600;">ยืนราคา / Validity:</span>
+                        <span style="color: #1f2937; letter-spacing: normal;" id="pValidity"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
+                        <span style="color: #6b7280; font-weight: 600;">ส่งมอบ / Delivery:</span>
+                        <span style="color: #1f2937; letter-spacing: normal;" id="pDelivery"></span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; letter-spacing: normal;">
+                        <span style="color: #6b7280; font-weight: 600;">ชำระเงิน / Payment:</span>
+                        <span style="color: #1f2937; letter-spacing: normal;" id="pPayment"></span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ══ INTRO ══ -->
+            <p style="margin-bottom: 10px; font-size: 11px; color: #374151; letter-spacing: normal;">ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:</p>
+
+            <!-- ══ ITEMS TABLE ══ -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal; border: 1px solid #e0e7ff; border-radius: 6px; overflow: hidden;">
+                <thead>
+                    <tr style="background-color: #1A6FBF;">
+                        <th style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">ลำดับ</th>
+                        <th style="padding: 9px 7px; text-align: left; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; border-right: 1px solid rgba(255,255,255,0.18);">รายการสินค้า / รายละเอียด</th>
+                        <th style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">จำนวน</th>
+                        <th style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">หน่วย</th>
+                        <th style="padding: 9px 7px; text-align: right; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 95px;">ราคา/หน่วย</th>
+                        <th style="padding: 9px 7px; text-align: right; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; width: 110px;">จำนวนเงิน</th>
+                    </tr>
+                </thead>
+                <tbody id="pItemsBody" style="letter-spacing: normal;">
+                    <!-- Dynamic print items -->
+                </tbody>
+            </table>
+
+            <!-- ══ SUMMARY + REMARK ══ -->
+            <div style="display: flex; gap: 18px; align-items: flex-start;">
+                <!-- Remark -->
+                <div style="flex: 1;">
+                    <div style="font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 5px; letter-spacing: normal;">หมายเหตุ (Remark):</div>
+                    <div id="pRemark" style="font-size: 11px; color: #4b5563; padding: 9px 12px; background: #f9fafb; border-radius: 5px; border: 1px solid #e5e7eb; min-height: 52px; white-space: normal; line-height: 1.6; letter-spacing: normal;">-</div>
+                </div>
+                <!-- Totals -->
+                <div style="flex: 0.85; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal;">
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 6px 12px; color: #6b7280; letter-spacing: normal;">รวมเงิน (Sub Total):</td>
+                            <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;" id="pSubTotal">0.00</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <td style="padding: 6px 12px; color: #6b7280; white-space: nowrap; letter-spacing: normal;">ภาษีมูลค่าเพิ่ม 7% (VAT):</td>
+                            <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;" id="pVat">0.00</td>
+                        </tr>
+                        <tr style="background: #e8f1fb;">
+                            <td style="padding: 8px 12px; color: #1A6FBF; font-weight: 700; font-size: 12px; white-space: nowrap; letter-spacing: normal;">จำนวนเงินรวมทั้งสิ้น:</td>
+                            <td style="padding: 8px 12px; text-align: right; color: #1A6FBF; font-weight: 700; font-size: 12px; letter-spacing: normal;" id="pGrandTotal">0.00</td>
+                        </tr>
+                    </table>
+                    <div id="pBahtText" style="text-align: center; font-weight: 600; font-size: 11px; color: #1A6FBF; padding: 6px 12px; background: #fff; border-top: 1px solid #e2e8f0; letter-spacing: normal;">
+                        (ศูนย์บาทถ้วน)
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ SPACER ══ -->
+            <div style="flex-grow: 1;"></div>
+
+            <!-- ══ SIGNATURE BLOCK ══ -->
+            <div style="border-top: 1px solid #e0e7ff; padding-top: 14px; margin-top: 18px;">
+                <div style="display: flex; justify-content: space-between; text-align: center;">
+                    <div style="width: 200px;">
+                        <div style="height: 50px; border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
+                        <div style="font-weight: 600; font-size: 11px; color: #374151; letter-spacing: normal;">ผู้เสนอราคา (Prepared By)</div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 4px; letter-spacing: normal;">วันที่ ......../......../........</div>
+                    </div>
+                    <div style="width: 200px;">
+                        <div style="height: 50px; border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
+                        <div style="font-weight: 600; font-size: 11px; color: #374151; letter-spacing: normal;">ผู้อนุมัติ (Authorized By)</div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 4px; letter-spacing: normal;">วันที่ ......../......../........</div>
+                    </div>
+                    <div style="width: 200px;">
+                        <div style="height: 50px; border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
+                        <div style="font-weight: 600; font-size: 11px; color: #374151; letter-spacing: normal;">ผู้อนุมัติสั่งซื้อ (Accepted By)</div>
+                        <div style="font-size: 11px; color: #9ca3af; margin-top: 4px; letter-spacing: normal;">วันที่ ......../......../........</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+                </div>
+            </div>
+
+            <!-- ═══ SPACER: pushes signature to bottom ═══ -->
+            <div style="flex-grow: 1;"></div>
+
+            <!-- ═══ SIGNATURE BLOCK ═══ -->
+            <div style="border-top: 1px solid #e0e7ff; padding-top: 16px; margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; text-align: center;">
+                    <div style="width: 200px;">
+                        <div style="height: 52px; border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
+                        <div style="font-weight: 600; font-size: 10.5px; color: #374151;">ผู้เสนอราคา (Prepared By)</div>
+                        <div style="font-size: 9.5px; color: #9ca3af; margin-top: 4px;">วันที่ ........../........../..........
+                        </div>
+                    </div>
+                    <div style="width: 200px;">
+                        <div style="height: 52px; border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
+                        <div style="font-weight: 600; font-size: 10.5px; color: #374151;">ผู้อนุมัติ (Authorized By)</div>
+                        <div style="font-size: 9.5px; color: #9ca3af; margin-top: 4px;">วันที่ ........../........../..........
+                        </div>
+                    </div>
+                    <div style="width: 200px;">
+                        <div style="height: 52px; border-bottom: 1px solid #9ca3af; margin-bottom: 8px;"></div>
+                        <div style="font-weight: 600; font-size: 10.5px; color: #374151;">ผู้อนุมัติสั่งซื้อ (Accepted By)</div>
+                        <div style="font-size: 9.5px; color: #9ca3af; margin-top: 4px;">วันที่ ........../........../..........
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import {
+            initializeFirestore, doc, getDoc, setDoc,
+            persistentLocalCache, persistentMultipleTabManager
+        } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        // --- Firebase & Firestore Setup ---
+        let FIREBASE_CONFIG = null;
+        try {
+            const cfg = await import('./firebase-config.js');
+            FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
+        } catch (e) {
+            console.warn('firebase-config.js not found, using default fallback');
+        }
+
+        if (!FIREBASE_CONFIG) {
+            FIREBASE_CONFIG = {
+                apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
+                authDomain: "mentra-manager-e039f.firebaseapp.com",
+                projectId: "mentra-manager-e039f",
+                storageBucket: "mentra-manager-e039f.firebasestorage.app",
+                messagingSenderId: "563604754745",
+                appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
+            };
+        }
+
+        const app = initializeApp(FIREBASE_CONFIG);
+        const auth = getAuth(app);
+        const db = initializeFirestore(app, {
+            localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
+        });
+
+        let currentUser = null;
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('docDate').valueAsDate = new Date();
+            generateRefNo();
+            addTableRow(); // Add 1 empty row by default
+            loadSavedRecipientsDropdown(); // Load saved recipient profiles
+        });
+
+        // --- Firebase Auth Guard & Cloud Sync Listener ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                try {
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (snap.exists()) {
+                        const userData = snap.data();
+                        if (userData && userData.savedRecipients) {
+                            // Sync Firestore cloud data down to local machine storage
+                            localStorage.setItem('saved_recipients', JSON.stringify(userData.savedRecipients));
+                            loadSavedRecipientsDropdown();
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error loading recipients from Firestore:", err);
+                }
+            }
+        });
+
+        // --- Core Functions ---
+        function generateRefNo() {
+            const date = new Date();
+            const year = date.getFullYear().toString().slice(-2);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const randomRun = Math.floor(Math.random() * 99) + 1;
+            const runStr = String(randomRun).padStart(2, '0');
+            document.getElementById('refNo').value = `MTQ${year}${month}${runStr}`;
+        }
+
+        function formatNumber(num) {
+            return parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // --- Table Management ---
+        function addTableRow() {
+            const tbody = document.getElementById('itemsBody');
+            const rowCount = tbody.children.length;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; font-size: 0.95rem;">${rowCount + 1}</td>
+                <td><input type="text" class="table-input item-desc" placeholder="ชื่อสินค้า/บริการ"></td>
+                <td><input type="number" class="table-input item-qty" value="1" min="1" onchange="calculateRow(this)"></td>
+                <td><input type="text" class="table-input item-unit" value="งาน"></td>
+                <td><input type="number" class="table-input item-price" value="0" min="0" step="0.01" onchange="calculateRow(this)"></td>
+                <td style="vertical-align: middle; text-align: right;" class="item-total-text">0.00</td>
+                <td class="col-action" style="vertical-align: middle;">
+                    <button class="btn btn-danger" onclick="removeTableRow(this)"><i class='bx bx-trash'></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            updateRowNumbers();
+            calculateAll();
+        }
+
+        function removeTableRow(btn) {
+            const tbody = document.getElementById('itemsBody');
+            if (tbody.children.length > 1) {
+                btn.closest('tr').remove();
+                updateRowNumbers();
+                calculateAll();
+            } else {
+                alert("ต้องมีรายการอย่างน้อย 1 รายการ");
+            }
+        }
+
+        function updateRowNumbers() {
+            const rows = document.getElementById('itemsBody').children;
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].cells[0].innerText = i + 1;
+            }
+        }
+
+        function calculateRow(input) {
+            const tr = input.closest('tr');
+            const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(tr.querySelector('.item-price').value) || 0;
+            const total = qty * price;
+            tr.querySelector('.item-total-text').innerText = formatNumber(total);
+            tr.dataset.total = total; 
+            calculateAll();
+        }
+
+        function calculateAll() {
+            const rows = document.getElementById('itemsBody').children;
+            let grandTotal = 0;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const tr = rows[i];
+                const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(tr.querySelector('.item-price').value) || 0;
+                grandTotal += (qty * price);
+            }
+
+            const vat = grandTotal * (7 / 107);
+            const subTotal = grandTotal - vat;
+
+            document.getElementById('subTotalDisplay').innerText = formatNumber(subTotal);
+            document.getElementById('vatDisplay').innerText = formatNumber(vat);
+            document.getElementById('grandTotalDisplay').innerText = formatNumber(grandTotal);
+            
+            document.getElementById('thaiBahtText').innerText = `(${ArabicNumberToText(grandTotal.toFixed(2))})`;
+        }
+
+        // --- Thai Baht Text Conversion ---
+        function ArabicNumberToText(Number) {
+            let NumberStr = Number.toString();
+            let SplitNum = NumberStr.split('.');
+            let BahtNum = SplitNum[0];
+            let SatangNum = SplitNum.length > 1 ? SplitNum[1] : "00";
+            
+            if (SatangNum.length == 1) SatangNum += "0";
+            if (BahtNum == "0" && SatangNum == "00") return "ศูนย์บาทถ้วน";
+
+            const TxtNumArr = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า", "สิบ"];
+            const TxtDigitArr = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+
+            function ConvertText(numStr) {
+                let text = "";
+                let len = numStr.length;
+                for (let i = 0; i < len; i++) {
+                    let n = parseInt(numStr.charAt(i));
+                    let digit = len - i - 1;
+                    if (n !== 0) {
+                        if (digit === 1 && n === 1) {
+                            text += "สิบ";
+                        } else if (digit === 1 && n === 2) {
+                            text += "ยี่สิบ";
+                        } else if (digit === 0 && n === 1 && len > 1 && numStr.charAt(i-1) != '0') {
+                            text += "เอ็ด";
+                        } else {
+                            text += TxtNumArr[n] + TxtDigitArr[digit];
+                        }
+                    }
+                }
+                return text;
+            }
+
+            let BahtText = "";
+            if (parseInt(BahtNum) > 0) {
+                if(BahtNum.length > 6) {
+                    let millions = BahtNum.substring(0, BahtNum.length - 6);
+                    let rest = BahtNum.substring(BahtNum.length - 6);
+                    BahtText = ConvertText(millions) + "ล้าน" + ConvertText(rest) + "บาท";
+                } else {
+                    BahtText = ConvertText(BahtNum) + "บาท";
+                }
+            }
+            
+            let SatangText = "";
+            if (parseInt(SatangNum) > 0) {
+                SatangText = ConvertText(SatangNum) + "สตางค์";
+            } else {
+                SatangText = "ถ้วน";
+            }
+
+            return BahtText + SatangText;
+        }
+
+        // --- PDF Export using html2pdf.js ---
+        function exportToPDF() {
+            calculateAll(); // Recalculate everything
+
+            // Copy input values to Print Template
+            document.getElementById('pToCompany').innerText = document.getElementById('toCompany').value || '-';
+            document.getElementById('pToAddress').innerHTML = (document.getElementById('toAddress').value || '-').replace(/\n/g, '<br>');
+            document.getElementById('pToAttn').innerText = document.getElementById('toAttn').value || '-';
+            document.getElementById('pToTel').innerText = document.getElementById('toTel').value || '-';
+            document.getElementById('pToEmail').innerText = document.getElementById('toEmail').value || '-';
+            
+            document.getElementById('pRefNo').innerText = document.getElementById('refNo').value;
+            
+            // Format Date for print template
+            const docDateVal = document.getElementById('docDate').value;
+            let dateObj = new Date(docDateVal);
+            document.getElementById('pDocDate').innerText = isNaN(dateObj.getTime()) ? '-' : `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+            
+            document.getElementById('pValidity').innerText = document.getElementById('termValidity').value || '-';
+            document.getElementById('pDelivery').innerText = document.getElementById('termDelivery').value || '-';
+            document.getElementById('pPayment').innerText = document.getElementById('termPayment').value || '-';
+            
+            document.getElementById('pRemark').innerHTML = (document.getElementById('remark').value || '-').replace(/\n/g, '<br>');
+            
+            document.getElementById('pSubTotal').innerText = document.getElementById('subTotalDisplay').innerText;
+            document.getElementById('pVat').innerText = document.getElementById('vatDisplay').innerText;
+            document.getElementById('pGrandTotal').innerText = document.getElementById('grandTotalDisplay').innerText;
+            document.getElementById('pBahtText').innerText = document.getElementById('thaiBahtText').innerText;
+
+            // Generate Print Table rows
+            const pItemsBody = document.getElementById('pItemsBody');
+            pItemsBody.innerHTML = ''; // Clear previous
+
+            const rows = document.getElementById('itemsBody').children;
+            for (let i = 0; i < rows.length; i++) {
+                const tr = rows[i];
+                const desc = tr.querySelector('.item-desc').value || '-';
+                const qty = tr.querySelector('.item-qty').value || '0';
+                const unit = tr.querySelector('.item-unit').value || '-';
+                const price = parseFloat(tr.querySelector('.item-price').value || 0);
+                const totalText = tr.querySelector('.item-total-text').innerText;
+
+                const newTr = document.createElement('tr');
+                newTr.style.borderBottom = '0.5px solid #e2e8f0';
+                newTr.style.letterSpacing = 'normal';
+                if (i % 2 === 1) {
+                    newTr.style.backgroundColor = '#f8fafc'; // Zebra striping
+                }
+                newTr.innerHTML = `
+                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${i + 1}</td>
+                    <td style="padding: 7px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">${desc}</td>
+                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
+                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
+                    <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
+                    <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-weight: 500; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
+                `;
+                pItemsBody.appendChild(newTr);
+            }
+
+            // Fill with empty aesthetic lines if less than 5 items
+            const minRows = 5;
+            if (rows.length < minRows) {
+                for (let i = rows.length; i < minRows; i++) {
+                    const emptyTr = document.createElement('tr');
+                    emptyTr.style.borderBottom = '0.5px solid #e2e8f0';
+                    emptyTr.style.letterSpacing = 'normal';
+                    if (i % 2 === 1) {
+                        emptyTr.style.backgroundColor = '#f8fafc'; // Zebra striping for empty rows
+                    }
+                    emptyTr.innerHTML = `
+                        <td style="padding: 5px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
+                    `;
+                    pItemsBody.appendChild(emptyTr);
+                }
+            }
+
+            // Temporarily show the print area for html2pdf to grab styling correctly, then hide
+            const printElement = document.getElementById('printArea');
+            printElement.style.display = 'block';
+
+            // Wait for all Google Web Fonts to be 100% loaded and ready in the browser
+            document.fonts.ready.then(() => {
+                // Delay 150ms to ensure the browser has completed the text paint cycle
+                setTimeout(() => {
+                    const refNo = document.getElementById('refNo').value || 'Quotation';
+                    const clientName = (document.getElementById('toCompany').value || '').trim();
+                    const filenameStr = clientName ? `${refNo} ${clientName}.pdf` : `${refNo}.pdf`;
+
+                    // Configure html2pdf options
+                    const opt = {
+                        margin:       [6, 10, 10, 10],
+                        filename:     filenameStr,
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2, useCORS: true, logging: false },
+                        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+
+                    // Generate and save
+                    html2pdf().set(opt).from(printElement).save().then(() => {
+                        printElement.style.display = 'none';
+                    }).catch(err => {
+                        console.error("PDF generation failed:", err);
+                        printElement.style.display = 'none';
+                        alert("เกิดข้อผิดพลาดในการสร้าง PDF");
+                    });
+                }, 150);
+            });
+        }
+
+        // --- Recipient Profile Management ---
+        function getSavedRecipients() {
+            const stored = localStorage.getItem('saved_recipients');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function loadSavedRecipientsDropdown() {
+            const select = document.getElementById('savedRecipientsSelect');
+            const deleteBtn = document.getElementById('deleteRecipientBtn');
+            select.innerHTML = '<option value="">-- เลือกผู้รับที่บันทึกไว้ --</option>';
+            
+            const recipients = getSavedRecipients();
+            recipients.forEach((r, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.innerText = r.toCompany;
+                select.appendChild(opt);
+            });
+            
+            deleteBtn.style.display = 'none'; // Hide delete button initially
+        }
+
+        async function saveCurrentRecipient() {
+            const toCompany = document.getElementById('toCompany').value.trim();
+            const toAddress = document.getElementById('toAddress').value.trim();
+            const toAttn = document.getElementById('toAttn').value.trim();
+            const toTel = document.getElementById('toTel').value.trim();
+            const toEmail = document.getElementById('toEmail').value.trim();
+
+            if (!toCompany) {
+                alert("กรุณากรอกชื่อบริษัท / ผู้รับ เพื่อใช้บันทึกข้อมูล");
+                return;
+            }
+
+            const recipients = getSavedRecipients();
+            const newRecipient = { toCompany, toAddress, toAttn, toTel, toEmail };
+
+            // Check if already exists, update it, otherwise add new
+            const existingIndex = recipients.findIndex(r => r.toCompany.toLowerCase() === toCompany.toLowerCase());
+            if (existingIndex > -1) {
+                recipients[existingIndex] = newRecipient;
+            } else {
+                recipients.push(newRecipient);
+            }
+
+            localStorage.setItem('saved_recipients', JSON.stringify(recipients));
+            loadSavedRecipientsDropdown();
+
+            // Sync to Firestore cloud if logged in
+            if (currentUser) {
+                try {
+                    await setDoc(doc(db, 'users', currentUser.uid), {
+                        savedRecipients: recipients
+                    }, { merge: true });
+                    alert(`บันทึกและซิงค์ข้อมูลผู้รับ "${toCompany}" ไปยังคลาวด์สำเร็จ!`);
+                } catch (err) {
+                    console.error("Firestore sync failed:", err);
+                    alert(`บันทึกข้อมูลผู้รับ "${toCompany}" สำเร็จในเครื่อง (แต่เชื่อมต่อระบบคลาวด์ล้มเหลว)`);
+                }
+            } else {
+                alert(`บันทึกข้อมูลผู้รับ "${toCompany}" สำเร็จในเครื่องนี้ (กรุณาเข้าสู่ระบบเพื่อใช้งานข้ามเครื่อง)`);
+            }
+            
+            // Auto select newly saved recipient
+            const updatedRecipients = getSavedRecipients();
+            const newIndex = updatedRecipients.findIndex(r => r.toCompany === toCompany);
+            if (newIndex > -1) {
+                const select = document.getElementById('savedRecipientsSelect');
+                select.value = newIndex;
+                loadSavedRecipient();
+            }
+        }
+
+        function loadSavedRecipient() {
+            const select = document.getElementById('savedRecipientsSelect');
+            const deleteBtn = document.getElementById('deleteRecipientBtn');
+            const selectedVal = select.value;
+
+            if (selectedVal === "") {
+                deleteBtn.style.display = 'none';
+                return;
+            }
+
+            const recipients = getSavedRecipients();
+            const r = recipients[selectedVal];
+            
+            if (r) {
+                document.getElementById('toCompany').value = r.toCompany;
+                document.getElementById('toAddress').value = r.toAddress;
+                document.getElementById('toAttn').value = r.toAttn;
+                document.getElementById('toTel').value = r.toTel;
+                document.getElementById('toEmail').value = r.toEmail;
+                deleteBtn.style.display = 'inline-block'; // Show delete button
+            }
+        }
+
+        async function deleteSelectedRecipient() {
+            const select = document.getElementById('savedRecipientsSelect');
+            const selectedVal = select.value;
+
+            if (selectedVal === "") return;
+
+            const recipients = getSavedRecipients();
+            const r = recipients[selectedVal];
+
+            if (r && confirm(`คุณต้องการลบข้อมูลผู้รับ "${r.toCompany}" ใช่หรือไม่?`)) {
+                recipients.splice(selectedVal, 1);
+                localStorage.setItem('saved_recipients', JSON.stringify(recipients));
+                
+                // Clear fields
+                document.getElementById('toCompany').value = '';
+                document.getElementById('toAddress').value = '';
+                document.getElementById('toAttn').value = '';
+                document.getElementById('toTel').value = '';
+                document.getElementById('toEmail').value = '';
+                
+                loadSavedRecipientsDropdown();
+
+                // Sync delete to Firestore if logged in
+                if (currentUser) {
+                    try {
+                        await setDoc(doc(db, 'users', currentUser.uid), {
+                            savedRecipients: recipients
+                        }, { merge: true });
+                    } catch (err) {
+                        console.error("Firestore delete sync failed:", err);
+                    }
+                }
+            }
+        }
+
+        // --- Expose functions to global window scope for inline HTML events ---
+        window.addTableRow = addTableRow;
+        window.removeTableRow = removeTableRow;
+        window.calculateRow = calculateRow;
+        window.exportToPDF = exportToPDF;
+        window.saveCurrentRecipient = saveCurrentRecipient;
+        window.loadSavedRecipient = loadSavedRecipient;
+        window.deleteSelectedRecipient = deleteSelectedRecipient;
+    </script>
+</body>
+</html>
