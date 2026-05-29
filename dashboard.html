@@ -103,7 +103,7 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            display: flex;
+            display: none; /* Hidden by default until authenticated */
             overflow: hidden;
             -webkit-font-smoothing: antialiased;
         }
@@ -2930,7 +2930,10 @@
             if (snap.exists()) {
                 currentUserData = snap.data();
             } else {
-                currentUserData = { displayName: user.email, role: 'user', status: 'approved' };
+                alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
+                await signOut(auth);
+                window.location.href = 'index.html?msg=deleted';
+                return;
             }
 
             // Check approval status
@@ -2948,6 +2951,9 @@
             }
 
             setupUI();
+            
+            // Show body now that the user is fully verified
+            document.body.style.display = 'flex';
             
             // URL Param Routing
             const params = new URLSearchParams(window.location.search);

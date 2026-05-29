@@ -39,7 +39,7 @@
             background: radial-gradient(circle at 50% 0%, #13253f 0%, var(--bg) 70%);
             color: var(--text);
             min-height: 100vh;
-            display: flex;
+            display: none; /* Hidden by default until authenticated */
             flex-direction: column;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
@@ -1061,9 +1061,30 @@
             }
             try {
                 const snap = await getDoc(doc(db, 'users', user.uid));
-                if (!snap.exists() || snap.data().role !== 'admin') {
+                if (!snap.exists()) {
+                    alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
+                    await auth.signOut();
+                    window.location.href = 'index.html?msg=deleted';
+                    return;
+                }
+                const userData = snap.data();
+                if (userData.role !== 'admin') {
                     alert('ขออภัย หน้าเว็บนี้จำกัดสิทธิ์เฉพาะผู้ดูแลระบบ (Admin) เท่านั้น');
                     window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                // Check approval status
+                const userStatus = userData.status || 'approved';
+                if (userStatus === 'pending') {
+                    alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
+                    await auth.signOut();
+                    window.location.href = 'index.html?msg=pending';
+                    return;
+                } else if (userStatus === 'rejected') {
+                    alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ');
+                    await auth.signOut();
+                    window.location.href = 'index.html?msg=rejected';
                     return;
                 }
                 
@@ -1071,6 +1092,9 @@
                 updateDashboardStats();
                 loadDirectoryUsersData();
                 loadPendingApprovals();
+
+                // Show body now that the user is fully verified
+                document.body.style.display = 'flex';
             } catch (err) {
                 console.error("Auth Guard Error:", err);
                 window.location.href = 'dashboard.html';

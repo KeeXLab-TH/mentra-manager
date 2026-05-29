@@ -57,7 +57,7 @@
         }
 
         body {
-            display: flex;
+            display: none; /* Hidden by default until authenticated */
             min-height: 100vh;
             background-color: var(--bg-color);
             color: var(--text-main);
@@ -1386,6 +1386,20 @@
                     if (snap.exists()) {
                         const userData = snap.data();
 
+                        // Check status
+                        const userStatus = userData.status || 'approved';
+                        if (userStatus === 'pending') {
+                            alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
+                            await signOut(auth);
+                            window.location.href = 'index.html?msg=pending';
+                            return;
+                        } else if (userStatus === 'rejected') {
+                            alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ');
+                            await signOut(auth);
+                            window.location.href = 'index.html?msg=rejected';
+                            return;
+                        }
+
                         // Populate User Profile in Sidebar
                         const { displayName, role, firstName } = userData;
                         const initials = (firstName || displayName || 'U').charAt(0).toUpperCase();
@@ -1432,12 +1446,14 @@
                             }
                             loadSavedRecipientsDropdown();
                         }
+                        
+                        // Show body now that the user is fully verified
+                        document.body.style.display = 'flex';
                     } else {
-                        // Fallback user data
-                        document.getElementById('userAvatar').textContent = user.email.charAt(0).toUpperCase();
-                        document.getElementById('userName').textContent = user.email;
-                        document.getElementById('userRoleBadge').textContent = 'User';
-                        document.getElementById('userRoleBadge').className = 'role-badge user';
+                        // User document deleted!
+                        alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
+                        await signOut(auth);
+                        window.location.href = 'index.html?msg=deleted';
                     }
                 } catch (err) {
                     console.error("Error loading user profile:", err);

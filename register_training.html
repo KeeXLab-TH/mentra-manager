@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ลงทะเบียนเข้าร่วมอบรม — Mentra Manager</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #1A6FBF;
+            --primary-dark: #145999;
+            --primary-glow: rgba(26, 111, 191, 0.18);
+            --secondary: #E07B2F;
+            --secondary-dark: #c4681f;
+            --secondary-light: #fdf0e6;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.12);
+            --bg: #090d16;
+            --white: #ffffff;
+            --card-bg: rgba(20, 30, 55, 0.65);
+            --radius-md: 16px;
+            --radius-lg: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Kanit', 'Inter', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #13253f 0%, var(--bg) 70%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Ambient floating blurred light spots */
+        body::before,
+        body::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::before {
+            top: -5%;
+            left: -10%;
+            background: var(--primary);
+            opacity: 0.35;
+        }
+
+        body::after {
+            bottom: -5%;
+            right: -10%;
+            background: var(--secondary);
+            opacity: 0.2;
+        }
+
+        /* Glassmorphic Container */
+        .register-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 520px;
+            padding: 40px 32px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+            animation: cardFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes cardFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-logo img {
+            width: 68px;
+            height: 68px;
+            object-fit: contain;
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 6px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-logo h2 {
+            font-family: 'Prompt', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .header-logo h2 span {
+            color: #ffb067;
+        }
+
+        .header-logo p {
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            margin-top: 6px;
+        }
+
+        /* Course Info Box */
+        .info-box {
+            background: rgba(10, 15, 30, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 28px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 12px;
+            align-items: flex-start;
+            font-size: 14.5px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-lbl {
+            width: 110px;
+            color: var(--text-muted);
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .info-val {
+            color: #ffffff;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .info-val.course-title {
+            color: #ffb067;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+        }
+
+        .input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 14px 16px 14px 44px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.25s ease;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .input-wrap input::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .input-wrap input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ffb067;
+            box-shadow: 0 0 0 4px rgba(224, 123, 47, 0.25);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 16px;
+            transition: color 0.25s ease;
+        }
+
+        .input-wrap input:focus + .input-icon {
+            color: #ffb067;
+        }
+
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #ffb067, #e07b2f);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 8px 24px rgba(224, 123, 47, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-1.5px);
+            box-shadow: 0 12px 30px rgba(224, 123, 47, 0.45);
+            filter: brightness(1.08);
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        .btn-submit:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Status Panels */
+        .status-panel {
+            display: none;
+            text-align: center;
+            animation: fadeInUp 0.5s ease both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid #10b981;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 24px;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+        }
+
+        .status-panel.error .status-icon {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            color: #ef4444;
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
+        }
+
+        .status-panel h3 {
+            font-family: 'Prompt', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .status-panel p {
+            color: var(--text-secondary);
+            font-size: 14.5px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        /* Spinner */
+        .btn-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-cover {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .loading-cover .spinner {
+            width: 36px;
+            height: 36px;
+            border: 3.5px solid rgba(255, 255, 255, 0.15);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="register-container">
+        <!-- Logo & Branding -->
+        <div class="header-logo">
+            <img src="logo.png" alt="Mentra Logo" onerror="this.style.display='none'">
+            <h2>Mentra <span>Manager</span></h2>
+            <p>ระบบลงทะเบียนเข้าร่วมอบรมพิเศษสำหรับบุคลากร</p>
+        </div>
+
+        <!-- 1. LOADING SCREEN -->
+        <div id="loadingView" class="loading-cover">
+            <div class="spinner"></div>
+            <p style="color: var(--text-muted); font-size: 13.5px;">กำลังโหลดรายละเอียดหลักสูตรอบรม...</p>
+        </div>
+
+        <!-- 2. ERROR SCREEN (Course Not Found) -->
+        <div id="errorView" class="status-panel error">
+            <div class="status-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="errorTitle">ไม่พบหลักสูตรอบรม</h3>
+            <p id="errorMsg">ขออภัย ลิงก์ลงทะเบียนนี้ไม่ถูกต้อง หรือรหัสตารางจัดอบรมนี้อาจถูกลบออกไปจากระบบแล้ว กรุณาติดต่อผู้ประสานงานโครงการ</p>
+        </div>
+
+        <!-- 3. MAIN FORM VIEW -->
+        <div id="formView" style="display: none;">
+            <div class="info-box">
+                <div class="info-row">
+                    <div class="info-lbl">หลักสูตรอบรม:</div>
+                    <div class="info-val course-title" id="courseNameVal">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-lbl">วิทยากร:</div>
+                    <div class="info-val" id="trainerVal">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-lbl">สถานที่จัด:</div>
+                    <div class="info-val" id="organizerVal">-</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-lbl">ระยะเวลาอบรม:</div>
+                    <div class="info-val" id="dateVal">-</div>
+                </div>
+            </div>
+
+            <form id="registrationForm" onsubmit="submitRegistration(event)">
+                <div class="form-group">
+                    <label for="traineeName">กรอก ชื่อ-นามสกุล ของคุณ <span>*</span></label>
+                    <div class="input-wrap">
+                        <i class="fa-solid fa-user-tag input-icon"></i>
+                        <input type="text" id="traineeName" required placeholder="เช่น นายประหยัด พอเพียง" autocomplete="off">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    <div class="btn-spinner" id="btnSpinner"></div>
+                    <span id="btnText"><i class="fa-solid fa-circle-check"></i> ยืนยันการลงทะเบียน</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- 4. SUCCESS SCREEN -->
+        <div id="successView" class="status-panel">
+            <div class="status-icon">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3>ลงทะเบียนสำเร็จ!</h3>
+            <p>ข้อมูลรายชื่อของคุณถูกส่งเข้าร่วมเป็นหนึ่งในผู้เข้าอบรมหลักสูตรนี้เรียบร้อยแล้ว แอดมินสามารถนำข้อมูลนี้ไปออกใบเกียรติบัตรวุฒิบัตรได้ทันที</p>
+            <p style="font-size: 12.5px; color: var(--text-muted); font-weight: 500;">(คุณสามารถปิดหน้าต่างบราวเซอร์นี้ได้เลยครับ)</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getFirestore, doc, getDoc, updateDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
+            authDomain: "mentra-manager-e039f.firebaseapp.com",
+            projectId: "mentra-manager-e039f",
+            storageBucket: "mentra-manager-e039f.firebasestorage.app",
+            messagingSenderId: "563604754745",
+            appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let reqId = null;
+        let activeRequestData = null;
+
+        // Initialize Page
+        async function initPage() {
+            const params = new URLSearchParams(window.location.search);
+            reqId = params.get('id');
+
+            if (!reqId) {
+                showView('error');
+                document.getElementById('errorTitle').textContent = 'พารามิเตอร์ไม่ถูกต้อง';
+                document.getElementById('errorMsg').textContent = 'ไม่พบรหัสหลักสูตรจัดอบรมสำหรับลิงก์นี้ กรุณาเปิดลิงก์ผ่านรหัส QR Code หรือ ลิงก์ที่ถูกต้อง';
+                return;
+            }
+
+            try {
+                // Fetch the training requests from Firestore
+                const docSnap = await getDoc(doc(db, 'training_requests', reqId));
+                if (!docSnap.exists()) {
+                    showView('error');
+                    return;
+                }
+
+                activeRequestData = docSnap.data();
+
+                // Populate course info
+                document.getElementById('courseNameVal').textContent = activeRequestData.courseName || '-';
+                document.getElementById('trainerVal').textContent = activeRequestData.requester || '-';
+                document.getElementById('organizerVal').textContent = activeRequestData.organizer || '-';
+                
+                const rangeDate = activeRequestData.startDate 
+                    ? `${activeRequestData.startDate} ถึง ${activeRequestData.endDate}` 
+                    : (activeRequestData.date || '-');
+                document.getElementById('dateVal').textContent = rangeDate;
+
+                showView('form');
+            } catch (err) {
+                console.error("Failed to load course details:", err);
+                showView('error');
+                document.getElementById('errorTitle').textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+                document.getElementById('errorMsg').textContent = `เกิดปัญหาทางเทคนิคในการเชื่อมต่อระบบฐานข้อมูล: ${err.message}`;
+            }
+        }
+
+        // View Navigator
+        function showView(view) {
+            document.getElementById('loadingView').style.display = view === 'loading' ? 'block' : 'none';
+            document.getElementById('errorView').style.display = view === 'error' ? 'block' : 'none';
+            document.getElementById('formView').style.display = view === 'form' ? 'block' : 'none';
+            document.getElementById('successView').style.display = view === 'success' ? 'block' : 'none';
+        }
+
+        // Handle Registration Submission
+        window.submitRegistration = async function(event) {
+            event.preventDefault();
+            const traineeName = document.getElementById('traineeName').value.trim();
+
+            if (!traineeName) return;
+
+            const btn = document.getElementById('btnSubmit');
+            const spinner = document.getElementById('btnSpinner');
+            const btnText = document.getElementById('btnText');
+
+            // Disable UI
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            btnText.style.display = 'none';
+
+            try {
+                // Write update to Firestore database atomically using arrayUnion
+                await updateDoc(doc(db, 'training_requests', reqId), {
+                    participants: arrayUnion(traineeName)
+                });
+
+                showView('success');
+            } catch (err) {
+                console.error("Failed to register trainee:", err);
+                alert(`ขออภัย เกิดข้อผิดพลาดทางเทคนิคในการลงทะเบียน: ${err.message}`);
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                btnText.style.display = 'inline';
+            }
+        }
+
+        // Run
+        window.addEventListener('DOMContentLoaded', initPage);
+    </script>
+
+</body>
+
+</html>

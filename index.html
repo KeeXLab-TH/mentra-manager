@@ -1322,11 +1322,52 @@
             try {
                 let email = identifier;
 
-                // ถ้าไม่ใช่ email ให้หา email จาก username
-                if (!identifier.includes('@')) {
+                // ถ้าเป็น email ให้หาและตรวจใน Firestore ก่อนเพื่อความปลอดภัย
+                if (identifier.includes('@')) {
+                    const usersRef = collection(db, 'users');
+                    const q = query(usersRef, where('email', '==', identifier.toLowerCase()));
+                    const querySnapshot = await getDocs(q);
+                    if (querySnapshot.empty) {
+                        showAlert('ไม่พบชื่อผู้ใช้นี้ในระบบ หรือบัญชีถูกลบแล้ว', 'error');
+                        setLoading(btn, spinner, btnText, false);
+                        return;
+                    }
+                    const userData = querySnapshot.docs[0].data();
+                    const status = userData.status || 'approved';
+                    if (status === 'pending') {
+                        showAlert('บัญชีของคุณอยู่ระหว่างการรออนุมัติจากผู้ดูแลระบบ', 'warning');
+                        setLoading(btn, spinner, btnText, false);
+                        return;
+                    } else if (status === 'rejected') {
+                        showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ', 'error');
+                        setLoading(btn, spinner, btnText, false);
+                        return;
+                    }
+                    email = userData.email;
+                } else {
+                    // ถ้าไม่ใช่ email ให้หา email จาก username
                     const usernameDoc = await getDoc(doc(db, 'usernames', identifier.toLowerCase()));
                     if (!usernameDoc.exists()) {
                         showAlert('ไม่พบชื่อผู้ใช้นี้ในระบบ', 'error');
+                        setLoading(btn, spinner, btnText, false);
+                        return;
+                    }
+                    
+                    // ตรวจสอบข้อมูลใน users เพิ่มเติมเพื่อความปลอดภัย
+                    const userDoc = await getDoc(doc(db, 'users', usernameDoc.data().uid));
+                    if (!userDoc.exists()) {
+                        showAlert('ไม่พบชื่อผู้ใช้นี้ในระบบ หรือบัญชีถูกลบแล้ว', 'error');
+                        setLoading(btn, spinner, btnText, false);
+                        return;
+                    }
+                    const userData = userDoc.data();
+                    const status = userData.status || 'approved';
+                    if (status === 'pending') {
+                        showAlert('บัญชีของคุณอยู่ระหว่างการรออนุมัติจากผู้ดูแลระบบ', 'warning');
+                        setLoading(btn, spinner, btnText, false);
+                        return;
+                    } else if (status === 'rejected') {
+                        showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ', 'error');
                         setLoading(btn, spinner, btnText, false);
                         return;
                     }
@@ -1461,13 +1502,35 @@
                 showAlert('บัญชีของคุณอยู่ระหว่างการรออนุมัติจากผู้ดูแลระบบ โปรดลองเข้าสู่ระบบอีกครั้งในภายหลัง', 'warning');
             } else if (msg === 'rejected') {
                 showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ', 'error');
+            } else if (msg === 'deleted') {
+                showAlert('บัญชีผู้ใช้นี้ถูกลบออกจากระบบแล้ว หรือไม่มีสิทธิ์เข้าใช้งาน', 'error');
             }
         });
 
-        // ===== AUTO REDIRECT IF LOGGED IN =====
-        auth.onAuthStateChanged((user) => {
+        // ===== AUTO REDIRECT IF LOGGED IN WITH VALIDATION =====
+        auth.onAuthStateChanged(async (user) => {
             if (user && !window.isSigningUp) {
-                window.location.href = 'dashboard.html';
+                try {
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (!snap.exists()) {
+                        await signOut(auth);
+                        showAlert('บัญชีผู้ใช้นี้ถูกลบออกจากระบบแล้ว', 'error');
+                        return;
+                    }
+                    const userData = snap.data();
+                    const status = userData.status || 'approved';
+                    if (status === 'pending') {
+                        await signOut(auth);
+                        showAlert('บัญชีของคุณอยู่ระหว่างการรออนุมัติจากผู้ดูแลระบบ โปรดลองเข้าสู่ระบบอีกครั้งในภายหลัง', 'warning');
+                    } else if (status === 'rejected') {
+                        await signOut(auth);
+                        showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ', 'error');
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                } catch (e) {
+                    console.error("Auth redirect validation failed:", e);
+                }
             }
         });
     </script>
