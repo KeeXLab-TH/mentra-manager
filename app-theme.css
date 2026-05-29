@@ -619,24 +619,37 @@ tbody tr:hover td {
 
 
 /* ================================================================
-   XX. RESPONSIVE REFINEMENTS — MOBILE-FIRST
+   XX. DESKTOP — HIDE MOBILE NAV ELEMENTS
+   ================================================================ */
+@media (min-width: 901px) {
+    /* All mobile-only UI stays hidden on desktop */
+    .mnav-bar,
+    .mnav-fab,
+    .mnav-sheet-overlay,
+    .mnav-sheet,
+    .mobile-menu-overlay,
+    .mobile-menu-drawer,
+    .mobile-more-btn {
+        display: none !important;
+    }
+}
+
+
+/* ================================================================
+   XXA. MOBILE BOTTOM NAVIGATION — FULL REDESIGN (< 900px)
    ================================================================ */
 @media (max-width: 900px) {
+
     /* ── Touch-friendly targets ── */
     .btn {
         min-height: 44px;
         padding: 10px 18px;
     }
 
-    .nav-item {
-        min-height: 48px;
-        padding: 12px 14px;
-    }
-
     .filter-bar select,
     .filter-bar input {
         min-height: 44px;
-        font-size: 16px; /* prevents iOS zoom */
+        font-size: 16px;
     }
 
     .field-group input,
@@ -660,33 +673,679 @@ tbody tr:hover td {
     }
 
     @keyframes modalSlideUp {
-        from {
-            opacity: 0;
-            transform: translateY(100%);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* ── Theme toggle repositioned ── */
-    .theme-toggle-btn {
-        bottom: 16px;
-        right: 16px;
-        width: 42px;
-        height: 42px;
-        font-size: 18px;
+        from { opacity: 0; transform: translateY(100%); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
     /* ── Card spacing ── */
-    .stat-card {
-        padding: 16px 14px;
+    .stat-card { padding: 16px 14px; }
+    .stat-card:hover {
+        transform: none;
+        box-shadow: var(--depth-1);
     }
 
-    .stat-card:hover {
-        transform: none; /* Avoid hover effects on touch */
-        box-shadow: var(--depth-1);
+    /* ════════════════════════════════════════════════
+       KILL ORIGINAL SIDEBAR ON MOBILE
+    ════════════════════════════════════════════════ */
+    .sidebar,
+    .sidebar-overlay,
+    .hamburger,
+    .sidebar-overlay {
+        display: none !important;
+    }
+
+    .main-wrapper {
+        margin-left: 0 !important;
+        padding-bottom: calc(74px + env(safe-area-inset-bottom)) !important;
+    }
+
+
+
+    /* ════════════════════════════════════════════════
+       PREMIUM BOTTOM NAVIGATION BAR  (.mnav-bar)
+    ════════════════════════════════════════════════ */
+    .mnav-bar {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: calc(76px + env(safe-area-inset-bottom)) !important; /* Taller height for comfort */
+        padding-bottom: calc(6px + env(safe-area-inset-bottom)) !important;
+        display: flex !important;
+        align-items: center !important; /* Centered alignment */
+        justify-content: space-around !important;
+        padding-top: 4px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        z-index: 9980 !important;
+
+        /* Glassmorphism background matching the beautiful theme */
+        background: rgba(11, 61, 110, 0.94) !important;
+        backdrop-filter: blur(20px) saturate(1.6) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(1.6) !important;
+
+        border-top: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 -8px 32px rgba(11, 61, 110, 0.35) !important;
+    }
+
+    [data-theme="dark"] .mnav-bar {
+        background: rgba(15, 23, 42, 0.95) !important;
+        border-top: 1.5px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    /* ── Individual Nav Item — Highly Tapable ── */
+    .mnav-item {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 6px 0 !important;
+        flex: 1 !important;
+        max-width: 80px !important;
+        height: 100% !important;
+        background: transparent !important;
+        border: none !important;
+        cursor: pointer !important;
+        color: rgba(255, 255, 255, 0.65) !important; /* Brighter, readable inactive color */
+        
+        /* Font Fixes: Explicitly use standard premium Thai fonts from the head */
+        font-family: 'Prompt', 'Kanit', 'Sarabun', sans-serif !important;
+        
+        text-decoration: none !important;
+        position: relative !important;
+        overflow: hidden !important;
+        -webkit-tap-highlight-color: transparent !important;
+        transition: color 0.25s ease, transform 0.2s ease !important;
+    }
+
+    .mnav-item.mnav-fab-spacer {
+        flex: 1.5 !important;
+        pointer-events: none !important;
+    }
+
+    /* Icon wrapper — bounces on active */
+    .mnav-icon-wrap {
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 40px !important; /* Larger touch profile */
+        height: 38px !important;
+        border-radius: 12px !important;
+        transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    background 0.25s ease !important;
+    }
+
+    .mnav-icon {
+        font-size: 23px !important; /* Larger and clearer icons */
+        line-height: 1 !important;
+        transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        display: block !important;
+    }
+
+    /* Active indicator dot */
+    .mnav-dot {
+        position: absolute !important;
+        bottom: -4px !important;
+        left: 50% !important;
+        transform: translateX(-50%) scale(0) !important;
+        width: 6px !important;
+        height: 6px !important;
+        border-radius: 50% !important;
+        background: #E07B2F !important;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+
+    /* Label text - Larger and extremely readable */
+    .mnav-label {
+        font-size: 11.5px !important; /* Increased size */
+        font-weight: 600 !important;
+        letter-spacing: 0.1px !important;
+        margin-top: 5px !important;
+        color: inherit !important;
+        transition: color 0.25s ease !important;
+        white-space: nowrap !important;
+        font-family: inherit !important;
+    }
+
+    /* ── ACTIVE STATE ── */
+    .mnav-item.active {
+        color: #ffffff !important;
+    }
+
+    .mnav-item.active .mnav-icon-wrap {
+        background: rgba(255, 255, 255, 0.15) !important;
+        transform: translateY(-3px) !important;
+    }
+
+    .mnav-item.active .mnav-icon {
+        transform: translateY(-1px) !important;
+        filter: drop-shadow(0 2px 8px rgba(255,255,255,0.4)) !important;
+    }
+
+    .mnav-item.active .mnav-dot {
+        transform: translateX(-50%) scale(1) !important;
+    }
+
+    .mnav-item.active .mnav-label {
+        color: #FF9F54 !important; /* Ultra vibrant orange matching Mentra secondary brand with high readability */
+        font-weight: 700 !important;
+    }
+
+    /* Ripple inside nav items */
+    .mnav-ripple {
+        position: absolute !important;
+        border-radius: 50% !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        transform: scale(0) !important;
+        animation: mnavRipple 0.5s linear forwards !important;
+        pointer-events: none !important;
+    }
+    @keyframes mnavRipple {
+        to { transform: scale(2.5); opacity: 0; }
+    }
+
+    /* ════════════════════════════════════════════════
+       FLOATING ACTION BUTTON (FAB) — Center Button
+     ════════════════════════════════════════════════ */
+    .mnav-fab {
+        position: fixed !important;
+        bottom: calc(10px + env(safe-area-inset-bottom)) !important; /* Lowers the FAB so it snaps perfectly inside the bar */
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 9996 !important;
+        width: 62px !important;
+        height: 62px !important;
+        border-radius: 50% !important;
+        border: none !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        -webkit-tap-highlight-color: transparent !important;
+        background: #ffffff !important;
+        box-shadow: 0 10px 30px rgba(11, 61, 110, 0.28),
+                    0 2px 10px rgba(0, 0, 0, 0.12),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    background-color 0.3s ease,
+                    box-shadow 0.3s ease !important;
+        outline: 4px solid rgba(255, 255, 255, 0.2) !important;
+        outline-offset: 0px !important;
+    }
+
+    [data-theme="dark"] .mnav-fab {
+        background: #1e293b !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
+                    0 2px 10px rgba(0, 0, 0, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+        outline: 4px solid rgba(15, 23, 42, 0.45) !important;
+    }
+
+    .mnav-fab:active {
+        transform: translateX(-50%) scale(0.90) !important;
+        box-shadow: 0 4px 15px rgba(11, 61, 110, 0.2) !important;
+    }
+
+    /* Outer glowing pulse */
+    .mnav-fab::before {
+        content: '' !important;
+        position: absolute !important;
+        inset: -6px !important;
+        border-radius: 50% !important;
+        border: 2px solid rgba(224, 123, 47, 0.3) !important;
+        animation: fabPulse 3s ease-in-out infinite !important;
+        pointer-events: none !important;
+    }
+
+    @keyframes fabPulse {
+        0%, 100% { transform: scale(1); opacity: 0.6; }
+        50%       { transform: scale(1.12); opacity: 0; }
+    }
+
+    /* Container for logo and close icon */
+    .mnav-fab-icon-wrap {
+        position: relative !important;
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Center logo image */
+    .mnav-fab-logo {
+        width: 36px !important;
+        height: 36px !important;
+        object-fit: contain !important;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    opacity 0.25s ease !important;
+        opacity: 1 !important;
+    }
+
+    /* Close (X) icon, initially hidden and scaled down */
+    .mnav-fab-close {
+        position: absolute !important;
+        font-size: 20px !important;
+        font-weight: bold !important;
+        color: #ffffff !important;
+        opacity: 0 !important;
+        transform: scale(0.4) rotate(-90deg) !important;
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    opacity 0.25s ease !important;
+    }
+
+    /* When the sheet menu is open: transition FAB to red circle with rotating close mark */
+    .mnav-fab.open {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.38),
+                    0 2px 10px rgba(0,0,0,0.15) !important;
+        transform: translateX(-50%) rotate(0deg) !important;
+        outline-color: rgba(239, 68, 68, 0.2) !important;
+    }
+
+    .mnav-fab.open::before {
+        border-color: rgba(239, 68, 68, 0.3) !important;
+    }
+
+    .mnav-fab.open .mnav-fab-logo {
+        opacity: 0 !important;
+        transform: scale(0.4) rotate(90deg) !important;
+    }
+
+    .mnav-fab.open .mnav-fab-close {
+        opacity: 1 !important;
+        transform: scale(1) rotate(0deg) !important;
+    }
+
+    /* ════════════════════════════════════════════════
+       SLIDE-UP SHEET (More Menu Drawer)
+    ════════════════════════════════════════════════ */
+    .mnav-sheet-overlay {
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(9, 18, 38, 0.55) !important;
+        backdrop-filter: blur(6px) !important;
+        -webkit-backdrop-filter: blur(6px) !important;
+        z-index: 9990 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: opacity 0.3s ease, visibility 0.3s ease !important;
+    }
+
+    .mnav-sheet-overlay.show {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .mnav-sheet {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 9995 !important;
+        background: rgba(255, 255, 255, 0.96) !important;
+        backdrop-filter: blur(28px) !important;
+        -webkit-backdrop-filter: blur(28px) !important;
+        border-radius: 28px 28px 0 0 !important;
+        border-top: 1.5px solid rgba(255, 255, 255, 0.6) !important;
+        box-shadow: 0 -16px 48px rgba(11, 61, 110, 0.18) !important;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+        transform: translateY(100%) !important;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        max-height: 85vh !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+    }
+
+    [data-theme="dark"] .mnav-sheet {
+        background: rgba(15, 23, 42, 0.96) !important;
+        border-top: 1.5px solid rgba(255,255,255,0.07) !important;
+        box-shadow: 0 -16px 48px rgba(0,0,0,0.5) !important;
+    }
+
+    .mnav-sheet.show {
+        transform: translateY(0) !important;
+    }
+
+    /* Drag handle bar */
+    .mnav-sheet-handle {
+        width: 40px !important;
+        height: 4px !important;
+        border-radius: 100px !important;
+        background: rgba(0,0,0,0.15) !important;
+        margin: 14px auto 4px !important;
+    }
+
+    [data-theme="dark"] .mnav-sheet-handle {
+        background: rgba(255,255,255,0.12) !important;
+    }
+
+    /* Sheet Header: user card */
+    .mnav-sheet-user {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        margin: 8px 20px 0 !important;
+        padding: 14px 16px !important;
+        background: linear-gradient(135deg, rgba(26,111,191,0.07), rgba(26,111,191,0.02)) !important;
+        border: 1px solid rgba(26,111,191,0.12) !important;
+        border-radius: 18px !important;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: none;
+    }
+
+    .mnav-sheet.show .mnav-sheet-user {
+        animation: sheetSlideIn 0.38s cubic-bezier(0.16,1,0.3,1) 0.06s forwards !important;
+    }
+
+    [data-theme="dark"] .mnav-sheet-user {
+        background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)) !important;
+        border-color: rgba(255,255,255,0.07) !important;
+    }
+
+    .mnav-sheet-avatar {
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 14px !important;
+        background: linear-gradient(135deg, #1A6FBF, #0b3d6e) !important;
+        color: #fff !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+        box-shadow: 0 4px 12px rgba(26,111,191,0.3) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .mnav-sheet-user-name {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        color: var(--text) !important;
+    }
+
+    .mnav-sheet-user-role {
+        font-size: 11.5px !important;
+        color: var(--text-secondary) !important;
+        margin-top: 2px !important;
+    }
+
+    /* Sheet section title */
+    .mnav-sheet-section-title {
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.8px !important;
+        color: var(--text-muted) !important;
+        margin: 20px 24px 10px !important;
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    .mnav-sheet.show .mnav-sheet-section-title {
+        animation: sheetSlideIn 0.38s cubic-bezier(0.16,1,0.3,1) 0.1s forwards !important;
+    }
+
+    /* Menu Grid inside sheet */
+    .mnav-sheet-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
+        padding: 0 16px !important;
+    }
+
+    /* Each card in the grid */
+    .mnav-sheet-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 16px 8px !important;
+        background: #f8fafc !important;
+        border: 1px solid rgba(0,0,0,0.04) !important;
+        border-radius: 18px !important;
+        cursor: pointer !important;
+        font-family: inherit !important;
+        text-decoration: none !important;
+        color: var(--text) !important;
+        gap: 8px !important;
+        text-align: center !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+        position: relative !important;
+        overflow: hidden !important;
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+        transition: none;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    [data-theme="dark"] .mnav-sheet-card {
+        background: rgba(255,255,255,0.04) !important;
+        border-color: rgba(255,255,255,0.06) !important;
+        box-shadow: none !important;
+    }
+
+    .mnav-sheet.show .mnav-sheet-card {
+        animation: sheetSlideIn 0.38s cubic-bezier(0.16,1,0.3,1) forwards !important;
+    }
+
+    .mnav-sheet-card:active {
+        background: rgba(26,111,191,0.08) !important;
+        border-color: rgba(26,111,191,0.2) !important;
+        transform: translateY(-2px) scale(0.99) !important;
+        box-shadow: 0 6px 16px rgba(26,111,191,0.12) !important;
+    }
+
+    .mnav-sheet-card-icon {
+        width: 46px !important;
+        height: 46px !important;
+        border-radius: 14px !important;
+        background: linear-gradient(135deg, rgba(26,111,191,0.1), rgba(26,111,191,0.05)) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 22px !important;
+        transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1) !important;
+    }
+
+    [data-theme="dark"] .mnav-sheet-card-icon {
+        background: rgba(26,111,191,0.18) !important;
+    }
+
+    .mnav-sheet-card:active .mnav-sheet-card-icon {
+        transform: scale(1.12) rotate(-5deg) !important;
+    }
+
+    .mnav-sheet-card-label {
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
+        color: var(--text) !important;
+        line-height: 1.35 !important;
+    }
+
+    /* Logout row */
+    .mnav-sheet-logout {
+        margin: 16px 16px calc(76px + env(safe-area-inset-bottom)) !important; /* Added large bottom margin to push above FAB and avoid overlap */
+        padding: 13px 20px !important;
+        background: rgba(239,68,68,0.06) !important;
+        border: 1.5px solid rgba(239,68,68,0.18) !important;
+        border-radius: 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        color: #ef4444 !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        font-family: inherit !important;
+        cursor: pointer !important;
+        width: calc(100% - 32px) !important;
+        transition: all 0.2s ease !important;
+        -webkit-tap-highlight-color: transparent !important;
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    .mnav-sheet.show .mnav-sheet-logout {
+        animation: sheetSlideIn 0.38s cubic-bezier(0.16,1,0.3,1) 0.28s forwards !important;
+    }
+
+    .mnav-sheet-logout:active {
+        background: #ef4444 !important;
+        color: #fff !important;
+        transform: translateY(0) scale(0.98) !important;
+    }
+
+    /* ── Unified Staggered Entrance Keyframe ── */
+    @keyframes sheetSlideIn {
+        from { opacity: 0; transform: translateY(14px) scale(0.96); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Theme toggle — hide behind FAB height */
+    .theme-toggle-btn {
+        bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+        right: 16px !important;
+    }
+
+    /* ════════════════════════════════════════════════
+       HIGH-END MOBILE TOPBAR (.topbar) REFINEMENT
+    ════════════════════════════════════════════════ */
+    .topbar {
+        position: sticky !important;
+        top: 0 !important;
+        height: 66px !important;
+        padding: 0 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important; /* Space items beautifully */
+        text-align: center !important;
+        z-index: 9900 !important;
+        
+        /* Striking royal brand gradient with translucent glass blur */
+        background: linear-gradient(135deg, rgba(11, 61, 110, 0.96) 0%, rgba(16, 52, 89, 0.98) 100%) !important;
+        backdrop-filter: blur(20px) saturate(1.8) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
+        border-bottom: 2.5px solid rgba(224, 123, 47, 0.45) !important; /* Vibrant brand orange border accent */
+        box-shadow: 0 4px 30px rgba(11, 61, 110, 0.3) !important;
+    }
+
+    [data-theme="dark"] .topbar {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.98) 100%) !important;
+        border-bottom: 2.5px solid rgba(224, 123, 47, 0.35) !important;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Hide the old hamburger since we have bottom navigation now */
+    .topbar .hamburger {
+        display: none !important;
+    }
+
+    /* Topbar Left Avatar Decoration styling */
+    .topbar-m-left {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        width: 38px !important;
+    }
+
+    .topbar-avatar {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, #FF9F54, #E07B2F) !important; /* Energetic brand orange */
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        font-family: 'Prompt', sans-serif !important;
+        font-size: 15px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 2px 10px rgba(224, 123, 47, 0.4),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+        cursor: pointer !important;
+        transition: transform 0.2s ease !important;
+    }
+
+    .topbar-avatar:active {
+        transform: scale(0.9) !important;
+    }
+
+    /* Topbar Right Theme Switcher styling */
+    .topbar-m-right {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        width: 38px !important;
+    }
+
+    .topbar-m-theme-btn {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: #ffffff !important;
+        font-size: 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: transform 0.2s ease, background-color 0.2s ease !important;
+    }
+
+    .topbar-m-theme-btn:active {
+        transform: scale(0.9) !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    /* Perfect centered typography and layout for top title */
+    .topbar-breadcrumb {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important; /* Centered items */
+        margin-left: 0 !important;
+        flex: 1 !important;
+        padding: 0 8px !important;
+        min-width: 0 !important; /* Prevent text overflow breaking flex */
+    }
+
+    .breadcrumb-title {
+        font-size: 14.5px !important; /* Balanced size to fit beside buttons */
+        font-weight: 800 !important;
+        color: #ffffff !important; /* Pure high-contrast white */
+        letter-spacing: -0.1px !important;
+        font-family: 'Prompt', 'Kanit', sans-serif !important;
+        line-height: 1.25 !important;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+        white-space: nowrap !important;
+        text-overflow: ellipsis !important;
+        overflow: hidden !important;
+        max-width: 190px !important;
+        background: none !important;
+        -webkit-text-fill-color: initial !important;
+        -webkit-background-clip: initial !important;
+    }
+
+    .breadcrumb-sub {
+        font-size: 9.5px !important;
+        font-weight: 700 !important;
+        color: #FF9F54 !important; /* Vibrant Mentra orange highlight instead of muted text */
+        letter-spacing: 0.3px !important;
+        margin-top: 1px !important;
+        font-family: 'Prompt', 'Sarabun', sans-serif !important;
+        text-transform: uppercase !important;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+        white-space: nowrap !important;
+        text-overflow: ellipsis !important;
+        overflow: hidden !important;
+        max-width: 190px !important;
     }
 }
 

@@ -344,6 +344,230 @@
     }
 
 
+
+
+    /* ────────────────────────────────────────────
+       VIII-B. PREMIUM MOBILE BOTTOM NAVIGATION
+       ──────────────────────────────────────────── */
+
+    // Nav item configs
+    const MNAV_ITEMS_LEFT = [
+        { icon: '🏠', label: 'หน้าหลัก', href: 'dashboard.html' },
+        { icon: '📁', label: 'โครงการ',  href: 'dashboard.html?view=projects' },
+    ];
+    const MNAV_ITEMS_RIGHT = [
+        { icon: '📄', label: 'ใบเสนอราคา', href: 'quotation.html' },
+        { icon: '🎓', label: 'อบรม',        href: 'external_training.html' },
+    ];
+    const MNAV_SHEET_ITEMS = [
+        { icon: '📦', label: 'ราคาทุน/สิ่งของ', href: 'dashboard.html?view=items' },
+        { icon: '👥', label: 'จัดการผู้ใช้',    href: 'dashboard.html?tab=users' },
+        { icon: '➕', label: 'โครงการใหม่',     href: 'dashboard.html?action=new-project' },
+        { icon: '🛠️', label: 'Admin Console',   href: 'console_admin.html' },
+    ];
+
+    function isMobile() { return window.innerWidth <= 900; }
+
+    function initMobileNav() {
+        if (!isMobile()) return;
+        if (document.getElementById('mnavBar')) return;
+
+        const page   = location.pathname.split('/').pop() || 'index.html';
+        const search = location.search;
+
+        function isActive(href) {
+            const parts = href.split('?');
+            const hPage = parts[0]; const hQ = parts[1] ? '?' + parts[1] : '';
+            if (!page.includes(hPage)) return false;
+            if (hQ && !search.includes(parts[1])) return false;
+            return true;
+        }
+
+        /* ══ Bottom Bar ══ */
+        const bar = document.createElement('nav');
+        bar.className = 'mnav-bar'; bar.id = 'mnavBar';
+        bar.setAttribute('aria-label', 'เมนูหลัก');
+
+        function makeNavItem(cfg) {
+            const btn = document.createElement('button');
+            btn.className = 'mnav-item' + (isActive(cfg.href) ? ' active' : '');
+            btn.setAttribute('aria-label', cfg.label);
+            btn.innerHTML = `<span class="mnav-icon-wrap"><span class="mnav-icon">${cfg.icon}</span><span class="mnav-dot"></span></span><span class="mnav-label">${cfg.label}</span>`;
+            btn.addEventListener('click', (e) => {
+                addMnavRipple(e, btn);
+                setTimeout(() => { window.location.href = cfg.href; }, 160);
+            });
+            return btn;
+        }
+
+        MNAV_ITEMS_LEFT.forEach(c => bar.appendChild(makeNavItem(c)));
+        const fabSpacer = document.createElement('div');
+        fabSpacer.className = 'mnav-item mnav-fab-spacer';
+        bar.appendChild(fabSpacer);
+        MNAV_ITEMS_RIGHT.forEach(c => bar.appendChild(makeNavItem(c)));
+        document.body.appendChild(bar);
+
+        /* ══ FAB ══ */
+        const fab = document.createElement('button');
+        fab.className = 'mnav-fab'; fab.id = 'mnavFab';
+        fab.setAttribute('aria-label', 'เมนูเพิ่มเติม');
+        fab.innerHTML = '<div class="mnav-fab-icon-wrap"><img src="logo.png" alt="Logo" class="mnav-fab-logo"><span class="mnav-fab-close">✕</span></div>';
+        document.body.appendChild(fab);
+
+        /* ══ Sheet Overlay ══ */
+        const sheetOverlay = document.createElement('div');
+        sheetOverlay.className = 'mnav-sheet-overlay'; sheetOverlay.id = 'mnavSheetOverlay';
+        document.body.appendChild(sheetOverlay);
+
+        /* ══ Slide-up Sheet ══ */
+        const sheet = document.createElement('div');
+        sheet.className = 'mnav-sheet'; sheet.id = 'mnavSheet';
+        sheet.setAttribute('role', 'dialog');
+        sheet.setAttribute('aria-modal', 'true');
+
+        sheet.innerHTML = '<div class="mnav-sheet-handle" aria-hidden="true"></div>';
+
+        // User card
+        const userCard = document.createElement('div');
+        userCard.className = 'mnav-sheet-user'; userCard.id = 'mnavSheetUser';
+        userCard.innerHTML = `
+            <div class="mnav-sheet-avatar" id="mnavSheetAvatar">M</div>
+            <div><div class="mnav-sheet-user-name" id="mnavSheetName">กำลังโหลด...</div>
+            <div class="mnav-sheet-user-role" id="mnavSheetRole">—</div></div>`;
+        sheet.appendChild(userCard);
+
+        // Section title
+        const sectionTitle = document.createElement('div');
+        sectionTitle.className = 'mnav-sheet-section-title';
+        sectionTitle.textContent = 'เมนูทั้งหมด';
+        sheet.appendChild(sectionTitle);
+
+        // Grid
+        const grid = document.createElement('div');
+        grid.className = 'mnav-sheet-grid';
+        MNAV_SHEET_ITEMS.forEach((cfg, i) => {
+            const card = document.createElement('button');
+            card.className = 'mnav-sheet-card';
+            card.style.animationDelay = `${0.13 + i * 0.045}s`;
+            card.innerHTML = `<div class="mnav-sheet-card-icon">${cfg.icon}</div><div class="mnav-sheet-card-label">${cfg.label}</div>`;
+            card.addEventListener('click', () => { closeSheet(); setTimeout(() => { window.location.href = cfg.href; }, 220); });
+            grid.appendChild(card);
+        });
+        sheet.appendChild(grid);
+
+        // Logout
+        const logoutRow = document.createElement('button');
+        logoutRow.className = 'mnav-sheet-logout';
+        logoutRow.innerHTML = '🚪 &nbsp;ออกจากระบบ';
+        logoutRow.addEventListener('click', () => {
+            closeSheet();
+            setTimeout(() => {
+                const orig = document.querySelector('.btn-logout');
+                if (orig) orig.click();
+                else if (typeof handleLogout === 'function') handleLogout();
+                else window.location.href = 'index.html';
+            }, 200);
+        });
+        sheet.appendChild(logoutRow);
+        document.body.appendChild(sheet);
+
+        /* ══ Open / Close ══ */
+        function openSheet() {
+            fab.classList.add('open');
+            sheetOverlay.classList.add('show');
+            sheet.classList.add('show');
+            document.body.style.overflow = 'hidden';
+            syncUserInfo();
+        }
+        function closeSheet() {
+            fab.classList.remove('open');
+            sheetOverlay.classList.remove('show');
+            sheet.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        fab.addEventListener('click', () => sheet.classList.contains('show') ? closeSheet() : openSheet());
+        sheetOverlay.addEventListener('click', closeSheet);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+
+        /* ══ Inject Topbar Elements (Avatar & Toggle) ══ */
+        function injectTopbarDecorations() {
+            const topbar = document.querySelector('.topbar');
+            if (!topbar || topbar.querySelector('.topbar-m-left')) return;
+
+            // Create Left Container with Avatar
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'topbar-m-left';
+            leftDiv.innerHTML = `<div class="topbar-avatar" id="topbarMavatar">M</div>`;
+            leftDiv.addEventListener('click', () => {
+                openSheet();
+            });
+
+            // Create Right Container with Quick Dark Toggle
+            const rightDiv = document.createElement('div');
+            rightDiv.className = 'topbar-m-right';
+            const mThemeBtn = document.createElement('button');
+            mThemeBtn.className = 'topbar-m-theme-btn';
+            mThemeBtn.setAttribute('aria-label', 'Toggle theme');
+            mThemeBtn.innerHTML = '🌙';
+            mThemeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleTheme();
+                const cur = document.documentElement.getAttribute('data-theme') || 'light';
+                mThemeBtn.innerHTML = cur === 'dark' ? '☀️' : '🌙';
+            });
+            rightDiv.appendChild(mThemeBtn);
+
+            // Prepend Left and Append Right
+            topbar.insertBefore(leftDiv, topbar.firstChild);
+            topbar.appendChild(rightDiv);
+
+            // Set initial theme icon
+            const initialTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            mThemeBtn.innerHTML = initialTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        /* ══ Live User Info Sync ══ */
+        function syncUserInfo() {
+            const nameEl   = document.getElementById('userName')        || document.querySelector('.user-name');
+            const roleEl   = document.getElementById('userRoleBadge')   || document.querySelector('.role-badge');
+            const avatarEl = document.getElementById('userAvatar')      || document.querySelector('.user-avatar');
+            const nEl = document.getElementById('mnavSheetName');
+            const rEl = document.getElementById('mnavSheetRole');
+            const aEl = document.getElementById('mnavSheetAvatar');
+            const topAvatar = document.getElementById('topbarMavatar');
+
+            if (nEl && nameEl)   nEl.textContent = nameEl.textContent.trim()   || 'กำลังโหลด...';
+            if (rEl && roleEl)   rEl.textContent = roleEl.textContent.trim()   || '—';
+            if (aEl && avatarEl) aEl.textContent = avatarEl.textContent.trim() || 'M';
+            
+            // Sync topbar avatar character
+            if (topAvatar && avatarEl) {
+                topAvatar.textContent = avatarEl.textContent.trim().substring(0, 1) || 'M';
+            }
+        }
+
+        injectTopbarDecorations();
+        setInterval(syncUserInfo, 1500);
+        setTimeout(syncUserInfo, 600);
+    }
+
+    /* ── Ripple helper for nav items ── */
+    function addMnavRipple(e, el) {
+        const r = document.createElement('span');
+        r.className = 'mnav-ripple';
+        const rect = el.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height) * 2;
+        r.style.width = r.style.height = `${size}px`;
+        r.style.left  = `${e.clientX - rect.left - size / 2}px`;
+        r.style.top   = `${e.clientY - rect.top  - size / 2}px`;
+        el.appendChild(r);
+        r.addEventListener('animationend', () => r.remove(), { once: true });
+    }
+
+
+
+
     /* ────────────────────────────────────────────
        IX. INITIALIZATION
        ──────────────────────────────────────────── */
@@ -363,6 +587,7 @@
         initTopbarScroll();
         initKeyboardShortcuts();
         initFocusManagement();
+        initMobileNav();
 
         // Delayed entrance animations (after page settles)
         requestAnimationFrame(() => {
