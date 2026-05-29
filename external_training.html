@@ -2612,11 +2612,38 @@
         // Fetches from localStorage so user input persists across page reloads
         let trainingRequests = JSON.parse(localStorage.getItem('mentra_training_requests')) || [];
 
+        // ===== UTILITY FUNCTIONS =====
+        /** Escape HTML to prevent XSS when inserting user data into innerHTML */
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        /** Debounce: delay fn execution until after 'delay' ms of inactivity */
+        function debounce(fn, delay) {
+            let timer;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+        // Debounced Firestore write for participants — prevents write storm on keystroke
+        const debouncedSaveParticipants = debounce(function(reqId, participants) {
+            if (typeof window.saveParticipantDoc === 'function') {
+                window.saveParticipantDoc(reqId, participants);
+            }
+        }, 800);
+
         let currentActiveRowId = null;
         let activeViewPane = 'LIST'; // 'LIST' or 'CALENDAR'
         
         // Calendar month tracking (Initialize to May 2026 based on active system time)
-        let calendarDate = new Date(2026, 4, 28); // May 2026
+        let calendarDate = new Date(); // Initialize to current month from system clock
 
         const THAI_MONTHS = [
             "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
@@ -2780,7 +2807,11 @@
             } else if (sortFilter === "COST_ASC") {
                 filtered.sort((a, b) => a.cost - b.cost);
             } else {
-                filtered.sort((a, b) => b.id.localeCompare(a.id));
+                // Bug-07 fix: use createdAt timestamp when available; fallback to numeric-aware ID sort
+                filtered.sort((a, b) => {
+                    if (a.createdAt && b.createdAt) return b.createdAt.localeCompare(a.createdAt);
+                    return b.id.localeCompare(a.id, undefined, { numeric: true });
+                });
             }
 
             // Render DOM
@@ -2820,21 +2851,21 @@
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td><span class="request-id">${req.id}</span></td>
+                    <td><span class="request-id">${escapeHtml(req.id)}</span></td>
                     <td class="course-title-cell">
-                        <div class="course-name">${req.courseName}</div>
+                        <div class="course-name">${escapeHtml(req.courseName)}</div>
                         <div class="course-meta">
-                            <span><i class="fa-regular fa-calendar"></i> ${req.date}</span>
+                            <span><i class="fa-regular fa-calendar"></i> ${escapeHtml(req.date)}</span>
                         </div>
                     </td>
-                    <td><span class="organizer-name">${req.organizer}</span></td>
+                    <td><span class="organizer-name">${escapeHtml(req.organizer)}</span></td>
                     <td>
                         <div class="requester-cell">
-                            <div class="requester-avatar">${req.requesterInitial}</div>
-                            <span>${req.requester}</span>
+                            <div class="requester-avatar">${escapeHtml(req.requesterInitial)}</div>
+                            <span>${escapeHtml(req.requester)}</span>
                         </div>
                     </td>
-                    <td><span class="cost-amount">${req.cost.toLocaleString()} ฿</span></td>
+                    <td><span class="cost-amount">${(req.cost || 0).toLocaleString()} ฿</span></td>
                     <td>
                         <div class="status-pill-container">
                             <span class="status-pill ${statusClass}">
@@ -2845,13 +2876,13 @@
                                 <div class="tooltip-header">
                                     <i class="fa-solid fa-circle-question"></i> ${tooltipHeader}
                                 </div>
-                                <div>${req.tooltipText}</div>
+                                <div>${escapeHtml(req.tooltipText)}</div>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div class="actions-group">
-                            <button class="btn-action approve-btn" onclick="openDetailsModal('${req.id}')">
+                            <button class="btn-action approve-btn" onclick="openDetailsModal('${escapeHtml(req.id)}')">
                                 <i class="fa-solid fa-signature"></i> รายละเอียด
                             </button>
                         </div>
@@ -2987,13 +3018,17 @@
             const requester = document.getElementById("requester").value;
             const startDate = document.getElementById("startDate").value;
             const endDate = document.getElementById("endDate").value;
-            const expense = parseFloat(document.getElementById("expense").value);
+            const expense = parseFloat(document.getElementById("expense").value) || 0; // Bug-04: guard against NaN
             const objective = document.getElementById("objective").value;
 
             // Generate initial initials
             let initVal = requester.trim().substring(0, 2);
 
-            let newId = `REQ-2026-00${trainingRequests.length + 1}`;
+            // Bug-01 fix: generate unique collision-proof ID using timestamp + random
+            const _idYear = new Date().getFullYear();
+            const _idTs = Date.now().toString(36).toUpperCase().slice(-5);
+            const _idRand = Math.random().toString(36).slice(2, 6).toUpperCase();
+            let newId = `REQ-${_idYear}-${_idTs}${_idRand}`;
 
             let newRequest = {
                 id: newId,
@@ -3007,7 +3042,8 @@
                 endDate: endDate,
                 date: `${startDate} ถึง ${endDate}`,
                 tooltipText: "รอเข้าอบรมตามกำหนดการจัดอบรม",
-                objective: objective
+                objective: objective,
+                createdAt: new Date().toISOString() // for reliable sort order
             };
 
             trainingRequests.unshift(newRequest);
@@ -3044,27 +3080,27 @@
             bodyContainer.innerHTML = `
                 <div class="detail-row-viewer">
                     <div class="detail-lbl">รหัสรายการ:</div>
-                    <div class="detail-val" style="color: var(--primary); font-family: 'Inter';">${req.id}</div>
+                    <div class="detail-val" style="color: var(--primary); font-family: 'Inter';">${escapeHtml(req.id)}</div>
                 </div>
                 <div class="detail-row-viewer">
                     <div class="detail-lbl">ชื่อหลักสูตรอบรม:</div>
-                    <div class="detail-val">${req.courseName}</div>
+                    <div class="detail-val">${escapeHtml(req.courseName)}</div>
                 </div>
                 <div class="detail-row-viewer">
                     <div class="detail-lbl">สถานที่จัดอบรม:</div>
-                    <div class="detail-val">${req.organizer}</div>
+                    <div class="detail-val">${escapeHtml(req.organizer)}</div>
                 </div>
                 <div class="detail-row-viewer">
                     <div class="detail-lbl">วิทยากรผู้อบรม:</div>
-                    <div class="detail-val">${req.requester}</div>
+                    <div class="detail-val">${escapeHtml(req.requester)}</div>
                 </div>
                 <div class="detail-row-viewer">
                     <div class="detail-lbl">ระยะเวลาอบรม:</div>
-                    <div class="detail-val">${req.startDate ? `${req.startDate} ถึง ${req.endDate}` : req.date}</div>
+                    <div class="detail-val">${req.startDate ? `${escapeHtml(req.startDate)} ถึง ${escapeHtml(req.endDate)}` : escapeHtml(req.date)}</div>
                 </div>
                 <div class="detail-row-viewer">
                     <div class="detail-lbl">ค่าใช้จ่ายรวม:</div>
-                    <div class="detail-val" style="font-family: 'Inter'; color: var(--secondary-dark);">${req.cost.toLocaleString()} บาท</div>
+                    <div class="detail-val" style="font-family: 'Inter'; color: var(--secondary-dark);">${(req.cost || 0).toLocaleString()} บาท</div>
                 </div>
                 <div class="detail-row-viewer">
                     <div class="detail-lbl">สถานะการอบรม:</div>
@@ -3072,7 +3108,7 @@
                 </div>
                 <div style="margin-top: 15px; background: var(--bg); padding: 16px; border-radius: var(--radius-md);">
                     <div style="font-weight: 700; margin-bottom: 6px; color: var(--text);">วัตถุประสงค์ในการจัดอบรม:</div>
-                    <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;">${req.objective || 'ไม่ได้ระบุวัตถุประสงค์'}</p>
+                    <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(req.objective || 'ไม่ได้ระบุวัตถุประสงค์')}</p>
                 </div>
             `;
 
@@ -3511,7 +3547,8 @@
             if (req) {
                 req.participants = [...currentParticipants];
                 window.currentParticipants = currentParticipants;
-                saveDatabase();
+                // Bug-06 fix: targeted debounced write instead of full saveDatabase() write storm
+                debouncedSaveParticipants(req.id, req.participants);
             }
         }
 
@@ -3712,7 +3749,7 @@
     <script type="module">
         import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, updateDoc, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         // โหลด config
         let FIREBASE_CONFIG;
@@ -3757,7 +3794,13 @@
                     return;
                 }
             } catch (e) {
+                // Bug-02 fix: Firestore network timeout/rules error must NOT leave user on a blank page
                 console.warn('Could not load user data:', e);
+                document.body.style.display = 'flex';
+                if (typeof showToast === 'function') {
+                    showToast('ไม่สามารถโหลดข้อมูลผู้ใช้ กรุณารีเฟรชหน้าเว็บและลองใหม่', 'info');
+                }
+                return;
             }
 
             if (userData) {
@@ -3837,6 +3880,16 @@
                         }
                     } catch (e) {
                         console.error("Failed to sync saveDatabase to Firestore:", e);
+                    }
+                };
+
+                // Bug-06 fix: targeted single-document update (used by debouncedSaveParticipants)
+                // Only writes the 'participants' field — avoids full write storm on every keystroke
+                window.saveParticipantDoc = async function(reqId, participants) {
+                    try {
+                        await updateDoc(doc(db, 'training_requests', reqId), { participants });
+                    } catch (e) {
+                        console.error('Failed to save participants to Firestore:', e);
                     }
                 };
 

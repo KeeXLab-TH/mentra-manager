@@ -1488,11 +1488,18 @@
             }
             try {
                 await sendPasswordResetEmail(auth, identifier);
-                showAlert('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว', 'success');
+                // Bug-08 fix: ambiguous success message — don't reveal if email exists (OWASP best practice)
+                showAlert('ถ้าอีเมลนี้มีอยู่ในระบบ ลิงก์รีเซ็ตรหัสผ่านจะถูกส่งไปยังอีเมลของคุณเร็วๆ นี้', 'success');
             } catch (err) {
-                showAlert('ไม่สามารถส่งอีเมลได้ กรุณาตรวจสอบอีเมลของคุณ', 'error');
+                if (err.code === 'auth/user-not-found') {
+                    // Keep same ambiguous message to avoid user enumeration
+                    showAlert('ถ้าอีเมลนี้มีอยู่ในระบบ ลิงก์รีเซ็ตรหัสผ่านจะถูกส่งไปยังอีเมลของคุณเร็วๆ นี้', 'success');
+                } else {
+                    showAlert('ไม่สามารถส่งอีเมลได้ กรุณาตรวจสอบการเชื่อมต่ออินเตอร์เน็ตและลองใหม่', 'error');
+                }
             }
         };
+
 
         // ===== CHECK URL QUERY PARAMETERS & AUTO REDIRECT =====
         window.addEventListener('DOMContentLoaded', () => {
