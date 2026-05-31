@@ -1,13 +1,10 @@
 const fs = require('fs');
-
 let content = fs.readFileSync('dashboard.html', 'utf8');
 
-// Fix FIREBASE_CONFIG block
-let brokenConfig = `        let FIREBASE_CONFIG, GAS_URL, DRIVE_ROOT_FOLDER_ID;
-        try {
-        window.GAS_URL = GAS_URL;`;
+// Use regex to replace the broken config block
+let brokenConfigRegex = /let FIREBASE_CONFIG, GAS_URL, DRIVE_ROOT_FOLDER_ID;\s*try\s*\{\s*window\.GAS_URL = GAS_URL;/;
 
-let fixedConfig = `        let FIREBASE_CONFIG, GAS_URL, DRIVE_ROOT_FOLDER_ID;
+let fixedConfig = `let FIREBASE_CONFIG, GAS_URL, DRIVE_ROOT_FOLDER_ID;
         try {
             const cfg = await import('./firebase-config.js');
             FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
@@ -37,33 +34,11 @@ let fixedConfig = `        let FIREBASE_CONFIG, GAS_URL, DRIVE_ROOT_FOLDER_ID;
 
         window.GAS_URL = GAS_URL;`;
 
-content = content.replace(brokenConfig, fixedConfig);
-
-// Fix navigateTo
-let oldNavRegex = /const titles = \{[\s\S]*?document\.getElementById\('pageSubtitle'\)\.textContent = sub;/m;
-let newNav = `const titles = {
-                dashboard: ['Dashboard', 'ภาพรวมระบบทั้งหมด'],
-                projects: ['โครงการทั้งหมด', 'จัดการโครงการและงบประมาณ'],
-                users: ['จัดการผู้ใช้งาน', 'รายชื่อสมาชิกในระบบ'],
-                items: ['ราคาทุน / สิ่งของ', 'ราคาทุนสิ่งของตามโครงการ'],
-                detail: ['รายละเอียดโครงการ', currentProjectData?.projectName || ''],
-                quotation: ['ใบเสนอราคา', 'สร้างและพิมพ์ใบเสนอราคา'],
-                training: ['ระบบจัดอบรม', 'ระบบตารางและจัดการอบรมภายนอก']
-            };
-            const [title, sub] = titles[page] || ['Mentra Manager', ''];
-            document.getElementById('pageTitle').textContent = title;
-            document.getElementById('pageSubtitle').textContent = sub;
-            
-            if (page === 'quotation' && window.initQuotationView && !window.quotationInitialized) {
-                window.initQuotationView();
-                window.quotationInitialized = true;
-            }
-            if (page === 'training' && window.initTrainingView && !window.trainingInitialized) {
-                window.initTrainingView();
-                window.trainingInitialized = true;
-            }`;
-
-content = content.replace(oldNavRegex, newNav);
+if (brokenConfigRegex.test(content)) {
+    content = content.replace(brokenConfigRegex, fixedConfig);
+    console.log("Config fixed!");
+} else {
+    console.log("Could not find broken config block.");
+}
 
 fs.writeFileSync('dashboard.html', content);
-console.log("Fixed dashboard.html!");

@@ -2485,6 +2485,9 @@ input, textarea, select, [contenteditable="true"] {
 .bottom-nav-item.active {
     color: var(--primary);
 }
+
+.breadcrumb {
+    display: flex;
     align-items: center;
     gap: 6px;
     font-size: 13px;
