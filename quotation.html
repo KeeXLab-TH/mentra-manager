@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <!-- Boxicons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -35,7 +35,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', 'Sarabun', 'Tahoma', sans-serif;
+            font-family: 'Sarabun', 'Tahoma', sans-serif;
         }
 
         /* ================================================
@@ -57,15 +57,12 @@
         }
 
         body {
-            opacity: 0; /* Hidden by default until authenticated */
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-            display: flex;
+            display: none; /* Hidden by default until authenticated */
             min-height: 100vh;
             background-color: var(--bg-color);
             color: var(--text-main);
             overflow: hidden;
-            font-family: 'Inter', 'Kanit', 'Sarabun', sans-serif !important;
+            font-family: 'Kanit', 'Sarabun', sans-serif !important;
         }
 
         .sidebar {
@@ -419,16 +416,10 @@
 
         .form-content {
             background: white !important;
-            border-radius: 18px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04),
-                        0 4px 16px rgba(0,0,0,0.05);
-            border: 1px solid rgba(226,232,240,0.7);
-            padding: 28px !important;
-            transition: box-shadow 0.22s cubic-bezier(0.16,1,0.3,1);
-        }
-
-        .form-content:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.07), 0 2px 6px rgba(0,0,0,0.04);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 24px !important;
         }
 
         .header-actions {
@@ -586,15 +577,13 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            background: var(--primary-color);
             color: white;
-            box-shadow: 0 1px 3px rgba(26,111,191,0.3), 0 2px 8px rgba(26,111,191,0.15);
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-hover) 0%, #0e4a85 100%);
+            background: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(26,111,191,0.4);
         }
 
         .btn-danger {
@@ -652,21 +641,20 @@
 
         .form-control {
             width: 100%;
-            padding: 10px 14px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 14px;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
             background-color: var(--input-bg);
-            transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+            transition: all 0.2s;
             color: var(--text-main);
-            font-family: 'Inter', 'Sarabun', sans-serif;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary-color);
             background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(26,111,191,0.1);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
         textarea.form-control {
@@ -689,15 +677,14 @@
         }
 
         th {
-            background-color: #f8fafc;
-            padding: 10px 14px;
-            font-size: 12px;
-            color: #475569;
+            background-color: #eef2ff;
+            padding: 0.9rem 1rem;
+            font-size: 0.95rem;
+            color: #312e81;
             font-weight: 600;
-            border: none;
-            border-bottom: 1px solid #e2e8f0;
-            letter-spacing: 0.05em !important;
-            text-transform: uppercase;
+            border: 0.5px solid #cbd5e1;
+            border-bottom: 2px solid var(--primary-color);
+            letter-spacing: normal !important;
         }
 
         tbody tr:nth-child(even) {
@@ -758,10 +745,9 @@
         .summary-box {
             width: 350px;
             background: #f8fafc;
-            padding: 20px;
-            border-radius: 14px;
-            border: 1px solid rgba(226,232,240,0.7);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
         }
 
         .summary-row {
@@ -819,8 +805,8 @@
     </style>
 
     <!-- Premium UI Overlay -->
-    <link rel="stylesheet" href="app-theme.css">
-    <script src="app-ui.js" defer></script>
+    <link rel="stylesheet" href="assets/css/app-theme.css">
+    <script src="assets/js/app-ui.js" defer></script>
 
 </head>
 
@@ -832,7 +818,7 @@
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
-            <img src="logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
             <div class="sidebar-logo-text">
                 <div class="app-name">Mentra Manager</div>
                 <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
@@ -921,7 +907,10 @@
                 <div class="breadcrumb-sub">สร้างและจัดการใบเสนอราคาสำหรับ Mentra Solution</div>
             </div>
             <div style="display: flex; gap: 0.75rem;">
-
+                <button class="btn btn-outline" onclick="window.location.href='dashboard.html'"
+                    style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    <i class='bx bx-arrow-back'></i> กลับ Dashboard
+                </button>
                 <button class="btn btn-primary" onclick="exportToPDF()"
                     style="padding: 0.5rem 1rem; font-size: 0.9rem;">
                     <i class='bx bxs-file-pdf'></i> Export PDF
@@ -1089,7 +1078,7 @@
                         style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid #1A6FBF;">
                         <!-- Left: Logo + Company -->
                         <div style="display: flex; gap: 14px; align-items: flex-start; flex: 1;">
-                            <img src="logo.png"
+                            <img src="assets/img/logo.png"
                                 style="height: 56px; max-width: 110px; object-fit: contain; flex-shrink: 0; padding-right: 14px; border-right: 1px solid #e2e8f0;"
                                 alt="Mentra Logo">
                             <div>
@@ -1348,7 +1337,7 @@
         // --- Firebase & Firestore Setup ---
         let FIREBASE_CONFIG = null;
         try {
-            const cfg = await import('./firebase-config.js');
+            const cfg = await import('./assets/js/firebase-config.js');
             FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
         } catch (e) {
             console.warn('firebase-config.js not found, using default fallback');
@@ -1459,10 +1448,7 @@
                         }
                         
                         // Show body now that the user is fully verified
-                        setTimeout(() => {
-                            document.body.style.opacity = '1';
-                            document.body.style.pointerEvents = 'auto';
-                        }, 100);
+                        document.body.style.display = 'flex';
                     } else {
                         // User document deleted!
                         alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
@@ -1929,7 +1915,6 @@
         window.toggleSidebar = toggleSidebar;
         window.closeSidebar = closeSidebar;
     </script>
-
 </body>
 
 </html>

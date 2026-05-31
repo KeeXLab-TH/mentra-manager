@@ -7,7 +7,7 @@
     <title>Mentra Manager — เข้าสู่ระบบ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ================================================
            MENTRA MANAGER — ENTERPRISE LOGIN UI
@@ -24,47 +24,59 @@
         }
 
         :root {
-            /* Shadcn UI Structure with Brand Colors (Blue #1A6FBF / Orange #E07B2F) */
-            --background: #ffffff;
-            --foreground: #09090b;
-            --card: #ffffff;
-            --card-foreground: #09090b;
-            --popover: #ffffff;
-            --popover-foreground: #09090b;
-            --primary: #1A6FBF; /* Brand Blue */
-            --primary-foreground: #ffffff;
-            --secondary: #E07B2F; /* Brand Orange */
-            --secondary-foreground: #ffffff;
-            --muted: #f1f5f9;
-            --muted-foreground: #64748b;
-            --accent: #f1f5f9;
-            --accent-foreground: #0f172a;
-            --destructive: #ef4444;
-            --destructive-foreground: #ffffff;
-            --border: #e2e8f0;
-            --input: #e2e8f0;
-            --ring: #1A6FBF; /* Brand Blue focus ring */
-            
-            /* Legacy Aliases for JS compatibility */
-            --primary-glow: rgba(24, 24, 27, 0.1);
-            --primary-dark: #09090b;
-            --primary-light: #f4f4f5;
-            --danger: #ef4444;
+            /* Brand Colors */
+            --primary: #1A6FBF;
+            --primary-dark: #145999;
+            --primary-darker: #0e4a85;
+            --primary-light: #e8f1fb;
+            --primary-glow: rgba(26, 111, 191, 0.18);
+
+            --secondary: #E07B2F;
+            --secondary-dark: #c4681f;
+            --secondary-light: #fdf0e6;
+            --secondary-glow: rgba(224, 123, 47, 0.18);
+
+            /* Semantic Colors */
             --success: #10b981;
+            --success-light: #d1fae5;
             --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
             --info: #3b82f6;
-            --text: #09090b;
-            --text-secondary: #71717a;
-            --text-muted: #a1a1aa;
-            --bg: #ffffff;
+            --info-light: #dbeafe;
+
+            /* UI Colors */
+            --text: #1a202c;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --border-focus: var(--primary);
+            --bg: #f5f7fa;
+            --bg-subtle: #f8fafc;
             --white: #ffffff;
 
+            /* Aliases (backward compat) */
+            --blue: #1A6FBF;
+            --blue-dark: #145999;
+            --blue-light: #e8f1fb;
+            --orange: #E07B2F;
+            --orange-dark: #c4681f;
+            --orange-light: #fdf0e6;
+            --error: #ef4444;
+
+            /* Shadows */
+            --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.07);
+            --shadow-md: 0 4px 20px rgba(26, 111, 191, 0.10);
+            --shadow-lg: 0 8px 40px rgba(26, 111, 191, 0.15);
+            --shadow-xl: 0 20px 60px rgba(26, 111, 191, 0.20);
+
             /* Radii */
-            --radius: 0.5rem;
-            --radius-sm: calc(var(--radius) - 2px);
-            --radius-md: var(--radius);
-            --radius-lg: calc(var(--radius) + 2px);
-            --radius-xl: calc(var(--radius) + 6px);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
 
             /* Transitions */
             --t-fast: 0.15s ease;
@@ -77,7 +89,7 @@
         }
 
         body {
-            font-family: 'Inter', 'Kanit', sans-serif;
+            font-family: 'Kanit', sans-serif;
             font-size: 15px;
             color: var(--text);
             line-height: 1.5;
@@ -88,27 +100,62 @@
         }
 
         /* ===========================
-           BRAND PANEL (LEFT) - Modern Brand Aesthetic
+           BRAND PANEL (LEFT)
            =========================== */
         .brand-panel {
-            width: 50%;
-            background: linear-gradient(135deg, #0b3d6e 0%, #1A6FBF 100%);
+            width: 45%;
+            background: linear-gradient(150deg,
+                    #0b3d6e 0%,
+                    #0e4a85 20%,
+                    var(--primary) 55%,
+                    #1a7a62 80%,
+                    #155a48 100%);
             position: relative;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            justify-content: space-between;
-            padding: 48px;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 48px;
             overflow: hidden;
-            color: #ffffff;
+        }
+
+        /* Decorative blobs */
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            top: -90px;
+            right: -90px;
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: blobPulse 6s ease-in-out infinite;
         }
 
         .brand-panel::after {
             content: '';
             position: absolute;
-            inset: 0;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.03"><rect width="100" height="100" fill="white"/></svg>');
-            pointer-events: none;
+            bottom: -120px;
+            left: -70px;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, #ffffff 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0.07;
+            animation: blobPulse 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes blobPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.12);
+            }
         }
 
         /* Floating particles */
@@ -149,38 +196,53 @@
         .brand-content {
             position: relative;
             z-index: 1;
-            text-align: left;
-            margin-top: auto;
-            margin-bottom: auto;
+            text-align: center;
         }
 
         .brand-logo {
-            width: 44px;
-            height: 44px;
+            width: 150px;
+            height: 150px;
             object-fit: contain;
             background: white;
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 20px;
+            border-radius: 28px;
+            padding: 14px;
+            margin-bottom: 28px;
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.12);
+            animation: logoFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
         }
 
         .brand-title {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 34px;
+            font-weight: 900;
             color: #ffffff;
-            margin-bottom: 8px;
-            letter-spacing: -0.025em;
+            line-height: 1.15;
+            margin-bottom: 12px;
+            letter-spacing: -0.8px;
         }
 
         .brand-title span {
-            color: #E07B2F; /* Brand Orange */
+            color: var(--secondary);
+            text-shadow: 0 0 20px rgba(224, 123, 47, 0.5);
         }
 
         .brand-subtitle {
-            font-size: 15px;
-            color: rgba(255, 255, 255, 0.85);
+            font-size: 14.5px;
+            color: rgba(255, 255, 255, 0.70);
             font-weight: 400;
-            margin-bottom: 40px;
+            line-height: 1.7;
+            margin-bottom: 44px;
         }
 
         .brand-features {
@@ -197,11 +259,9 @@
             color: rgba(255, 255, 255, 0.82);
             font-size: 13.5px;
             font-weight: 500;
-            padding: 11px 12px;
-            border-radius: 12px;
-            border: 1px solid transparent;
-            transition: all var(--t-normal);
-            cursor: default;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            transition: color var(--t-normal);
         }
 
         .brand-features li:last-child {
@@ -210,69 +270,23 @@
 
         .brand-features li:hover {
             color: #fff;
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.12);
-            transform: translateX(4px);
         }
 
         .feature-icon {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             background: rgba(255, 255, 255, 0.13);
-            border-radius: 10px;
+            border-radius: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 17px;
+            font-size: 16px;
             flex-shrink: 0;
-            transition: all var(--t-normal);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transition: background var(--t-normal);
         }
 
         .brand-features li:hover .feature-icon {
             background: rgba(255, 255, 255, 0.22);
-            transform: scale(1.08);
-        }
-
-        /* Stats row in brand panel */
-        .brand-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-top: 28px;
-            margin-bottom: 4px;
-            width: 100%;
-            max-width: 280px;
-        }
-
-        .brand-stat-item {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 12px;
-            padding: 10px 8px;
-            text-align: center;
-            transition: all 0.2s ease;
-        }
-
-        .brand-stat-item:hover {
-            background: rgba(255,255,255,0.14);
-            transform: translateY(-2px);
-        }
-
-        .brand-stat-num {
-            font-size: 18px;
-            font-weight: 800;
-            color: #FFB067;
-            display: block;
-            line-height: 1.1;
-        }
-
-        .brand-stat-label {
-            font-size: 10px;
-            color: rgba(255,255,255,0.6);
-            display: block;
-            margin-top: 3px;
-            font-weight: 500;
         }
 
         .brand-footer {
@@ -295,19 +309,31 @@
             align-items: center;
             justify-content: center;
             padding: 32px;
-            background: var(--background);
-            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
 
         .form-card {
             width: 100%;
-            max-width: 400px;
-            background: var(--card);
-            padding: 0; /* Shadcn auth pages usually don't have a visible card border */
-            border: none;
-            box-shadow: none;
-            position: relative;
-            z-index: 1;
+            max-width: 520px;
+            background: var(--white);
+            padding: 44px 48px;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            animation: formFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        @keyframes formFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Logo on mobile */
@@ -338,21 +364,20 @@
         }
 
         .form-header {
-            margin-bottom: 24px;
-            text-align: center;
+            margin-bottom: 22px;
         }
 
         .form-header h2 {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--foreground);
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text);
             margin-bottom: 6px;
-            letter-spacing: -0.025em;
+            letter-spacing: -0.5px;
         }
 
         .form-header p {
-            font-size: 14px;
-            color: var(--muted-foreground);
+            font-size: 14.5px;
+            color: var(--text-secondary);
         }
 
         /* ===========================
@@ -406,23 +431,22 @@
         }
 
         /* ===========================
-           FORM FIELDS (Shadcn Style)
+           FORM FIELDS
            =========================== */
         .field-group {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .field-group label {
             display: block;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--foreground);
-            margin-bottom: 8px;
-            line-height: 1;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 7px;
         }
 
         .field-group label span {
-            color: var(--destructive);
+            color: var(--danger);
         }
 
         .input-wrap {
@@ -430,38 +454,69 @@
         }
 
         .input-wrap .input-icon {
-            display: none; /* Hide icons for cleaner shadcn look */
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            transition: color var(--t-fast);
         }
 
         .input-wrap input {
-            display: flex;
-            height: 40px;
             width: 100%;
+            padding: 12px 14px 12px 44px;
+            border: 2px solid var(--border);
             border-radius: var(--radius-md);
-            border: 1px solid var(--input);
-            background-color: transparent;
-            padding: 8px 12px;
-            font-size: 14px;
-            color: var(--foreground);
-            transition: outline 0.15s ease, border-color 0.15s ease;
+            font-size: 14.5px;
+            color: var(--text);
+            background: var(--white);
+            transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
+            font-family: 'Kanit', sans-serif;
             outline: none;
         }
 
         .input-wrap input:focus {
-            outline: 2px solid var(--ring);
-            outline-offset: 2px;
-            border-color: var(--input);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+            background: var(--primary-light);
+        }
+
+        .input-wrap input:focus+.input-icon,
+        .input-wrap:focus-within .input-icon {
+            color: var(--primary);
         }
 
         .input-wrap input::placeholder {
-            color: var(--muted-foreground);
+            color: #b0bec5;
         }
 
         /* Valid/Invalid states */
+        .input-wrap input.input-valid {
+            border-color: var(--success);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+        }
+
         .input-wrap input.input-error {
-            border-color: var(--destructive);
-            outline: 2px solid var(--destructive);
-            outline-offset: 2px;
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+            animation: inputShake 0.4s ease;
+        }
+
+        @keyframes inputShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-5px);
+            }
+
+            60% {
+                transform: translateX(5px);
+            }
         }
 
         .input-wrap .toggle-pw {
@@ -552,40 +607,58 @@
         }
 
         /* ===========================
-           SUBMIT BUTTON (Shadcn Style)
+           SUBMIT BUTTON
            =========================== */
         .btn-primary {
-            display: inline-flex;
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, var(--primary) 0%, #1e8a6e 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 15.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--t-normal);
+            font-family: 'Kanit', sans-serif;
+            display: flex;
             align-items: center;
             justify-content: center;
-            white-space: nowrap;
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.2s, opacity 0.2s;
-            outline: none;
-            height: 40px;
-            width: 100%;
-            padding: 8px 16px;
-            background-color: var(--primary);
-            color: var(--primary-foreground);
-            border: none;
-            cursor: pointer;
+            gap: 8px;
+            margin-top: 4px;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.2px;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity var(--t-fast);
         }
 
         .btn-primary:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(26, 111, 191, 0.42);
         }
 
-        .btn-primary:focus-visible {
-            outline: 2px solid var(--ring);
-            outline-offset: 2px;
+        .btn-primary:hover::after {
+            opacity: 1;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(26, 111, 191, 0.3);
         }
 
         .btn-primary:disabled {
-            opacity: 0.5;
+            opacity: 0.72;
             cursor: not-allowed;
-            pointer-events: none;
+            transform: none;
+            box-shadow: none;
         }
 
         .btn-spinner {
@@ -671,7 +744,7 @@
             }
 
             body {
-                background: linear-gradient(135deg, #0b3d6e 0%, #1A6FBF 100%); /* Brand Gradient for mobile */
+                background: var(--primary-darker);
                 position: relative;
                 overflow: auto;
                 height: auto;
@@ -695,7 +768,7 @@
                 left: -20%;
                 width: 350px;
                 height: 400px;
-                background: #1A6FBF;
+                background: var(--primary);
                 opacity: 0.6;
             }
 
@@ -715,14 +788,9 @@
                     transform: translate(0, 0) scale(1) rotate(0deg);
                 }
 
-                to {
+                100% {
                     transform: translate(30px, 50px) scale(1.1) rotate(10deg);
                 }
-            }
-
-            /* Fix Mobile Text Elements Colors */
-            .form-header {
-                display: none;
             }
 
             .form-panel {
@@ -737,13 +805,16 @@
                 flex-direction: column;
             }
 
-            /* Premium White Card on Mobile */
+            /* Premium Dark Glassmorphism Card */
             .form-card {
-                background: #ffffff;
-                border: 1px solid rgba(0, 0, 0, 0.05);
+                background: rgba(11, 49, 86, 0.4);
+                /* Deep dark blue glass */
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                border: 1px solid rgba(255, 255, 255, 0.12);
                 padding: 40px 24px;
                 border-radius: 36px;
-                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
                 width: 100%;
                 max-width: 420px;
                 position: relative;
@@ -762,7 +833,7 @@
                 }
             }
 
-            /* Inside the White Card */
+            /* Inside the Glass Card */
             .form-mobile-logo {
                 display: flex;
                 flex-direction: column;
@@ -776,25 +847,27 @@
                 height: 76px;
                 border-radius: 20px;
                 margin-bottom: 20px;
-                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-                background: #ffffff;
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+                background: rgba(255, 255, 255, 0.9);
                 padding: 4px;
-                border: 1px solid var(--border);
+                border: 1px solid rgba(255, 255, 255, 0.3);
             }
 
             .form-mobile-logo-text {
-                color: var(--primary-darker);
+                color: #ffffff;
                 font-size: 28px;
                 font-weight: 800;
                 letter-spacing: -0.5px;
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
             }
 
             .form-mobile-logo-text span {
-                color: var(--primary);
+                color: #FFB067;
+                /* Brighter orange for dark glass */
             }
 
             .form-mobile-desc {
-                color: var(--text-secondary);
+                color: rgba(255, 255, 255, 0.8);
                 font-size: 15px;
                 margin-top: 8px;
                 line-height: 1.5;
@@ -809,42 +882,92 @@
             }
 
             .m-badge {
-                background: var(--accent);
-                color: var(--primary-darker);
-                border: 1px solid var(--border);
+                background: rgba(255, 255, 255, 0.08);
+                color: rgba(255, 255, 255, 0.95);
+                border: 1px solid rgba(255, 255, 255, 0.15);
                 font-size: 12px;
                 padding: 8px 16px;
                 border-radius: 20px;
-                font-weight: 600;
+                font-weight: 500;
+                backdrop-filter: blur(10px);
             }
 
             .form-header {
-                display: none; /* Hidden on mobile */
+                display: none;
             }
 
-            /* Buttons inside white card */
+            /* Hidden on mobile */
+
+            /* Redesign form elements for Dark Glass */
+            .field-group label {
+                color: rgba(255, 255, 255, 0.9);
+            }
+
+            .tab-switcher {
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .tab-btn {
+                color: rgba(255, 255, 255, 0.5);
+            }
+
+            .tab-btn.active {
+                color: var(--primary-darker);
+            }
+
+            .tab-indicator {
+                background: rgba(255, 255, 255, 0.95);
+            }
+
+            .input-wrap input {
+                background: rgba(255, 255, 255, 0.06);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                color: #ffffff;
+                backdrop-filter: blur(12px);
+            }
+
+            .input-wrap input::placeholder {
+                color: rgba(255, 255, 255, 0.4);
+            }
+
+            .input-wrap input:focus {
+                background: rgba(255, 255, 255, 0.1);
+                border-color: #FFB067;
+                box-shadow: 0 0 0 4px rgba(224, 123, 47, 0.2);
+            }
+
+            .input-wrap .input-icon {
+                color: rgba(255, 255, 255, 0.5);
+            }
+
+            .input-wrap input:focus+.input-icon,
+            .input-wrap:focus-within .input-icon {
+                color: #FFB067;
+            }
+
+            .input-wrap .toggle-pw {
+                color: rgba(255, 255, 255, 0.5);
+            }
+
             .btn-primary {
-                background: var(--primary);
-                box-shadow: 0 8px 24px rgba(26, 111, 191, 0.25);
+                background: linear-gradient(135deg, #FFB067, #E07B2F);
+                box-shadow: 0 8px 24px rgba(224, 123, 47, 0.4);
                 border: none;
                 color: white;
             }
 
-            .btn-primary:hover {
-                background: #155b9e;
-            }
-
             .btn-primary:active {
                 transform: translateY(2px);
-                box-shadow: 0 4px 12px rgba(26, 111, 191, 0.15);
+                box-shadow: 0 4px 12px rgba(224, 123, 47, 0.3);
             }
 
             .forgot-link a {
-                color: var(--primary);
+                color: #FFB067;
             }
 
             .forgot-link a:hover {
-                background: var(--accent);
+                background: rgba(255, 255, 255, 0.1);
             }
 
             .static-footer {
@@ -909,7 +1032,7 @@
             text-decoration: underline;
         }
     </style>
-    <link rel="stylesheet" href="app-theme.css">
+    <link rel="stylesheet" href="assets/css/app-theme.css">
 </head>
 
 <body>
@@ -920,7 +1043,7 @@
         <div class="brand-particles" id="brandParticles"></div>
 
         <div class="brand-content">
-            <img src="logo.png" alt="Mentra Solution" class="brand-logo" onerror="this.style.display='none'">
+            <img src="assets/img/logo.png" alt="Mentra Solution" class="brand-logo" onerror="this.style.display='none'">
             <div class="brand-title">Mentra<br><span>Manager</span></div>
             <p class="brand-subtitle">ระบบจัดการโครงการ<br>บริษัท เมนทร้า โซลูชั่น จำกัด</p>
             <ul class="brand-features">
@@ -941,21 +1064,6 @@
                     รองรับหลายผู้ใช้งาน
                 </li>
             </ul>
-            <div class="brand-stats">
-                <div class="brand-stat-item">
-                    <span class="brand-stat-num">100+</span>
-                    <span class="brand-stat-label">โครงการ</span>
-                </div>
-                <div class="brand-stat-item">
-                    <span class="brand-stat-num">5+</span>
-                    <span class="brand-stat-label">ผู้ใช้งาน</span>
-                </div>
-                <div class="brand-stat-item">
-                    <span class="brand-stat-num">99.9%</span>
-                    <span class="brand-stat-label">Uptime</span>
-                </div>
-            </div>
-
         </div>
         <div class="brand-footer">
             115/123 ม.12 ต.บางแก้ว อ.บางพลี<br>จ.สมุทรปราการ 10540
@@ -967,7 +1075,7 @@
         <div class="form-card">
             <!-- Mobile logo (hidden on desktop) -->
             <div class="form-mobile-logo">
-                <img src="logo.png" alt="Mentra" onerror="this.style.display='none'">
+                <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
                 <div class="form-mobile-logo-text">Mentra <span>Manager</span></div>
                 <div class="form-mobile-desc">ระบบจัดการโครงการและเอกสาร<br>บริษัท เมนทร้า โซลูชั่น จำกัด</div>
                 <div class="form-mobile-badges">
@@ -1144,7 +1252,7 @@
         import { initializeFirestore, doc, setDoc, getDoc, collection, query, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         // Load config from firebase-config.js (ใช้ globalThis เพราะ module scope)
-        const configScript = await import('./firebase-config.js').catch(() => null);
+        const configScript = await import('./assets/js/firebase-config.js').catch(() => null);
 
         let firebaseConfig = null;
         if (configScript) {
@@ -1515,7 +1623,7 @@
         });
 
     </script>
-    <script src="app-ui.js" defer></script>
+    <script src="assets/js/app-ui.js" defer></script>
 </body>
 
 </html>
