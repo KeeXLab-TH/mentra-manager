@@ -87,12 +87,6 @@
         // Don't inject on login page
         if (!document.querySelector('.sidebar')) return;
 
-        const btn = document.createElement('button');
-        btn.className = 'theme-toggle-btn';
-        btn.setAttribute('aria-label', 'Toggle Dark Mode');
-        btn.addEventListener('click', toggleTheme);
-        document.body.appendChild(btn);
-
         // Apply saved theme
         applyTheme(getPreferredTheme());
 
@@ -356,8 +350,8 @@
         { icon: '📁', label: 'โครงการ',  href: 'dashboard.html?view=projects' },
     ];
     const MNAV_ITEMS_RIGHT = [
-        { icon: '📄', label: 'ใบเสนอราคา', href: 'quotation.html' },
-        { icon: '🎓', label: 'อบรม',        href: 'external_training.html' },
+        { icon: '📄', label: 'ใบเสนอราคา', href: 'dashboard.html?view=quotation' },
+        { icon: '🎓', label: 'อบรม',        href: 'dashboard.html?view=training' },
     ];
     const MNAV_SHEET_ITEMS = [
         { icon: '📦', label: 'ราคาทุน/สิ่งของ', href: 'dashboard.html?view=items' },
@@ -375,6 +369,9 @@
         const page   = location.pathname.split('/').pop() || 'index.html';
         const search = location.search;
 
+        // Do not render mobile nav on the login/signup page
+        if (page === 'index.html' || page === '') return;
+
         function isActive(href) {
             const parts = href.split('?');
             const hPage = parts[0]; const hQ = parts[1] ? '?' + parts[1] : '';
@@ -388,6 +385,23 @@
         bar.className = 'mnav-bar'; bar.id = 'mnavBar';
         bar.setAttribute('aria-label', 'เมนูหลัก');
 
+        function handleSmartNav(href, btnEl) {
+            const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+            const targetPath = href.split('?')[0] || 'index.html';
+            if (currentPath === 'dashboard.html' && targetPath === 'dashboard.html' && typeof window.navigateTo === 'function') {
+                const params = new URLSearchParams(href.split('?')[1] || '');
+                const view = params.get('view') || params.get('tab') || 'dashboard';
+                window.navigateTo(view);
+                window.history.pushState({}, '', href);
+                if (btnEl) {
+                    document.querySelectorAll('.mnav-item').forEach(n => n.classList.remove('active'));
+                    btnEl.classList.add('active');
+                }
+                return;
+            }
+            window.location.href = href;
+        }
+
         function makeNavItem(cfg) {
             const btn = document.createElement('button');
             btn.className = 'mnav-item' + (isActive(cfg.href) ? ' active' : '');
@@ -395,7 +409,7 @@
             btn.innerHTML = `<span class="mnav-icon-wrap"><span class="mnav-icon">${cfg.icon}</span><span class="mnav-dot"></span></span><span class="mnav-label">${cfg.label}</span>`;
             btn.addEventListener('click', (e) => {
                 addMnavRipple(e, btn);
-                setTimeout(() => { window.location.href = cfg.href; }, 160);
+                setTimeout(() => { handleSmartNav(cfg.href, btn); }, 160);
             });
             return btn;
         }
@@ -450,7 +464,10 @@
             card.className = 'mnav-sheet-card';
             card.style.animationDelay = `${0.13 + i * 0.045}s`;
             card.innerHTML = `<div class="mnav-sheet-card-icon">${cfg.icon}</div><div class="mnav-sheet-card-label">${cfg.label}</div>`;
-            card.addEventListener('click', () => { closeSheet(); setTimeout(() => { window.location.href = cfg.href; }, 220); });
+            card.addEventListener('click', () => { 
+                closeSheet(); 
+                setTimeout(() => { handleSmartNav(cfg.href, null); }, 220); 
+            });
             grid.appendChild(card);
         });
         sheet.appendChild(grid);
@@ -503,28 +520,13 @@
                 openSheet();
             });
 
-            // Create Right Container with Quick Dark Toggle
+            // Create Right Container (Empty, as dark mode button is removed)
             const rightDiv = document.createElement('div');
             rightDiv.className = 'topbar-m-right';
-            const mThemeBtn = document.createElement('button');
-            mThemeBtn.className = 'topbar-m-theme-btn';
-            mThemeBtn.setAttribute('aria-label', 'Toggle theme');
-            mThemeBtn.innerHTML = '🌙';
-            mThemeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleTheme();
-                const cur = document.documentElement.getAttribute('data-theme') || 'light';
-                mThemeBtn.innerHTML = cur === 'dark' ? '☀️' : '🌙';
-            });
-            rightDiv.appendChild(mThemeBtn);
 
             // Prepend Left and Append Right
             topbar.insertBefore(leftDiv, topbar.firstChild);
             topbar.appendChild(rightDiv);
-
-            // Set initial theme icon
-            const initialTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            mThemeBtn.innerHTML = initialTheme === 'dark' ? '☀️' : '🌙';
         }
 
         /* ══ Live User Info Sync ══ */
@@ -568,6 +570,56 @@
 
 
 
+    /* ── Responsive Tables Injection ── */
+    function initMobileTables() {
+        if (!isMobile()) return; // Only process on mobile to save performance
+        
+        // Use MutationObserver or direct query if tables are dynamically rendered
+        // This function handles currently present tables
+        const transformTables = () => {
+            document.querySelectorAll('table').forEach(table => {
+                table.classList.add('mobile-card-table');
+                
+                const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText.trim());
+                if (headers.length === 0) return;
+
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    if (row.hasAttribute('data-mobile-processed')) return; // Skip already processed rows
+
+                    Array.from(row.querySelectorAll('td')).forEach((td, index) => {
+                        if (headers[index]) {
+                            td.setAttribute('data-label', headers[index]);
+                        }
+                    });
+                    row.setAttribute('data-mobile-processed', 'true');
+                });
+            });
+        };
+
+        transformTables();
+
+        // Optional: Re-run when Firebase data loads (observe body for new tables/rows)
+        const observer = new MutationObserver((mutations) => {
+            for (let m of mutations) {
+                if (m.addedNodes.length > 0) {
+                    // Quick check if a table or row might have been added
+                    let hasNewRows = false;
+                    for (let n of m.addedNodes) {
+                        if (n.nodeType === 1 && (n.tagName === 'TR' || n.tagName === 'TBODY' || n.tagName === 'TABLE' || n.querySelectorAll('table, tr').length > 0)) {
+                            hasNewRows = true; break;
+                        }
+                    }
+                    if (hasNewRows) {
+                        // debounce slightly
+                        clearTimeout(window.tableTransformTimeout);
+                        window.tableTransformTimeout = setTimeout(transformTables, 50);
+                    }
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
     /* ────────────────────────────────────────────
        IX. INITIALIZATION
        ──────────────────────────────────────────── */
@@ -588,6 +640,7 @@
         initKeyboardShortcuts();
         initFocusManagement();
         initMobileNav();
+        initMobileTables();
 
         // Delayed entrance animations (after page settles)
         requestAnimationFrame(() => {

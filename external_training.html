@@ -86,12 +86,15 @@
         }
 
         body {
-            font-family: 'Kanit', 'Inter', sans-serif;
+            font-family: 'Inter', 'Kanit', sans-serif;
             font-size: 14.5px;
             color: var(--text);
             background-color: var(--bg);
             min-height: 100vh;
-            display: none; /* Hidden by default until authenticated */
+            opacity: 0; /* Hidden by default until authenticated */
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            display: flex; /* Hidden by default until authenticated */
             overflow-x: hidden;
         }
 
@@ -585,22 +588,22 @@
 
         .summary-card {
             background: var(--bg-card);
-            border-radius: var(--radius-xl);
+            border-radius: 18px;
             padding: 22px 20px;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.03);
+            border: 1px solid rgba(226,232,240,0.7);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: all var(--t-normal);
+            transition: all 0.22s cubic-bezier(0.16,1,0.3,1);
             position: relative;
             overflow: hidden;
         }
 
         .summary-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
-            border-color: rgba(26, 111, 191, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(26,111,191,0.12);
+            border-color: rgba(26, 111, 191, 0.15);
         }
 
         .summary-details {
@@ -716,19 +719,19 @@
 
         .search-input {
             width: 100%;
-            padding: 11px 14px 11px 40px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
+            padding: 10px 14px 10px 40px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
             font-size: 13.5px;
             background: var(--bg-card);
             outline: none;
-            transition: all var(--t-fast);
-            font-family: 'Kanit', sans-serif;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            font-family: 'Inter', 'Kanit', sans-serif;
         }
 
         .search-input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-glow);
+            box-shadow: 0 0 0 3px rgba(26,111,191,0.1);
         }
 
         .filter-wrapper {
@@ -772,11 +775,16 @@
         /* Responsive Table Container */
         .table-card {
             background: var(--bg-card);
-            border-radius: var(--radius-xl);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
+            border-radius: 18px;
+            border: 1px solid rgba(226,232,240,0.7);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.03);
             overflow: hidden;
             margin-bottom: 24px;
+            transition: box-shadow 0.22s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .table-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.07);
         }
 
         .table-responsive {
@@ -1259,7 +1267,7 @@
             inset: 0;
             background: rgba(15, 23, 42, 0.55);
             backdrop-filter: blur(8px);
-            z-index: 200;
+            z-index: 9999;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -3796,7 +3804,8 @@
             } catch (e) {
                 // Bug-02 fix: Firestore network timeout/rules error must NOT leave user on a blank page
                 console.warn('Could not load user data:', e);
-                document.body.style.display = 'flex';
+                document.body.style.opacity = '1';
+                document.body.style.pointerEvents = 'auto';
                 if (typeof showToast === 'function') {
                     showToast('ไม่สามารถโหลดข้อมูลผู้ใช้ กรุณารีเฟรชหน้าเว็บและลองใหม่', 'info');
                 }
@@ -3920,7 +3929,10 @@
                 };
 
                 // Show body now that the user is fully verified and database listener is live
-                document.body.style.display = 'flex';
+                setTimeout(() => {
+                    document.body.style.opacity = '1';
+                    document.body.style.pointerEvents = 'auto';
+                }, 100);
             }
         });
 
@@ -3930,6 +3942,7 @@
             window.location.href = 'index.html';
         };
     </script>
+
 </body>
 
 </html>

@@ -1,0 +1,182 @@
+
+            
+            <!-- Header Section -->
+            <header class="header-section">
+                <div class="page-info">
+                    <h1>ระบบตารางจัดอบรม <span class="badge">v2.5</span></h1>
+                    <p>จัดการและติดตามสถานะการฝึกอบรมภายนอกของบุคลากรภายในองค์กร</p>
+                </div>
+                <button class="btn-create-request" id="btnCreateRequest">
+                    <i class="fa-solid fa-circle-plus"></i> สร้างตารางจัดอบรม
+                </button>
+            </header>
+
+            <!-- View Switcher Tabs -->
+            <section class="view-switcher-tabs">
+                <button class="view-tab-btn active" id="tabListView" onclick="switchViewPane('LIST')">
+                    <i class="fa-solid fa-list-check"></i> รายการคำร้อง
+                </button>
+                <button class="view-tab-btn" id="tabCalendarView" onclick="switchViewPane('CALENDAR')">
+                    <i class="fa-solid fa-calendar-days"></i> ปฏิทินวันอบรม
+                </button>
+            </section>
+
+            <!-- Summary Cards Grid Section -->
+            <section class="summary-grid">
+
+                <!-- Budget Monthly Card -->
+                <div class="summary-card budget">
+                    <div class="summary-details">
+                        <span class="summary-label">งบประมาณที่ใช้ในเดือนนี้</span>
+                        <span class="summary-value" id="budgetSpent">0 ฿</span>
+                        <span class="summary-trend up">
+                            <i class="fa-solid fa-circle-info"></i> ขีดจำกัดงบ 100,000 ฿
+                        </span>
+                    </div>
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <div class="budget-progress-container">
+                        <div class="budget-progress-bar" id="budgetProgressBar"></div>
+                    </div>
+                </div>
+
+                <!-- Approved Card -->
+                <div class="summary-card approved">
+                    <div class="summary-details">
+                        <span class="summary-label">อบรมแล้วในเดือนนี้</span>
+                        <span class="summary-value" id="approvedCount">0 หลักสูตร</span>
+                        <span class="summary-trend up" style="color: var(--success)">
+                            <i class="fa-solid fa-circle-check"></i> อัปเดตล่าสุดวันนี้
+                        </span>
+                    </div>
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                </div>
+
+                <!-- Total Attendee Card -->
+                <div class="summary-card attendee">
+                    <div class="summary-details">
+                        <span class="summary-label">พนักงานที่เข้าอบรมสะสม</span>
+                        <span class="summary-value" id="totalAttendees">0 คน</span>
+                        <span class="summary-trend up" style="color: #4f46e5">
+                            <i class="fa-solid fa-users"></i> อัปเดตล่าสุดวันนี้
+                        </span>
+                    </div>
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Dynamic Area depending on records state -->
+            <div id="dynamicMainContentArea">
+                
+                <!-- VIEW 1: LIST / TABLE VIEW PANE -->
+                <div class="view-content-pane active" id="paneListView">
+                    <!-- Controls Section (Search & Filter) -->
+                    <section class="table-controls">
+                        <div class="search-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="search-input" id="tableSearch" placeholder="ค้นหาตามรหัสรายการ, ชื่อหลักสูตร, ชื่อพนักงาน...">
+                        </div>
+                        
+                        <div class="filter-wrapper">
+                            <select class="filter-select" id="filterStatus">
+                                <option value="ALL">แสดงสถานะทั้งหมด</option>
+                                <option value="pending">รออบรมตามแผน</option>
+                                <option value="approved">เข้าอบรมเสร็จสิ้น</option>
+                                <option value="rejected">ยกเลิกรายการ</option>
+                            </select>
+                            
+                            <select class="filter-select" id="filterSort">
+                                <option value="NEWEST">ล่าสุดก่อน</option>
+                                <option value="COST_DESC">ค่าใช้จ่าย สูง-ต่ำ</option>
+                                <option value="COST_ASC">ค่าใช้จ่าย ต่ำ-สูง</option>
+                            </select>
+                        </div>
+                    </section>
+
+                    <!-- Main Data Table -->
+                    <section class="table-card">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>รหัสรายการ</th>
+                                        <th>ชื่อหลักสูตร</th>
+                                        <th>สถานที่จัดอบรม</th>
+                                        <th>วิทยากรผู้อบรม</th>
+                                        <th>ค่าใช้จ่ายรวม</th>
+                                        <th>สถานะ</th>
+                                        <th>จัดการรายการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trainingTableBody">
+                                    <!-- Table rows rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination Bar -->
+                        <div class="table-pagination">
+                            <div class="pagination-info">
+                                แสดง <span id="paginationRange">0-0 จากทั้งหมด 0</span> รายการ
+                            </div>
+                            <div class="pagination-buttons">
+                                <button class="btn-page"><i class="fa-solid fa-chevron-left"></i></button>
+                                <button class="btn-page active">1</button>
+                                <button class="btn-page"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- VIEW 2: CALENDAR VIEW PANE -->
+                <div class="view-content-pane" id="paneCalendarView">
+                    <section class="calendar-card">
+                        <div class="calendar-header">
+                            <div class="calendar-title-text">
+                                <i class="fa-regular fa-calendar-check" style="color: var(--primary);"></i>
+                                <span id="calendarMonthTitle">พฤษภาคม 2026</span>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="calendar-nav-btn" onclick="adjustCalendarMonth(-1)">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <button class="calendar-nav-btn" onclick="adjustCalendarMonth(1)">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="calendar-grid" id="calendarGrid">
+                            <!-- Header weekdays -->
+                            <div class="calendar-weekday">อา.</div>
+                            <div class="calendar-weekday">จ.</div>
+                            <div class="calendar-weekday">อ.</div>
+                            <div class="calendar-weekday">พ.</div>
+                            <div class="calendar-weekday">พฤ.</div>
+                            <div class="calendar-weekday">ศ.</div>
+                            <div class="calendar-weekday">ส.</div>
+                            
+                            <!-- Calendar Days injected dynamically -->
+                        </div>
+                    </section>
+                </div>
+
+            </div>
+
+            <!-- EMPTY STATE CONTAINER (Shown if no database records exist at all) -->
+            <div class="empty-records-card" id="emptyRecordsCard" style="display: none;">
+                <i class="fa-solid fa-chalkboard-user"></i>
+                <h3>ยังไม่มีข้อมูลคำร้องขออบรมภายนอกในขณะนี้</h3>
+                <p>คุณสามารถกดสร้างคำร้องใหม่เพื่อเพิ่มข้อมูลพนักงาน และจัดระบบปฏิทินวันเข้าอบรมได้ทันที</p>
+                <button class="btn-create-request" onclick="openModal('requestModal')">
+                    <i class="fa-solid fa-circle-plus"></i> เริ่มสร้างตารางอบรมแรก
+                </button>
+            </div>
+
+        

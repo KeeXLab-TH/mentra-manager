@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mentra Manager — Admin Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
         *,
@@ -35,8 +35,8 @@
         }
 
         body {
-            font-family: 'Noto Sans Thai', 'Inter', sans-serif;
-            background: radial-gradient(circle at 50% 0%, #13253f 0%, var(--bg) 70%);
+            font-family: 'Inter', 'Noto Sans Thai', sans-serif;
+            background: radial-gradient(ellipse at 20% 0%, #1a2d4a 0%, var(--bg) 60%);
             color: var(--text);
             min-height: 100vh;
             display: none; /* Hidden by default until authenticated */
@@ -192,9 +192,9 @@
         .stat-card.green::before { background: var(--success); }
 
         .stat-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
         }
 
         .stat-icon {
@@ -283,12 +283,18 @@
 
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px) saturate(1.4);
+            -webkit-backdrop-filter: blur(20px) saturate(1.4);
             border: 1px solid var(--card-border);
             border-radius: 24px;
             padding: 36px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35),
+                        0 0 0 1px rgba(255,255,255,0.03) inset;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255,255,255,0.10);
         }
 
         .card-header {
@@ -673,12 +679,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.025);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 20px 24px;
             gap: 16px;
-            transition: all 0.25s ease;
+            transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
             margin-bottom: 12px;
         }
 
@@ -687,9 +693,10 @@
         }
 
         .approval-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.16);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
 
         .approval-user-info {
