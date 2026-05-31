@@ -1442,3 +1442,188 @@ tbody tr:hover td {
         filter: blur(0);
     }
 }
+/* ÄÄ Flawless Mobile Card Tables ÄÄ */
+@media (max-width: 900px) {
+    .table-wrap table,
+    .table-responsive table.data-table,
+    .table-responsive table#itemsTable { min-width: 0 !important; }
+    
+    .table-wrap, 
+    .table-responsive {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        overflow-x: hidden !important;
+    }
+    
+    .table-wrap table,
+    .table-responsive table.data-table,
+    .table-responsive table#itemsTable,
+    .table-wrap table tbody,
+    .table-responsive table.data-table tbody,
+    .table-responsive table#itemsTable tbody,
+    .table-wrap table tr,
+    .table-responsive table.data-table tr,
+    .table-responsive table#itemsTable tr,
+    .table-wrap table td,
+    .table-responsive table.data-table td,
+    .table-responsive table#itemsTable td {
+        max-width: none !important;
+        display: block;
+        width: 100%;
+    }
+
+    .table-wrap table thead,
+    .table-responsive table.data-table thead,
+    .table-responsive table#itemsTable thead {
+        display: none;
+    }
+
+    .table-wrap table tr,
+    .table-responsive table.data-table tr,
+    .table-responsive table#itemsTable tr {
+        background: #ffffff !important;
+        border-radius: 20px;
+        margin-bottom: 24px;
+        padding: 0; /* Removed tr padding for cross-browser safety */
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        position: relative;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+        overflow: hidden; /* Keeps child borders inside radius */
+    }
+
+    .table-wrap table tr:hover,
+    .table-responsive table.data-table tr:hover,
+    .table-responsive table#itemsTable tr:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+    
+    .table-wrap table tr td[colspan],
+    .table-responsive table.data-table tr td[colspan],
+    .table-responsive table#itemsTable tr td[colspan] {
+        text-align: center !important;
+        justify-content: center !important;
+        flex-direction: column !important;
+        border-bottom: none !important;
+        padding: 2rem 20px !important;
+    }
+    .table-wrap table tr td[colspan]::before,
+    .table-responsive table.data-table tr td[colspan]::before,
+    .table-responsive table#itemsTable tr td[colspan]::before {
+        display: none !important;
+    }
+
+    .table-wrap table td,
+    .table-responsive table.data-table td,
+    .table-responsive table#itemsTable td {
+        box-sizing: border-box !important; /* PREVENT PADDING FROM INCREASING WIDTH */
+        display: flex;
+        flex-direction: row;
+        align-items: center; /* Vertically center */
+        justify-content: space-between; /* Space out label and value */
+        padding: 14px 24px; /* <--- ADDED 24px LEFT/RIGHT PADDING */
+        font-size: 14.5px;
+        border-bottom: 1px dashed #cbd5e1;
+        text-align: right; /* Right align the value text */
+        gap: 16px;
+        word-break: break-word;
+        line-height: 1.4;
+        color: #1e293b;
+    }
+
+    .table-wrap table td:last-child,
+    .table-responsive table.data-table td:last-child,
+    .table-responsive table#itemsTable td:last-child {
+        border-bottom: none;
+        padding: 16px 24px 24px 24px; /* Top, Right, Bottom, Left */
+        flex-direction: column; /* Stack action buttons */
+        align-items: stretch;
+    }
+
+    /* Minimal Data Labels for Space Saving */
+    .table-wrap table td::before,
+    .table-responsive table.data-table td::before,
+    .table-responsive table#itemsTable td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+        font-size: 13px;
+        text-transform: none; /* Removed uppercase to save width */
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        display: block;
+        margin-bottom: 0;
+        box-shadow: none;
+        border: none;
+        flex-shrink: 0; /* Prevent label from squishing */
+        text-align: left;
+    }
+
+    /* Make nested spans inside td align right naturally */
+    .table-wrap table td > *,
+    .table-responsive table.data-table td > *,
+    .table-responsive table#itemsTable td > * {
+        text-align: right;
+    }
+    
+    .table-wrap table td .action-btns,
+    .table-responsive table.data-table td .action-btns,
+    .table-responsive table#itemsTable td .action-btns {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+    }
+    
+    .table-wrap table td .action-btns .btn,
+    .table-wrap table td .btn,
+    .table-responsive table.data-table td .action-btns .btn,
+    .table-responsive table.data-table td .btn,
+    .table-responsive table#itemsTable td .action-btns .btn,
+    .table-responsive table#itemsTable td .btn {
+        flex: 1;
+        min-width: 110px;
+        text-align: center;
+        justify-content: center;
+        padding: 12px 16px;
+        border-radius: 14px;
+        font-weight: 600;
+    }
+    
+    .table-wrap table td .badge,
+    .table-responsive table.data-table td .badge,
+    .table-responsive table#itemsTable td .badge {
+        display: inline-block;
+        font-size: 13.5px;
+        padding: 6px 16px;
+        border-radius: 100px;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    /* Super Emphasized First Column (e.g. Project ID) - Kept stacked for title readability */
+    .table-wrap table td:first-child,
+    .table-responsive table.data-table td:first-child,
+    .table-responsive table#itemsTable td:first-child { 
+        font-size: 18px !important; 
+        font-weight: 800 !important; 
+        color: #1A6FBF !important; 
+        padding: 24px 24px 16px 24px !important; /* Top, Right, Bottom, Left */
+        border-bottom: 2px solid #f1f5f9 !important; 
+        margin-bottom: 8px !important; 
+    }
+    .table-wrap table td:first-child::before,
+    .table-responsive table.data-table td:first-child::before,
+    .table-responsive table#itemsTable td:first-child::before {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+        box-shadow: 0 2px 6px rgba(29, 78, 216, 0.1);
+    }
+}

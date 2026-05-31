@@ -60,49 +60,7 @@
     /* ────────────────────────────────────────────
        II. DARK / LIGHT MODE TOGGLE
        ──────────────────────────────────────────── */
-    const THEME_KEY = 'mentra_ui_theme';
-
-    function getPreferredTheme() {
-        const stored = localStorage.getItem(THEME_KEY);
-        if (stored) return stored;
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-
-    function applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem(THEME_KEY, theme);
-        const btn = document.querySelector('.theme-toggle-btn');
-        if (btn) {
-            btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-            btn.title = theme === 'dark' ? 'สลับเป็น Light Mode' : 'สลับเป็น Dark Mode';
-        }
-    }
-
-    function toggleTheme() {
-        const current = document.documentElement.getAttribute('data-theme') || 'light';
-        applyTheme(current === 'dark' ? 'light' : 'dark');
-    }
-
-    function injectThemeToggle() {
-        // Don't inject on login page
-        if (!document.querySelector('.sidebar')) return;
-
-        const btn = document.createElement('button');
-        btn.className = 'theme-toggle-btn';
-        btn.setAttribute('aria-label', 'Toggle Dark Mode');
-        btn.addEventListener('click', toggleTheme);
-        document.body.appendChild(btn);
-
-        // Apply saved theme
-        applyTheme(getPreferredTheme());
-
-        // Listen for system preference changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            if (!localStorage.getItem(THEME_KEY)) {
-                applyTheme(e.matches ? 'dark' : 'light');
-            }
-        });
-    }
+    
 
 
     /* ────────────────────────────────────────────
@@ -375,6 +333,8 @@
         const page   = location.pathname.split('/').pop() || 'index.html';
         const search = location.search;
 
+        // Removed to allow mobile nav to appear on dynamically loaded pages
+
         function isActive(href) {
             const parts = href.split('?');
             const hPage = parts[0]; const hQ = parts[1] ? '?' + parts[1] : '';
@@ -503,28 +463,15 @@
                 openSheet();
             });
 
-            // Create Right Container with Quick Dark Toggle
+            // Create Right Container (Empty, as dark mode button is removed)
             const rightDiv = document.createElement('div');
             rightDiv.className = 'topbar-m-right';
-            const mThemeBtn = document.createElement('button');
-            mThemeBtn.className = 'topbar-m-theme-btn';
-            mThemeBtn.setAttribute('aria-label', 'Toggle theme');
-            mThemeBtn.innerHTML = '🌙';
-            mThemeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleTheme();
-                const cur = document.documentElement.getAttribute('data-theme') || 'light';
-                mThemeBtn.innerHTML = cur === 'dark' ? '☀️' : '🌙';
-            });
-            rightDiv.appendChild(mThemeBtn);
 
             // Prepend Left and Append Right
             topbar.insertBefore(leftDiv, topbar.firstChild);
             topbar.appendChild(rightDiv);
 
-            // Set initial theme icon
-            const initialTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            mThemeBtn.innerHTML = initialTheme === 'dark' ? '☀️' : '🌙';
+            
         }
 
         /* ══ Live User Info Sync ══ */
@@ -582,12 +529,12 @@
 
     function boot() {
         initRipple();
-        injectThemeToggle();
         initAutoLoading();
         initTopbarScroll();
         initKeyboardShortcuts();
         initFocusManagement();
         initMobileNav();
+        initResponsiveTables();
         initSmoothTransitions();
 
         // Delayed entrance animations (after page settles)
@@ -600,14 +547,90 @@
         // Expose API on window for existing code to call
         window.MentraUI = {
             toast: showToast,
-            setLoading,
-            toggleTheme,
-            applyTheme
+            setLoading
         };
 
         console.log('%c✦ Mentra UI Layer loaded', 'color: #1A6FBF; font-weight: bold; font-size: 12px;');
     }
 
-    init();
+    
+    /* ==========================================
+       SMOOTH PAGE TRANSITIONS
+       ========================================== */
+    function initSmoothTransitions() {
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+            const href = link.getAttribute('href');
+            if (href && href.endsWith('.html') && !href.startsWith('http') && link.target !== '_blank') {
+                e.preventDefault();
+                showGlobalPreloader();
+                setTimeout(() => { window.location.href = href; }, 150);
+            }
+        });
+        window.addEventListener('pageshow', () => hideGlobalPreloader());
+    }
 
+    function showGlobalPreloader() {
+        let loader = document.getElementById('mentra-global-transition');
+        if (!loader) {
+            loader = document.createElement('div');
+            loader.id = 'mentra-global-transition';
+            loader.innerHTML = '<div class="spinner"></div>';
+            Object.assign(loader.style, {
+                position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh',
+                background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(4px)',
+                zIndex: '999999', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                opacity: '0', transition: 'opacity 0.15s ease'
+            });
+            const spinnerStyle = document.createElement('style');
+            spinnerStyle.textContent = '#mentra-global-transition .spinner { width: 40px; height: 40px; border: 4px solid var(--primary-glow, rgba(26,111,191,0.2)); border-top-color: var(--primary, #1A6FBF); border-radius: 50%; animation: mentra-spin 0.8s linear infinite; } @keyframes mentra-spin { to { transform: rotate(360deg); } }';
+            document.head.appendChild(spinnerStyle);
+            document.body.appendChild(loader);
+        }
+        loader.style.pointerEvents = 'all';
+        requestAnimationFrame(() => loader.style.opacity = '1');
+    }
+
+    function hideGlobalPreloader() {
+        const loader = document.getElementById('mentra-global-transition');
+        if (loader) {
+            loader.style.opacity = '0';
+            loader.style.pointerEvents = 'none';
+        }
+    }
+
+    
+    /* ==========================================
+       RESPONSIVE MOBILE TABLES
+       ========================================== */
+    
+        function applyDataLabels(table) {
+        const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim());
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            cells.forEach((cell, index) => {
+                if (headers[index] && !cell.hasAttribute('data-label')) {
+                    cell.setAttribute('data-label', headers[index]);
+                }
+            });
+        });
+    }
+
+    function initResponsiveTables() {
+        const tables = document.querySelectorAll('table');
+        tables.forEach(table => {
+            // Apply initially
+            applyDataLabels(table);
+            
+            // Watch for dynamic data loads
+            const tbody = table.querySelector('tbody');
+            if (tbody) {
+                const observer = new MutationObserver(() => applyDataLabels(table));
+                observer.observe(tbody, { childList: true, subtree: true });
+            }
+        });
+    }
+    init();
 })();
