@@ -1322,9 +1322,25 @@
         .file-item-name {
             font-size: 13.5px;
             font-weight: 600;
-            white-space: nowrap;
+            white-space: normal;
+            word-break: break-word;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 600px) {
+            .file-list-item {
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+            .file-list-item > div:last-child {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 4px;
+            }
         }
 
         .file-item-open {
