@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /private/
-Disallow: /preview/
-Disallow: /demo/
-
-Sitemap: https://blocks.so/sitemap.xml

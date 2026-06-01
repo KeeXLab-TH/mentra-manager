@@ -333,6 +333,8 @@
         const page   = location.pathname.split('/').pop() || 'index.html';
         const search = location.search;
 
+        if (page === 'index.html' || page === '') return;
+
         // Removed to allow mobile nav to appear on dynamically loaded pages
 
         function isActive(href) {
