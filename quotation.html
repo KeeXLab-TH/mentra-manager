@@ -802,6 +802,105 @@
                 transform: rotate(360deg);
             }
         }
+    
+        /* ===========================
+           TOPBAR RIGHT MENU (Moved from Sidebar)
+           =========================== */
+        .topbar-right-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-left: auto;
+        }
+
+        .topbar-right-menu #adminMenu {
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        .topbar-right-menu #adminMenu[style*="block"] {
+            display: flex !important;
+        }
+
+        .topbar-right-menu #adminMenu .nav-section-title {
+            display: none; /* Hide "จัดการระบบ" text in topbar */
+        }
+
+        .topbar-right-menu .nav-item {
+            width: auto;
+            margin: 0;
+            padding: 8px 12px;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+        }
+
+        .topbar-right-menu .nav-item:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        .topbar-right-menu .nav-label {
+            display: none; /* Hide text, show only icon on small screens, or show both on large? Let's show both on large */
+        }
+        
+        @media (min-width: 1200px) {
+            .topbar-right-menu .nav-label {
+                display: block;
+                font-size: 13px;
+            }
+        }
+
+        .topbar-right-menu .sidebar-user {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: transparent;
+            gap: 16px;
+        }
+
+        .topbar-right-menu .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            padding: 0;
+        }
+
+        .topbar-right-menu .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar-right-menu .user-name {
+            font-size: 14px;
+            color: var(--text);
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .topbar-right-menu .btn-logout {
+            margin: 0;
+            padding: 8px 16px;
+            width: auto;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-radius: var(--radius-sm);
+        }
+
+        .topbar-right-menu .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+        }
+
     </style>
 
     <!-- Premium UI Overlay -->
@@ -853,44 +952,9 @@
                 <div class="nav-icon">🎓</div>
                 <span class="nav-label">ระบบตารางจัดอบรม</span>
             </button>
-            <div id="adminMenu" style="display:none;">
-                <div class="nav-section-title">จัดการระบบ</div>
-                <button class="nav-item" onclick="window.location.href='dashboard.html?tab=users'" id="nav-users">
-                    <div class="nav-icon">👥</div>
-                    <span class="nav-label">จัดการผู้ใช้งาน</span>
-                </button>
-                <button class="nav-item" onclick="window.location.href='dashboard.html?action=new-project'"
-                    id="nav-add-project">
-                    <div class="nav-icon">➕</div>
-                    <span class="nav-label">เพิ่มโครงการใหม่</span>
-                </button>
-                <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
-                    <div class="nav-icon">🛠️</div>
-                    <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
-                </a>
-            </div>
-        </nav>
+            </nav>
 
-        <div class="sidebar-user">
-            <div class="user-card">
-                <div class="user-avatar" id="userAvatar">M</div>
-                <div class="user-info">
-                    <div class="user-name" id="userName">กำลังโหลด...</div>
-                    <div class="user-role">
-                        <span class="role-badge" id="userRoleBadge">-</span>
-                    </div>
-                </div>
-            </div>
-            <button class="btn-logout" onclick="handleLogout()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-                <span class="btn-logout-text">ออกจากระบบ</span>
-            </button>
-        </div>
-    </aside>
+        </aside>
 
     <!-- ===== MAIN CONTENT ===== -->
     <div class="main-wrapper">
@@ -906,6 +970,45 @@
                 <div class="breadcrumb-title">ระบบออกใบเสนอราคา (Quotation)</div>
                 <div class="breadcrumb-sub">สร้างและจัดการใบเสนอราคาสำหรับ Mentra Solution</div>
             </div>
+        
+            <div class="topbar-actions" id="topbarActions"></div>
+            <div class="topbar-right-menu">
+                
+                <div id="adminMenu" style="display:none;">
+                    <button class="nav-item" onclick="window.location.href='dashboard.html?view=users'" id="nav-users">
+                        <div class="nav-icon">👥</div>
+                        <span class="nav-label">จัดการผู้ใช้งาน</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-add-project">
+                        <div class="nav-icon">➕</div>
+                        <span class="nav-label">เพิ่มโครงการใหม่</span>
+                    </button>
+                    <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                        <div class="nav-icon">🛠️</div>
+                        <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
+                    </a>
+                </div>
+                <div class="sidebar-user">
+                    <div class="user-card">
+                        <div class="user-avatar" id="userAvatar">M</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">กำลังโหลด...</div>
+                            <div class="user-role">
+                                <span class="role-badge" id="userRoleBadge">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span class="btn-logout-text">ออกจากระบบ</span>
+                    </button>
+                </div>
+            </div>
+
         </header>
 
         <main class="content-area">
@@ -1055,7 +1158,15 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+                    <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; gap: 1rem;">
+                        <button class="btn btn-outline" onclick="openHistoryModal()"
+                            style="padding: 0.75rem 1.5rem; font-size: 1rem; border-color: var(--primary-color); color: var(--primary-color);">
+                            <i class='bx bx-history'></i> ประวัติใบเสนอราคา
+                        </button>
+                        <button class="btn btn-outline" onclick="openTemplateSettingsModal()"
+                            style="padding: 0.75rem 1.5rem; font-size: 1rem; border-color: var(--primary-color); color: var(--primary-color);">
+                            <i class='bx bx-customize'></i> ตั้งค่าฟอร์ม
+                        </button>
                         <button class="btn btn-primary" onclick="exportToPDF()"
                             style="padding: 0.75rem 2rem; font-size: 1rem; box-shadow: 0 4px 12px rgba(26,111,191,0.2);">
                             <i class='bx bxs-file-pdf'></i> Export PDF
@@ -1071,11 +1182,11 @@
                     style="width: 715px; min-height: 1020px; padding: 14px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column;">
 
                     <!-- ══ HEADER ══ -->
-                    <div
+                    <div id="pHeaderSection"
                         style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid #1A6FBF;">
                         <!-- Left: Logo + Company -->
                         <div style="display: flex; gap: 14px; align-items: flex-start; flex: 1;">
-                            <img src="assets/img/logo.png"
+                            <img id="pLogoImg" src="assets/img/logo.png"
                                 style="height: 56px; max-width: 110px; object-fit: contain; flex-shrink: 0; padding-right: 14px; border-right: 1px solid #e2e8f0;"
                                 alt="Mentra Logo">
                             <div>
@@ -1196,7 +1307,7 @@
                     <table
                         style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal; border: 1px solid #e0e7ff; border-radius: 6px; overflow: hidden;">
                         <thead>
-                            <tr style="background-color: #1A6FBF;">
+                            <tr id="pTableHeadRow" style="background-color: #1A6FBF;">
                                 <th
                                     style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">
                                     ลำดับ</th>
@@ -1307,10 +1418,10 @@
                                 <div
                                     style="height: 40px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 10px;">
                                 </div>
-                                <div
+                                <div id="pSellerName"
                                     style="font-size: 11px; color: #374151; margin-top: 6px; font-weight: 600; font-family: 'Sarabun', sans-serif;">
                                     ( นายวัฒนชัย เตียวแก )</div>
-                                <div
+                                <div id="pSellerRole"
                                     style="font-size: 11.5px; color: #1A6FBF; margin-top: 4px; font-weight: 700; font-family: 'Sarabun', sans-serif;">
                                     ผู้เสนอราคา</div>
                             </div>
@@ -1322,12 +1433,100 @@
         </main>
     </div>
 
+    <!-- Live Editor Modal -->
+    <div id="templateSettingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f1f5f9; z-index: 1050; flex-direction: row; font-family: 'Sarabun', sans-serif;">
+        
+        <!-- Left Sidebar: Settings -->
+        <div style="width: 350px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; z-index: 10;">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 1.2rem; color: var(--primary-color);"><i class='bx bx-customize'></i> ออกแบบฟอร์ม</h3>
+                <button onclick="closeTemplateSettingsModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            
+            <div style="flex: 1; overflow-y: auto; padding: 20px;">
+                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">สีและโลโก้</h4>
+                <div class="form-group">
+                    <label>สีหลัก (Primary Color)</label>
+                    <input type="color" id="settingPrimaryColor" class="form-control" value="#1A6FBF" style="height: 40px; padding: 2px; cursor: pointer;" oninput="applyLivePreview()">
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="settingShowLogo" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
+                    <label style="margin: 0;">แสดงโลโก้บริษัท</label>
+                </div>
+                <div class="form-group">
+                    <label>ขนาดโลโก้ (px)</label>
+                    <input type="range" id="settingLogoSize" min="30" max="120" value="56" class="form-control" oninput="applyLivePreview()">
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ขนาดตัวอักษร</h4>
+                <div class="form-group">
+                    <label>ข้อความทั่วไป</label>
+                    <input type="range" id="settingFontSize" min="9" max="14" value="11" step="0.5" class="form-control" oninput="applyLivePreview()">
+                </div>
+                <div class="form-group">
+                    <label>ขนาดหัวตาราง</label>
+                    <input type="range" id="settingHeaderFontSize" min="9" max="14" value="11" step="0.5" class="form-control" oninput="applyLivePreview()">
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ผู้เสนอราคา</h4>
+                <div class="form-group">
+                    <label>ชื่อผู้ลงนาม</label>
+                    <input type="text" id="settingSellerName" class="form-control" value="( นายวัฒนชัย เตียวแก )" oninput="applyLivePreview()">
+                </div>
+                <div class="form-group">
+                    <label>ตำแหน่ง</label>
+                    <input type="text" id="settingSellerRole" class="form-control" value="ผู้เสนอราคา" oninput="applyLivePreview()">
+                </div>
+            </div>
+
+            <div style="padding: 20px; border-top: 1px solid var(--border-color); background: #f8fafc; display: flex; gap: 10px;">
+                <button class="btn btn-outline" style="flex: 1;" onclick="closeTemplateSettingsModal()">ยกเลิก</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveTemplateSettings()">บันทึก</button>
+            </div>
+        </div>
+
+        <!-- Right Area: Preview Canvas -->
+        <div id="livePreviewContainer" style="flex: 1; overflow: auto; padding: 40px; display: flex; justify-content: center; align-items: flex-start; background: #e2e8f0;">
+            <!-- printArea will be moved here dynamically when opened -->
+        </div>
+    </div>
+
+    <!-- Quotation History Modal -->
+    <div id="quotationHistoryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 800px; max-width: 95%; max-height: 90vh; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 1.1rem; color: var(--primary-color);">ประวัติใบเสนอราคา</h3>
+                <button onclick="closeHistoryModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            <div style="padding: 0; overflow-y: auto; flex: 1;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                        <tr>
+                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted);">วันที่</th>
+                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted);">เลขที่อ้างอิง</th>
+                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted);">ลูกค้า</th>
+                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted); text-align: right;">ยอดรวม</th>
+                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted); text-align: center;">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr><td colspan="5" style="text-align: center; padding: 24px;">กำลังโหลด...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
-            initializeFirestore, doc, getDoc, setDoc,
+            initializeFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc,
             persistentLocalCache, persistentMultipleTabManager
         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -1442,6 +1641,15 @@
                                 }, { merge: true }).catch(err => console.error("Initial cloud backup failed:", err));
                             }
                             loadSavedRecipientsDropdown();
+                        }
+                        
+                        if (userData && userData.quotationTemplate) {
+                            applyTemplateSettings(userData.quotationTemplate);
+                        } else {
+                            const localTemplate = localStorage.getItem('quotationTemplate');
+                            if (localTemplate) {
+                                applyTemplateSettings(JSON.parse(localTemplate));
+                            }
                         }
                         
                         // Show body now that the user is fully verified
@@ -1641,8 +1849,8 @@
             return BahtText + SatangText;
         }
 
-        // --- PDF Export using html2pdf.js ---
-        function exportToPDF() {
+        // --- Synchronize form data to printArea ---
+        function syncFormToPrintArea() {
             calculateAll(); // Recalculate everything
 
             // Copy input values to Print Template
@@ -1690,12 +1898,12 @@
                     newTr.style.backgroundColor = '#f8fafc'; // Zebra striping
                 }
                 newTr.innerHTML = `
-                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${i + 1}</td>
-                    <td style="padding: 7px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">${desc}</td>
-                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
-                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
-                    <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
-                    <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-weight: 500; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
+                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${i + 1}</td>
+                    <td style="padding: 7px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">${desc}</td>
+                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
+                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
+                    <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
+                    <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-weight: 500; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
                 `;
                 pItemsBody.appendChild(newTr);
             }
@@ -1711,16 +1919,21 @@
                         emptyTr.style.backgroundColor = '#f8fafc'; // Zebra striping for empty rows
                     }
                     emptyTr.innerHTML = `
-                        <td style="padding: 5px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: 10.5px !important; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
                     `;
                     pItemsBody.appendChild(emptyTr);
                 }
             }
+        }
+
+        // --- PDF Export using html2pdf.js ---
+        function exportToPDF() {
+            syncFormToPrintArea();
 
             // Temporarily show the print area for html2pdf to grab styling correctly, then hide
             const printElement = document.getElementById('printArea');
@@ -1768,6 +1981,9 @@
                     html2pdf().set(opt).from(printElement).save().then(() => {
                         printElement.style.cssText = 'display: none; background: #ffffff;';
                         if (window.innerWidth < 1024) window.scrollTo(originalScrollX, originalScrollY);
+                        if (typeof saveQuotationToHistory === 'function') {
+                            saveQuotationToHistory();
+                        }
                     }).catch(err => {
                         console.error("PDF generation failed:", err);
                         printElement.style.cssText = 'display: none; background: #ffffff;';
@@ -1909,6 +2125,300 @@
             }
         }
 
+        // --- Template Customization ---
+        // A variable to store the original parent of printArea
+        let printAreaOriginalParent = null;
+        let printAreaOriginalNextSibling = null;
+
+        function openTemplateSettingsModal() {
+            syncFormToPrintArea();
+            
+            const printArea = document.getElementById('printArea');
+            printAreaOriginalParent = printArea.parentNode;
+            printAreaOriginalNextSibling = printArea.nextSibling;
+            
+            document.getElementById('livePreviewContainer').appendChild(printArea);
+            printArea.style.display = 'block';
+            printArea.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+            printArea.style.borderRadius = '4px';
+            printArea.style.transformOrigin = 'top center';
+            printArea.style.transform = 'scale(0.85)';
+            
+            document.getElementById('templateSettingsModal').style.display = 'flex';
+            applyLivePreview(); // Sync the panel sliders to current preview
+        }
+
+        function closeTemplateSettingsModal() {
+            const printArea = document.getElementById('printArea');
+            if (printAreaOriginalParent) {
+                printAreaOriginalParent.insertBefore(printArea, printAreaOriginalNextSibling);
+            }
+            printArea.style.display = 'none';
+            printArea.style.boxShadow = 'none';
+            printArea.style.transform = 'none';
+
+            document.getElementById('templateSettingsModal').style.display = 'none';
+        }
+
+        function applyLivePreview() {
+            const primaryColor = document.getElementById('settingPrimaryColor').value;
+            const showLogo = document.getElementById('settingShowLogo').checked;
+            const logoSize = document.getElementById('settingLogoSize').value;
+            const fontSize = document.getElementById('settingFontSize').value;
+            const headerFontSize = document.getElementById('settingHeaderFontSize').value;
+            const sellerName = document.getElementById('settingSellerName').value;
+            const sellerRole = document.getElementById('settingSellerRole').value;
+
+            // Apply Color
+            document.getElementById('pHeaderSection').style.borderBottom = `2.5px solid ${primaryColor}`;
+            document.getElementById('pTableHeadRow').style.backgroundColor = primaryColor;
+            document.getElementById('pSellerRole').style.color = primaryColor;
+            
+            const ths = document.getElementById('pTableHeadRow').querySelectorAll('th');
+            ths.forEach(th => th.style.setProperty('background-color', primaryColor, 'important'));
+
+            // Apply Logo
+            const pLogo = document.getElementById('pLogoImg');
+            pLogo.style.display = showLogo ? 'block' : 'none';
+            pLogo.style.height = `${logoSize}px`;
+
+            // Apply Typography
+            const printContentDiv = document.querySelector('#printArea > div');
+            printContentDiv.style.fontSize = `${fontSize}px`;
+            
+            ths.forEach(th => {
+                th.style.fontSize = `${headerFontSize}px`;
+            });
+
+            // Apply Seller Info
+            document.getElementById('pSellerName').innerText = sellerName;
+            document.getElementById('pSellerRole').innerText = sellerRole;
+        }
+
+        async function saveTemplateSettings() {
+            const templateSettings = { 
+                primaryColor: document.getElementById('settingPrimaryColor').value,
+                showLogo: document.getElementById('settingShowLogo').checked,
+                logoSize: document.getElementById('settingLogoSize').value,
+                fontSize: document.getElementById('settingFontSize').value,
+                headerFontSize: document.getElementById('settingHeaderFontSize').value,
+                sellerName: document.getElementById('settingSellerName').value,
+                sellerRole: document.getElementById('settingSellerRole').value
+            };
+            
+            localStorage.setItem('quotationTemplate', JSON.stringify(templateSettings));
+            applyTemplateSettings(templateSettings);
+
+            if (currentUser) {
+                try {
+                    await setDoc(doc(db, 'users', currentUser.uid), {
+                        quotationTemplate: templateSettings
+                    }, { merge: true });
+                    alert('บันทึกการตั้งค่ารูปแบบฟอร์มลงคลาวด์สำเร็จ');
+                } catch (err) {
+                    console.error('Error saving template:', err);
+                }
+            } else {
+                alert('บันทึกการตั้งค่าในเครื่องนี้สำเร็จ');
+            }
+            closeTemplateSettingsModal();
+        }
+
+        function applyTemplateSettings(settings) {
+            if (!settings) return;
+            if (settings.primaryColor) document.getElementById('settingPrimaryColor').value = settings.primaryColor;
+            if (settings.showLogo !== undefined) document.getElementById('settingShowLogo').checked = settings.showLogo;
+            if (settings.logoSize) document.getElementById('settingLogoSize').value = settings.logoSize;
+            if (settings.fontSize) document.getElementById('settingFontSize').value = settings.fontSize;
+            if (settings.headerFontSize) document.getElementById('settingHeaderFontSize').value = settings.headerFontSize;
+            if (settings.sellerName) document.getElementById('settingSellerName').value = settings.sellerName;
+            if (settings.sellerRole) document.getElementById('settingSellerRole').value = settings.sellerRole;
+            
+            // Re-run apply function to update styles silently if modal is closed
+            applyLivePreview();
+        }
+
+        // --- Quotation History ---
+        let loadedHistory = [];
+
+        function openHistoryModal() {
+            document.getElementById('quotationHistoryModal').style.display = 'flex';
+            if (currentUser) {
+                loadQuotationHistory();
+            } else {
+                document.getElementById('historyTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px;">กรุณาเข้าสู่ระบบเพื่อดูประวัติ</td></tr>';
+            }
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('quotationHistoryModal').style.display = 'none';
+        }
+
+        async function saveQuotationToHistory() {
+            if (!currentUser) return;
+
+            const refNo = document.getElementById('refNo').value;
+            const toCompany = document.getElementById('toCompany').value;
+            const docDate = document.getElementById('docDate').value;
+            const grandTotal = document.getElementById('grandTotalDisplay').innerText;
+            
+            const items = [];
+            const rows = document.getElementById('itemsBody').children;
+            for (let i = 0; i < rows.length; i++) {
+                const tr = rows[i];
+                items.push({
+                    desc: tr.querySelector('.item-desc').value,
+                    qty: tr.querySelector('.item-qty').value,
+                    unit: tr.querySelector('.item-unit').value,
+                    price: tr.querySelector('.item-price').value
+                });
+            }
+
+            const quotationData = {
+                refNo,
+                toCompany,
+                toAddress: document.getElementById('toAddress').value,
+                toAttn: document.getElementById('toAttn').value,
+                toTel: document.getElementById('toTel').value,
+                toEmail: document.getElementById('toEmail').value,
+                docDate,
+                termValidity: document.getElementById('termValidity').value,
+                termDelivery: document.getElementById('termDelivery').value,
+                termPayment: document.getElementById('termPayment').value,
+                remark: document.getElementById('remark').value,
+                grandTotal,
+                items,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                const historyRef = collection(db, 'users', currentUser.uid, 'quotations_history');
+                await addDoc(historyRef, quotationData);
+                console.log('Quotation saved to history');
+            } catch (err) {
+                console.error('Error saving quotation to history:', err);
+            }
+        }
+
+        async function loadQuotationHistory() {
+            if (!currentUser) return;
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px;">กำลังโหลดข้อมูล...</td></tr>';
+            
+            try {
+                const historyRef = collection(db, 'users', currentUser.uid, 'quotations_history');
+                const q = query(historyRef, orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                
+                loadedHistory = [];
+                tbody.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px;">ยังไม่มีประวัติการออกใบเสนอราคา</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const id = docSnap.id;
+                    loadedHistory.push({ id, ...data });
+                    
+                    const dateObj = new Date(data.docDate || data.createdAt);
+                    const formattedDate = isNaN(dateObj.getTime()) ? '-' : `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+                    
+                    const index = loadedHistory.length - 1;
+
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid var(--border-color)';
+                    tr.innerHTML = `
+                        <td style="padding: 12px 24px;">${formattedDate}</td>
+                        <td style="padding: 12px 24px; font-weight: 500;">${data.refNo || '-'}</td>
+                        <td style="padding: 12px 24px;">${data.toCompany || '-'}</td>
+                        <td style="padding: 12px 24px; text-align: right; color: var(--primary-color); font-weight: 600;">${data.grandTotal || '0.00'}</td>
+                        <td style="padding: 12px 24px; text-align: center;">
+                            <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.8rem; margin-right: 4px;" onclick="loadQuotationToForm(${index})">
+                                <i class='bx bx-import'></i> โหลด
+                            </button>
+                            <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.8rem;" onclick="deleteQuotationHistory('${id}')">
+                                <i class='bx bx-trash'></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error('Error loading history:', err);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: red;">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>';
+            }
+        }
+
+        async function deleteQuotationHistory(id) {
+            if (!confirm('คุณต้องการลบประวัติใบเสนอราคานี้ใช่หรือไม่?')) return;
+            try {
+                await deleteDoc(doc(db, 'users', currentUser.uid, 'quotations_history', id));
+                loadQuotationHistory();
+            } catch (err) {
+                console.error('Error deleting history:', err);
+                alert('เกิดข้อผิดพลาดในการลบข้อมูล');
+            }
+        }
+
+        function loadQuotationToForm(index) {
+            const data = loadedHistory[index];
+            if (!data) return;
+
+            document.getElementById('refNo').value = data.refNo || '';
+            document.getElementById('toCompany').value = data.toCompany || '';
+            document.getElementById('toAddress').value = data.toAddress || '';
+            document.getElementById('toAttn').value = data.toAttn || '';
+            document.getElementById('toTel').value = data.toTel || '';
+            document.getElementById('toEmail').value = data.toEmail || '';
+            document.getElementById('docDate').value = data.docDate || '';
+            document.getElementById('termValidity').value = data.termValidity || '';
+            document.getElementById('termDelivery').value = data.termDelivery || '';
+            document.getElementById('termPayment').value = data.termPayment || '';
+            document.getElementById('remark').value = data.remark || '';
+
+            const tbody = document.getElementById('itemsBody');
+            tbody.innerHTML = '';
+            
+            if (data.items && data.items.length > 0) {
+                data.items.forEach(item => {
+                    const rowCount = tbody.children.length;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; font-size: 0.95rem;">${rowCount + 1}</td>
+                        <td><input type="text" class="table-input item-desc" value="${item.desc || ''}" placeholder="ชื่อสินค้า/บริการ"></td>
+                        <td><input type="number" class="table-input item-qty" value="${item.qty || 1}" min="1" onchange="calculateRow(this)"></td>
+                        <td>
+                            <select class="table-input item-unit" style="padding: 0.6rem 0.4rem; font-family: 'Sarabun', sans-serif;">
+                                <option value="ชุด" ${item.unit === 'ชุด' ? 'selected' : ''}>ชุด</option>
+                                <option value="ตัว" ${item.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
+                                <option value="ชิ้น" ${item.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
+                                <option value="เครื่อง" ${item.unit === 'เครื่อง' ? 'selected' : ''}>เครื่อง</option>
+                                <option value="กล่อง" ${item.unit === 'กล่อง' ? 'selected' : ''}>กล่อง</option>
+                                <option value="แพ็ค" ${item.unit === 'แพ็ค' ? 'selected' : ''}>แพ็ค</option>
+                                <option value="เส้น" ${item.unit === 'เส้น' ? 'selected' : ''}>เส้น</option>
+                                <option value="งาน" ${item.unit === 'งาน' ? 'selected' : ''}>งาน</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="table-input item-price" value="${item.price || 0}" min="0" step="0.01" onchange="calculateRow(this)"></td>
+                        <td style="vertical-align: middle; text-align: right;" class="item-total-text">0.00</td>
+                        <td class="col-action" style="vertical-align: middle;">
+                            <button class="btn btn-danger" onclick="removeTableRow(this)"><i class='bx bx-trash'></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                addTableRow();
+            }
+
+            calculateAll();
+            closeHistoryModal();
+            alert('โหลดข้อมูลลงในฟอร์มสำเร็จ');
+        }
+
         // --- Mobile Sidebar Controls ---
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -1932,6 +2442,14 @@
         window.saveCurrentRecipient = saveCurrentRecipient;
         window.loadSavedRecipient = loadSavedRecipient;
         window.deleteSelectedRecipient = deleteSelectedRecipient;
+        window.openTemplateSettingsModal = openTemplateSettingsModal;
+        window.closeTemplateSettingsModal = closeTemplateSettingsModal;
+        window.saveTemplateSettings = saveTemplateSettings;
+        window.applyLivePreview = applyLivePreview;
+        window.openHistoryModal = openHistoryModal;
+        window.closeHistoryModal = closeHistoryModal;
+        window.deleteQuotationHistory = deleteQuotationHistory;
+        window.loadQuotationToForm = loadQuotationToForm;
         window.toggleSidebar = toggleSidebar;
         window.closeSidebar = closeSidebar;
     </script>

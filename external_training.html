@@ -1961,6 +1961,105 @@
             background: var(--primary-light);
             font-weight: 500;
         }
+    
+        /* ===========================
+           TOPBAR RIGHT MENU (Moved from Sidebar)
+           =========================== */
+        .topbar-right-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-left: auto;
+        }
+
+        .topbar-right-menu #adminMenu {
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        .topbar-right-menu #adminMenu[style*="block"] {
+            display: flex !important;
+        }
+
+        .topbar-right-menu #adminMenu .nav-section-title {
+            display: none; /* Hide "จัดการระบบ" text in topbar */
+        }
+
+        .topbar-right-menu .nav-item {
+            width: auto;
+            margin: 0;
+            padding: 8px 12px;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+        }
+
+        .topbar-right-menu .nav-item:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        .topbar-right-menu .nav-label {
+            display: none; /* Hide text, show only icon on small screens, or show both on large? Let's show both on large */
+        }
+        
+        @media (min-width: 1200px) {
+            .topbar-right-menu .nav-label {
+                display: block;
+                font-size: 13px;
+            }
+        }
+
+        .topbar-right-menu .sidebar-user {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: transparent;
+            gap: 16px;
+        }
+
+        .topbar-right-menu .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            padding: 0;
+        }
+
+        .topbar-right-menu .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar-right-menu .user-name {
+            font-size: 14px;
+            color: var(--text);
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .topbar-right-menu .btn-logout {
+            margin: 0;
+            padding: 8px 16px;
+            width: auto;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-radius: var(--radius-sm);
+        }
+
+        .topbar-right-menu .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+        }
+
     </style>
 
     <!-- Premium UI Overlay -->
@@ -2012,43 +2111,9 @@
                 <div class="nav-icon">🎓</div>
                 <span class="nav-label">ระบบตารางจัดอบรม</span>
             </button>
-            <div id="adminMenu" style="display:none;">
-                <div class="nav-section-title">จัดการระบบ</div>
-                <button class="nav-item" onclick="window.location.href='dashboard.html?tab=users'" id="nav-users">
-                    <div class="nav-icon">👥</div>
-                    <span class="nav-label">จัดการผู้ใช้งาน</span>
-                </button>
-                <button class="nav-item" onclick="window.location.href='dashboard.html?action=new-project'" id="nav-add-project">
-                    <div class="nav-icon">➕</div>
-                    <span class="nav-label">เพิ่มโครงการใหม่</span>
-                </button>
-                <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
-                    <div class="nav-icon">🛠️</div>
-                    <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
-                </a>
-            </div>
-        </nav>
+            </nav>
 
-        <div class="sidebar-user">
-            <div class="user-card">
-                <div class="user-avatar" id="userAvatar">M</div>
-                <div class="user-info">
-                    <div class="user-name" id="userName">กำลังโหลด...</div>
-                    <div class="user-role">
-                        <span class="role-badge" id="userRoleBadge">-</span>
-                    </div>
-                </div>
-            </div>
-            <button class="btn-logout" onclick="handleLogout()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-                <span class="btn-logout-text">ออกจากระบบ</span>
-            </button>
-        </div>
-    </aside>
+        </aside>
 
     <!-- ===== MAIN WRAPPER ===== -->
     <div class="main-wrapper" id="mainWrapper">
@@ -2066,6 +2131,45 @@
                 <div class="breadcrumb-title">ระบบตารางจัดอบรม (Training Calendar)</div>
                 <div class="breadcrumb-sub">จัดการและบันทึกประวัติฝึกอบรมภายนอกองค์กร</div>
             </div>
+        
+            <div class="topbar-actions" id="topbarActions"></div>
+            <div class="topbar-right-menu">
+                
+                <div id="adminMenu" style="display:none;">
+                    <button class="nav-item" onclick="window.location.href='dashboard.html?view=users'" id="nav-users">
+                        <div class="nav-icon">👥</div>
+                        <span class="nav-label">จัดการผู้ใช้งาน</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-add-project">
+                        <div class="nav-icon">➕</div>
+                        <span class="nav-label">เพิ่มโครงการใหม่</span>
+                    </button>
+                    <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                        <div class="nav-icon">🛠️</div>
+                        <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
+                    </a>
+                </div>
+                <div class="sidebar-user">
+                    <div class="user-card">
+                        <div class="user-avatar" id="userAvatar">M</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">กำลังโหลด...</div>
+                            <div class="user-role">
+                                <span class="role-badge" id="userRoleBadge">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span class="btn-logout-text">ออกจากระบบ</span>
+                    </button>
+                </div>
+            </div>
+
         </header>
 
         <!-- Main Workspace Content -->

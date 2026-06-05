@@ -375,7 +375,46 @@
                 <!-- Relative reference to existing logo.png in the root workspace folder -->
                 <img src="assets/img/logo.png" alt="Mentra Solution Logo" class="company-logo">
                 <span class="company-name">Mentra Solution Co., Ltd.</span>
-            </header>
+            
+            <div class="topbar-actions" id="topbarActions"></div>
+            <div class="topbar-right-menu">
+                
+                <div id="adminMenu" style="display:none;">
+                    <button class="nav-item" onclick="window.location.href='dashboard.html?view=users'" id="nav-users">
+                        <div class="nav-icon">👥</div>
+                        <span class="nav-label">จัดการผู้ใช้งาน</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-add-project">
+                        <div class="nav-icon">➕</div>
+                        <span class="nav-label">เพิ่มโครงการใหม่</span>
+                    </button>
+                    <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                        <div class="nav-icon">🛠️</div>
+                        <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
+                    </a>
+                </div>
+                <div class="sidebar-user">
+                    <div class="user-card">
+                        <div class="user-avatar" id="userAvatar">M</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">กำลังโหลด...</div>
+                            <div class="user-role">
+                                <span class="role-badge" id="userRoleBadge">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span class="btn-logout-text">ออกจากระบบ</span>
+                    </button>
+                </div>
+            </div>
+
+        </header>
 
             <!-- BODY: Main achievement details -->
             <div class="certificate-body">
