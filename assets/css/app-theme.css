@@ -245,19 +245,6 @@ body::after {
     }
 }
 
-.breadcrumb-title {
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-[data-theme="dark"] .breadcrumb-title {
-    background: linear-gradient(135deg, #93c5fd, #60a5fa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
 
 
 /* ================================================================
@@ -471,6 +458,14 @@ tbody tr:hover td {
         backdrop-filter: blur(8px) saturate(1.2);
         -webkit-backdrop-filter: blur(8px) saturate(1.2);
     }
+}
+
+.modal-overlay {
+    z-index: 10000 !important;
+}
+
+#toastContainer {
+    z-index: 10010 !important;
 }
 
 .modal,
@@ -1305,48 +1300,11 @@ tbody tr:hover td {
     }
 
     /* Perfect centered typography and layout for top title */
-    .topbar-breadcrumb {
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important; /* Centered items */
-        margin-left: 0 !important;
-        flex: 1 !important;
-        padding: 0 8px !important;
-        min-width: 0 !important; /* Prevent text overflow breaking flex */
-    }
+    
 
-    .breadcrumb-title {
-        font-size: 14.5px !important; /* Balanced size to fit beside buttons */
-        font-weight: 800 !important;
-        color: #ffffff !important; /* Pure high-contrast white */
-        letter-spacing: -0.1px !important;
-        font-family: 'Prompt', 'Kanit', sans-serif !important;
-        line-height: 1.25 !important;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
-        white-space: nowrap !important;
-        text-overflow: ellipsis !important;
-        overflow: hidden !important;
-        max-width: 190px !important;
-        background: none !important;
-        -webkit-text-fill-color: initial !important;
-        -webkit-background-clip: initial !important;
-    }
+    
 
-    .breadcrumb-sub {
-        font-size: 9.5px !important;
-        font-weight: 700 !important;
-        color: #FF9F54 !important; /* Vibrant Mentra orange highlight instead of muted text */
-        letter-spacing: 0.3px !important;
-        margin-top: 1px !important;
-        font-family: 'Prompt', 'Sarabun', sans-serif !important;
-        text-transform: uppercase !important;
-        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
-        white-space: nowrap !important;
-        text-overflow: ellipsis !important;
-        overflow: hidden !important;
-        max-width: 190px !important;
-    }
+    
 }
 
 @media (max-width: 640px) {
@@ -1442,7 +1400,7 @@ tbody tr:hover td {
         filter: blur(0);
     }
 }
-/* ÄÄ Flawless Mobile Card Tables ÄÄ */
+/* ï¿½ï¿½ Flawless Mobile Card Tables ï¿½ï¿½ */
 @media (max-width: 900px) {
     .table-wrap table,
     .table-responsive table.data-table,
@@ -1625,5 +1583,31 @@ tbody tr:hover td {
         color: #1d4ed8;
         border-color: #bfdbfe;
         box-shadow: 0 2px 6px rgba(29, 78, 216, 0.1);
+    }
+}
+
+
+/* ================================================================
+   PAGE TITLE COLORS (PC: Blue, Mobile: White)
+   ================================================================ */
+@media (min-width: 901px) {
+    .breadcrumb-title {
+        color: var(--primary) !important;
+        font-size: 16.5px !important;
+        white-space: nowrap !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 6px !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .breadcrumb-title {
+        color: #ffffff !important;
+        font-size: 15.5px !important;
+    }
+    .breadcrumb-sub {
+        color: rgba(255, 255, 255, 0.85) !important;
     }
 }

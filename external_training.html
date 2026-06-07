@@ -412,7 +412,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
             transition: margin-left var(--t-slow);
         }
 
@@ -1884,7 +1884,7 @@
             border-top: 1.5px solid #0b3d6e;
             opacity: 0.35;
         }
-        .c-sig-name {
+                .c-sig-name {
             font-family: 'Prompt', sans-serif;
             font-size: 13.5px;
             font-weight: 600;
@@ -1907,9 +1907,20 @@
             .cert-creator-preview-container {
                 min-width: 100%;
                 height: 380px;
+                overflow: hidden !important;
             }
             .cert-scale-wrapper {
                 transform: scale(0.4);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .cert-creator-preview-container {
+                height: 280px;
+                overflow: hidden !important;
+            }
+            .cert-scale-wrapper {
+                transform: scale(0.28);
             }
         }
 
@@ -2037,10 +2048,24 @@
             flex-direction: column;
         }
 
+        .breadcrumb-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.3px;
+            line-height: 1.3;
+        }
+
+        .breadcrumb-sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
         .topbar-right-menu .user-name {
             font-size: 14px;
             color: var(--text);
-            max-width: 150px;
+            max-width: none;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -2062,15 +2087,26 @@
 
     
         @media (max-width: 900px) {
-            .topbar-right-menu {
-                display: none !important;
-            }
+        .topbar {
+            height: auto;
+            min-height: var(--header-h);
+            padding: 12px 18px;
         }
+        .topbar-right-menu {
+            display: none !important;
+        }
+    }
 
+    
+    @media (max-width: 600px) {
+        .breadcrumb-title span {
+            white-space: normal !important;
+        }
+    }
     </style>
 
     <!-- Premium UI Overlay -->
-    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780249796404">
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
     <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
 
 </head>
@@ -2135,7 +2171,7 @@
                 </svg>
             </button>
             <div class="topbar-breadcrumb">
-                <div class="breadcrumb-title">ระบบตารางจัดอบรม (Training Calendar)</div>
+                <div class="breadcrumb-title">ระบบตารางจัดอบรม <span style="white-space: nowrap;">(Training Calendar)</span></div>
                 <div class="breadcrumb-sub">จัดการและบันทึกประวัติฝึกอบรมภายนอกองค์กร</div>
             </div>
         

@@ -50,7 +50,6 @@
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.btn, .btn-primary, .btn-orange, .btn-outline, .btn-danger, .btn-sm, .nav-item, button[class*="btn"]');
             if (btn && !btn.classList.contains('collapse-btn') && !btn.classList.contains('hamburger') && !btn.classList.contains('modal-close')) {
-                e.currentTarget = btn;
                 createRipple({ currentTarget: btn, clientX: e.clientX, clientY: e.clientY });
             }
         });
@@ -295,6 +294,27 @@
                 /* Focus ring only on keyboard navigation */
                 body.using-mouse *:focus {
                     outline: none !important;
+                }
+
+                /* Fix ripple effect expanding buttons */
+                .ripple-effect {
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.3);
+                    transform: scale(0);
+                    animation: rippleAnim 0.6s linear;
+                    pointer-events: none;
+                }
+                @keyframes rippleAnim {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+                
+                .nav-item, .btn {
+                    overflow: hidden;
+                    position: relative;
                 }
             `;
             document.head.appendChild(style);

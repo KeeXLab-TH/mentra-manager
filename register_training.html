@@ -359,11 +359,22 @@
         }
     
         @media (max-width: 900px) {
-            .topbar-right-menu {
-                display: none !important;
-            }
+        .topbar {
+            height: auto;
+            min-height: var(--header-h);
+            padding: 12px 18px;
         }
+        .topbar-right-menu {
+            display: none !important;
+        }
+    }
 
+    
+    @media (max-width: 600px) {
+        .breadcrumb-title span {
+            white-space: normal !important;
+        }
+    }
     </style>
 </head>
 

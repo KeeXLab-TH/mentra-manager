@@ -1941,6 +1941,7 @@
         // --- PDF Export using html2pdf.js ---
         function exportToPDF() {
             syncFormToPrintArea();
+            applyLivePreview(); // Ensure template settings are perfectly applied before exporting
 
             // Temporarily show the print area for html2pdf to grab styling correctly, then hide
             const printElement = document.getElementById('printArea');
@@ -1954,47 +1955,52 @@
                     const clientName = (document.getElementById('toCompany').value || '').trim();
                     const filenameStr = clientName ? `${refNo} ${clientName}.pdf` : `${refNo}.pdf`;
 
-                    const html2canvasOpts = { scale: 2, useCORS: true, logging: false };
-                    
-                    let originalScrollY = window.scrollY;
-                    let originalScrollX = window.scrollX;
-
-                    // Force exact width for mobile to ensure perfectly centered layout (matches A4 aspect)
-                    if (window.innerWidth < 1024) {
-                        html2canvasOpts.windowWidth = 800;
-                        
-                        // Break out of mobile container constraints to prevent clipping
-                        printElement.style.position = 'absolute';
-                        printElement.style.left = '0';
-                        printElement.style.top = '0';
-                        printElement.style.width = '800px'; // Tight crop to inner content width (771px) + small margin
-                        printElement.style.maxWidth = 'none';
-                        printElement.style.zIndex = '9999';
-
-                        // Crucial for mobile: scroll to top-left so html2canvas captures the absolute element correctly
-                        window.scrollTo(0, 0);
-                    }
-
-                    // Configure html2pdf options
                     const opt = {
                         margin: [6, 10, 10, 10],
                         filename: filenameStr,
                         image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: html2canvasOpts,
+                        html2canvas: { 
+                            scale: 2, 
+                            useCORS: true, 
+                            logging: false,
+                            scrollX: 0,
+                            scrollY: 0
+                        },
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                     };
 
-                    // Generate and save
-                    html2pdf().set(opt).from(printElement).save().then(() => {
-                        printElement.style.cssText = 'display: none; background: #ffffff;';
-                        if (window.innerWidth < 1024) window.scrollTo(originalScrollX, originalScrollY);
+                    // Create a clone to safely render without affecting the UI
+                    const cloneWrapper = document.createElement('div');
+                    cloneWrapper.style.position = 'absolute';
+                    cloneWrapper.style.top = '0';
+                    cloneWrapper.style.left = '0';
+                    cloneWrapper.style.width = '715px'; // Exact width of document
+                    cloneWrapper.style.zIndex = '-9999';
+                    cloneWrapper.style.pointerEvents = 'none';
+
+                    const clone = printElement.cloneNode(true);
+                    clone.id = 'printAreaClone';
+                    clone.style.display = 'block';
+                    clone.style.background = '#ffffff';
+                    
+                    cloneWrapper.appendChild(clone);
+                    document.body.appendChild(cloneWrapper);
+                    
+                    const originalOverflow = document.body.style.overflow;
+                    document.body.style.overflow = 'visible';
+
+                    html2pdf().set(opt).from(clone).save().then(() => {
+                        document.body.removeChild(cloneWrapper);
+                        document.body.style.overflow = originalOverflow;
                         if (typeof saveQuotationToHistory === 'function') {
                             saveQuotationToHistory();
                         }
                     }).catch(err => {
                         console.error("PDF generation failed:", err);
-                        printElement.style.cssText = 'display: none; background: #ffffff;';
-                        if (window.innerWidth < 1024) window.scrollTo(originalScrollX, originalScrollY);
+                        if (document.body.contains(cloneWrapper)) {
+                            document.body.removeChild(cloneWrapper);
+                        }
+                        document.body.style.overflow = originalOverflow;
                         alert("เกิดข้อผิดพลาดในการสร้าง PDF");
                     });
                 }, 150);
@@ -2183,6 +2189,18 @@
             
             const ths = document.getElementById('pTableHeadRow').querySelectorAll('th');
             ths.forEach(th => th.style.setProperty('background-color', primaryColor, 'important'));
+
+            // Apply color to Document Title (ใบเสนอราคา)
+            const titleContainer = document.querySelector('#pHeaderSection > div:nth-child(2)');
+            if (titleContainer) {
+                titleContainer.style.borderLeftColor = primaryColor;
+                const titleText = titleContainer.querySelector('div:first-child');
+                if (titleText) titleText.style.color = primaryColor;
+            }
+
+            // Apply color to Item Numbers in the table
+            const itemNumberCells = document.querySelectorAll('#pItemsBody tr td:first-child');
+            itemNumberCells.forEach(td => td.style.color = primaryColor);
 
             // Apply Logo
             const pLogo = document.getElementById('pLogoImg');

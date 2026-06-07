@@ -104,7 +104,7 @@
             color: var(--text);
             min-height: 100vh;
             display: none; /* Hidden by default until authenticated */
-            overflow: hidden;
+            overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -454,7 +454,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow: hidden;
+            overflow-x: hidden;
             transition: margin-left var(--t-slow);
         }
 
@@ -530,9 +530,11 @@
         .content-area {
             flex: 1;
             padding: 28px;
-            overflow-y: auto;
-            height: calc(100vh - var(--header-h));
-            contain: paint;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
         }
 
         /* ===========================
@@ -1827,7 +1829,7 @@
         /* STATIC FOOTER */
         .static-footer {
             margin-top: auto;
-            padding: 40px 20px 20px;
+            padding: 40px 20px 60px;
             text-align: center;
             font-size: 13px;
             color: var(--text-muted);
@@ -2150,7 +2152,7 @@
         .topbar-right-menu .user-name {
             font-size: 14px;
             color: var(--text);
-            max-width: 150px;
+            max-width: none;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -2172,15 +2174,26 @@
 
     
         @media (max-width: 900px) {
-            .topbar-right-menu {
-                display: none !important;
-            }
+        .topbar {
+            height: auto;
+            min-height: var(--header-h);
+            padding: 12px 18px;
         }
+        .topbar-right-menu {
+            display: none !important;
+        }
+    }
 
+    
+    @media (max-width: 600px) {
+        .breadcrumb-title span {
+            white-space: normal !important;
+        }
+    }
     </style>
 
     <!-- Premium UI Overlay -->
-    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780249796404">
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
     <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
 
 </head>
