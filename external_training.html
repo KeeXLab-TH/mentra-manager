@@ -14,8 +14,9 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- html2pdf.js CDN library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- PDF Generation Libraries (Upgraded for Thai Font Support) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         /* ================================================
@@ -1661,11 +1662,20 @@
             box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
         }
 
+        .cert-scale-container {
+            width: 154.44mm;
+            height: 109.2mm;
+            position: relative;
+            margin: 0 auto;
+            flex-shrink: 0;
+            overflow: visible;
+        }
+
         .cert-scale-wrapper {
             width: 297mm;
             height: 210mm;
             transform: scale(0.52);
-            transform-origin: center center;
+            transform-origin: top left;
             flex-shrink: 0;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             border-radius: 4px;
@@ -1909,6 +1919,10 @@
                 height: 380px;
                 overflow: hidden !important;
             }
+            .cert-scale-container {
+                width: 118.8mm; /* 297mm * 0.4 */
+                height: 84mm; /* 210mm * 0.4 */
+            }
             .cert-scale-wrapper {
                 transform: scale(0.4);
             }
@@ -1918,6 +1932,10 @@
             .cert-creator-preview-container {
                 height: 280px;
                 overflow: hidden !important;
+            }
+            .cert-scale-container {
+                width: 83.16mm; /* 297mm * 0.28 */
+                height: 58.8mm; /* 210mm * 0.28 */
             }
             .cert-scale-wrapper {
                 transform: scale(0.28);
@@ -2154,6 +2172,14 @@
                 <div class="nav-icon">🎓</div>
                 <span class="nav-label">ระบบตารางจัดอบรม</span>
             </button>
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">🧰</div>
+                <span class="nav-label">วัสดุอุปกรณ์</span>
+            </button>
             </nav>
 
         </aside>
@@ -2276,7 +2302,7 @@
                 <!-- Total Attendee Card -->
                 <div class="summary-card attendee">
                     <div class="summary-details">
-                        <span class="summary-label">พนักงานที่เข้าอบรมสะสม</span>
+                        <span class="summary-label">จำนวนผู้อบรมทั้งหมด</span>
                         <span class="summary-value" id="totalAttendees">0 คน</span>
                         <span class="summary-trend up" style="color: #4f46e5">
                             <i class="fa-solid fa-users"></i> อัปเดตล่าสุดวันนี้
@@ -2562,17 +2588,17 @@
                     
                     <!-- Right: Live interactive A4 preview scaling -->
                     <div class="cert-creator-preview-container">
-                        <div class="cert-scale-wrapper">
-                            
-                            <!-- Embedded A4 Landscape Certificate -->
-                            <div class="certificate-print-frame" id="certificatePrintFrame">
-                                <!-- Inner frame borders -->
-                                <div class="c-accent tl"></div>
-                                <div class="c-accent tr"></div>
-                                <div class="c-accent bl"></div>
-                                <div class="c-accent br"></div>
-                                
-                                <div class="c-inner-border"></div>
+                        <div class="cert-scale-container">
+                            <div class="cert-scale-wrapper">
+                                <!-- Embedded A4 Landscape Certificate -->
+                                <div class="certificate-print-frame" id="certificatePrintFrame">
+                                    <!-- Inner frame borders -->
+                                    <div class="c-accent tl"></div>
+                                    <div class="c-accent tr"></div>
+                                    <div class="c-accent bl"></div>
+                                    <div class="c-accent br"></div>
+                                    
+                                    <div class="c-inner-border"></div>
                                 <div class="c-top-bar"></div>
                                 <div class="c-bg-polygon-l"></div>
                                 <div class="c-bg-polygon-r"></div>
@@ -2607,9 +2633,10 @@
                                             <span class="c-sig-title">กรรมการผู้จัดการ</span>
                                         </div>
                                     </div>
+                                    </div>
                                 </div>
+                                
                             </div>
-                            
                         </div>
                     </div>
                     
@@ -2925,7 +2952,12 @@
             let percent = Math.min((totalBudget / limit) * 100, 100);
             document.getElementById("budgetProgressBar").style.width = `${percent}%`;
 
-            let attendees = new Set(trainingRequests.map(r => r.requester)).size;
+            let attendees = 0;
+            trainingRequests.forEach(r => {
+                if (r.participants && Array.isArray(r.participants)) {
+                    attendees += r.participants.filter(p => typeof p === 'string' && p.trim() !== "").length;
+                }
+            });
             document.getElementById("totalAttendees").textContent = `${attendees} คน`;
         }
 
@@ -3711,7 +3743,7 @@
             document.getElementById("certPrevDate").textContent = date;
         }
 
-        function downloadSingleCertificate() {
+        async function downloadSingleCertificate() {
             const wrapper = document.querySelector(".cert-scale-wrapper");
             const element = document.getElementById("certificatePrintFrame");
             const nameInput = currentParticipants[activeParticipantIndex]?.trim();
@@ -3728,22 +3760,36 @@
 
             const filename = `Certificate_${nameInput.replace(/\s+/g, '_')}.pdf`;
 
-            const opt = {
-                margin:       0,
-                filename:     filename,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2.2, useCORS: true, letterRendering: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
+            try {
+                await document.fonts.ready;
+                await new Promise(r => setTimeout(r, 100)); // Allow reflow
 
-            html2pdf().set(opt).from(element).save().then(() => {
+                const canvas = await html2canvas(element, {
+                    scale: 3,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                    backgroundColor: "#ffffff"
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
+                pdf.save(filename);
+
                 wrapper.style.transform = originalTransform;
                 showToast("ดาวน์โหลดเกียรติบัตร PDF สำเร็จ!", "success");
-            }).catch(err => {
+            } catch (err) {
                 console.error("PDF Generation error:", err);
                 wrapper.style.transform = originalTransform;
-                showToast("เกิดข้อผิดพลาดในการสร้าง PDF กรุณาลองใหม่อีกครั้ง", "info");
-            });
+                showToast("เกิดข้อผิดพลาดในการสร้าง PDF กรุณาลองใหม่อีกครั้ง", "error");
+            }
         }
 
         async function downloadAllCertificates() {
@@ -3765,6 +3811,8 @@
             // Turn off transform scale once for the process (will restore after all finished)
             wrapper.style.transform = "none";
 
+            const { jsPDF } = window.jspdf;
+
             for (let i = 0; i < validNames.length; i++) {
                 const name = validNames[i];
                 
@@ -3772,18 +3820,31 @@
                 document.getElementById("certPrevName").textContent = name;
                 
                 const filename = `Certificate_${name.replace(/\s+/g, '_')}.pdf`;
-                const opt = {
-                    margin:       0,
-                    filename:     filename,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2.2, useCORS: true, letterRendering: true, logging: false },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-                };
-
+                
                 showToast(`กำลังดาวน์โหลด [${i + 1}/${validNames.length}]: ${name}`, "info");
 
                 try {
-                    await html2pdf().set(opt).from(element).save();
+                    await document.fonts.ready;
+                    await new Promise(r => setTimeout(r, 100)); // Allow reflow
+
+                    const canvas = await html2canvas(element, {
+                        scale: 3,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false,
+                        backgroundColor: "#ffffff"
+                    });
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                    const pdf = new jsPDF({
+                        orientation: 'landscape',
+                        unit: 'mm',
+                        format: 'a4'
+                    });
+
+                    pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
+                    pdf.save(filename);
+
                     // Add a tiny delay between downloads to prevent chrome blocking batch downloads
                     await new Promise(resolve => setTimeout(resolve, 800));
                 } catch (err) {

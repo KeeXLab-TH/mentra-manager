@@ -1,0 +1,2973 @@
+ lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ระบบจัดการสินค้า (Products) — Mentra Manager</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- PDF Generation Libraries (Upgraded for Thai Font Support) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+
+        /* ================================================
+           MENTRA MANAGER — EXTERPRISE STYLE GUIDE
+           Colors matching the Mentra brand
+           ================================================ */
+        :root {
+            /* Brand Colors */
+            --primary: #1A6FBF;
+            --primary-dark: #145999;
+            --primary-darker: #0e4a85;
+            --primary-light: #e8f1fb;
+            --primary-glow: rgba(26, 111, 191, 0.18);
+
+            --secondary: #E07B2F;
+            --secondary-dark: #c4681f;
+            --secondary-light: #fdf0e6;
+            --secondary-glow: rgba(224, 123, 47, 0.18);
+
+            /* Semantic Colors */
+            --success: #10b981;
+            --success-light: #e6fcf5;
+            --success-border: #a3e635;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --info: #3b82f6;
+            --info-light: #eff6ff;
+
+            /* UI Colors */
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --bg: #f0f4f9;
+            --bg-card: #ffffff;
+            --white: #ffffff;
+
+            /* Sidebar Configuration matching dashboard.html & quotation.html */
+            --sidebar-w: 260px;
+            --sidebar-w-collapsed: 72px;
+            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
+            --header-h: 68px;
+
+            /* Shadows */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 24px rgba(26, 111, 191, 0.06);
+            --shadow-lg: 0 16px 36px rgba(26, 111, 191, 0.1);
+            --shadow-xl: 0 24px 48px rgba(26, 111, 191, 0.16);
+
+            /* Radii */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-xl: 24px;
+
+            /* Transitions */
+            --t-fast: 0.15s ease;
+            --t-normal: 0.25s ease;
+            --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Kanit', 'Inter', sans-serif;
+            font-size: 14.5px;
+            color: var(--text);
+            background-color: var(--bg);
+            min-height: 100vh;
+            display: none; /* Hidden by default until authenticated */
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: width var(--t-slow), transform var(--t-slow);
+            overflow: hidden;
+            will-change: width, transform;
+        }
+
+        /* Collapsed state (desktop) */
+        .sidebar.collapsed {
+            width: var(--sidebar-w-collapsed);
+        }
+
+        .sidebar.collapsed .sidebar-logo-text,
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .user-info,
+        .sidebar.collapsed .btn-logout-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .sidebar.collapsed .user-card {
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .btn-logout {
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .sidebar.collapsed .sidebar-logo {
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .sidebar.collapsed .collapse-btn svg {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-logo {
+            padding: 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: var(--header-h);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            background: white;
+            border-radius: 10px;
+            padding: 4px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-logo-text {
+            transition: opacity var(--t-normal), width var(--t-normal);
+            overflow: hidden;
+        }
+
+        .sidebar-logo-text .app-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .sidebar-logo-text .app-sub {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.50);
+            font-weight: 400;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        /* Collapse toggle button */
+        .collapse-btn {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            transition: background var(--t-fast), transform var(--t-normal);
+        }
+
+        .collapse-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .collapse-btn svg {
+            transition: transform var(--t-slow);
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .nav-section-title {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: rgba(255, 255, 255, 0.38);
+            padding: 8px 12px 4px;
+            margin-top: 10px;
+            white-space: nowrap;
+            transition: opacity var(--t-normal);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 13px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.70);
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: background var(--t-fast), color var(--t-fast);
+            margin-bottom: 2px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: 'Kanit', sans-serif;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.10);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.16);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Active accent indicator bar */
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 3px;
+            background: var(--secondary);
+            border-radius: 0 3px 3px 0;
+        }
+
+        .nav-item.active .nav-icon {
+            background: var(--secondary);
+            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.4);
+            color: white !important;
+        }
+
+        .nav-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+            transition: background var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .nav-label {
+            transition: opacity var(--t-normal);
+            overflow: hidden;
+        }
+
+        .sidebar-user {
+            padding: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.10);
+            flex-shrink: 0;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.07);
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: justify-content var(--t-normal);
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.35);
+        }
+
+        .user-info .user-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .user-info .user-role {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.50);
+            margin-top: 2px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-badge.admin {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .role-badge.user {
+            background: rgba(255, 255, 255, 0.18);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 9px 12px;
+            background: rgba(239, 68, 68, 0.13);
+            border: 1px solid rgba(239, 68, 68, 0.28);
+            border-radius: var(--radius-sm);
+            color: #fca5a5;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background var(--t-fast), color var(--t-fast);
+            font-family: 'Kanit', sans-serif;
+            overflow: hidden;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.28);
+            color: white;
+        }
+
+        .btn-logout-text {
+            white-space: nowrap;
+            transition: opacity var(--t-normal);
+        }
+
+        /* ===== MAIN WRAPPER ===== */
+        .main-wrapper {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: margin-left var(--t-slow);
+        }
+
+        .main-wrapper.sidebar-collapsed {
+            margin-left: var(--sidebar-w-collapsed);
+        }
+
+        .topbar {
+            height: var(--header-h);
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            display: flex;
+            align-items: center;
+            padding: 0 28px;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 1px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            transition: background var(--t-fast), color var(--t-fast);
+        }
+
+        .hamburger:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        .topbar-breadcrumb {
+            flex: 1;
+        }
+
+        .breadcrumb-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        .breadcrumb-sub {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            margin-top: 1px;
+        }
+
+        /* Workspace */
+        .workspace {
+            flex: 1;
+            padding: 28px;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .page-info h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-info h1 span.badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .page-info p {
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            margin-top: 4px;
+        }
+
+        /* View switcher navigation */
+        .view-switcher-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+            margin-bottom: 24px;
+            max-width: 320px;
+        }
+
+        .view-tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all var(--t-fast);
+        }
+
+        .view-tab-btn.active {
+            background: var(--primary);
+            color: var(--white);
+            box-shadow: 0 4px 10px var(--primary-glow);
+        }
+
+        .btn-create-request {
+            padding: 11px 20px;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px var(--secondary-glow);
+            transition: all var(--t-normal);
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .btn-create-request:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(224, 123, 47, 0.35);
+        }
+
+        .btn-create-request:active {
+            transform: translateY(0);
+        }
+
+        /* Summary Cards Grid */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 22px 20px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all var(--t-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: rgba(26, 111, 191, 0.2);
+        }
+
+        .summary-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .summary-label {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .summary-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+
+        .summary-trend {
+            font-size: 11.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .summary-trend.up {
+            color: var(--success);
+        }
+
+        .summary-trend.warning {
+            color: var(--warning);
+        }
+
+        .summary-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .summary-card.pending .summary-icon {
+            background: var(--secondary-light);
+            color: var(--secondary);
+        }
+
+        .summary-card.budget .summary-icon {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .summary-card.approved .summary-icon {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .summary-card.attendee .summary-icon {
+            background: #f0f3ff;
+            color: #4f46e5;
+        }
+
+        /* Budget progress bar */
+        .budget-progress-container {
+            width: 100%;
+            height: 5px;
+            background: var(--border);
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .budget-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 4px;
+            width: 0%; 
+            transition: width 1s ease-in-out;
+        }
+
+        /* Data Section Controls */
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-wrapper {
+            position: relative;
+            max-width: 360px;
+            width: 100%;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            background: var(--bg-card);
+            outline: none;
+            transition: all var(--t-fast);
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .filter-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-select {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-card);
+            font-size: 13.5px;
+            font-family: 'Kanit', sans-serif;
+            color: var(--text);
+            outline: none;
+            cursor: pointer;
+            transition: all var(--t-fast);
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Layout Content Views */
+        .view-content-pane {
+            display: none;
+        }
+
+        .view-content-pane.active {
+            display: block;
+            animation: paneFadeIn 0.3s ease;
+        }
+
+        @keyframes paneFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Table Container */
+        .table-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13.5px;
+        }
+
+        .data-table th {
+            background: var(--bg-card);
+            padding: 14px 18px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 12.5px;
+            border-bottom: 2px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            vertical-align: middle;
+            transition: background var(--t-fast);
+        }
+
+        .data-table tbody tr:hover td {
+            background-color: var(--bg);
+        }
+
+        .request-id {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .course-title-cell {
+            max-width: 320px;
+        }
+
+        .course-name {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .course-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 12px;
+        }
+
+        .organizer-name {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .requester-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .requester-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .cost-amount {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* Status Badge */
+        .status-pill-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 30px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: help;
+            transition: all var(--t-fast);
+            border: 1px solid transparent;
+        }
+
+        .status-pill.pending {
+            background-color: var(--warning-light);
+            color: #b45309;
+            border-color: #fde68a;
+        }
+
+        .status-pill.pending:hover {
+            background-color: #fef3c7;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+        }
+
+        .status-pill.approved {
+            background-color: var(--success-light);
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+
+        .status-pill.approved:hover {
+            background-color: #d1fae5;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+        }
+
+        .status-pill.rejected {
+            background-color: var(--danger-light);
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .status-pill.rejected:hover {
+            background-color: #fee2e2;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
+        }
+
+        .status-pill.certificate_required {
+            background-color: var(--primary-light);
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+
+        .status-pill.certificate_required:hover {
+            background-color: #dbeafe;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Elegant CUSTOM TOOLTIP Container */
+        .custom-tooltip {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: #0f172a; 
+            color: var(--white);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            width: 220px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--t-fast);
+            z-index: 50;
+            line-height: 1.6;
+        }
+
+        .custom-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #0f172a transparent transparent transparent;
+        }
+
+        .status-pill-container:hover .custom-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .tooltip-header {
+            font-weight: 700;
+            margin-bottom: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .tooltip-label {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .tooltip-value {
+            font-weight: 500;
+            text-align: right;
+        }
+
+        /* Action Buttons */
+        .actions-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: var(--radius-md);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--t-fast);
+            font-family: 'Kanit', sans-serif;
+            border: 1px solid var(--border);
+            background-color: var(--white);
+            color: var(--text-secondary);
+        }
+
+        .btn-action.approve-btn {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            border-color: transparent;
+        }
+
+        .btn-action.approve-btn:hover {
+            background-color: var(--primary);
+            color: var(--white);
+            box-shadow: 0 4px 10px rgba(26, 111, 191, 0.2);
+        }
+
+        .btn-action.upload-btn {
+            background-color: var(--white);
+            color: var(--secondary-dark);
+            border-color: var(--secondary-light);
+        }
+
+        .btn-action.upload-btn:hover {
+            background-color: var(--secondary-light);
+            border-color: var(--secondary);
+        }
+
+        /* Pagination Control */
+        .table-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            background-color: var(--bg-card);
+        }
+
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-page {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--text);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--t-fast);
+            font-size: 13px;
+        }
+
+        .btn-page:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-page.active {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
+        }
+
+        /* ===========================
+           CALENDAR DESIGN & STYLING
+           =========================== */
+        .calendar-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-title-text {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .calendar-nav-btn {
+            background: var(--white);
+            border: 1px solid var(--border);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            transition: all var(--t-fast);
+        }
+
+        .calendar-nav-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 10px 0;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .calendar-day {
+            min-height: 110px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all var(--t-fast);
+        }
+
+        .calendar-day:hover {
+            box-shadow: var(--shadow-sm);
+            border-color: rgba(26, 111, 191, 0.3);
+            background: var(--bg);
+        }
+
+        .calendar-day-num {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-secondary);
+            align-self: flex-end;
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--primary);
+            background: var(--primary-light);
+        }
+
+        .calendar-day.today .calendar-day-num {
+            color: var(--primary-dark);
+        }
+
+        .calendar-day.other-month {
+            background: #fafbfc;
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        /* Tiny Event badges in calendar cells */
+        .calendar-event-badge {
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11.5px;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: block;
+            transition: all var(--t-fast);
+        }
+
+        .calendar-event-badge:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+
+        .calendar-event-badge.pending {
+            background: var(--secondary);
+        }
+
+        .calendar-event-badge.certificate_required {
+            background: #4f46e5;
+        }
+
+        .calendar-event-badge.approved {
+            background: var(--success);
+        }
+
+        .calendar-event-badge.rejected {
+            background: var(--danger);
+        }
+
+        /* Empty state styling */
+        .empty-records-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            border: 1px dashed var(--text-muted);
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .empty-records-card i {
+            font-size: 48px;
+            color: var(--text-muted);
+        }
+
+        .empty-records-card h3 {
+            font-size: 18px;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        /* Modal overlay z-index alignment */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 680px;
+            box-shadow: var(--shadow-xl);
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+        }
+
+        .modal-overlay.show .modal-container {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .modal-header {
+            padding: 22px 28px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg) 100%);
+        }
+
+        .modal-header h3 {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-header h3 i {
+            color: var(--primary);
+        }
+
+        .btn-close-modal {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--t-fast);
+        }
+
+        .btn-close-modal:hover {
+            background-color: var(--border);
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 28px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 18px 28px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background-color: var(--bg);
+        }
+
+        /* Form Grid Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .form-full-row {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group label span.required {
+            color: var(--danger);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 11px 13px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            color: var(--text);
+            background: var(--white);
+            outline: none;
+            transition: all var(--t-fast);
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .form-textarea {
+            height: 90px;
+            resize: vertical;
+        }
+
+        /* Cost Input with prefix */
+        .cost-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .cost-input-wrapper input {
+            padding-right: 50px;
+        }
+
+        .cost-currency {
+            position: absolute;
+            right: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        /* Button styles inside footer */
+        .btn-cancel {
+            padding: 11px 18px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--t-fast);
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .btn-cancel:hover {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        .btn-save {
+            padding: 11px 22px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            color: var(--white);
+            cursor: pointer;
+            box-shadow: 0 4px 10px var(--primary-glow);
+            transition: all var(--t-fast);
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(26, 111, 191, 0.3);
+        }
+
+        /* Drag-and-drop File Upload Container in Modal */
+        .upload-zone {
+            border: 2px dashed var(--primary-dark);
+            background: var(--primary-light);
+            border-radius: var(--radius-lg);
+            padding: 26px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--t-fast);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .upload-zone:hover {
+            background: #dbeafe;
+            border-color: var(--primary);
+        }
+
+        .upload-zone i {
+            font-size: 36px;
+            color: var(--primary);
+        }
+
+        .upload-zone-text h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 3px;
+        }
+
+        .upload-zone-text p {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+        }
+
+        /* Toast notification system */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: #0f172a;
+            color: var(--white);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            transform: translateY(50px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast i {
+            font-size: 18px;
+        }
+
+        .toast.success i {
+            color: var(--success);
+        }
+
+        .toast.info i {
+            color: var(--primary);
+        }
+
+        /* Dynamic Detail Display fields */
+        .detail-row-viewer {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .detail-row-viewer:last-child {
+            border-bottom: none;
+        }
+
+        .detail-lbl {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .detail-val {
+            font-weight: 600;
+            color: var(--text);
+            text-align: right;
+        }
+
+        /* Responsive Layout */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            z-index: 99;
+            backdrop-filter: blur(2px);
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: var(--sidebar-w);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-wrapper {
+                margin-left: 0 !important;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .workspace {
+                padding: 20px 16px;
+            }
+
+            .collapse-btn {
+                display: none;
+            }
+            
+            .modal-overlay.show {
+                align-items: flex-end;
+            }
+
+            .modal-container {
+                border-radius: 20px 20px 0 0;
+                max-height: 88vh;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-full-row {
+                grid-column: span 1;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ========================================================
+           CERTIFICATE CREATOR LAYOUT STYLING
+           ======================================================== */
+        .cert-creator-layout {
+            display: flex;
+            gap: 24px;
+            align-items: stretch;
+            flex-wrap: wrap;
+        }
+
+        .cert-creator-controls {
+            width: 320px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: var(--bg-subtle);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+
+        .cert-creator-preview-container {
+            flex: 1;
+            min-width: 600px;
+            height: 480px;
+            background: #e2e8f0;
+            border: 1px dashed var(--text-muted);
+            border-radius: var(--radius-lg);
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .cert-scale-container {
+            width: 154.44mm;
+            height: 109.2mm;
+            position: relative;
+            margin: 0 auto;
+            flex-shrink: 0;
+            overflow: visible;
+        }
+
+        .cert-scale-wrapper {
+            width: 297mm;
+            height: 210mm;
+            transform: scale(0.52);
+            transform-origin: top left;
+            flex-shrink: 0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-radius: 4px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        /* Certificate print box styles (exact match to certificate_template.html) */
+        .certificate-print-frame {
+            width: 297mm;
+            height: 210mm;
+            background-color: #ffffff;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20mm 25mm;
+            overflow: hidden;
+            box-sizing: border-box;
+            color: #2c3e50;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .c-inner-border {
+            position: absolute;
+            inset: 10mm;
+            border: 1px solid rgba(26, 111, 191, 0.15);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .c-inner-border::before {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border: 2px solid var(--primary);
+            opacity: 0.85;
+        }
+
+        .c-accent {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-color: var(--secondary);
+            border-style: solid;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .c-accent.tl { top: 10mm; left: 10mm; border-width: 4px 0 0 4px; }
+        .c-accent.tr { top: 10mm; right: 10mm; border-width: 4px 4px 0 0; }
+        .c-accent.bl { bottom: 10mm; left: 10mm; border-width: 0 0 4px 4px; }
+        .c-accent.br { bottom: 10mm; right: 10mm; border-width: 0 4px 4px 0; }
+
+        .c-top-bar {
+            position: absolute;
+            top: 14mm;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+            z-index: 2;
+        }
+
+        .c-bg-polygon-l {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 320px;
+            height: 180px;
+            background: linear-gradient(135deg, #0b3d6e 0%, transparent 80%);
+            clip-path: polygon(0 0, 100% 100%, 0 100%);
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        .c-bg-polygon-r {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 320px;
+            height: 180px;
+            background: linear-gradient(-45deg, var(--primary) 0%, transparent 80%);
+            clip-path: polygon(100% 0, 100% 100%, 0 0);
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        .c-content {
+            position: relative;
+            z-index: 5;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .c-header {
+            margin-top: 5mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .c-logo {
+            width: 180px;
+            height: auto;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .c-company {
+            font-family: 'Prompt', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #0b3d6e;
+            opacity: 0.9;
+        }
+
+        .c-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .c-intro {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+        .c-name {
+            font-family: 'Prompt', sans-serif;
+            font-size: 38px;
+            font-weight: 700;
+            color: #0b3d6e;
+            letter-spacing: -0.5px;
+            margin: 5px 0;
+            position: relative;
+            display: inline-block;
+        }
+        .c-name::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 20%;
+            right: 20%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        .c-desc {
+            font-size: 14.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .c-course-box {
+            margin: 5px 0;
+            padding: 8px 30px;
+            border-top: 1px dashed rgba(26, 111, 191, 0.15);
+            border-bottom: 1px dashed rgba(26, 111, 191, 0.15);
+        }
+        .c-course {
+            font-family: 'Prompt', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+        }
+        .c-date {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+        .c-date-val {
+            font-weight: 600;
+            color: #0b3d6e;
+        }
+
+        .c-footer {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin-bottom: 5mm;
+            padding: 0 40px;
+            box-sizing: border-box;
+        }
+        .c-sig-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 220px;
+        }
+        .c-sig-sim {
+            font-family: 'Kanit', sans-serif;
+            font-style: italic;
+            font-size: 18px;
+            color: var(--primary);
+            opacity: 0.75;
+            letter-spacing: 1px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        .c-sig-line {
+            width: 100%;
+            border-top: 1.5px solid #0b3d6e;
+            opacity: 0.35;
+        }
+                .c-sig-name {
+            font-family: 'Prompt', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 6px;
+        }
+        .c-sig-title {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        @media (max-width: 992px) {
+            .cert-creator-layout {
+                flex-direction: column;
+            }
+            .cert-creator-controls {
+                width: 100%;
+            }
+            .cert-creator-preview-container {
+                min-width: 100%;
+                height: 380px;
+                overflow: hidden !important;
+            }
+            .cert-scale-container {
+                width: 118.8mm; /* 297mm * 0.4 */
+                height: 84mm; /* 210mm * 0.4 */
+            }
+            .cert-scale-wrapper {
+                transform: scale(0.4);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .cert-creator-preview-container {
+                height: 280px;
+                overflow: hidden !important;
+            }
+            .cert-scale-container {
+                width: 83.16mm; /* 297mm * 0.28 */
+                height: 58.8mm; /* 210mm * 0.28 */
+            }
+            .cert-scale-wrapper {
+                transform: scale(0.28);
+            }
+        }
+
+        /* Participant list grid */
+        .participant-input-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            width: 100%;
+        }
+        .participant-num {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            width: 24px;
+            text-align: center;
+        }
+        .participant-input {
+            flex: 1;
+            padding: 6px 10px;
+            font-size: 13px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: 'Kanit', sans-serif;
+            box-sizing: border-box;
+        }
+        .participant-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+        .btn-remove-participant {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: background var(--t-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-remove-participant:hover {
+            background: #fee2e2;
+        }
+        .participant-input-row.active .participant-input {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            font-weight: 500;
+        }
+    
+        /* ===========================
+           TOPBAR RIGHT MENU (Moved from Sidebar)
+           =========================== */
+        .topbar-right-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-left: auto;
+        }
+
+        .topbar-right-menu #adminMenu {
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        .topbar-right-menu #adminMenu[style*="block"] {
+            display: flex !important;
+        }
+
+        .topbar-right-menu #adminMenu .nav-section-title {
+            display: none; /* Hide "จัดการระบบ" text in topbar */
+        }
+
+        .topbar-right-menu .nav-item {
+            width: auto;
+            margin: 0;
+            padding: 8px 12px;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+        }
+
+        .topbar-right-menu .nav-item:hover {
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        .topbar-right-menu .nav-label {
+            display: none; /* Hide text, show only icon on small screens, or show both on large? Let's show both on large */
+        }
+        
+        @media (min-width: 1200px) {
+            .topbar-right-menu .nav-label {
+                display: block;
+                font-size: 13px;
+            }
+        }
+
+        .topbar-right-menu .sidebar-user {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: transparent;
+            gap: 16px;
+        }
+
+        .topbar-right-menu .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            padding: 0;
+        }
+
+        .topbar-right-menu .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .breadcrumb-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.3px;
+            line-height: 1.3;
+        }
+
+        .breadcrumb-sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .topbar-right-menu .user-name {
+            font-size: 14px;
+            color: var(--text);
+            max-width: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .topbar-right-menu .btn-logout {
+            margin: 0;
+            padding: 8px 16px;
+            width: auto;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-radius: var(--radius-sm);
+        }
+
+        .topbar-right-menu .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+    
+        @media (max-width: 900px) {
+        .topbar {
+            height: auto;
+            min-height: var(--header-h);
+            padding: 12px 18px;
+        }
+        .topbar-right-menu {
+            display: none !important;
+        }
+    }
+
+    
+    @media (max-width: 600px) {
+        .breadcrumb-title span {
+            white-space: normal !important;
+        }
+    }
+    
+
+        /* ===== PRODUCT CARDS ===== */
+        .product-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: transform var(--t-fast), box-shadow var(--t-fast);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.03);
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border);
+        }
+
+        .product-card-img-container {
+            width: 100%;
+            height: 220px;
+            background: #f8fafc;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .product-card-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.08));
+        }
+
+        .product-card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .product-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .product-card-mfg {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .product-card-price {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-top: auto;
+        }
+
+        .product-card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .btn-view, .btn-edit {
+            flex: 1;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background var(--t-fast), color var(--t-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-view {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .btn-view:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-edit {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .btn-edit:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        
+        .btn-delete {
+            flex: 1;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background var(--t-fast), color var(--t-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+    
+        
+        .btn-details {
+            flex: 1;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background var(--t-fast), color var(--t-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+        .btn-details:hover {
+            background: #bae6fd;
+            color: #0369a1;
+        }
+    
+        /* ===== BUTTONS ===== */
+        .btn-add-product {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 14.5px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px var(--primary-glow);
+            transition: transform var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .btn-add-product:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(26, 111, 191, 0.3);
+        }
+
+    </style>
+
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
+    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+
+</head>
+
+<body>
+
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <div class="sidebar-logo-text">
+                <div class="app-name">Mentra Manager</div>
+                <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
+            </div>
+            <!-- Desktop collapse toggle -->
+            <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">เมนูหลัก</div>
+            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard">
+                <div class="nav-icon">🏠</div>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=projects'" id="nav-projects">
+                <div class="nav-icon">📁</div>
+                <span class="nav-label">โครงการทั้งหมด</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=items'" id="nav-items">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">ราคาทุน / สิ่งของ</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
+                <div class="nav-icon">📄</div>
+                <span class="nav-label">ใบเสนอราคา</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
+                <div class="nav-icon">🎓</div>
+                <span class="nav-label">ระบบตารางจัดอบรม</span>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='products.html'" id="nav-products">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">จัดการสินค้า</span>
+            </button>
+            </nav>
+
+        </aside>
+
+    <!-- ===== MAIN WRAPPER ===== -->
+    <div class="main-wrapper" id="mainWrapper">
+        
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="topbar-breadcrumb">
+                <div class="breadcrumb-title">ระบบตารางจัดอบรม <span style="white-space: nowrap;">(Training Calendar)</span></div>
+                <div class="breadcrumb-sub">จัดการและบันทึกประวัติฝึกอบรมภายนอกองค์กร</div>
+            </div>
+        
+            <div class="topbar-actions" id="topbarActions"></div>
+            <div class="topbar-right-menu">
+                
+                <div id="adminMenu" style="display:none;">
+                    <button class="nav-item" onclick="window.location.href='dashboard.html?view=users'" id="nav-users">
+                        <div class="nav-icon">👥</div>
+                        <span class="nav-label">จัดการผู้ใช้งาน</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-add-project">
+                        <div class="nav-icon">➕</div>
+                        <span class="nav-label">เพิ่มโครงการใหม่</span>
+                    </button>
+                    <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                        <div class="nav-icon">🛠️</div>
+                        <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
+                    </a>
+                </div>
+                <div class="sidebar-user">
+                    <div class="user-card">
+                        <div class="user-avatar" id="userAvatar">M</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">กำลังโหลด...</div>
+                            <div class="user-role">
+                                <span class="role-badge" id="userRoleBadge">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                        <span class="btn-logout-text">ออกจากระบบ</span>
+                    </button>
+                </div>
+            </div>
+
+        </header>
+
+    <!-- === PAGE CONTENT === -->
+    <div class="dashboard-content" style="padding: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2>ระบบจัดการสินค้า (Products)</h2>
+            <button class="btn-add-product" onclick="openProductModal()">
+                <i class="fa-solid fa-plus"></i> เพิ่มสินค้าใหม่
+            </button>
+        </div>
+        <div id="productsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
+            <!-- Render products here -->
+        </div>
+    </div>
+
+</div> <!-- main-wrapper -->
+
+
+<!-- Product Details Modal -->
+<div class="modal-overlay" id="productDetailsModal">
+    <div class="modal-container" style="max-width: 600px;">
+        <header class="modal-header">
+            <h3 id="detailModalTitle" style="display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-box-open" style="color:var(--primary);"></i> รายละเอียดสินค้า</h3>
+            <button class="btn-close-modal" onclick="closeModal('productDetailsModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </header>
+        <div class="modal-body" style="padding: 24px;">
+            <div style="text-align: center; margin-bottom: 20px; background: #f8fafc; padding: 16px; border-radius: 16px; border: 1px solid var(--border);">
+                <img id="detailImg" src="" style="max-width: 100%; max-height: 280px; border-radius: 8px; object-fit: contain;">
+            </div>
+            <h2 id="detailName" style="font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 12px; line-height: 1.3;"></h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+                <span class="badge" style="background: #f1f5f9; color: #475569; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px; display:flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-building"></i> <span id="detailMfg"></span>
+                </span>
+                <span class="badge" style="background: #ecfdf5; color: #059669; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 15px; display:flex; align-items:center; gap:6px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);">
+                    <i class="fa-solid fa-tag"></i> <span id="detailPrice"></span> ฿
+                </span>
+            </div>
+            <div id="detailDocsContainer" style="margin-top: 20px;">
+                <h4 style="font-size: 15px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-file-lines"></i> เอกสารอ้างอิง</h4>
+                <div id="detailDocs" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- documents here -->
+                </div>
+            </div>
+        </div>
+        <footer class="modal-footer" style="display: flex; justify-content: space-between; padding: 16px 24px; border-top: 1px solid var(--border); background: #f8fafc;">
+            <button type="button" class="btn-delete" id="detailDeleteBtn" style="padding: 10px 18px; border-radius: 10px; font-weight: 600; background: white; color: #ef4444; border: 1px solid #fca5a5; cursor: pointer; transition: 0.2s; display:flex; align-items:center; gap:6px;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='white'"><i class="fa-solid fa-trash-can"></i> ลบสินค้านี้</button>
+            <div style="display: flex; gap: 12px;">
+                <button type="button" class="btn-cancel" onclick="closeModal('productDetailsModal')" style="padding: 10px 20px; border-radius: 10px;">ปิด</button>
+                <button type="button" class="btn-save" id="detailEditBtn" style="padding: 10px 24px; border-radius: 10px;"><i class="fa-solid fa-pen-to-square"></i> แก้ไขข้อมูล</button>
+            </div>
+        </footer>
+    </div>
+</div>
+
+
+<!-- Add Product Modal -->
+<div class="modal-overlay" id="productModal">
+    <div class="modal-container" style="max-width: 600px;">
+        <header class="modal-header">
+            <h3 id="productModalTitle"><i class="fa-solid fa-box"></i> เพิ่มสินค้าใหม่</h3>
+            <button class="btn-close-modal" onclick="closeModal('productModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </header>
+        <div class="modal-body" style="padding: 24px;">
+            <form id="productForm">
+                <input type="hidden" id="prodId">
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>ชื่อสินค้า <span class="required">*</span></label>
+                    <input type="text" id="prodName" class="form-input" required placeholder="เช่น PLC Trainer Board">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>บริษัทที่ผลิต / แบรนด์ <span class="required">*</span></label>
+                    <input type="text" id="prodMfg" class="form-input" required placeholder="เช่น Mentra Solution">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>ราคาขาย (บาท) <span class="required">*</span></label>
+                    <input type="number" id="prodPrice" class="form-input" required placeholder="เช่น 15000" min="0">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>อัปโหลดรูปภาพสินค้า <span class="required">*</span></label>
+                    <input type="file" id="prodImage" class="form-input" accept="image/*">
+                    <div id="imagePreview" style="margin-top: 10px; display: none;">
+                        <img id="imagePreviewImg" style="max-width: 100%; height: 200px; object-fit: contain; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>เอกสารแนบเพิ่มเติม (PDF, DOCX ฯลฯ)</label>
+                    <input type="file" id="prodDocs" class="form-input" multiple>
+                    <div id="docsPreview" style="margin-top: 10px; font-size: 13px; color: var(--text-secondary);"></div>
+                </div>
+            
+                <div id="uploadProgressContainer" style="display: none; margin-top: 20px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px;">
+                        <span id="uploadProgressText"><i class="fa-solid fa-cloud-arrow-up"></i> กำลังอัปโหลด...</span>
+                        <span id="uploadProgressPercent">0%</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);">
+                        <div id="uploadProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), #3b82f6); transition: width 0.1s ease; border-radius: 4px;"></div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+        <footer class="modal-footer" style="justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--border);">
+            <button type="button" class="btn-cancel" onclick="closeModal('productModal')">ยกเลิก</button>
+            <button type="button" class="btn-save" onclick="saveProduct()">บันทึกข้อมูล</button>
+        </footer>
+    </div>
+</div>
+
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { initializeFirestore, collection, addDoc, getDocs, doc, updateDoc, Timestamp, deleteDoc, orderBy, query, persistentLocalCache, persistentMultipleTabManager } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+let FIREBASE_CONFIG, GAS_URL, DRIVE_ROOT_FOLDER_ID;
+let app, auth, db;
+let currentProducts = [];
+
+async function init() {
+    try {
+        const cfg = await import('./assets/js/firebase-config.js');
+        FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
+        GAS_URL = cfg.GAS_URL || cfg.default?.GAS_URL;
+        DRIVE_ROOT_FOLDER_ID = cfg.DRIVE_ROOT_FOLDER_ID || cfg.default?.DRIVE_ROOT_FOLDER_ID;
+    } catch (e) {
+        console.warn('Failed to load config, using fallbacks');
+    }
+
+    if (!GAS_URL) {
+        GAS_URL = 'https://script.google.com/macros/s/AKfycbwRIcnykIL630Op5cf6qWO_zpbkzqYfY_pDEyOf0vA_cpaxio9Gu813nfxuuufHhZXW/exec';
+    }
+    if (!DRIVE_ROOT_FOLDER_ID) {
+        DRIVE_ROOT_FOLDER_ID = '1a0B6l56PAVCZ4v8lzSeIRslq78XSJh8e';
+    }
+
+    app = initializeApp(FIREBASE_CONFIG);
+    auth = getAuth(app);
+    db = initializeFirestore(app, {
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    });
+
+    onAuthStateChanged(auth, user => {
+        if (!user) {
+            window.location.href = 'index.html';
+        } else {
+            document.body.style.display = 'block';
+            document.getElementById("userAvatar").textContent = user.email.charAt(0).toUpperCase();
+            document.getElementById("userName").textContent = user.displayName || user.email;
+            fetchProducts();
+        }
+    });
+}
+
+init();
+
+window.handleLogout = () => {
+    signOut(auth).then(() => { window.location.href = 'index.html'; });
+};
+
+async function fetchProducts() {
+    try {
+        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        currentProducts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProducts();
+    } catch (e) {
+        console.error("Error fetching products", e);
+        Swal.fire('ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลสินค้าได้', 'error');
+    }
+}
+
+function renderProducts() {
+    const grid = document.getElementById("productsGrid");
+    grid.innerHTML = "";
+
+    if (currentProducts.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
+            <i class="fa-solid fa-box-open" style="font-size: 48px; margin-bottom: 16px; color: var(--border);"></i>
+            <h3>ยังไม่มีสินค้าในระบบ</h3>
+            <p>คลิก "เพิ่มสินค้าใหม่" เพื่อเริ่มต้น</p>
+        </div>`;
+        return;
+    }
+
+    currentProducts.forEach(p => {
+        const pName = p.name || p.title || p.productName || 'ไม่ระบุชื่อสินค้า';
+        const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || 'ไม่ระบุผู้ผลิต';
+        const pPrice = p.price || p.cost || 0;
+        let pImgUrl = p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl || 'assets/img/placeholder.png';
+        if (pImgUrl.includes('export=download') && p.fileId) {
+            pImgUrl = `https://drive.google.com/thumbnail?id=${p.fileId}&sz=w1000`;
+        } else if (pImgUrl.includes('/view')) {
+            const match = pImgUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+            if (match) {
+                pImgUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+            }
+        }
+        const priceFmt = pPrice.toLocaleString();
+        
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+            <div class="product-card-img-container">
+                <img src="${pImgUrl}" alt="${pName}" class="product-card-img" onerror="this.src='assets/img/logo.png'">
+            </div>
+            <div class="product-card-body">
+                <div class="product-card-title">${pName}</div>
+                <div class="product-card-mfg"><i class="fa-solid fa-industry"></i> ${pMfg}</div>
+                <div class="product-card-price">${priceFmt} ฿</div>
+                <div class="product-card-actions">
+                    <button type="button" class="btn-edit" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i> แก้ไข</button>
+                    <button type="button" class="btn-details" onclick="viewProductDetails('${p.id}')"><i class="fa-solid fa-circle-info"></i> รายละเอียด</button>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+window.openProductModal = () => { try {
+    document.getElementById("productForm").reset();
+    document.getElementById("prodId").value = "";
+    document.getElementById("productModalTitle").innerHTML = '<i class="fa-solid fa-box"></i> เพิ่มสินค้าใหม่';
+    document.getElementById("imagePreview").style.display = "none";
+    document.getElementById("docsPreview").innerHTML = "";
+    const m = document.getElementById("productModal"); m.style.display = "flex"; setTimeout(() => m.classList.add("show"), 10); } catch(e) { console.error("openProductModal error", e); Swal.fire("Error", e.message, "error"); } };
+
+window.closeModal = (id) => {
+    const m = document.getElementById(id);
+    m.classList.remove("show");
+    setTimeout(() => m.style.display = "none", 300);
+};
+
+
+window.deleteProduct = (id) => {
+    Swal.fire({
+        title: 'ยืนยันการลบสินค้า?',
+        text: "หากลบแล้วจะไม่สามารถกู้คืนได้!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: 'ใช่, ลบเลย!',
+        cancelButtonText: 'ยกเลิก'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                Swal.fire({ title: 'กำลังลบข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                await deleteDoc(doc(db, 'products', id));
+                Swal.fire('ลบสำเร็จ!', 'ข้อมูลสินค้าถูกลบออกจากระบบแล้ว.', 'success');
+                fetchProducts();
+            } catch (e) {
+                console.error("Delete error", e);
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถลบข้อมูลได้: ' + e.message, 'error');
+            }
+        }
+    });
+};
+
+
+window.viewProductDetails = (id) => {
+    try {
+        const p = currentProducts.find(x => x.id === id);
+        if (!p) return;
+
+        const pName = p.name || p.title || p.productName || '';
+        const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || '- ไม่ระบุ -';
+        const pPrice = p.price || p.cost || 0;
+        let pImgUrl = p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl || 'assets/img/placeholder.png';
+        const pDocs = p.documentDriveUrls || p.documents || p.docs || p.files || [];
+
+        // convert drive view urls to thumbnail
+        if (pImgUrl.includes('export=download') && p.fileId) {
+            pImgUrl = `https://drive.google.com/thumbnail?id=${p.fileId}&sz=w1000`;
+        } else if (pImgUrl.includes('/view')) {
+            const match = pImgUrl.match(/\/d\/([a-zA-Z0-9_-]+)\//);
+            if (match) {
+                pImgUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+            }
+        }
+
+        document.getElementById("detailName").innerText = pName;
+        document.getElementById("detailMfg").innerText = pMfg;
+        document.getElementById("detailPrice").innerText = pPrice.toLocaleString();
+        document.getElementById("detailImg").src = pImgUrl;
+
+        const docsContainer = document.getElementById("detailDocs");
+        if (pDocs && pDocs.length > 0) {
+            docsContainer.innerHTML = pDocs.map((url, i) => `
+                <a href="${url}" target="_blank" style="display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: white; border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--text); font-weight: 500; transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary)'; this.style.color='var(--primary)';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text)';">
+                    <div style="width: 32px; height: 32px; background: #fee2e2; color: #ef4444; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+                    เอกสารแนบชุดที่ ${i+1} <i class="fa-solid fa-arrow-up-right-from-square" style="margin-left: auto; color: var(--text-secondary); font-size: 12px;"></i>
+                </a>
+            `).join('');
+            document.getElementById("detailDocsContainer").style.display = 'block';
+        } else {
+            document.getElementById("detailDocsContainer").style.display = 'none';
+        }
+
+        // Setup Buttons
+        document.getElementById("detailEditBtn").onclick = () => {
+            closeModal('productDetailsModal');
+            setTimeout(() => editProduct(id), 300);
+        };
+
+        document.getElementById("detailDeleteBtn").onclick = () => {
+            closeModal('productDetailsModal');
+            setTimeout(() => deleteProduct(id), 300);
+        };
+
+        const m = document.getElementById("productDetailsModal");
+        m.style.display = "flex";
+        setTimeout(() => m.classList.add("show"), 10);
+    } catch(e) {
+        console.error("viewProductDetails error", e);
+        Swal.fire("Error", e.message, "error");
+    }
+};
+
+window.editProduct = (id) => { try {
+    const p = currentProducts.find(x => x.id === id);
+    if (!p) return;
+
+    const pName = p.name || p.title || p.productName || '';
+    const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || '';
+    const pPrice = p.price || p.cost || 0;
+    const pImgUrl = p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl || '';
+    const pDocs = p.documentDriveUrls || p.documents || p.docs || p.files || [];
+
+    document.getElementById("prodId").value = p.id;
+    document.getElementById("prodName").value = pName;
+    document.getElementById("prodMfg").value = pMfg;
+    document.getElementById("prodPrice").value = pPrice;
+    document.getElementById("productModalTitle").innerHTML = '<i class="fa-solid fa-pen"></i> แก้ไขสินค้า';
+    
+    const previewContainer = document.getElementById("imagePreview");
+    const previewImg = document.getElementById("imagePreviewImg");
+    if (pImgUrl) {
+        previewImg.src = pImgUrl;
+        previewContainer.style.display = "block";
+    } else {
+        previewContainer.style.display = "none";
+    }
+
+    const docsContainer = document.getElementById("docsPreview");
+    if (pDocs && pDocs.length > 0) {
+        docsContainer.innerHTML = pDocs.map(url => `<a href="${url}" target="_blank" style="color: var(--primary); text-decoration: none; display: block; margin-top: 4px;"><i class="fa-solid fa-file-pdf"></i> แนบเอกสารแล้ว (คลิกเพื่อดู)</a>`).join('');
+    } else {
+        docsContainer.innerHTML = '';
+    }
+
+    const m = document.getElementById("productModal"); m.style.display = "flex"; setTimeout(() => m.classList.add("show"), 10); } catch(e) { console.error("openProductModal error", e); Swal.fire("Error", e.message, "error"); } };
+
+// Handle Image Preview
+const imgEl = document.getElementById('prodImage'); if(imgEl) imgEl.addEventListener('change', function(e) {
+    if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreviewImg').src = e.target.result;
+            document.getElementById('imagePreview').style.display = 'block';
+        }
+        reader.readAsDataURL(this.files[0]);
+    }
+});
+
+// GAS Upload Logic via resumable chunks matching dashboard
+async function uploadToDrive(file, targetFolderId = DRIVE_ROOT_FOLDER_ID) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            document.getElementById('uploadProgressContainer').style.display = 'block';
+            document.getElementById('uploadProgressText').innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> ขอ URL อัปโหลด...';
+            document.getElementById('uploadProgressBar').style.width = '0%';
+            document.getElementById('uploadProgressPercent').innerText = '0%';
+
+            const gasRes = await fetch(GAS_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'getUploadUrl',
+                    filename: 'prod_' + Date.now() + '_' + file.name,
+                    mimeType: file.type || 'application/octet-stream',
+                    folderId: targetFolderId
+                })
+            });
+            const gasResult = await gasRes.json();
+            if (gasResult.status !== 'success' || !gasResult.token) throw new Error('GAS error: ' + gasResult.error);
+
+            document.getElementById('uploadProgressText').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังอัปโหลด (' + file.name + ')...';
+
+            const uploadMimeType = file.type || 'application/octet-stream';
+            const initRes = await fetch(
+                'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + gasResult.token,
+                        'Content-Type': 'application/json',
+                        'X-Upload-Content-Type': uploadMimeType,
+                        'X-Upload-Content-Length': file.size.toString()
+                    },
+                    body: JSON.stringify({
+                        name: gasResult.filename || file.name,
+                        parents: [targetFolderId]
+                    })
+                }
+            );
+
+            const locationUrl = initRes.headers.get('Location');
+            if (!locationUrl) throw new Error('Failed to get resumable upload URL');
+
+            // Use XMLHttpRequest for progress
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', locationUrl, true);
+            xhr.setRequestHeader('Content-Type', uploadMimeType);
+            
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('uploadProgressBar').style.width = percentComplete + '%';
+                    document.getElementById('uploadProgressPercent').innerText = percentComplete + '%';
+                }
+            };
+            
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const finalResult = JSON.parse(xhr.responseText);
+                        if (finalResult.id) {
+                            document.getElementById('uploadProgressText').innerHTML = '<i class="fa-solid fa-check text-success"></i> อัปโหลดเสร็จสิ้น';
+                            resolve('https://drive.google.com/file/d/' + finalResult.id + '/view');
+                        } else {
+                            reject(new Error('No ID in response'));
+                        }
+                    } catch(err) { reject(err); }
+                } else {
+                    reject(new Error('Upload failed with status ' + xhr.status));
+                }
+            };
+            
+            xhr.onerror = function() { reject(new Error('XHR Network Error')); };
+            xhr.send(file);
+            
+        } catch (err) {
+            console.error("Upload error:", err);
+            reject(err);
+        }
+    });
+}
+
+window.saveProduct = async () => {
+    document.getElementById("uploadProgressContainer").style.display = "none";
+    const name = document.getElementById("prodName").value.trim();
+    const mfg = document.getElementById("prodMfg").value.trim();
+    const price = parseInt(document.getElementById("prodPrice").value);
+    const imgFile = document.getElementById("prodImage").files[0];
+    const docFiles = document.getElementById("prodDocs").files;
+
+    if (!name || !mfg || isNaN(price)) {
+        Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบถ้วน', 'warning');
+        return;
+    }
+
+    const id = document.getElementById("prodId").value;
+
+    Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        text: 'กรุณารอสักครู่',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        let oldP = null;
+        let imageDriveUrl = '';
+        let documentDriveUrls = [];
+
+        if (id) {
+            oldP = currentProducts.find(x => x.id === id);
+            if (oldP) {
+                imageDriveUrl = oldP.imageDriveUrl || oldP.imageUrl || oldP.imgUrl || oldP.image || '';
+                documentDriveUrls = oldP.documentDriveUrls || oldP.documents || oldP.docs || [];
+            }
+        }
+
+        let targetFolderId = DRIVE_ROOT_FOLDER_ID;
+        try {
+            Swal.update({ text: 'กำลังเตรียมโฟลเดอร์สำหรับสินค้า...' });
+            const gasFolderRes = await fetch(GAS_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'createFolder',
+                    folderName: name,
+                    parentFolderId: DRIVE_ROOT_FOLDER_ID
+                })
+            });
+            const gasFolderResult = await gasFolderRes.json();
+            if (gasFolderResult.status === 'created' || gasFolderResult.status === 'exists') {
+                targetFolderId = gasFolderResult.folderId;
+            }
+        } catch(e) {
+            console.warn("Failed to create folder, using root", e);
+        }
+
+        if (imgFile) {
+            Swal.update({ text: 'กำลังอัปโหลดรูปภาพสินค้า...' });
+            imageDriveUrl = await uploadToDrive(imgFile, targetFolderId);
+        } else if (!id) {
+            Swal.fire('ข้อมูลไม่ครบ', 'กรุณาอัปโหลดรูปภาพสินค้า', 'warning');
+            return;
+        }
+
+        if (docFiles.length > 0) {
+            Swal.update({ text: 'กำลังอัปโหลดเอกสารแนบ...' });
+            for (let i = 0; i < docFiles.length; i++) {
+                const docUrl = await uploadToDrive(docFiles[i], targetFolderId);
+                documentDriveUrls.push(docUrl);
+            }
+        }
+
+        const productData = oldP ? { ...oldP } : {};
+        // Overwrite standard fields
+        productData.name = name;
+        productData.manufacturer = mfg;
+        productData.price = price;
+        productData.imageDriveUrl = imageDriveUrl;
+        productData.documentDriveUrls = documentDriveUrls;
+        productData.updatedAt = Timestamp.now();
+
+        if (id) {
+            await updateDoc(doc(db, 'products', id), productData);
+        } else {
+            productData.createdAt = Timestamp.now();
+            await addDoc(collection(db, 'products'), productData);
+        }
+
+        closeModal('productModal');
+        document.getElementById('uploadProgressContainer').style.display = 'none';
+        Swal.fire('สำเร็จ', 'บันทึกข้อมูลสินค้าเรียบร้อยแล้ว', 'success');
+        fetchProducts();
+
+    } catch (e) {
+        console.error("Save error", e);
+        Swal.fire('ข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้: ' + e.message, 'error');
+    }
+};

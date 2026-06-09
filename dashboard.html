@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* ================================================
            MENTRA MANAGER — ENTERPRISE DASHBOARD UI
@@ -24,6 +25,18 @@
             margin: 0;
             padding: 0;
         }
+
+        .swal2-popup.mentra-swal-popup {
+            font-family: 'Kanit', sans-serif;
+            border-radius: 16px;
+        }
+        .swal2-title { font-weight: 600 !important; }
+
+        .swal2-popup.mentra-swal-popup {
+            font-family: 'Kanit', sans-serif;
+            border-radius: 16px;
+        }
+        .swal2-title { font-weight: 600 !important; }
 
         :root {
             /* Brand */
@@ -2249,6 +2262,14 @@
                 <div class="nav-icon">🎓</div>
                 <span class="nav-label">ระบบตารางจัดอบรม</span>
             </button>
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">🧰</div>
+                <span class="nav-label">วัสดุอุปกรณ์</span>
+            </button>
             </nav>
 
         </aside>
@@ -3680,6 +3701,7 @@
                             <div style="display: flex; gap: 8px;" onclick="event.stopPropagation();">
                                 <button class="btn btn-outline btn-sm" onclick="openFileViewer(${idx})">👁️ ดูตัวอย่าง</button>
                                 <a class="file-item-open" href="${f.webViewLink}" target="_blank">🔗 เปิดภายนอก</a>
+                                ${currentUserData?.role === 'admin' ? `<button class="btn btn-danger btn-sm" style="padding: 4px 10px;" onclick="deleteProjectFile('${f.id}', '${f.name}')">🗑️ ลบไฟล์</button>` : ''}
                             </div>
                         </div>
                     `;
@@ -3689,6 +3711,61 @@
                 currentProjectFiles = [];
             }
         }
+
+        
+        // ---- DELETE PROJECT FILE ----
+        window.deleteProjectFile = async function(fileId, fileName) {
+            Swal.fire({
+                title: 'ยืนยันการลบไฟล์?',
+                html: `คุณต้องการลบไฟล์ <b>${fileName}</b> ออกจากโครงการนี้ใช่หรือไม่?<br><span style="color:var(--danger); font-size:13px;">การลบนี้จะนำไฟล์ออกจากระบบและไม่สามารถย้อนคืนได้</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'ลบไฟล์',
+                cancelButtonText: 'ยกเลิก',
+                customClass: { popup: 'mentra-swal-popup' }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'กำลังลบไฟล์...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+                    try {
+                        if (typeof GAS_URL !== 'undefined' && GAS_URL) {
+                            await fetch(GAS_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                                body: JSON.stringify({ action: 'deleteFile', fileId: fileId }),
+                                redirect: 'follow'
+                            });
+                        }
+                        if (typeof currentProjectData !== 'undefined' && currentProjectData && currentProjectData.files) {
+                            const updatedFiles = currentProjectData.files.filter(f => f.fileId !== fileId);
+                            await updateDoc(doc(db, 'projects', currentProjectId), { files: updatedFiles });
+                            currentProjectData.files = updatedFiles;
+                        }
+                        Swal.fire({
+                            title: 'ลบสำเร็จ!',
+                            text: 'ลบไฟล์ออกจากโครงการเรียบร้อยแล้ว',
+                            icon: 'success',
+                            confirmButtonColor: '#1A6FBF',
+                            customClass: { popup: 'mentra-swal-popup' }
+                        });
+                        loadProjectFiles();
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'ไม่สามารถลบไฟล์ได้: ' + error.message,
+                            icon: 'error',
+                            confirmButtonColor: '#1A6FBF',
+                            customClass: { popup: 'mentra-swal-popup' }
+                        });
+                    }
+                }
+            });
+        };
 
         // ---- FILE PREVIEW VIEWER ----
         window.openFileViewer = function (idx) {
@@ -4298,7 +4375,7 @@
             emptyItem.className = 'dropdown-item selected';
             emptyItem.setAttribute('data-id', '');
             emptyItem.onclick = () => selectDropdownItem('', '', '');
-            emptyItem.innerHTML = `<span class="item-name" style="color:var(--text-secondary);">-- กรุณาเลือกโครงการ --</span>`;
+            emptyItem.innerHTML = `<span class="item-name">-- กรุณาเลือกโครงการ --</span>`;
             listEl.appendChild(emptyItem);
 
             allProjects.forEach(p => {
