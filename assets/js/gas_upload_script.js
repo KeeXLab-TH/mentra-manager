@@ -45,6 +45,7 @@ function doPost(e) {
     if (action === 'createFolder') return handleCreateFolder(body);
     if (action === 'uploadChunk') return handleUploadChunk(body);
     if (action === 'deleteFile') return handleDeleteFile(body);
+    if (action === 'uploadImageWithPath') return handleUploadWithPath(body);
 
     // Legacy: base64 upload
     if (body.base64 && body.filename) return handleLegacyUpload(body);
@@ -159,7 +160,14 @@ function handleUploadChunk(body) {
       existingFile.setContent(newBlob.getDataAsString());
     }
 
-    if (isLast) props.deleteProperty(propKey);
+    if (isLast) {
+      props.deleteProperty(propKey);
+      try {
+        DriveApp.getFileById(resultFileId).setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      } catch (e) {
+        // Ignore if error setting sharing
+      }
+    }
 
     return jsonResponse({
       status: 'success',
@@ -194,8 +202,46 @@ function handleLegacyUpload(body) {
     var bytes = Utilities.base64Decode(body.base64);
     var blob = Utilities.newBlob(bytes, body.mimeType || 'application/octet-stream', body.filename);
     var file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     return jsonResponse({ status: 'success', fileId: file.getId(), fileUrl: file.getUrl() });
   } catch (err) {
+    return jsonResponse({ status: 'error', message: err.message });
+  }
+}
+
+// ==============================================================================
+// handleUploadWithPath — สร้าง Folder ตาม Path แบบรวดเดียว และอัปโหลดไฟล์ (ลดเวลา Request)
+// ==============================================================================
+function handleUploadWithPath(body) {
+  try {
+    var parent = body.parentFolderId ? DriveApp.getFolderById(body.parentFolderId) : DriveApp.getRootFolder();
+    var path = body.path || []; // e.g. ["วิทยาลัย A", "ระบบจัดซื้อวัสดุอุปกรณ์"]
+    
+    // วนลูปสร้างหรือหา Folder ตาม Path
+    for (var i = 0; i < path.length; i++) {
+      var folderName = path[i];
+      if (!folderName) continue;
+      
+      var existing = parent.getFoldersByName(folderName);
+      if (existing.hasNext()) {
+        parent = existing.next();
+      } else {
+        parent = parent.createFolder(folderName);
+        parent.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      }
+    }
+    
+    // อัปโหลดไฟล์ลงใน Folder สุดท้าย
+    var bytes = Utilities.base64Decode(body.base64);
+    var blob = Utilities.newBlob(bytes, body.mimeType || 'application/octet-stream', body.filename);
+    var file = parent.createFile(blob);
+    
+    // เปิดแชร์ไฟล์ให้ทุกคนที่มีลิงก์ดูได้ (สำคัญมากเพื่อไม่ให้ภาพไม่ขึ้น)
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    return jsonResponse({ status: 'success', fileId: file.getId(), fileUrl: file.getUrl() });
+  } catch (err) {
+    Logger.log('handleUploadWithPath error: ' + err.message);
     return jsonResponse({ status: 'error', message: err.message });
   }
 }
