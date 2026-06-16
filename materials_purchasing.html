@@ -3006,7 +3006,11 @@
                 if (isTableInput && isTabularData) {
                     event.preventDefault(); // Stop default pasting into the single input
 
-                    const rows = pastedText.split(/\r?\n/).filter(r => r.trim() !== '');
+                    let rows = pastedText.split(/\r?\n/);
+                    // Excel adds a trailing newline, so remove only the last empty row if present
+                    if (rows.length > 0 && rows[rows.length - 1] === '') {
+                        rows.pop();
+                    }
                     if (rows.length === 0) return;
 
                     const proj = this.projects.find(p => p.id === this.currentProjectId);

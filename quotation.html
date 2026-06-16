@@ -908,6 +908,22 @@
             }
         }
 
+        /* Prevent table rows from breaking across pages in PDF/Print */
+        @media print {
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                -webkit-column-break-inside: avoid !important;
+            }
+        }
+        
+        /* Also apply globally for html2pdf which might not always trigger @media print */
+        #printArea tr, .table-responsive tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
+        }
+
     </style>
 
     <!-- Premium UI Overlay -->
@@ -1106,7 +1122,7 @@
                             </div>
                             <div class="form-group">
                                 <label>เงื่อนไขชำระเงิน (Payment)</label>
-                                <input type="text" class="form-control" id="termPayment" value="Cash on Delivery">
+                                <input type="text" class="form-control" id="termPayment" value="เงินสด">
                             </div>
                         </div>
                     </div>
@@ -1115,10 +1131,16 @@
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3 class="section-title" style="margin-bottom: 0;">รายการสินค้า</h3>
-                        <button class="btn btn-outline" onclick="addTableRow()"
-                            style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                            <i class='bx bx-plus'></i> เพิ่มรายการ
-                        </button>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-outline" onclick="openImportProjectModal()"
+                                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: var(--primary-color); color: var(--primary-color);">
+                                <i class='bx bx-import'></i> ดึงข้อมูลจากโครงการจัดซื้อ
+                            </button>
+                            <button class="btn btn-outline" onclick="addTableRow()"
+                                style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                <i class='bx bx-plus'></i> เพิ่มรายการ
+                            </button>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -1322,7 +1344,7 @@
                     <table
                         style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal; border: 1px solid #e0e7ff; border-radius: 6px; overflow: hidden;">
                         <thead>
-                            <tr id="pTableHeadRow" style="background-color: #1A6FBF;">
+                            <tr class="pTableHeadRow" style="background-color: #1A6FBF;">
                                 <th
                                     style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">
                                     ลำดับ</th>
@@ -1507,6 +1529,26 @@
         <!-- Right Area: Preview Canvas -->
         <div id="livePreviewContainer" style="flex: 1; overflow: auto; padding: 40px; display: flex; justify-content: center; align-items: flex-start; background: #e2e8f0;">
             <!-- printArea will be moved here dynamically when opened -->
+        </div>
+    </div>
+
+    <!-- Import Project Modal -->
+    <div id="importProjectModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; width: 600px; max-width: 95%; max-height: 80vh; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button id="importModalBackBtn" onclick="backToInstitutionList()" style="display: none; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); padding: 0 5px;"><i class='bx bx-arrow-back'></i></button>
+                    <h3 id="importModalTitle" style="margin: 0; font-size: 1.1rem; color: var(--primary-color);"><i class='bx bx-import'></i> เลือกโครงการเพื่อดึงรายการวัสดุ</h3>
+                </div>
+                <button onclick="closeImportProjectModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
+            </div>
+            
+            <div id="projectListContainer" style="padding: 24px; overflow-y: auto; flex: 1; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
+                <div style="text-align: center; padding: 20px; color: var(--text-muted);">กำลังโหลดข้อมูลโครงการ...</div>
+            </div>
+                    <div style="text-align: center; padding: 20px; color: var(--text-muted);">กำลังโหลดข้อมูลโครงการ...</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1897,8 +1939,29 @@
             const pItemsBody = document.getElementById('pItemsBody');
             pItemsBody.innerHTML = ''; // Clear previous
 
+            const primaryColor = document.getElementById('settingPrimaryColor')?.value || '#1A6FBF';
+            const headerFontSize = document.getElementById('settingHeaderFontSize')?.value || '11';
+
             const rows = document.getElementById('itemsBody').children;
             for (let i = 0; i < rows.length; i++) {
+                // Manually split and repeat header every 18 items
+                if (i > 0 && i % 18 === 0) {
+                    const headerTr = document.createElement('tr');
+                    headerTr.className = "pTableHeadRow html2pdf__page-break";
+                    headerTr.style.pageBreakBefore = "always";
+                    headerTr.style.breakBefore = "page";
+                    headerTr.style.backgroundColor = primaryColor;
+                    headerTr.innerHTML = `
+                        <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">ลำดับ</th>
+                        <th style="padding: 9px 7px; text-align: left; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; border-right: 1px solid rgba(255,255,255,0.18);">รายการสินค้า / รายละเอียด</th>
+                        <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">จำนวน</th>
+                        <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">หน่วย</th>
+                        <th style="padding: 9px 7px; text-align: right; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 95px;">ราคา/หน่วย</th>
+                        <th style="padding: 9px 7px; text-align: right; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; width: 110px;">จำนวนเงิน</th>
+                    `;
+                    pItemsBody.appendChild(headerTr);
+                }
+
                 const tr = rows[i];
                 const desc = tr.querySelector('.item-desc').value || '-';
                 const qty = tr.querySelector('.item-qty').value || '0';
@@ -1964,7 +2027,7 @@
                     const filenameStr = clientName ? `${refNo} ${clientName}.pdf` : `${refNo}.pdf`;
 
                     const opt = {
-                        margin: [6, 10, 10, 10],
+                        margin: [12, 10, 10, 10],
                         filename: filenameStr,
                         image: { type: 'jpeg', quality: 0.98 },
                         html2canvas: { 
@@ -1974,7 +2037,8 @@
                             scrollX: 0,
                             scrollY: 0
                         },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: ['css', 'legacy'], avoid: 'tr' }
                     };
 
                     // Create a clone to safely render without affecting the UI
@@ -2192,10 +2256,13 @@
 
             // Apply Color
             document.getElementById('pHeaderSection').style.borderBottom = `2.5px solid ${primaryColor}`;
-            document.getElementById('pTableHeadRow').style.backgroundColor = primaryColor;
+            
+            const headRows = document.querySelectorAll('.pTableHeadRow');
+            headRows.forEach(hr => hr.style.backgroundColor = primaryColor);
+
             document.getElementById('pSellerRole').style.color = primaryColor;
             
-            const ths = document.getElementById('pTableHeadRow').querySelectorAll('th');
+            const ths = document.querySelectorAll('.pTableHeadRow th');
             ths.forEach(th => th.style.setProperty('background-color', primaryColor, 'important'));
 
             // Apply color to Document Title (ใบเสนอราคา)
@@ -2271,8 +2338,240 @@
             applyLivePreview();
         }
 
-        // --- Quotation History ---
+        // --- Quotation History & Import Projects ---
         let loadedHistory = [];
+        let materialProjectsCache = [];
+        let uniqueInstitutions = [];
+        let institutionLogosCache = {};
+
+        async function openImportProjectModal() {
+            document.getElementById('importProjectModal').style.display = 'flex';
+            document.getElementById('importModalBackBtn').style.display = 'none';
+            document.getElementById('importModalTitle').innerHTML = "<i class='bx bx-buildings'></i> เลือกสถานศึกษา";
+            const container = document.getElementById('projectListContainer');
+            
+            if (!currentUser) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: red;">กรุณาเข้าสู่ระบบเพื่อดูโครงการ</div>';
+                return;
+            }
+
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">กำลังโหลดข้อมูลสถานศึกษา...</div>';
+
+            try {
+                // Fetch logos
+                const logoSnap = await getDoc(doc(db, 'material_settings', 'institution_logos'));
+                if (logoSnap.exists()) {
+                    institutionLogosCache = logoSnap.data();
+                } else {
+                    institutionLogosCache = {};
+                }
+
+                // Fetch from material_projects collection
+                const projectsRef = collection(db, 'material_projects');
+                const q = query(projectsRef);
+                const snap = await getDocs(q);
+                
+                materialProjectsCache = [];
+                let instSet = new Set();
+                
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    materialProjectsCache.push({ id: doc.id, ...data });
+                    if (data.institution && data.institution.trim() !== '') {
+                        instSet.add(data.institution.trim());
+                    } else {
+                        instSet.add('ไม่ระบุสถานศึกษา');
+                    }
+                });
+                
+                materialProjectsCache.sort((a, b) => {
+                    const dateA = a.updatedAt || a.createdAt || '';
+                    const dateB = b.updatedAt || b.createdAt || '';
+                    return dateB.localeCompare(dateA);
+                });
+                
+                uniqueInstitutions = Array.from(instSet).sort();
+                
+                renderInstitutionCards();
+
+            } catch (err) {
+                console.error("Error loading projects:", err);
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: red;">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+            }
+        }
+        
+        function renderInstitutionCards() {
+            document.getElementById('importModalBackBtn').style.display = 'none';
+            document.getElementById('importModalTitle').innerHTML = "<i class='bx bx-buildings'></i> เลือกสถานศึกษา";
+            const container = document.getElementById('projectListContainer');
+            container.innerHTML = '';
+            
+            if (uniqueInstitutions.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">ไม่พบข้อมูลสถานศึกษา</div>';
+                return;
+            }
+
+            uniqueInstitutions.forEach(inst => {
+                let projCount = 0;
+                let itemCount = 0;
+                materialProjectsCache.forEach(p => {
+                    const pInst = (p.institution && p.institution.trim() !== '') ? p.institution.trim() : 'ไม่ระบุสถานศึกษา';
+                    if (pInst === inst) {
+                        projCount++;
+                        itemCount += (p.items ? p.items.length : 0);
+                    }
+                });
+
+                const logoUrl = institutionLogosCache[inst];
+                const logoHtml = logoUrl 
+                    ? `<img src="${logoUrl}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;" alt="logo" onerror="this.src=''; this.onerror=null; this.parentElement.innerHTML='<i class=\\'bx bx-buildings\\' style=\\'font-size: 28px;\\'></i>';"/>`
+                    : `<i class='bx bx-buildings' style="font-size: 28px;"></i>`;
+
+                const div = document.createElement('div');
+                div.style.background = 'white';
+                div.style.padding = '20px';
+                div.style.borderRadius = '12px';
+                div.style.border = '1px solid var(--border-color)';
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.gap = '20px';
+                div.style.cursor = 'pointer';
+                div.style.transition = 'all 0.2s';
+                
+                div.onmouseover = () => { div.style.borderColor = 'var(--primary-color)'; div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'; };
+                div.onmouseout = () => { div.style.borderColor = 'var(--border-color)'; div.style.boxShadow = 'none'; };
+                
+                div.onclick = () => showProjectsForInstitution(inst);
+
+                div.innerHTML = `
+                    <div style="width: 60px; height: 60px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); flex-shrink: 0;">
+                        ${logoHtml}
+                    </div>
+                    <div>
+                        <h4 style="margin: 0 0 8px 0; font-size: 1.15rem; color: #1e293b; font-weight: 700;">${inst}</h4>
+                        <div style="display: flex; gap: 15px; font-size: 0.85rem; color: #64748b; font-weight: 500;">
+                            <span style="background: #f1f5f9; padding: 4px 10px; border-radius: 20px;">${projCount} โครงการ</span>
+                            <span style="display: flex; align-items: center; gap: 5px;"><i class='bx bx-package'></i> รวม ${itemCount} รายการพัสดุ</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function backToInstitutionList() {
+            renderInstitutionCards();
+        }
+
+        function showProjectsForInstitution(selectedInst) {
+            document.getElementById('importModalBackBtn').style.display = 'block';
+            document.getElementById('importModalTitle').innerHTML = "<i class='bx bx-import'></i> เลือกโครงการเพื่อดึงรายการวัสดุ";
+            const container = document.getElementById('projectListContainer');
+            
+            const filteredProjects = materialProjectsCache.filter(p => {
+                const pInst = (p.institution && p.institution.trim() !== '') ? p.institution.trim() : 'ไม่ระบุสถานศึกษา';
+                return pInst === selectedInst;
+            });
+            
+            if (filteredProjects.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-muted);">ไม่พบโครงการในสถานศึกษานี้</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            filteredProjects.forEach((proj) => {
+                const originalIndex = materialProjectsCache.findIndex(p => p.id === proj.id);
+                
+                const div = document.createElement('div');
+                div.style.background = 'white';
+                div.style.padding = '12px 16px';
+                div.style.borderRadius = '8px';
+                div.style.border = '1px solid var(--border-color)';
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.cursor = 'pointer';
+                div.style.transition = 'all 0.2s';
+                
+                div.onmouseover = () => { div.style.borderColor = 'var(--primary-color)'; div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; };
+                div.onmouseout = () => { div.style.borderColor = 'var(--border-color)'; div.style.boxShadow = 'none'; };
+                
+                const itemCount = proj.items ? proj.items.length : 0;
+                const dateStr = proj.createdAt ? new Date(proj.createdAt).toLocaleDateString('th-TH') : '-';
+                
+                div.innerHTML = `
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-main); font-size: 1rem;">${proj.name || 'โครงการไม่มีชื่อ'}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">รหัสงาน: ${proj.code || '-'} | รายการ: ${itemCount} รายการ | วันที่: ${dateStr}</div>
+                    </div>
+                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem; border-color: var(--primary-color); color: var(--primary-color);" onclick="importItemsFromProject(${originalIndex})">
+                        ดึงรายการ
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function closeImportProjectModal() {
+            document.getElementById('importProjectModal').style.display = 'none';
+        }
+
+        function importItemsFromProject(index) {
+            const proj = materialProjectsCache[index];
+            if (!proj || !proj.items || proj.items.length === 0) {
+                alert('โครงการนี้ไม่มีรายการวัสดุ');
+                return;
+            }
+            
+            if (confirm(`ต้องการดึง ${proj.items.length} รายการ จากโครงการ "${proj.name || 'ไม่มีชื่อ'}" ลงในตารางใบเสนอราคาหรือไม่?\n(รายการเดิมที่มีอยู่จะถูกลบทิ้ง)`)) {
+                const tbody = document.getElementById('itemsBody');
+                tbody.innerHTML = '';
+                
+                proj.items.forEach(item => {
+                    const rowCount = tbody.children.length;
+                    const tr = document.createElement('tr');
+                    
+                    // Use unitPrice (selling price) as primary, if not available use targetPrice or foundPrice
+                    const price = item.unitPrice || item.targetPrice || item.foundPrice || 0;
+                    const qtyVal = item.qty || 1;
+                    const totalVal = qtyVal * price;
+                    
+                    let unitOptions = ['ชุด','ตัว','ชิ้น','เครื่อง','กล่อง','แพ็ค','เส้น','งาน'];
+                    let customUnitHtml = '';
+                    if (!unitOptions.includes(item.unit) && item.unit) {
+                        customUnitHtml = `<option value="${item.unit}" selected>${item.unit}</option>`;
+                    }
+                    
+                    tr.innerHTML = `
+                        <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; font-size: 0.95rem;">${rowCount + 1}</td>
+                        <td><input type="text" class="table-input item-desc" value="${item.name || ''}" placeholder="ชื่อสินค้า/บริการ"></td>
+                        <td><input type="number" class="table-input item-qty" value="${qtyVal}" min="1" onchange="calculateRow(this)"></td>
+                        <td>
+                            <select class="table-input item-unit" style="padding: 0.6rem 0.4rem; font-family: 'Sarabun', sans-serif;">
+                                <option value="ชุด" ${item.unit === 'ชุด' ? 'selected' : ''}>ชุด</option>
+                                <option value="ตัว" ${item.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
+                                <option value="ชิ้น" ${item.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
+                                <option value="เครื่อง" ${item.unit === 'เครื่อง' ? 'selected' : ''}>เครื่อง</option>
+                                <option value="กล่อง" ${item.unit === 'กล่อง' ? 'selected' : ''}>กล่อง</option>
+                                <option value="แพ็ค" ${item.unit === 'แพ็ค' ? 'selected' : ''}>แพ็ค</option>
+                                <option value="เส้น" ${item.unit === 'เส้น' ? 'selected' : ''}>เส้น</option>
+                                <option value="งาน" ${item.unit === 'งาน' ? 'selected' : ''}>งาน</option>
+                                ${customUnitHtml}
+                            </select>
+                        </td>
+                        <td><input type="number" class="table-input item-price" value="${price}" min="0" step="0.01" onchange="calculateRow(this)"></td>
+                        <td style="vertical-align: middle; text-align: right;" class="item-total-text">${formatNumber(totalVal)}</td>
+                        <td class="col-action" style="vertical-align: middle;">
+                            <button class="btn btn-danger" onclick="removeTableRow(this)"><i class='bx bx-trash'></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+                calculateAll();
+                closeImportProjectModal();
+            }
+        }
 
         function openHistoryModal() {
             document.getElementById('quotationHistoryModal').style.display = 'flex';
@@ -2485,6 +2784,11 @@
         window.loadQuotationToForm = loadQuotationToForm;
         window.toggleSidebar = toggleSidebar;
         window.closeSidebar = closeSidebar;
+        window.openImportProjectModal = openImportProjectModal;
+        window.closeImportProjectModal = closeImportProjectModal;
+        window.importItemsFromProject = importItemsFromProject;
+        window.showProjectsForInstitution = showProjectsForInstitution;
+        window.backToInstitutionList = backToInstitutionList;
     </script>
 </body>
 
