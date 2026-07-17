@@ -1708,6 +1708,13 @@
                         
                         // Show body now that the user is fully verified
                         document.body.style.display = 'flex';
+
+                        // Auto Import Project if URL param is present
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const autoImportId = urlParams.get('projectId');
+                        if (autoImportId) {
+                            autoImportProject(autoImportId);
+                        }
                     } else {
                         // User document deleted!
                         alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
@@ -2697,6 +2704,138 @@
 
         function closeImportProjectModal() {
             document.getElementById('importProjectModal').style.display = 'none';
+        }
+
+        async function autoImportProject(projectId) {
+            try {
+                // Fetch project from Firestore
+                const projSnap = await getDoc(doc(db, 'material_projects', projectId));
+                if (!projSnap.exists()) return;
+                const proj = projSnap.data();
+
+                // Check if project has items
+                if (!proj.items || proj.items.length === 0) {
+                    alert('โครงการนี้ไม่มีรายการวัสดุ');
+                    return;
+                }
+
+                // Fetch institution details to populate customer info
+                let instDetails = {};
+                if (proj.institution && proj.institution.trim() !== '') {
+                    const instSnap = await getDoc(doc(db, 'material_settings', 'institution_details'));
+                    if (instSnap.exists()) {
+                        instDetails = instSnap.data()[proj.institution.trim()] || {};
+                    }
+                }
+
+                // Populate table
+                const tbody = document.getElementById('itemsBody');
+                tbody.innerHTML = '';
+                proj.items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const price = item.unitPrice || item.targetPrice || item.foundPrice || 0;
+                    const qtyVal = item.qty || 1;
+                    const totalVal = qtyVal * price;
+                    
+                    let unitOptions = ['ชุด','ตัว','ชิ้น','เครื่อง','กล่อง','แพ็ค','เส้น','งาน'];
+                    let customUnitHtml = '';
+                    if (!unitOptions.includes(item.unit) && item.unit) {
+                        customUnitHtml = `<option value="${item.unit}" selected>${item.unit}</option>`;
+                    }
+                    
+                    let displayName = item.name || '';
+                    if (item.storeInfo && item.storeInfo.trim() !== '') {
+                        displayName += ` (ร้าน: ${item.storeInfo.trim()})`;
+                    }
+                    
+                    if (item.isHeader) {
+                        tr.innerHTML = `
+                            <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
+                            <td><input type="text" class="table-input item-custom-no" value="${item.customNo || ''}" placeholder="เช่น 1." oninput="updateRowNumbers(); applyLivePreview()"></td>
+                            <td colspan="5">
+                                <input type="text" class="table-input item-desc" value="${displayName}" placeholder="ชื่อหัวข้อ/หมวดหมู่" style="font-weight: 600; color: #1A6FBF;" oninput="applyLivePreview()">
+                                <input type="hidden" class="item-is-header" value="true">
+                                <input type="hidden" class="table-input item-qty" value="0">
+                                <input type="hidden" class="table-input item-unit" value="">
+                                <input type="hidden" class="table-input item-price" value="0">
+                                <div class="item-total-text" style="display: none;"></div>
+                            </td>
+                            <td class="col-action" style="vertical-align: middle;">
+                                <div style="display: flex; gap: 4px; justify-content: center;">
+                                    <div class="btn btn-outline drag-handle" style="padding: 0.2rem 0.4rem; cursor: grab; color: #64748b; border-color: #cbd5e1;" title="เลื่อนลำดับ"><i class='bx bx-grid-vertical'></i></div>
+                                    <button class="btn btn-danger" onclick="removeTableRow(this)" style="padding: 0.2rem 0.4rem;"><i class='bx bx-trash'></i></button>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        tr.innerHTML = `
+                            <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
+                            <td><input type="text" class="table-input item-custom-no" value="${item.customNo || ''}" placeholder="เช่น 1.1" oninput="updateRowNumbers(); applyLivePreview()"></td>
+                            <td><input type="text" class="table-input item-desc" value="${displayName}" placeholder="ชื่อสินค้า/บริการ"></td>
+                            <td><input type="number" class="table-input item-qty" value="${qtyVal}" min="1" onchange="calculateRow(this)"></td>
+                            <td>
+                                <select class="table-input item-unit" style="padding: 0.6rem 0.4rem; font-family: 'Sarabun', sans-serif;">
+                                    <option value="ชุด" ${item.unit === 'ชุด' ? 'selected' : ''}>ชุด</option>
+                                    <option value="ตัว" ${item.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
+                                    <option value="ชิ้น" ${item.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
+                                    <option value="เครื่อง" ${item.unit === 'เครื่อง' ? 'selected' : ''}>เครื่อง</option>
+                                    <option value="กล่อง" ${item.unit === 'กล่อง' ? 'selected' : ''}>กล่อง</option>
+                                    <option value="แพ็ค" ${item.unit === 'แพ็ค' ? 'selected' : ''}>แพ็ค</option>
+                                    <option value="เส้น" ${item.unit === 'เส้น' ? 'selected' : ''}>เส้น</option>
+                                    <option value="งาน" ${item.unit === 'งาน' ? 'selected' : ''}>งาน</option>
+                                    ${customUnitHtml}
+                                </select>
+                            </td>
+                            <td><input type="number" class="table-input item-price" value="${price}" min="0" step="0.01" onchange="calculateRow(this)"></td>
+                            <td style="vertical-align: middle; text-align: right;" class="item-total-text">${formatNumber(totalVal)}</td>
+                            <td class="col-action" style="vertical-align: middle;">
+                                <div style="display: flex; gap: 4px; justify-content: center;">
+                                    <div class="btn btn-outline drag-handle" style="padding: 0.2rem 0.4rem; cursor: grab; color: #64748b; border-color: #cbd5e1;" title="เลื่อนลำดับ"><i class='bx bx-grid-vertical'></i></div>
+                                    <button class="btn btn-danger" onclick="removeTableRow(this)" style="padding: 0.2rem 0.4rem;"><i class='bx bx-trash'></i></button>
+                                </div>
+                            </td>
+                        `;
+                    }
+                    tbody.appendChild(tr);
+                });
+
+                // Apply Issuer Theme if company exists
+                if (proj.company) {
+                    let compName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
+                    applyIssuerTheme(compName);
+                    saveTemplateSettings(false);
+                }
+
+                // Populate Customer Info
+                if (proj.institution && proj.institution.trim() !== '' && proj.institution.trim() !== 'ไม่ระบุสถานศึกษา') {
+                    const instName = proj.institution.trim();
+                    document.getElementById('toCompany').value = instName;
+                    
+                    if (instDetails && Object.keys(instDetails).length > 0) {
+                        document.getElementById('toAddress').value = instDetails.address || '';
+                        document.getElementById('toAttn').value = instDetails.contact || '';
+                        document.getElementById('toTel').value = instDetails.phone || '';
+                        document.getElementById('toEmail').value = instDetails.email || '';
+                    } else {
+                        document.getElementById('toAddress').value = '';
+                        document.getElementById('toAttn').value = '';
+                        document.getElementById('toTel').value = '';
+                        document.getElementById('toEmail').value = '';
+                    }
+                }
+
+                updateRowNumbers();
+                applyLivePreview();
+                calculateAll();
+                
+                // Remove projectId from URL after importing
+                const url = new URL(window.location);
+                url.searchParams.delete('projectId');
+                window.history.replaceState({}, '', url);
+
+            } catch (err) {
+                console.error("Error auto-importing project:", err);
+            }
         }
 
         function importItemsFromProject(index) {

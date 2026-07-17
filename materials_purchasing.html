@@ -725,6 +725,10 @@
                     </div>
                     
                     <div class="flex items-center gap-4">
+                        <button onclick="appData.openQuotationForProject()" class="h-10 px-4 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ออกใบเสนอราคาสำหรับโครงการนี้">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                            <span class="hidden sm:inline">ออกใบเสนอราคา</span>
+                        </button>
                         <button onclick="appData.openEditProjectModal()" class="w-10 h-10 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-100 hover:text-brand-700 transition-colors flex items-center justify-center shadow-sm" title="แก้ไขรายละเอียดโครงการ">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
@@ -2925,6 +2929,12 @@
                 this.closeAddProjectModal();
             },
             
+            openQuotationForProject() {
+                if (this.currentProjectId) {
+                    window.location.href = `quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
+                }
+            },
+
             deleteProject() {
                 this.openConfirmModal('ยืนยันลบโครงการ', 'คุณแน่ใจหรือไม่ที่จะลบโครงการนี้? การลบไม่สามารถกู้คืนได้', () => {
                     const idToDelete = this.currentProjectId;
