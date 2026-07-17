@@ -726,7 +726,7 @@
         }
 
         .col-action {
-            width: 50px;
+            width: 85px;
             text-align: center;
         }
 
@@ -929,7 +929,8 @@
     <!-- Premium UI Overlay -->
     <link rel="stylesheet" href="assets/css/app-theme.css?v=1780249796404">
     <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
-
+    <!-- SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
 
 <body>
@@ -1046,6 +1047,19 @@
             <div class="container">
                 <div class="form-content">
                     <!-- Top Section -->
+                    <!-- Current Issuer Banner -->
+                    <div id="currentIssuerBanner" onclick="openIssuerSelectionModal()" style="position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px; padding: 20px 24px; background-color: var(--primary-color, #1A6FBF); border-radius: 12px; margin-bottom: 24px; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'; this.style.transform='none'">
+                        <div style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class='bx bx-edit-alt' style="font-size: 1.2rem;"></i>
+                        </div>
+                        <div style="font-size: 0.95rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">กำลังดำเนินการออกใบเสนอราคาในนาม (คลิกเพื่อแก้ไข)</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <img id="currentIssuerLogo" src="" style="height: 40px; width: auto; object-fit: contain; display: none; background: white; padding: 4px; border-radius: 4px;" alt="Issuer Logo">
+                            <i id="currentIssuerIcon" class='bx bx-building-house' style="font-size: 2rem;"></i>
+                            <span id="currentIssuerDisplay" style="font-weight: 700; font-size: 1.5rem; letter-spacing: 0.5px;">บริษัท เมนทรา โซลูชั่น จำกัด (สำนักงานใหญ่)</span>
+                        </div>
+                    </div>
+
                     <div class="grid-2">
                         <!-- Info Left -->
                         <div>
@@ -1053,19 +1067,14 @@
                                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
                                 <h3 class="section-title" style="margin-bottom: 0;">ข้อมูลผู้รับ (To)</h3>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <select id="savedRecipientsSelect" class="form-control"
-                                        style="width: 200px; padding: 0.4rem 0.8rem; font-size: 0.85rem;"
-                                        onchange="loadSavedRecipient()">
-                                        <option value="">-- เลือกผู้รับที่บันทึกไว้ --</option>
-                                    </select>
+                                    <button class="btn btn-outline" onclick="openRecipientModal()"
+                                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: 1px solid var(--primary-color, #1A6FBF); color: var(--primary-color, #1A6FBF); background: transparent; transition: all 0.2s; border-radius: 6px;"
+                                        onmouseover="this.style.background='var(--primary-color, #1A6FBF)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-color, #1A6FBF)';">
+                                        <i class='bx bx-book-content'></i> เลือกผู้รับที่บันทึกไว้
+                                    </button>
                                     <button class="btn btn-primary" onclick="saveCurrentRecipient()"
                                         style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background: var(--success-color); color: white;">
                                         <i class='bx bx-save'></i> บันทึกผู้รับนี้
-                                    </button>
-                                    <button id="deleteRecipientBtn" class="btn btn-danger"
-                                        onclick="deleteSelectedRecipient()"
-                                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; display: none;">
-                                        <i class='bx bx-trash'></i>
                                     </button>
                                 </div>
                             </div>
@@ -1136,6 +1145,10 @@
                                 style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: var(--primary-color); color: var(--primary-color);">
                                 <i class='bx bx-import'></i> ดึงข้อมูลจากโครงการจัดซื้อ
                             </button>
+                            <button class="btn btn-outline" onclick="addHeaderRow()"
+                                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: #64748b; color: #475569;">
+                                <i class='bx bx-heading'></i> เพิ่มหัวข้อ
+                            </button>
                             <button class="btn btn-outline" onclick="addTableRow()"
                                 style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                                 <i class='bx bx-plus'></i> เพิ่มรายการ
@@ -1149,6 +1162,7 @@
                                 <tr>
                                     <th style="width: 50px; text-align: center; letter-spacing: normal !important;">
                                         ลำดับ</th>
+                                    <th style="width: 70px; text-align: center; letter-spacing: normal !important;"></th>
                                     <th style="letter-spacing: normal !important;">รายการสินค้า / รายละเอียด
                                         (Description)</th>
                                     <th class="col-qty" style="letter-spacing: normal !important;">จำนวน</th>
@@ -1220,38 +1234,38 @@
 
                     <!-- ══ HEADER ══ -->
                     <div id="pHeaderSection"
-                        style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid #1A6FBF;">
+                        style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid var(--pdf-primary, #1A6FBF);">
                         <!-- Left: Logo + Company -->
                         <div style="display: flex; gap: 14px; align-items: flex-start; flex: 1;">
                             <img id="pLogoImg" src="assets/img/logo.png"
-                                style="height: 56px; max-width: 110px; object-fit: contain; flex-shrink: 0; padding-right: 14px; border-right: 1px solid #e2e8f0;"
-                                alt="Mentra Logo">
+                                style="height: 56px; max-width: 250px; object-fit: contain; flex-shrink: 0; padding-right: 14px; border-right: 1px solid #e2e8f0;"
+                                alt="Company Logo">
                             <div>
-                                <div
+                                <div id="pIssuerName"
                                     style="font-size: 14.5px; font-weight: 700; color: #1e1b4b; line-height: 1.3; white-space: nowrap; letter-spacing: normal;">
                                     บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
-                                <div
-                                    style="font-size: 10.5px; font-weight: 600; color: #E07B2F; margin: 1px 0 4px 0; white-space: nowrap;">
+                                <div id="pIssuerSubName"
+                                    style="font-size: 10.5px; font-weight: 600; color: var(--pdf-secondary, #E07B2F); margin: 1px 0 4px 0; white-space: nowrap;">
                                     MENTRA SOLUTION CO., LTD. (Head Office)</div>
-                                <div style="font-size: 11px; color: #6b7280; line-height: 1.5; letter-spacing: normal;">
+                                <div id="pIssuerAddress" style="font-size: 11px; color: #6b7280; line-height: 1.5; letter-spacing: normal;">
                                     115/123 ม.12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540
                                 </div>
-                                <div style="font-size: 11px; color: #6b7280; letter-spacing: normal;">
-                                    <span style="color: #1A6FBF; font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;
-                                    <span style="color: #1A6FBF; font-weight: 600;">EMAIL:</span>
+                                <div id="pIssuerContact" style="font-size: 11px; color: #6b7280; letter-spacing: normal;">
+                                    <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;
+                                    <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">EMAIL:</span>
                                     wattanachai966@gmail.com &nbsp;
-                                    <span style="color: #1A6FBF; font-weight: 600;">TAX ID:</span> 0115568026644
+                                    <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TAX ID:</span> 0115568026644
                                 </div>
                             </div>
                         </div>
                         <!-- Right: Doc Title -->
                         <div
-                            style="text-align: right; padding-left: 16px; border-left: 3px solid #1A6FBF; flex-shrink: 0; padding-top: 4px;">
+                            style="text-align: right; padding-left: 16px; border-left: 3px solid var(--pdf-primary, #1A6FBF); flex-shrink: 0; padding-top: 4px;">
                             <div
-                                style="font-size: 21px; font-weight: 800; color: #1A6FBF; line-height: 1.1; white-space: nowrap; letter-spacing: normal;">
+                                style="font-size: 21px; font-weight: 800; color: var(--pdf-primary, #1A6FBF); line-height: 1.1; white-space: nowrap; letter-spacing: normal;">
                                 ใบเสนอราคา</div>
-                            <div
-                                style="font-size: 11px; color: #E07B2F; font-weight: 700; letter-spacing: 2px; margin-top: 3px;">
+                            <div id="pIssuerQuotationText"
+                                style="font-size: 11px; color: #6b7280; font-weight: 700; letter-spacing: 2px; margin-top: 3px;">
                                 QUOTATION</div>
                         </div>
                     </div>
@@ -1262,7 +1276,7 @@
                         <!-- Left: Recipient -->
                         <div style="flex: 1.4; padding: 0 20px 0 0;">
                             <div
-                                style="font-size: 9px; font-weight: 700; color: #1A6FBF; letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">
+                                style="font-size: 9px; font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">
                                 RECIPIENT INFORMATION</div>
                             <table
                                 style="width: 100%; border-collapse: collapse; border: none !important; margin: 0; padding: 0;">
@@ -1304,13 +1318,12 @@
                         <!-- Right: Doc Details -->
                         <div style="flex: 0.6; padding: 0 0 0 20px; border-left: 1px solid #e8edf5;">
                             <div
-                                style="font-size: 9px; font-weight: 700; color: #1A6FBF; letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">
+                                style="font-size: 9px; font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">
                                 DOCUMENT DETAILS</div>
                             <div
                                 style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
                                 <span style="color: #6b7280; font-weight: 600;">เลขที่ / Ref. No:</span>
-                                <span style="font-weight: 700; color: #1A6FBF; letter-spacing: normal;"
-                                    id="pRefNo"></span>
+                                <span style="font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: normal;" id="pRefNo"></span>
                             </div>
                             <div
                                 style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
@@ -1341,37 +1354,12 @@
                         มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:</p>
 
                     <!-- ══ ITEMS TABLE ══ -->
-                    <table
-                        style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal; border: 1px solid #e0e7ff; border-radius: 6px; overflow: hidden;">
-                        <thead>
-                            <tr class="pTableHeadRow" style="background-color: #1A6FBF;">
-                                <th
-                                    style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">
-                                    ลำดับ</th>
-                                <th
-                                    style="padding: 9px 7px; text-align: left; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; border-right: 1px solid rgba(255,255,255,0.18);">
-                                    รายการสินค้า / รายละเอียด</th>
-                                <th
-                                    style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">
-                                    จำนวน</th>
-                                <th
-                                    style="padding: 9px 7px; text-align: center; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">
-                                    หน่วย</th>
-                                <th
-                                    style="padding: 9px 7px; text-align: right; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 95px;">
-                                    ราคา/หน่วย</th>
-                                <th
-                                    style="padding: 9px 7px; text-align: right; font-size: 11px; font-weight: 600; color: #ffffff !important; background-color: #1A6FBF !important; letter-spacing: normal; white-space: nowrap; width: 110px;">
-                                    จำนวนเงิน</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pItemsBody" style="letter-spacing: normal;">
-                            <!-- Dynamic print items -->
-                        </tbody>
-                    </table>
+                    <div id="pTablesContainer">
+                        <!-- Dynamic tables will be inserted here by JS -->
+                    </div>
 
                     <!-- ══ SUMMARY + REMARK ══ -->
-                    <div style="display: flex; gap: 18px; align-items: flex-start;">
+                    <div style="display: flex; gap: 18px; align-items: flex-start; margin-top: 15px;">
                         <!-- Remark -->
                         <div style="flex: 1;">
                             <div
@@ -1398,16 +1386,16 @@
                                     <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
                                         id="pVat">0.00</td>
                                 </tr>
-                                <tr style="background: #e8f1fb;">
+                                <tr style="background: var(--pdf-primary-light, #e8f1fb);">
                                     <td
-                                        style="padding: 8px 12px; color: #1A6FBF; font-weight: 700; font-size: 12px; white-space: nowrap; letter-spacing: normal;">
+                                        style="padding: 8px 12px; color: var(--pdf-primary, #1A6FBF); font-weight: 700; font-size: 12px; white-space: nowrap; letter-spacing: normal;">
                                         จำนวนเงินรวมทั้งสิ้น:</td>
-                                    <td style="padding: 8px 12px; text-align: right; color: #1A6FBF; font-weight: 700; font-size: 12px; letter-spacing: normal;"
+                                    <td style="padding: 8px 12px; text-align: right; color: var(--pdf-primary, #1A6FBF); font-weight: 700; font-size: 12px; letter-spacing: normal;"
                                         id="pGrandTotal">0.00</td>
                                 </tr>
                             </table>
                             <div id="pBahtText"
-                                style="text-align: center; font-weight: 600; font-size: 11px; color: #1A6FBF; padding: 6px 12px; background: #fff; border-top: 1px solid #e2e8f0; letter-spacing: normal;">
+                                style="text-align: center; font-weight: 600; font-size: 11px; color: var(--pdf-primary, #1A6FBF); padding: 6px 12px; background: #fff; border-top: 1px solid #e2e8f0; letter-spacing: normal;">
                                 (ศูนย์บาทถ้วน)
                             </div>
                         </div>
@@ -1708,6 +1696,15 @@
                                 applyTemplateSettings(JSON.parse(localTemplate));
                             }
                         }
+                        // Fetch registered shops for the issuer selector
+                        try {
+                            const shopsSnap = await getDoc(doc(db, 'material_settings', 'registered_shops'));
+                            if (shopsSnap.exists()) {
+                                registeredShopsCache = shopsSnap.data().shops || [];
+                            }
+                        } catch (err) {
+                            console.error("Error loading registered shops:", err);
+                        }
                         
                         // Show body now that the user is fully verified
                         document.body.style.display = 'flex';
@@ -1776,7 +1773,8 @@
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; font-size: 0.95rem;">${rowCount + 1}</td>
+                <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
+                <td><input type="text" class="table-input item-custom-no" placeholder="เช่น 1.1" oninput="updateRowNumbers(); applyLivePreview()"></td>
                 <td><input type="text" class="table-input item-desc" placeholder="ชื่อสินค้า/บริการ"></td>
                 <td><input type="number" class="table-input item-qty" value="1" min="1" onchange="calculateRow(this)"></td>
                 <td>
@@ -1794,7 +1792,37 @@
                 <td><input type="number" class="table-input item-price" value="0" min="0" step="0.01" onchange="calculateRow(this)"></td>
                 <td style="vertical-align: middle; text-align: right;" class="item-total-text">0.00</td>
                 <td class="col-action" style="vertical-align: middle;">
-                    <button class="btn btn-danger" onclick="removeTableRow(this)"><i class='bx bx-trash'></i></button>
+                    <div style="display: flex; gap: 4px; justify-content: center;">
+                        <div class="btn btn-outline drag-handle" style="padding: 0.2rem 0.4rem; cursor: grab; color: #64748b; border-color: #cbd5e1;" title="เลื่อนลำดับ"><i class='bx bx-grid-vertical'></i></div>
+                        <button class="btn btn-danger" onclick="removeTableRow(this)" style="padding: 0.2rem 0.4rem;"><i class='bx bx-trash'></i></button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+            updateRowNumbers();
+            calculateAll();
+        }
+
+        function addHeaderRow() {
+            const tbody = document.getElementById('itemsBody');
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
+                <td><input type="text" class="table-input item-custom-no" placeholder="เช่น 1." oninput="updateRowNumbers(); applyLivePreview()"></td>
+                <td colspan="5">
+                    <input type="text" class="table-input item-desc" placeholder="ชื่อหัวข้อ/หมวดหมู่" style="font-weight: 600; color: #1A6FBF;" oninput="applyLivePreview()">
+                    <input type="hidden" class="item-is-header" value="true">
+                    <input type="hidden" class="table-input item-qty" value="0">
+                    <input type="hidden" class="table-input item-unit" value="">
+                    <input type="hidden" class="table-input item-price" value="0">
+                    <div class="item-total-text" style="display: none;"></div>
+                </td>
+                <td class="col-action" style="vertical-align: middle;">
+                    <div style="display: flex; gap: 4px; justify-content: center;">
+                        <div class="btn btn-outline drag-handle" style="padding: 0.2rem 0.4rem; cursor: grab; color: #64748b; border-color: #cbd5e1;" title="เลื่อนลำดับ"><i class='bx bx-grid-vertical'></i></div>
+                        <button class="btn btn-danger" onclick="removeTableRow(this)" style="padding: 0.2rem 0.4rem;"><i class='bx bx-trash'></i></button>
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -1815,8 +1843,32 @@
 
         function updateRowNumbers() {
             const rows = document.getElementById('itemsBody').children;
+            let currentNo = 1;
             for (let i = 0; i < rows.length; i++) {
-                rows[i].cells[0].innerText = i + 1;
+                const tr = rows[i];
+                const customNo = tr.querySelector('.item-custom-no');
+                const isHeader = tr.querySelector('.item-is-header') ? true : false;
+                let displayNoStr = '';
+                
+                if (customNo && customNo.value.trim() !== '') {
+                    // User provided a custom number (e.g. "1.1")
+                    displayNoStr = customNo.value.trim();
+                    tr.cells[0].innerHTML = ''; // Clear sequence number column
+                } else {
+                    // Auto sequence number
+                    displayNoStr = currentNo.toString();
+                    tr.cells[0].innerHTML = currentNo++;
+                }
+
+                // Indent description in UI if it's a sub-item
+                const descInput = tr.querySelector('.item-desc');
+                if (descInput) {
+                    if (displayNoStr.includes('.')) {
+                        descInput.style.paddingLeft = '30px';
+                    } else {
+                        descInput.style.paddingLeft = '12px'; // Reset to standard padding
+                    }
+                }
             }
         }
 
@@ -1936,77 +1988,114 @@
             document.getElementById('pBahtText').innerText = document.getElementById('thaiBahtText').innerText;
 
             // Generate Print Table rows
-            const pItemsBody = document.getElementById('pItemsBody');
-            pItemsBody.innerHTML = ''; // Clear previous
+            // Generate Print Table rows
+            const pTablesContainer = document.getElementById('pTablesContainer');
+            if (pTablesContainer) pTablesContainer.innerHTML = ''; // Clear previous
 
             const primaryColor = document.getElementById('settingPrimaryColor')?.value || '#1A6FBF';
             const headerFontSize = document.getElementById('settingHeaderFontSize')?.value || '11';
 
             const rows = document.getElementById('itemsBody').children;
+            
+            const createTableHTML = (isFirst = true) => `
+                <table class="pItemsTable" style="width: 100%; border-collapse: collapse; margin-top: ${isFirst ? '0' : '-25px'}; margin-bottom: 0; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal; border: 1px solid ${primaryColor}; border-radius: 6px; overflow: hidden; page-break-inside: avoid;">
+                    <thead>
+                        <tr class="pTableHeadRow" style="background-color: ${primaryColor}; border-bottom: 1px solid ${primaryColor};">
+                            <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">ลำดับ</th>
+                            <th style="padding: 9px 7px; text-align: left; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; border-right: 1px solid rgba(255,255,255,0.18);">รายการสินค้า / รายละเอียด</th>
+                            <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">จำนวน</th>
+                            <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">หน่วย</th>
+                            <th style="padding: 9px 7px; text-align: right; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 95px;">ราคา/หน่วย</th>
+                            <th style="padding: 9px 7px; text-align: right; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; width: 110px;">จำนวนเงิน</th>
+                        </tr>
+                    </thead>
+                    <tbody style="letter-spacing: normal;">
+            `;
+
+            let currentTableHTML = createTableHTML(true);
+            let itemsInCurrentTable = 0;
+            const itemsPerPage = 18;
+            let currentNo = 1;
+
             for (let i = 0; i < rows.length; i++) {
-                // Manually split and repeat header every 18 items
-                if (i > 0 && i % 18 === 0) {
-                    const headerTr = document.createElement('tr');
-                    headerTr.className = "pTableHeadRow html2pdf__page-break";
-                    headerTr.style.pageBreakBefore = "always";
-                    headerTr.style.breakBefore = "page";
-                    headerTr.style.backgroundColor = primaryColor;
-                    headerTr.innerHTML = `
-                        <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">ลำดับ</th>
-                        <th style="padding: 9px 7px; text-align: left; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; border-right: 1px solid rgba(255,255,255,0.18);">รายการสินค้า / รายละเอียด</th>
-                        <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">จำนวน</th>
-                        <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">หน่วย</th>
-                        <th style="padding: 9px 7px; text-align: right; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 95px;">ราคา/หน่วย</th>
-                        <th style="padding: 9px 7px; text-align: right; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; width: 110px;">จำนวนเงิน</th>
-                    `;
-                    pItemsBody.appendChild(headerTr);
+                if (i > 0 && i % itemsPerPage === 0) {
+                    currentTableHTML += `</tbody></table>`;
+                    currentTableHTML += `<div class="html2pdf__page-break" style="page-break-before: always; height: 0; margin: 0;"></div>`;
+                    currentTableHTML += createTableHTML(false);
+                    itemsInCurrentTable = 0;
                 }
 
                 const tr = rows[i];
+                const customNo = tr.querySelector('.item-custom-no') ? tr.querySelector('.item-custom-no').value : '';
                 const desc = tr.querySelector('.item-desc').value || '-';
                 const qty = tr.querySelector('.item-qty').value || '0';
                 const unit = tr.querySelector('.item-unit').value || '-';
                 const price = parseFloat(tr.querySelector('.item-price').value || 0);
                 const totalText = tr.querySelector('.item-total-text').innerText;
 
-                const newTr = document.createElement('tr');
-                newTr.style.borderBottom = '0.5px solid #e2e8f0';
-                newTr.style.letterSpacing = 'normal';
-                if (i % 2 === 1) {
-                    newTr.style.backgroundColor = '#f8fafc'; // Zebra striping
+                const zebraColor = (itemsInCurrentTable % 2 === 1) ? '#f8fafc' : 'transparent';
+                
+                let displayNo = '';
+                if (customNo && customNo.trim() !== '') {
+                    displayNo = customNo;
+                } else {
+                    displayNo = currentNo++;
                 }
-                newTr.innerHTML = `
-                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${i + 1}</td>
-                    <td style="padding: 7px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">${desc}</td>
-                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
-                    <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
-                    <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
-                    <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-weight: 500; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
-                `;
-                pItemsBody.appendChild(newTr);
+                
+                const isHeader = tr.querySelector('.item-is-header') ? true : false;
+                const isSubItem = displayNo.toString().includes('.');
+                const descPadding = isSubItem ? '24px' : '6px';
+                
+                const col1Content = isSubItem ? '' : displayNo;
+                const descContent = isSubItem ? 
+                    `<div style="display: flex; align-items: flex-start; gap: 6px;">
+                        <span style="color: #374151; font-weight: 700; flex-shrink: 0;">${displayNo}</span>
+                        <span>${desc}</span>
+                    </div>` : desc;
+                
+                if (isHeader) {
+                    currentTableHTML += `
+                        <tr style="border-bottom: 0.5px solid #e2e8f0; letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
+                            <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
+                            <td colspan="5" style="padding: 7px 6px 7px ${descPadding}; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; font-weight: 700; color: #374151; letter-spacing: normal !important; text-align: left;">${descContent}</td>
+                        </tr>
+                    `;
+                } else {
+                    currentTableHTML += `
+                        <tr style="border-bottom: 0.5px solid #e2e8f0; letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
+                            <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
+                            <td style="padding: 7px 6px 7px ${descPadding}; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">${descContent}</td>
+                            <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
+                            <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
+                            <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
+                            <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-weight: 500; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
+                        </tr>
+                    `;
+                }
+                
+                itemsInCurrentTable++;
             }
 
             // Fill with empty aesthetic lines if less than 5 items
             const minRows = 5;
-            if (rows.length < minRows) {
-                for (let i = rows.length; i < minRows; i++) {
-                    const emptyTr = document.createElement('tr');
-                    emptyTr.style.borderBottom = '0.5px solid #e2e8f0';
-                    emptyTr.style.letterSpacing = 'normal';
-                    if (i % 2 === 1) {
-                        emptyTr.style.backgroundColor = '#f8fafc'; // Zebra striping for empty rows
-                    }
-                    emptyTr.innerHTML = `
-                        <td style="padding: 5px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+            if (itemsInCurrentTable < minRows) {
+                for (let i = itemsInCurrentTable; i < minRows; i++) {
+                    const zebraColor = (i % 2 === 1) ? '#f8fafc' : 'transparent';
+                    currentTableHTML += `
+                        <tr style="border-bottom: 0.5px solid #e2e8f0; letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
+                            <td style="padding: 5px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        </tr>
                     `;
-                    pItemsBody.appendChild(emptyTr);
                 }
             }
+            
+            currentTableHTML += `</tbody></table>`;
+            if (pTablesContainer) pTablesContainer.innerHTML = currentTableHTML;
         }
 
         // --- PDF Export using html2pdf.js ---
@@ -2085,20 +2174,97 @@
             return stored ? JSON.parse(stored) : [];
         }
 
-        function loadSavedRecipientsDropdown() {
-            const select = document.getElementById('savedRecipientsSelect');
-            const deleteBtn = document.getElementById('deleteRecipientBtn');
-            select.innerHTML = '<option value="">-- เลือกผู้รับที่บันทึกไว้ --</option>';
+        // Stub to prevent ReferenceError from old calls, now handled by the modal.
+        function loadSavedRecipientsDropdown() {}
 
+        function openRecipientModal() {
+            document.getElementById('recipientModal').style.display = 'flex';
+            document.getElementById('recipientSearchInput').value = '';
+            renderRecipientCards();
+        }
+
+        function closeRecipientModal() {
+            document.getElementById('recipientModal').style.display = 'none';
+        }
+
+        function renderRecipientCards(filterText = '') {
+            const container = document.getElementById('recipientCardsContainer');
             const recipients = getSavedRecipients();
-            recipients.forEach((r, index) => {
-                const opt = document.createElement('option');
-                opt.value = index;
-                opt.innerText = r.toCompany;
-                select.appendChild(opt);
-            });
+            
+            if (recipients.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: #6b7280;">ไม่มีผู้รับที่บันทึกไว้<br><span style="font-size: 0.85rem;">(กรอกข้อมูลผู้รับแล้วกด "บันทึกผู้รับนี้" เพื่อบันทึก)</span></div>`;
+                return;
+            }
 
-            deleteBtn.style.display = 'none'; // Hide delete button initially
+            let html = '';
+            let count = 0;
+            recipients.forEach((r, index) => {
+                if (filterText && !r.toCompany.toLowerCase().includes(filterText.toLowerCase())) return;
+                
+                count++;
+                html += `
+                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);" onmouseover="this.style.borderColor='var(--primary-color, #1A6FBF)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 1px 2px 0 rgba(0, 0, 0, 0.05)';" onclick="selectRecipientFromModal(${index})">
+                        <div>
+                            <div style="font-weight: 600; font-size: 1.05rem; color: #1e293b; margin-bottom: 4px;">${r.toCompany}</div>
+                            <div style="font-size: 0.85rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px;">
+                                ${r.toAttn ? `<span style="margin-right: 8px;"><i class='bx bx-user'></i> ${r.toAttn}</span>` : ''}
+                                ${r.toTel ? `<span><i class='bx bx-phone'></i> ${r.toTel}</span>` : ''}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button onclick="event.stopPropagation(); deleteRecipientFromModal(${index})" style="background: #fee2e2; color: #ef4444; border: none; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'" title="ลบ">
+                                <i class='bx bx-trash' style="font-size: 1.1rem;"></i>
+                            </button>
+                            <button class="btn btn-primary" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; display: flex; align-items: center; gap: 4px;"><i class='bx bx-check'></i> เลือก</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (count === 0) {
+                html = `<div style="text-align: center; padding: 40px 20px; color: #6b7280;">ไม่พบรายชื่อที่ค้นหา</div>`;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function filterRecipientCards() {
+            const text = document.getElementById('recipientSearchInput').value;
+            renderRecipientCards(text);
+        }
+
+        function selectRecipientFromModal(index) {
+            const recipients = getSavedRecipients();
+            const r = recipients[index];
+            if (r) {
+                document.getElementById('toCompany').value = r.toCompany || '';
+                document.getElementById('toAddress').value = r.toAddress || '';
+                document.getElementById('toAttn').value = r.toAttn || '';
+                document.getElementById('toTel').value = r.toTel || '';
+                document.getElementById('toEmail').value = r.toEmail || '';
+            }
+            closeRecipientModal();
+        }
+
+        async function deleteRecipientFromModal(index) {
+            const recipients = getSavedRecipients();
+            const r = recipients[index];
+            if (r && confirm(`คุณต้องการลบรายชื่อ "${r.toCompany}" ใช่หรือไม่?`)) {
+                recipients.splice(index, 1);
+                localStorage.setItem('saved_recipients', JSON.stringify(recipients));
+                renderRecipientCards(document.getElementById('recipientSearchInput').value);
+                
+                // Sync delete to Firestore if logged in
+                if (currentUser) {
+                    try {
+                        await setDoc(doc(db, 'users', currentUser.uid), {
+                            saved_recipients: recipients
+                        }, { merge: true });
+                    } catch (err) {
+                        console.error('Error syncing recipient deletion:', err);
+                    }
+                }
+            }
         }
 
         async function saveCurrentRecipient() {
@@ -2125,7 +2291,6 @@
             }
 
             localStorage.setItem('saved_recipients', JSON.stringify(recipients));
-            loadSavedRecipientsDropdown();
 
             // Sync to Firestore cloud if logged in
             if (currentUser) {
@@ -2141,79 +2306,59 @@
             } else {
                 alert(`บันทึกข้อมูลผู้รับ "${toCompany}" สำเร็จในเครื่องนี้ (กรุณาเข้าสู่ระบบเพื่อใช้งานข้ามเครื่อง)`);
             }
-
-            // Auto select newly saved recipient
-            const updatedRecipients = getSavedRecipients();
-            const newIndex = updatedRecipients.findIndex(r => r.toCompany === toCompany);
-            if (newIndex > -1) {
-                const select = document.getElementById('savedRecipientsSelect');
-                select.value = newIndex;
-                loadSavedRecipient();
-            }
-        }
-
-        function loadSavedRecipient() {
-            const select = document.getElementById('savedRecipientsSelect');
-            const deleteBtn = document.getElementById('deleteRecipientBtn');
-            const selectedVal = select.value;
-
-            if (selectedVal === "") {
-                deleteBtn.style.display = 'none';
-                return;
-            }
-
-            const recipients = getSavedRecipients();
-            const r = recipients[selectedVal];
-
-            if (r) {
-                document.getElementById('toCompany').value = r.toCompany;
-                document.getElementById('toAddress').value = r.toAddress;
-                document.getElementById('toAttn').value = r.toAttn;
-                document.getElementById('toTel').value = r.toTel;
-                document.getElementById('toEmail').value = r.toEmail;
-                deleteBtn.style.display = 'inline-block'; // Show delete button
-            }
-        }
-
-        async function deleteSelectedRecipient() {
-            const select = document.getElementById('savedRecipientsSelect');
-            const selectedVal = select.value;
-
-            if (selectedVal === "") return;
-
-            const recipients = getSavedRecipients();
-            const r = recipients[selectedVal];
-
-            if (r && confirm(`คุณต้องการลบข้อมูลผู้รับ "${r.toCompany}" ใช่หรือไม่?`)) {
-                recipients.splice(selectedVal, 1);
-                localStorage.setItem('saved_recipients', JSON.stringify(recipients));
-
-                // Clear fields
-                document.getElementById('toCompany').value = '';
-                document.getElementById('toAddress').value = '';
-                document.getElementById('toAttn').value = '';
-                document.getElementById('toTel').value = '';
-                document.getElementById('toEmail').value = '';
-
-                loadSavedRecipientsDropdown();
-
-                // Sync delete to Firestore if logged in
-                if (currentUser) {
-                    try {
-                        await setDoc(doc(db, 'users', currentUser.uid), {
-                            savedRecipients: recipients
-                        }, { merge: true });
-                    } catch (err) {
-                        console.error("Firestore delete sync failed:", err);
-                    }
-                }
-            }
         }
 
         // --- Template Customization ---
         // A variable to store the original parent of printArea
         let printAreaOriginalParent = null;
         let printAreaOriginalNextSibling = null;
+
+        function openIssuerSelectionModal() {
+            document.getElementById('issuerSelectionModal').style.display = 'flex';
+            const container = document.getElementById('issuerCardsContainer');
+            
+            if (!registeredShopsCache || registeredShopsCache.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: #6b7280;">ไม่พบข้อมูลบริษัท/ร้านค้าที่ตั้งค่าไว้<br><span style="font-size: 0.85rem;">(กรุณาตั้งค่าผ่าน Admin Console)</span></div>`;
+                return;
+            }
+
+            let html = '';
+            registeredShopsCache.forEach((shop) => {
+                const sName = shop.name || '-';
+                const sColor = shop.themeColor || '#1A6FBF';
+                const sLogo = shop.logo ? `<img src="${shop.logo}" style="height: 30px; object-fit: contain;">` : `<i class='bx bx-building-house' style="font-size: 1.5rem; color: ${sColor};"></i>`;
+                
+                html += `
+                    <div onclick="selectIssuerFromModal('${sName.replace(/'/g, "\\'")}')" 
+                        style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 16px;"
+                        onmouseover="this.style.borderColor='${sColor}'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.1)';" 
+                        onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
+                        <div style="width: 50px; height: 50px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; justify-content: center; border: 1px solid #f1f5f9; flex-shrink: 0;">
+                            ${sLogo}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 700; color: #1e293b; font-size: 1.05rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sName}</div>
+                            <div style="font-size: 0.85rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${shop.taxId ? `TAX: ${shop.taxId}` : 'No TAX ID'} | ${shop.tel || '-'}
+                            </div>
+                        </div>
+                        <i class='bx bx-chevron-right' style="font-size: 1.5rem; color: #cbd5e1;"></i>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function closeIssuerSelectionModal() {
+            document.getElementById('issuerSelectionModal').style.display = 'none';
+        }
+
+        function selectIssuerFromModal(companyName) {
+            applyIssuerTheme(companyName);
+            closeIssuerSelectionModal();
+            // Automatically sync the UI settings to template memory
+            saveTemplateSettings(false); 
+        }
 
         function openTemplateSettingsModal() {
             syncFormToPrintArea();
@@ -2254,16 +2399,33 @@
             const sellerName = document.getElementById('settingSellerName').value;
             const sellerRole = document.getElementById('settingSellerRole').value;
 
+            const printArea = document.getElementById('printArea');
+            if (printArea) {
+                printArea.style.setProperty('--pdf-primary', primaryColor);
+                const hex = primaryColor.replace('#', '');
+                if(hex.length === 6 || hex.length === 8) {
+                    const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+                    printArea.style.setProperty('--pdf-primary-light', `rgba(${r}, ${g}, ${b}, 0.1)`);
+                }
+            }
+
             // Apply Color
             document.getElementById('pHeaderSection').style.borderBottom = `2.5px solid ${primaryColor}`;
+            document.querySelectorAll('.pItemsTable').forEach(tbl => tbl.style.borderColor = primaryColor);
             
             const headRows = document.querySelectorAll('.pTableHeadRow');
-            headRows.forEach(hr => hr.style.backgroundColor = primaryColor);
+            headRows.forEach(hr => {
+                hr.style.backgroundColor = primaryColor;
+                hr.style.borderBottom = `1px solid ${primaryColor}`;
+            });
 
             document.getElementById('pSellerRole').style.color = primaryColor;
             
             const ths = document.querySelectorAll('.pTableHeadRow th');
-            ths.forEach(th => th.style.setProperty('background-color', primaryColor, 'important'));
+            ths.forEach(th => {
+                th.style.setProperty('background-color', primaryColor, 'important');
+                th.style.setProperty('border-bottom', `1.5px solid ${primaryColor}`, 'important');
+            });
 
             // Apply color to Document Title (ใบเสนอราคา)
             const titleContainer = document.querySelector('#pHeaderSection > div:nth-child(2)');
@@ -2273,9 +2435,6 @@
                 if (titleText) titleText.style.color = primaryColor;
             }
 
-            // Apply color to Item Numbers in the table
-            const itemNumberCells = document.querySelectorAll('#pItemsBody tr td:first-child');
-            itemNumberCells.forEach(td => td.style.color = primaryColor);
 
             // Apply Logo
             const pLogo = document.getElementById('pLogoImg');
@@ -2295,7 +2454,7 @@
             document.getElementById('pSellerRole').innerText = sellerRole;
         }
 
-        async function saveTemplateSettings() {
+        async function saveTemplateSettings(showAlert = true) {
             const templateSettings = { 
                 primaryColor: document.getElementById('settingPrimaryColor').value,
                 showLogo: document.getElementById('settingShowLogo').checked,
@@ -2303,7 +2462,8 @@
                 fontSize: document.getElementById('settingFontSize').value,
                 headerFontSize: document.getElementById('settingHeaderFontSize').value,
                 sellerName: document.getElementById('settingSellerName').value,
-                sellerRole: document.getElementById('settingSellerRole').value
+                sellerRole: document.getElementById('settingSellerRole').value,
+                issuerName: document.getElementById('currentIssuerDisplay').innerText
             };
             
             localStorage.setItem('quotationTemplate', JSON.stringify(templateSettings));
@@ -2314,12 +2474,12 @@
                     await setDoc(doc(db, 'users', currentUser.uid), {
                         quotationTemplate: templateSettings
                     }, { merge: true });
-                    alert('บันทึกการตั้งค่ารูปแบบฟอร์มลงคลาวด์สำเร็จ');
+                    if(showAlert) alert('บันทึกการตั้งค่ารูปแบบฟอร์มลงคลาวด์สำเร็จ');
                 } catch (err) {
                     console.error('Error saving template:', err);
                 }
             } else {
-                alert('บันทึกการตั้งค่าในเครื่องนี้สำเร็จ');
+                if(showAlert) alert('บันทึกการตั้งค่าในเครื่องนี้สำเร็จ');
             }
             closeTemplateSettingsModal();
         }
@@ -2334,6 +2494,10 @@
             if (settings.sellerName) document.getElementById('settingSellerName').value = settings.sellerName;
             if (settings.sellerRole) document.getElementById('settingSellerRole').value = settings.sellerRole;
             
+            if (settings.issuerName && settings.issuerName !== "บริษัท เมนทรา โซลูชั่น จำกัด (สำนักงานใหญ่)") {
+                applyIssuerTheme(settings.issuerName);
+            }
+            
             // Re-run apply function to update styles silently if modal is closed
             applyLivePreview();
         }
@@ -2343,6 +2507,8 @@
         let materialProjectsCache = [];
         let uniqueInstitutions = [];
         let institutionLogosCache = {};
+        let institutionDetailsCache = {};
+        let registeredShopsCache = [];
 
         async function openImportProjectModal() {
             document.getElementById('importProjectModal').style.display = 'flex';
@@ -2364,6 +2530,22 @@
                     institutionLogosCache = logoSnap.data();
                 } else {
                     institutionLogosCache = {};
+                }
+                
+                // Fetch institution details
+                const detailsSnap = await getDoc(doc(db, 'material_settings', 'institution_details'));
+                if (detailsSnap.exists()) {
+                    institutionDetailsCache = detailsSnap.data();
+                } else {
+                    institutionDetailsCache = {};
+                }
+                
+                // Fetch registered shops
+                const shopsSnap = await getDoc(doc(db, 'material_settings', 'registered_shops'));
+                if (shopsSnap.exists()) {
+                    registeredShopsCache = shopsSnap.data().shops || [];
+                } else {
+                    registeredShopsCache = [];
                 }
 
                 // Fetch from material_projects collection
@@ -2498,11 +2680,12 @@
                 
                 const itemCount = proj.items ? proj.items.length : 0;
                 const dateStr = proj.createdAt ? new Date(proj.createdAt).toLocaleDateString('th-TH') : '-';
+                const compName = proj.company ? (Array.isArray(proj.company) ? proj.company.join(', ') : proj.company) : 'ไม่ระบุผู้ออกบิล';
                 
                 div.innerHTML = `
                     <div>
                         <div style="font-weight: 600; color: var(--text-main); font-size: 1rem;">${proj.name || 'โครงการไม่มีชื่อ'}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">รหัสงาน: ${proj.code || '-'} | รายการ: ${itemCount} รายการ | วันที่: ${dateStr}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">ผู้ออกบิล: <span style="color: var(--primary-color); font-weight: 500;">${compName}</span> | รหัสงาน: ${proj.code || '-'} | รายการ: ${itemCount} รายการ | วันที่: ${dateStr}</div>
                     </div>
                     <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.85rem; border-color: var(--primary-color); color: var(--primary-color);" onclick="importItemsFromProject(${originalIndex})">
                         ดึงรายการ
@@ -2542,35 +2725,183 @@
                         customUnitHtml = `<option value="${item.unit}" selected>${item.unit}</option>`;
                     }
                     
-                    tr.innerHTML = `
-                        <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; font-size: 0.95rem;">${rowCount + 1}</td>
-                        <td><input type="text" class="table-input item-desc" value="${item.name || ''}" placeholder="ชื่อสินค้า/บริการ"></td>
-                        <td><input type="number" class="table-input item-qty" value="${qtyVal}" min="1" onchange="calculateRow(this)"></td>
-                        <td>
-                            <select class="table-input item-unit" style="padding: 0.6rem 0.4rem; font-family: 'Sarabun', sans-serif;">
-                                <option value="ชุด" ${item.unit === 'ชุด' ? 'selected' : ''}>ชุด</option>
-                                <option value="ตัว" ${item.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
-                                <option value="ชิ้น" ${item.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
-                                <option value="เครื่อง" ${item.unit === 'เครื่อง' ? 'selected' : ''}>เครื่อง</option>
-                                <option value="กล่อง" ${item.unit === 'กล่อง' ? 'selected' : ''}>กล่อง</option>
-                                <option value="แพ็ค" ${item.unit === 'แพ็ค' ? 'selected' : ''}>แพ็ค</option>
-                                <option value="เส้น" ${item.unit === 'เส้น' ? 'selected' : ''}>เส้น</option>
-                                <option value="งาน" ${item.unit === 'งาน' ? 'selected' : ''}>งาน</option>
-                                ${customUnitHtml}
-                            </select>
-                        </td>
-                        <td><input type="number" class="table-input item-price" value="${price}" min="0" step="0.01" onchange="calculateRow(this)"></td>
-                        <td style="vertical-align: middle; text-align: right;" class="item-total-text">${formatNumber(totalVal)}</td>
-                        <td class="col-action" style="vertical-align: middle;">
-                            <button class="btn btn-danger" onclick="removeTableRow(this)"><i class='bx bx-trash'></i></button>
-                        </td>
-                    `;
+                    let displayName = item.name || '';
+                    if (item.storeInfo && item.storeInfo.trim() !== '') {
+                        displayName += ` (ร้าน: ${item.storeInfo.trim()})`;
+                    }
+                    
+                    if (item.isHeader) {
+                        tr.innerHTML = `
+                            <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
+                            <td><input type="text" class="table-input item-custom-no" value="${item.customNo || ''}" placeholder="เช่น 1." oninput="updateRowNumbers(); applyLivePreview()"></td>
+                            <td colspan="5">
+                                <input type="text" class="table-input item-desc" value="${displayName}" placeholder="ชื่อหัวข้อ/หมวดหมู่" style="font-weight: 600; color: #1A6FBF;" oninput="applyLivePreview()">
+                                <input type="hidden" class="item-is-header" value="true">
+                                <input type="hidden" class="table-input item-qty" value="0">
+                                <input type="hidden" class="table-input item-unit" value="">
+                                <input type="hidden" class="table-input item-price" value="0">
+                                <div class="item-total-text" style="display: none;"></div>
+                            </td>
+                            <td class="col-action" style="vertical-align: middle;">
+                                <div style="display: flex; gap: 4px; justify-content: center;">
+                                    <div class="btn btn-outline drag-handle" style="padding: 0.2rem 0.4rem; cursor: grab; color: #64748b; border-color: #cbd5e1;" title="เลื่อนลำดับ"><i class='bx bx-grid-vertical'></i></div>
+                                    <button class="btn btn-danger" onclick="removeTableRow(this)" style="padding: 0.2rem 0.4rem;"><i class='bx bx-trash'></i></button>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        tr.innerHTML = `
+                            <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
+                            <td><input type="text" class="table-input item-custom-no" value="${item.customNo || ''}" placeholder="เช่น 1.1" oninput="updateRowNumbers(); applyLivePreview()"></td>
+                            <td><input type="text" class="table-input item-desc" value="${displayName}" placeholder="ชื่อสินค้า/บริการ"></td>
+                            <td><input type="number" class="table-input item-qty" value="${qtyVal}" min="1" onchange="calculateRow(this)"></td>
+                            <td>
+                                <select class="table-input item-unit" style="padding: 0.6rem 0.4rem; font-family: 'Sarabun', sans-serif;">
+                                    <option value="ชุด" ${item.unit === 'ชุด' ? 'selected' : ''}>ชุด</option>
+                                    <option value="ตัว" ${item.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
+                                    <option value="ชิ้น" ${item.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
+                                    <option value="เครื่อง" ${item.unit === 'เครื่อง' ? 'selected' : ''}>เครื่อง</option>
+                                    <option value="กล่อง" ${item.unit === 'กล่อง' ? 'selected' : ''}>กล่อง</option>
+                                    <option value="แพ็ค" ${item.unit === 'แพ็ค' ? 'selected' : ''}>แพ็ค</option>
+                                    <option value="เส้น" ${item.unit === 'เส้น' ? 'selected' : ''}>เส้น</option>
+                                    <option value="งาน" ${item.unit === 'งาน' ? 'selected' : ''}>งาน</option>
+                                    ${customUnitHtml}
+                                </select>
+                            </td>
+                            <td><input type="number" class="table-input item-price" value="${price}" min="0" step="0.01" onchange="calculateRow(this)"></td>
+                            <td style="vertical-align: middle; text-align: right;" class="item-total-text">${formatNumber(totalVal)}</td>
+                            <td class="col-action" style="vertical-align: middle;">
+                                <div style="display: flex; gap: 4px; justify-content: center;">
+                                    <div class="btn btn-outline drag-handle" style="padding: 0.2rem 0.4rem; cursor: grab; color: #64748b; border-color: #cbd5e1;" title="เลื่อนลำดับ"><i class='bx bx-grid-vertical'></i></div>
+                                    <button class="btn btn-danger" onclick="removeTableRow(this)" style="padding: 0.2rem 0.4rem;"><i class='bx bx-trash'></i></button>
+                                </div>
+                            </td>
+                        `;
+                    }
                     tbody.appendChild(tr);
                 });
                 
+                if (proj.company) {
+                    let compName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
+                    applyIssuerTheme(compName);
+                } else {
+                    applyIssuerTheme(null); // Reset to default if no company
+                }
+                
+                // Sync Customer Info from Institution Details
+                if (proj.institution && proj.institution.trim() !== '' && proj.institution.trim() !== 'ไม่ระบุสถานศึกษา') {
+                    const instName = proj.institution.trim();
+                    document.getElementById('toCompany').value = instName;
+                    
+                    if (institutionDetailsCache && institutionDetailsCache[instName]) {
+                        const details = institutionDetailsCache[instName];
+                        document.getElementById('toAddress').value = details.address || '';
+                        document.getElementById('toAttn').value = details.contact || '';
+                        document.getElementById('toTel').value = details.phone || '';
+                        document.getElementById('toEmail').value = details.email || '';
+                    } else {
+                        // Clear fields if no details found for this institution
+                        document.getElementById('toAddress').value = '';
+                        document.getElementById('toAttn').value = '';
+                        document.getElementById('toTel').value = '';
+                        document.getElementById('toEmail').value = '';
+                    }
+                }
+                
+                updateRowNumbers();
+                applyLivePreview();
                 calculateAll();
                 closeImportProjectModal();
             }
+        }
+
+        function applyIssuerTheme(companyName) {
+            const printArea = document.getElementById('printArea');
+            if (!printArea) return;
+            
+            let shop = null;
+            if (companyName && registeredShopsCache) {
+                shop = registeredShopsCache.find(s => {
+                    const sName = typeof s === 'string' ? s : (s.name || '');
+                    return sName.trim() === String(companyName).trim();
+                });
+            }
+
+            if (shop && typeof shop !== 'string') {
+                const banner = document.getElementById('currentIssuerBanner');
+                const bannerName = document.getElementById('currentIssuerDisplay');
+                const bannerLogo = document.getElementById('currentIssuerLogo');
+                const bannerIcon = document.getElementById('currentIssuerIcon');
+                
+                if (banner) banner.style.backgroundColor = shop.themeColor || '#1A6FBF';
+                if (bannerName) bannerName.innerText = shop.name || '';
+                if (bannerLogo && shop.logo) {
+                    bannerLogo.src = shop.logo;
+                    bannerLogo.style.display = 'block';
+                    if (bannerIcon) bannerIcon.style.display = 'none';
+                } else {
+                    if (bannerLogo) bannerLogo.style.display = 'none';
+                    if (bannerIcon) bannerIcon.style.display = 'block';
+                }
+                if (shop.themeColor) {
+                    printArea.style.setProperty('--pdf-primary', shop.themeColor);
+                    const hex = shop.themeColor.replace('#', '');
+                    if(hex.length === 6 || hex.length === 8) {
+                        const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+                        printArea.style.setProperty('--pdf-primary-light', `rgba(${r}, ${g}, ${b}, 0.1)`);
+                    }
+                    document.getElementById('settingPrimaryColor').value = shop.themeColor;
+                } else {
+                    printArea.style.removeProperty('--pdf-primary');
+                    printArea.style.removeProperty('--pdf-primary-light');
+                }
+                
+                document.getElementById('pIssuerName').innerText = shop.name || '';
+                document.getElementById('pIssuerSubName').innerText = ''; // Hide subname for custom shops
+                document.getElementById('pIssuerAddress').innerText = shop.address || '';
+                
+                let contactStr = '';
+                if (shop.phone) contactStr += `<span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TEL:</span> ${shop.phone} &nbsp;&nbsp;`;
+                if (shop.taxId) contactStr += `<span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TAX ID:</span> ${shop.taxId}`;
+                document.getElementById('pIssuerContact').innerHTML = contactStr;
+                
+                if (shop.logo) {
+                    document.getElementById('pLogoImg').src = shop.logo;
+                    document.getElementById('settingShowLogo').checked = true;
+                } else {
+                    document.getElementById('pLogoImg').style.display = 'none';
+                    document.getElementById('settingShowLogo').checked = false;
+                }
+                
+                if (shop.signer) {
+                    document.getElementById('settingSellerName').value = shop.signer;
+                }
+            } else {
+                const banner = document.getElementById('currentIssuerBanner');
+                const bannerName = document.getElementById('currentIssuerDisplay');
+                const bannerLogo = document.getElementById('currentIssuerLogo');
+                const bannerIcon = document.getElementById('currentIssuerIcon');
+
+                if (banner) banner.style.backgroundColor = '#1A6FBF';
+                if (bannerName) bannerName.innerText = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                if (bannerLogo) bannerLogo.style.display = 'none';
+                if (bannerIcon) bannerIcon.style.display = 'block';
+
+                // Default Mentra Solution
+                printArea.style.removeProperty('--pdf-primary');
+                printArea.style.removeProperty('--pdf-primary-light');
+                document.getElementById('settingPrimaryColor').value = '#1A6FBF';
+                document.getElementById('pIssuerName').innerText = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                document.getElementById('pIssuerSubName').innerText = 'MENTRA SOLUTION CO., LTD. (Head Office)';
+                document.getElementById('pIssuerAddress').innerText = '115/123 ม.12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540';
+                document.getElementById('settingSellerName').value = '( นายวัฒนชัย วิศวสุวรรณ )';
+                document.getElementById('pIssuerContact').innerHTML = `<span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TEL:</span> 089-924-9871 &nbsp; <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">EMAIL:</span> wattanachai966@gmail.com &nbsp; <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TAX ID:</span> 0115568026644`;
+                document.getElementById('pLogoImg').src = 'assets/img/logo.png';
+                document.getElementById('settingShowLogo').checked = true;
+            }
+            
+            // Re-apply live preview to force all color and logo display updates
+            applyLivePreview();
         }
 
         function openHistoryModal() {
@@ -2599,10 +2930,12 @@
             for (let i = 0; i < rows.length; i++) {
                 const tr = rows[i];
                 items.push({
+                    customNo: tr.querySelector('.item-custom-no') ? tr.querySelector('.item-custom-no').value : '',
                     desc: tr.querySelector('.item-desc').value,
                     qty: tr.querySelector('.item-qty').value,
                     unit: tr.querySelector('.item-unit').value,
-                    price: tr.querySelector('.item-price').value
+                    price: tr.querySelector('.item-price').value,
+                    isHeader: tr.querySelector('.item-is-header') ? true : false
                 });
             }
 
@@ -2718,34 +3051,62 @@
                 data.items.forEach(item => {
                     const rowCount = tbody.children.length;
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #1A6FBF; background-color: #f8fafc; font-size: 0.95rem;">${rowCount + 1}</td>
-                        <td><input type="text" class="table-input item-desc" value="${item.desc || ''}" placeholder="ชื่อสินค้า/บริการ"></td>
-                        <td><input type="number" class="table-input item-qty" value="${item.qty || 1}" min="1" onchange="calculateRow(this)"></td>
-                        <td>
-                            <select class="table-input item-unit" style="padding: 0.6rem 0.4rem; font-family: 'Sarabun', sans-serif;">
-                                <option value="ชุด" ${item.unit === 'ชุด' ? 'selected' : ''}>ชุด</option>
-                                <option value="ตัว" ${item.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
-                                <option value="ชิ้น" ${item.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
-                                <option value="เครื่อง" ${item.unit === 'เครื่อง' ? 'selected' : ''}>เครื่อง</option>
-                                <option value="กล่อง" ${item.unit === 'กล่อง' ? 'selected' : ''}>กล่อง</option>
-                                <option value="แพ็ค" ${item.unit === 'แพ็ค' ? 'selected' : ''}>แพ็ค</option>
-                                <option value="เส้น" ${item.unit === 'เส้น' ? 'selected' : ''}>เส้น</option>
-                                <option value="งาน" ${item.unit === 'งาน' ? 'selected' : ''}>งาน</option>
-                            </select>
-                        </td>
-                        <td><input type="number" class="table-input item-price" value="${item.price || 0}" min="0" step="0.01" onchange="calculateRow(this)"></td>
-                        <td style="vertical-align: middle; text-align: right;" class="item-total-text">0.00</td>
-                        <td class="col-action" style="vertical-align: middle;">
-                            <button class="btn btn-danger" onclick="removeTableRow(this)"><i class='bx bx-trash'></i></button>
-                        </td>
-                    `;
+                    
+                    if (item.isHeader) {
+                        tr.innerHTML = `
+                            <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
+                            <td><input type="text" class="table-input item-custom-no" value="${item.customNo || ''}" placeholder="เช่น 1." oninput="updateRowNumbers(); applyLivePreview()"></td>
+                            <td colspan="5">
+                                <input type="text" class="table-input item-desc" value="${item.desc || ''}" placeholder="ชื่อหัวข้อ/หมวดหมู่" style="font-weight: 600; color: #1A6FBF;" oninput="applyLivePreview()">
+                                <input type="hidden" class="item-is-header" value="true">
+                                <input type="hidden" class="table-input item-qty" value="0">
+                                <input type="hidden" class="table-input item-unit" value="">
+                                <input type="hidden" class="table-input item-price" value="0">
+                                <div class="item-total-text" style="display: none;"></div>
+                            </td>
+                            <td class="col-action" style="vertical-align: middle;">
+                                <div style="display: flex; gap: 4px; justify-content: center;">
+                                    <div class="btn btn-outline drag-handle" style="padding: 0.2rem 0.4rem; cursor: grab; color: #64748b; border-color: #cbd5e1;" title="เลื่อนลำดับ"><i class='bx bx-grid-vertical'></i></div>
+                                    <button class="btn btn-danger" onclick="removeTableRow(this)" style="padding: 0.2rem 0.4rem;"><i class='bx bx-trash'></i></button>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        tr.innerHTML = `
+                            <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
+                            <td><input type="text" class="table-input item-custom-no" value="${item.customNo || ''}" placeholder="เช่น 1.1" oninput="updateRowNumbers(); applyLivePreview()"></td>
+                            <td><input type="text" class="table-input item-desc" value="${item.desc || ''}" placeholder="ชื่อสินค้า/บริการ"></td>
+                            <td><input type="number" class="table-input item-qty" value="${item.qty || 1}" min="1" onchange="calculateRow(this)"></td>
+                            <td>
+                                <select class="table-input item-unit" style="padding: 0.6rem 0.4rem; font-family: 'Sarabun', sans-serif;">
+                                    <option value="ชุด" ${item.unit === 'ชุด' ? 'selected' : ''}>ชุด</option>
+                                    <option value="ตัว" ${item.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
+                                    <option value="ชิ้น" ${item.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
+                                    <option value="เครื่อง" ${item.unit === 'เครื่อง' ? 'selected' : ''}>เครื่อง</option>
+                                    <option value="กล่อง" ${item.unit === 'กล่อง' ? 'selected' : ''}>กล่อง</option>
+                                    <option value="แพ็ค" ${item.unit === 'แพ็ค' ? 'selected' : ''}>แพ็ค</option>
+                                    <option value="เส้น" ${item.unit === 'เส้น' ? 'selected' : ''}>เส้น</option>
+                                    <option value="งาน" ${item.unit === 'งาน' ? 'selected' : ''}>งาน</option>
+                                </select>
+                            </td>
+                            <td><input type="number" class="table-input item-price" value="${item.price || 0}" min="0" step="0.01" onchange="calculateRow(this)"></td>
+                            <td style="vertical-align: middle; text-align: right;" class="item-total-text">0.00</td>
+                            <td class="col-action" style="vertical-align: middle;">
+                                <div style="display: flex; gap: 4px; justify-content: center;">
+                                    <div class="btn btn-outline drag-handle" style="padding: 0.2rem 0.4rem; cursor: grab; color: #64748b; border-color: #cbd5e1;" title="เลื่อนลำดับ"><i class='bx bx-grid-vertical'></i></div>
+                                    <button class="btn btn-danger" onclick="removeTableRow(this)" style="padding: 0.2rem 0.4rem;"><i class='bx bx-trash'></i></button>
+                                </div>
+                            </td>
+                        `;
+                    }
                     tbody.appendChild(tr);
                 });
             } else {
                 addTableRow();
             }
 
+            updateRowNumbers();
+            applyLivePreview();
             calculateAll();
             closeHistoryModal();
             alert('โหลดข้อมูลลงในฟอร์มสำเร็จ');
@@ -2771,12 +3132,18 @@
         window.removeTableRow = removeTableRow;
         window.calculateRow = calculateRow;
         window.exportToPDF = exportToPDF;
+        window.openRecipientModal = openRecipientModal;
+        window.closeRecipientModal = closeRecipientModal;
+        window.filterRecipientCards = filterRecipientCards;
+        window.selectRecipientFromModal = selectRecipientFromModal;
+        window.deleteRecipientFromModal = deleteRecipientFromModal;
         window.saveCurrentRecipient = saveCurrentRecipient;
-        window.loadSavedRecipient = loadSavedRecipient;
-        window.deleteSelectedRecipient = deleteSelectedRecipient;
         window.openTemplateSettingsModal = openTemplateSettingsModal;
         window.closeTemplateSettingsModal = closeTemplateSettingsModal;
         window.saveTemplateSettings = saveTemplateSettings;
+        window.openIssuerSelectionModal = openIssuerSelectionModal;
+        window.closeIssuerSelectionModal = closeIssuerSelectionModal;
+        window.selectIssuerFromModal = selectIssuerFromModal;
         window.applyLivePreview = applyLivePreview;
         window.openHistoryModal = openHistoryModal;
         window.closeHistoryModal = closeHistoryModal;
@@ -2789,7 +3156,68 @@
         window.importItemsFromProject = importItemsFromProject;
         window.showProjectsForInstitution = showProjectsForInstitution;
         window.backToInstitutionList = backToInstitutionList;
+        window.addHeaderRow = addHeaderRow;
+
+        // Initialize drag-and-drop reordering
+        const initSortable = () => {
+            const tbody = document.getElementById('itemsBody');
+            if (tbody && typeof Sortable !== 'undefined') {
+                new Sortable(tbody, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'bg-slate-100',
+                    onEnd: function (evt) {
+                        updateRowNumbers();
+                        applyLivePreview();
+                        calculateAll();
+                    }
+                });
+            }
+        };
+        // Run immediately since script is at the end of body
+        initSortable();
+        // Also run on load just in case
+        window.addEventListener('load', initSortable);
     </script>
+    <!-- Recipient Modal -->
+    <div id="recipientModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div style="background: white; width: 600px; max-width: 95%; max-height: 80vh; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column; overflow: hidden; font-family: 'Sarabun', sans-serif;">
+            <div style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                    <i class='bx bx-book-content' style="color: var(--primary-color, #1A6FBF);"></i> เลือกผู้รับที่บันทึกไว้
+                </h3>
+                <button onclick="closeRecipientModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+            </div>
+            <div style="padding: 16px 24px; border-bottom: 1px solid #e5e7eb; background: white;">
+                <div style="position: relative;">
+                    <i class='bx bx-search' style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem;"></i>
+                    <input type="text" id="recipientSearchInput" onkeyup="filterRecipientCards()" placeholder="ค้นหาชื่อบริษัท..." style="width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; font-family: 'Sarabun', sans-serif; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary-color, #1A6FBF)'" onblur="this.style.borderColor='#d1d5db'">
+                </div>
+            </div>
+            <div id="recipientCardsContainer" style="padding: 20px 24px; overflow-y: auto; flex: 1; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
+                <!-- Cards will be injected here -->
+            </div>
+        </div>
+    </div>
+    <!-- Issuer Selection Modal -->
+    <div id="issuerSelectionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div style="background: white; width: 600px; max-width: 95%; max-height: 80vh; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column; overflow: hidden; font-family: 'Sarabun', sans-serif;">
+            <div style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+                <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                    <i class='bx bx-buildings' style="color: var(--primary-color, #1A6FBF);"></i> เลือกบริษัท / ร้านค้า ที่ออกใบเสนอราคา
+                </h3>
+                <button onclick="closeIssuerSelectionModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">&times;</button>
+            </div>
+            <div id="issuerCardsContainer" style="padding: 20px 24px; overflow-y: auto; flex: 1; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
+                <!-- Cards will be injected here -->
+            </div>
+            <div style="padding: 16px 24px; border-top: 1px solid #e5e7eb; background: white; text-align: center;">
+                <button onclick="closeIssuerSelectionModal(); openTemplateSettingsModal();" style="background: none; border: none; font-size: 0.9rem; color: var(--primary-color, #1A6FBF); cursor: pointer; text-decoration: underline;">
+                    ปรับแต่งเทมเพลตและสีด้วยตัวเอง
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

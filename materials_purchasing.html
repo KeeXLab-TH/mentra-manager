@@ -565,7 +565,8 @@
         }
         
 </style>
-    
+    <!-- SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
 
 <body class="text-slate-800 antialiased min-h-screen flex" style="display: flex !important;">
@@ -657,10 +658,15 @@
                             <i class="fa-solid fa-school-flag text-brand-500"></i> เลือกสถานศึกษา
                         </h2>
                     </div>
-                    <button onclick="appData.addInstitution()" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-[0_4px_12px_rgba(26,111,191,0.25)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(26,111,191,0.35)] transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-plus"></i> เพิ่มสถานศึกษา
-                    </button>
-                </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="appData.openManageShopsModal()" class="bg-white text-brand-600 border border-brand-200 px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:bg-brand-50 transition-all flex items-center justify-center gap-2" title="จัดการร้านค้า/บริษัท">
+                            <i class="fa-solid fa-shop"></i> จัดการร้านค้า
+                        </button>
+                        <button onclick="appData.addInstitution()" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-[0_4px_12px_rgba(26,111,191,0.25)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(26,111,191,0.35)] transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus"></i> เพิ่มสถานศึกษา
+                        </button>
+                    </div>
 
                 <!-- Institutions List -->
                 <div class="flex flex-col gap-4" id="institutions-grid">
@@ -709,6 +715,7 @@
                                 <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar text-slate-400"></i> <span id="detail-project-date">---</span></span>
                                 <span class="flex items-center gap-1.5"><i class="fa-solid fa-building text-slate-400"></i> <span id="detail-project-dept">---</span></span>
                                 <span class="flex items-center gap-1.5"><i class="fa-solid fa-school text-slate-400"></i> <span id="detail-project-inst">---</span></span>
+                                <span class="flex items-center gap-1.5" id="detail-project-company-container" style="display: none;"><i class="fa-solid fa-shop text-slate-400"></i> <span id="detail-project-company">---</span></span>
                                 <span class="flex items-center gap-1.5"><i class="fa-solid fa-user-tie text-slate-400"></i> <span id="detail-project-teacher">---</span></span>
                             </div>
                             <div class="mt-3 text-sm text-slate-600 bg-amber-50/80 px-3 py-2 rounded-lg border border-amber-100 hidden" id="detail-project-remarks-container">
@@ -767,6 +774,9 @@
                             <button onclick="appData.openExportModal()" class="bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="ส่งออกข้อมูลเป็นไฟล์ Excel">
                                 <i class="fa-solid fa-file-export"></i> ส่งออก Excel
                             </button>
+                            <button onclick="appData.addHeaderRow()" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm">
+                                <i class="fa-solid fa-heading"></i> เพิ่มหัวข้อ
+                            </button>
                             <button onclick="appData.addEmptyItemRow()" class="bg-brand-500 border-2 border-brand-500 text-white hover:bg-brand-600 hover:border-brand-600 px-4 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-2 text-sm">
                                 <i class="fa-solid fa-plus"></i> เพิ่มรายการสินค้า
                             </button>
@@ -778,6 +788,7 @@
                             <thead>
                                 <tr class="text-[11px] sm:text-xs">
                                     <th class="w-8 relative group" data-col="no">ลำดับ<div class="col-resizer"></div></th>
+                                    <th class="w-12 relative group" data-col="customNo">ข้อ<div class="col-resizer"></div></th>
                                     <th class="w-auto relative group" data-col="name">รายการวัสดุ / ครุภัณฑ์<div class="col-resizer"></div></th>
                                     <th class="w-12 relative group" data-col="qty">จำนวน<div class="col-resizer"></div></th>
                                     <th class="w-12 relative group" data-col="unit">หน่วย<div class="col-resizer"></div></th>
@@ -942,6 +953,23 @@
                                 <input type="text" id="modal-proj-inst" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ระบุชื่อสถานศึกษา">
                             </div>
                             
+                            <!-- Company/Shop -->
+                            <div class="relative">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">ในนามร้าน / บริษัท</label>
+                                <div class="flex gap-2">
+                                    <div class="relative w-full" id="shop-dropdown-container">
+                                        <div id="modal-proj-company-display" class="w-full border border-slate-300 rounded-xl px-4 py-2 min-h-[46px] outline-none focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all text-sm flex flex-wrap gap-1.5 items-center cursor-pointer bg-white" onclick="appData.toggleShopDropdownUI()">
+                                            <span class="text-slate-400">เลือกร้านค้า...</span>
+                                        </div>
+                                        <div id="shop-custom-dropdown" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto hidden flex-col py-1">
+                                        </div>
+                                    </div>
+                                    <button onclick="appData.openAddShopModal()" class="bg-slate-100 hover:bg-brand-50 text-brand-600 border border-slate-200 hover:border-brand-200 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center shrink-0 shadow-sm" title="เพิ่มร้านค้าใหม่">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <!-- Teacher Name -->
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อครูผู้สอน</label>
@@ -1048,6 +1076,153 @@
                         <button onclick="appData.saveNewInstitution()" class="bg-brand-500 text-white px-6 py-2 rounded-xl font-semibold shadow-sm hover:bg-brand-600 transition-colors flex items-center gap-2">
                             <i class="fa-solid fa-check"></i> บันทึก
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EDIT INSTITUTION DETAILS MODAL -->
+            <div id="inst-details-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0 overflow-y-auto py-10">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 mx-4 my-auto" id="inst-details-modal-content">
+                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-school text-brand-500"></i> แก้ไขรายละเอียดสถานศึกษา
+                        </h3>
+                        <button onclick="appData.closeInstDetailsModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-6">
+                        <input type="hidden" id="modal-inst-details-old-name">
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อสถานศึกษา <span class="text-red-500">*</span></label>
+                            <input type="text" id="modal-inst-details-name" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น วิทยาลัยเทคนิค...">
+                            <p class="text-xs text-orange-500 mt-1"><i class="fa-solid fa-triangle-exclamation"></i> หากเปลี่ยนชื่อ โครงการทั้งหมดในสถานศึกษานี้จะถูกเปลี่ยนชื่อตามไปด้วย</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">ที่อยู่</label>
+                            <textarea id="modal-inst-details-address" rows="3" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ที่อยู่สถานศึกษา"></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">ผู้ติดต่อ</label>
+                            <input type="text" id="modal-inst-details-contact" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ชื่อผู้ติดต่อ">
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์</label>
+                                <input type="text" id="modal-inst-details-phone" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เบอร์โทรศัพท์">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">อีเมล</label>
+                                <input type="email" id="modal-inst-details-email" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="อีเมล">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
+                        <button onclick="appData.closeInstDetailsModal()" class="px-4 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors">
+                            ยกเลิก
+                        </button>
+                        <button onclick="appData.saveInstDetails()" class="bg-brand-500 text-white px-6 py-2 rounded-xl font-semibold shadow-sm hover:bg-brand-600 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-check"></i> บันทึก
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADD SHOP MODAL (DETAILED) -->
+            <div id="add-shop-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0 overflow-y-auto py-10">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 mx-4 my-auto" id="add-shop-modal-content">
+                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 sticky top-0 z-10">
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-shop text-brand-500"></i> เพิ่มข้อมูลร้านค้า/บริษัท
+                        </h3>
+                        <button onclick="appData.closeAddShopModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อร้านค้า / บริษัท <span class="text-red-500">*</span></label>
+                            <input type="text" id="modal-shop-name" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น บริษัท เอบีซี จำกัด">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">ที่อยู่</label>
+                            <textarea id="modal-shop-address" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm resize-none" placeholder="ระบุที่อยู่ของร้านค้า"></textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">เลขประจำตัวผู้เสียภาษี</label>
+                                <input type="text" id="modal-shop-taxid" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เลข 13 หลัก">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์</label>
+                                <input type="text" id="modal-shop-phone" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น 02-xxx-xxxx">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อผู้ลงนาม (Signer Name)</label>
+                            <input type="text" id="modal-shop-signer" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น (นายสมชาย ใจดี) ผู้จัดการ">
+                        </div>
+                        <div class="mt-4 mb-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">สีธีมบริษัท (Theme Color)</label>
+                            <div class="flex items-center gap-3">
+                                <input type="color" id="modal-shop-theme" value="#1A6FBF" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-300 p-0.5 bg-white">
+                                <span class="text-sm text-slate-500">เลือกสีหลักที่จะนำไปใช้ในใบเสนอราคา</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">โลโก้ร้านค้า</label>
+                            <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-50 transition-colors cursor-pointer group" onclick="document.getElementById('modal-shop-logo-upload').click()">
+                                <div id="modal-shop-logo-preview" class="hidden mb-3 mx-auto h-24 min-w-[6rem] max-w-full w-fit rounded-lg flex items-center justify-center bg-white border border-slate-200 overflow-hidden px-2"></div>
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 group-hover:text-brand-500 mb-2 transition-colors"></i>
+                                <p class="text-sm font-medium text-slate-600">คลิกเพื่ออัปโหลดโลโก้</p>
+                                <p class="text-xs text-slate-400 mt-1">ไฟล์รูปภาพ PNG, JPG</p>
+                            </div>
+                            <input type="file" id="modal-shop-logo-upload" class="hidden" accept="image/*" onchange="appData.previewShopLogo(event)">
+                        </div>
+                    </div>
+                    
+                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl sticky bottom-0 z-10">
+                        <button onclick="appData.closeAddShopModal()" class="px-4 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors">
+                            ยกเลิก
+                        </button>
+                        <button onclick="appData.saveNewShop()" class="bg-brand-500 text-white px-6 py-2 rounded-xl font-semibold shadow-sm hover:bg-brand-600 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-check"></i> บันทึก
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANAGE SHOPS MODAL -->
+            <div id="manage-shops-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0 overflow-y-auto py-10">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden transform scale-95 transition-transform duration-300 mx-4 my-auto flex flex-col max-h-[85vh]" id="manage-shops-modal-content">
+                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-shop text-brand-500"></i> จัดการข้อมูลร้านค้า/บริษัท <span id="manage-shops-count" class="text-sm font-normal text-slate-500 ml-2"></span>
+                        </h3>
+                        <div class="flex items-center gap-3">
+                            <button onclick="appData.openAddShopModal()" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-plus"></i> เพิ่มร้านค้า
+                            </button>
+                            <button onclick="appData.closeManageShopsModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-0 overflow-y-auto flex-1 bg-slate-50/30">
+                        <div id="manage-shops-list" class="divide-y divide-slate-100">
+                            <!-- Shop items injected here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1168,6 +1343,8 @@
         window.appData = {
             projects: [],
             institutionLogos: {},
+            registeredShops: [],
+            selectedShopsForForm: [],
             currentProjectId: null,
             currentInstitution: null,
             uploadingLogoFor: null,
@@ -1488,6 +1665,378 @@
                 this.closeAddInstitutionModal();
             },
 
+            // Shop Modal Management
+            editingShopOriginalName: null,
+            modalShopLogoBase64: null,
+            
+            openManageShopsModal() {
+                const modal = document.getElementById('manage-shops-modal');
+                const content = document.getElementById('manage-shops-modal-content');
+                this.renderManageShopsList();
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }, 10);
+            },
+            
+            closeManageShopsModal() {
+                const modal = document.getElementById('manage-shops-modal');
+                const content = document.getElementById('manage-shops-modal-content');
+                
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }, 300);
+            },
+            
+            renderManageShopsList() {
+                const list = document.getElementById('manage-shops-list');
+                const countSpan = document.getElementById('manage-shops-count');
+                if (!list) return;
+                
+                const shops = this.registeredShops || [];
+                countSpan.innerText = `(ทั้งหมด ${shops.length} รายการ)`;
+                
+                if (shops.length === 0) {
+                    list.innerHTML = `
+                        <div class="py-12 text-center text-slate-500 flex flex-col items-center justify-center">
+                            <i class="fa-solid fa-store-slash text-4xl text-slate-300 mb-3"></i>
+                            <p>ยังไม่มีข้อมูลร้านค้าในระบบ</p>
+                            <p class="text-sm mt-1">กดปุ่ม "เพิ่มร้านค้า" เพื่อเพิ่มข้อมูล</p>
+                        </div>`;
+                    return;
+                }
+                
+                list.innerHTML = '';
+                shops.forEach(shopData => {
+                    const sName = typeof shopData === 'string' ? shopData : shopData.name;
+                    const address = typeof shopData === 'string' ? '' : (shopData.address || '');
+                    const taxId = typeof shopData === 'string' ? '' : (shopData.taxId || '');
+                    const phone = typeof shopData === 'string' ? '' : (shopData.phone || '');
+                    const logo = typeof shopData === 'string' ? null : shopData.logo;
+                    const themeColor = typeof shopData === 'string' ? '#1A6FBF' : (shopData.themeColor || '#1A6FBF');
+                    
+                    let logoHtml = `<div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200"><i class="fa-solid fa-shop text-lg"></i></div>`;
+                    if (logo) {
+                        logoHtml = `<img src="${logo}" class="h-12 max-w-[6rem] w-auto rounded-xl object-contain bg-white border border-slate-200 shrink-0">`;
+                    }
+                    
+                    const item = document.createElement('div');
+                    item.className = 'p-4 sm:p-5 hover:bg-white transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 group';
+                    
+                    const escapedName = sName.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                    
+                    item.innerHTML = `
+                        <div class="flex items-start gap-4 flex-1 overflow-hidden">
+                            ${logoHtml}
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3.5 h-3.5 rounded-full shrink-0 border border-slate-200/50 shadow-sm" style="background-color: ${themeColor}" title="สีธีมเอกสาร"></div>
+                                    <h4 class="font-bold text-slate-800 truncate text-base">${sName}</h4>
+                                </div>
+                                <div class="text-sm text-slate-500 mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                                    ${taxId ? `<span class="flex items-center gap-1.5"><i class="fa-solid fa-id-card text-slate-400"></i> ${taxId}</span>` : ''}
+                                    ${phone ? `<span class="flex items-center gap-1.5"><i class="fa-solid fa-phone text-slate-400"></i> ${phone}</span>` : ''}
+                                </div>
+                                ${address ? `<p class="text-sm text-slate-500 mt-1.5 truncate"><i class="fa-solid fa-location-dot text-slate-400 mr-1.5"></i>${address}</p>` : ''}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0 border-t border-slate-100 sm:border-0 pt-3 sm:pt-0 mt-2 sm:mt-0">
+                            <button onclick="appData.editShop('${escapedName}')" class="px-4 py-2 bg-slate-100 hover:bg-brand-50 text-slate-700 hover:text-brand-600 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square"></i> แก้ไข
+                            </button>
+                            <button onclick="appData.deleteShop('${escapedName}')" class="w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-colors" title="ลบร้านค้า">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            },
+            
+            editShop(shopName) {
+                const shopData = this.getShopData(shopName);
+                if (!shopData) return;
+                
+                this.editingShopOriginalName = shopName;
+                this.openAddShopModal(shopData);
+            },
+            
+            deleteShop(shopName) {
+                Swal.fire({
+                    title: 'ยืนยันการลบร้านค้า',
+                    html: `คุณต้องการลบร้านค้า <b>${shopName}</b> ใช่หรือไม่?<br><span class="text-sm text-red-500">โครงการที่เคยเลือกร้านนี้จะยังคงแสดงชื่อร้านอยู่ แต่ไม่สามารถดูรูปหรือรายละเอียดได้</span>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'ลบทิ้ง',
+                    cancelButtonText: 'ยกเลิก',
+                    customClass: {
+                        popup: 'rounded-2xl',
+                        confirmButton: 'rounded-xl font-semibold px-6 py-2.5',
+                        cancelButton: 'rounded-xl font-semibold px-6 py-2.5'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.registeredShops = this.registeredShops.filter(s => (typeof s === 'string' ? s : s.name) !== shopName);
+                        if (window.saveShopToFirestore) {
+                            window.saveShopToFirestore(this.registeredShops);
+                        }
+                        this.renderManageShopsList();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ลบเรียบร้อย',
+                            showConfirmButton: false,
+                            timer: 1500,
+                            customClass: { popup: 'rounded-2xl' }
+                        });
+                    }
+                });
+            },
+            
+            previewShopLogo(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    let base64 = event.target.result;
+                    if (window.recompressImage) {
+                        base64 = await window.recompressImage(base64, 400, 0.7);
+                    }
+                    this.modalShopLogoBase64 = base64;
+                    const preview = document.getElementById('modal-shop-logo-preview');
+                    if (preview) {
+                        preview.innerHTML = `<img src="${base64}" class="w-full h-full object-contain">`;
+                        preview.classList.remove('hidden');
+                    }
+                };
+                reader.readAsDataURL(file);
+            },
+            
+            openAddShopModal(shopToEdit = null) {
+                const modal = document.getElementById('add-shop-modal');
+                const content = document.getElementById('add-shop-modal-content');
+                const preview = document.getElementById('modal-shop-logo-preview');
+                
+                if (shopToEdit && typeof shopToEdit === 'object') {
+                    document.getElementById('modal-shop-name').value = shopToEdit.name || '';
+                    document.getElementById('modal-shop-address').value = shopToEdit.address || '';
+                    document.getElementById('modal-shop-taxid').value = shopToEdit.taxId || '';
+                    document.getElementById('modal-shop-phone').value = shopToEdit.phone || '';
+                    document.getElementById('modal-shop-signer').value = shopToEdit.signer || '';
+                    document.getElementById('modal-shop-logo-upload').value = '';
+                    
+                    if (shopToEdit.logo) {
+                        this.modalShopLogoBase64 = shopToEdit.logo;
+                        preview.innerHTML = `<img src="${shopToEdit.logo}" class="w-full h-full object-contain">`;
+                        preview.classList.remove('hidden');
+                    } else {
+                        this.modalShopLogoBase64 = null;
+                        preview.innerHTML = '';
+                        preview.classList.add('hidden');
+                    }
+                    document.getElementById('modal-shop-theme').value = shopToEdit.themeColor || '#1A6FBF';
+                } else {
+                    this.editingShopOriginalName = null;
+                    document.getElementById('modal-shop-name').value = '';
+                    document.getElementById('modal-shop-address').value = '';
+                    document.getElementById('modal-shop-taxid').value = '';
+                    document.getElementById('modal-shop-phone').value = '';
+                    document.getElementById('modal-shop-signer').value = '';
+                    document.getElementById('modal-shop-logo-upload').value = '';
+                    document.getElementById('modal-shop-theme').value = '#1A6FBF';
+                    
+                    this.modalShopLogoBase64 = null;
+                    if (preview) {
+                        preview.innerHTML = '';
+                        preview.classList.add('hidden');
+                    }
+                }
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                    document.getElementById('modal-shop-name').focus();
+                }, 10);
+            },
+            
+            closeAddShopModal() {
+                const modal = document.getElementById('add-shop-modal');
+                const content = document.getElementById('add-shop-modal-content');
+                
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }, 300);
+            },
+            
+            saveNewShop() {
+                const nameInput = document.getElementById('modal-shop-name');
+                const name = nameInput.value.trim();
+                const address = document.getElementById('modal-shop-address').value.trim();
+                const taxId = document.getElementById('modal-shop-taxid').value.trim();
+                const phone = document.getElementById('modal-shop-phone').value.trim();
+                const signer = document.getElementById('modal-shop-signer').value.trim();
+                const themeColor = document.getElementById('modal-shop-theme').value;
+                
+                if (!name) {
+                    nameInput.focus();
+                    return;
+                }
+                
+                const shopData = {
+                    name: name,
+                    address: address,
+                    taxId: taxId,
+                    phone: phone,
+                    signer: signer,
+                    themeColor: themeColor,
+                    logo: this.modalShopLogoBase64 || null
+                };
+                
+                if (this.editingShopOriginalName) {
+                    const existingIndex = this.registeredShops.findIndex(s => (typeof s === 'string' ? s : s.name) === this.editingShopOriginalName);
+                    if (existingIndex >= 0) {
+                        this.registeredShops[existingIndex] = shopData;
+                    }
+                } else {
+                    const existingIndex = this.registeredShops.findIndex(s => (typeof s === 'string' ? s : s.name) === name);
+                    if (existingIndex >= 0) {
+                        this.registeredShops[existingIndex] = shopData;
+                    } else {
+                        this.registeredShops.push(shopData);
+                    }
+                }
+                
+                this.editingShopOriginalName = null;
+                
+                if (window.saveShopToFirestore) {
+                    window.saveShopToFirestore(this.registeredShops);
+                }
+                
+                this.closeAddShopModal();
+                this.renderManageShopsList();
+                
+                this.selectedShopsForForm = [name];
+                this.updateShopDisplay();
+                this.populateShopDropdown();
+                this.hideShopDropdown();
+            },
+
+            openInstDetailsModal(e, instName) {
+                e.stopPropagation();
+                if (instName === 'ไม่ระบุสถานศึกษา') return;
+                
+                const details = this.institutionDetails && this.institutionDetails[instName] ? this.institutionDetails[instName] : {};
+                
+                document.getElementById('modal-inst-details-old-name').value = instName;
+                document.getElementById('modal-inst-details-name').value = instName;
+                document.getElementById('modal-inst-details-address').value = details.address || '';
+                document.getElementById('modal-inst-details-contact').value = details.contact || '';
+                document.getElementById('modal-inst-details-phone').value = details.phone || '';
+                document.getElementById('modal-inst-details-email').value = details.email || '';
+                
+                const modal = document.getElementById('inst-details-modal');
+                const content = document.getElementById('inst-details-modal-content');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                }, 10);
+            },
+            
+            closeInstDetailsModal() {
+                const modal = document.getElementById('inst-details-modal');
+                const content = document.getElementById('inst-details-modal-content');
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+            },
+            
+            async saveInstDetails() {
+                const oldName = document.getElementById('modal-inst-details-old-name').value;
+                const newName = document.getElementById('modal-inst-details-name').value.trim();
+                const address = document.getElementById('modal-inst-details-address').value.trim();
+                const contact = document.getElementById('modal-inst-details-contact').value.trim();
+                const phone = document.getElementById('modal-inst-details-phone').value.trim();
+                const email = document.getElementById('modal-inst-details-email').value.trim();
+                
+                if (!newName) {
+                    Swal.fire({ icon: 'error', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกชื่อสถานศึกษา', timer: 2000 });
+                    return;
+                }
+                
+                if (!this.institutionDetails) this.institutionDetails = {};
+                
+                const newDetails = { address, contact, phone, email };
+                
+                if (oldName !== newName) {
+                    // Rename logic
+                    this.institutionDetails[newName] = newDetails;
+                    delete this.institutionDetails[oldName];
+                    
+                    if (this.institutionLogos[oldName]) {
+                        this.institutionLogos[newName] = this.institutionLogos[oldName];
+                        delete this.institutionLogos[oldName];
+                        if (window.saveInstitutionLogoToFirestore) {
+                            window.saveInstitutionLogoToFirestore(newName, this.institutionLogos[newName]);
+                            window.saveInstitutionLogoToFirestore(oldName, null); // remove old
+                        }
+                    }
+                    
+                    // Update all projects
+                    let updatedAny = false;
+                    this.projects.forEach(p => {
+                        if (p.institution === oldName) {
+                            p.institution = newName;
+                            updatedAny = true;
+                            if (window.saveProjectToFirestore) {
+                                window.saveProjectToFirestore(p);
+                            }
+                        }
+                    });
+                } else {
+                    this.institutionDetails[oldName] = newDetails;
+                }
+                
+                if (window.saveInstitutionDetailsToFirestore) {
+                    await window.saveInstitutionDetailsToFirestore(this.institutionDetails);
+                }
+                
+                this.closeInstDetailsModal();
+                this.renderInstitutions();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึกสำเร็จ',
+                    text: 'บันทึกข้อมูลสถานศึกษาเรียบร้อยแล้ว',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            },
+
             editInstitutionLogo(e, instName) {
                 e.stopPropagation();
                 if (instName === 'ไม่ระบุสถานศึกษา') return;
@@ -1644,6 +2193,18 @@
                 document.getElementById('detail-project-date').innerText = displayDate;
                 document.getElementById('detail-project-dept').innerText = proj.department || 'ไม่ระบุแผนก';
                 document.getElementById('detail-project-inst').innerText = proj.institution || 'ไม่ระบุสถานศึกษา';
+                
+                const companyContainer = document.getElementById('detail-project-company-container');
+                if (companyContainer) {
+                    const dispCompany = this.getCompanyDisplayString(proj.company);
+                    if (dispCompany) {
+                        document.getElementById('detail-project-company').innerText = dispCompany;
+                        companyContainer.style.display = 'flex';
+                    } else {
+                        companyContainer.style.display = 'none';
+                    }
+                }
+                
                 if (document.getElementById('detail-project-teacher')) {
                     document.getElementById('detail-project-teacher').innerText = proj.teacher || 'ไม่ระบุครูผู้สอน';
                 }
@@ -2228,6 +2789,9 @@
                 document.getElementById('modal-proj-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('modal-proj-dept').value = '';
                 document.getElementById('modal-proj-inst').value = this.currentInstitution || '';
+                this.selectedShopsForForm = [];
+                this.updateShopDisplay();
+                this.populateShopDropdown();
                 document.getElementById('modal-proj-teacher').value = '';
                 document.getElementById('modal-proj-status').value = 'Processing';
                 document.getElementById('modal-proj-remarks').value = '';
@@ -2260,6 +2824,9 @@
                 document.getElementById('modal-proj-date').value = proj.date || new Date().toISOString().split('T')[0];
                 document.getElementById('modal-proj-dept').value = proj.department || '';
                 document.getElementById('modal-proj-inst').value = proj.institution || '';
+                this.selectedShopsForForm = Array.isArray(proj.company) ? [...proj.company] : (proj.company ? [proj.company] : []);
+                this.updateShopDisplay();
+                this.populateShopDropdown();
                 document.getElementById('modal-proj-teacher').value = proj.teacher || '';
                 document.getElementById('modal-proj-status').value = proj.status || 'Processing';
                 document.getElementById('modal-proj-remarks').value = proj.remarks || '';
@@ -2303,6 +2870,7 @@
                 const date = document.getElementById('modal-proj-date').value;
                 const dept = document.getElementById('modal-proj-dept').value.trim();
                 const inst = document.getElementById('modal-proj-inst').value.trim();
+                const company = this.selectedShopsForForm.length > 0 ? this.selectedShopsForForm[0] : '';
                 const teacher = document.getElementById('modal-proj-teacher').value.trim();
                 const status = document.getElementById('modal-proj-status').value;
                 const remarks = document.getElementById('modal-proj-remarks').value.trim();
@@ -2320,6 +2888,7 @@
                         proj.date = date;
                         proj.department = dept;
                         proj.institution = inst;
+                        proj.company = company;
                         proj.teacher = teacher;
                         proj.status = status;
                         proj.remarks = remarks;
@@ -2339,6 +2908,7 @@
                         date: date,
                         department: dept,
                         institution: inst,
+                        company: company,
                         teacher: teacher,
                         status: status,
                         remarks: remarks,
@@ -2457,10 +3027,142 @@
                             <span class="text-sm font-bold text-brand-600 bg-brand-50 px-4 py-2.5 rounded-xl group-hover:bg-brand-500 group-hover:text-white transition-colors flex items-center gap-2">
                                 ดูโครงการ <i class="fa-solid fa-arrow-right"></i>
                             </span>
+                            ${isUnknown ? '' : `
+                            <button onclick="appData.openInstDetailsModal(event, '${instName}')" class="ml-3 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-brand-600 transition-colors" title="แก้ไขรายละเอียดสถานศึกษา">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            `}
                         </div>
                     `;
                     grid.appendChild(el);
                 });
+            },
+
+            shopSet: new Set(),
+            
+            getCompanyDisplayString(companyField) {
+                if (!companyField) return null;
+                const arr = Array.isArray(companyField) ? companyField : [companyField];
+                const filtered = arr.filter(s => s && s.trim() !== '');
+                return filtered.length > 0 ? filtered.join(', ') : null;
+            },
+            
+            toggleShopDropdownUI() {
+                const dropdown = document.getElementById('shop-custom-dropdown');
+                if (dropdown) {
+                    if (dropdown.classList.contains('hidden')) {
+                        this.showShopDropdown();
+                    } else {
+                        this.hideShopDropdown();
+                    }
+                }
+            },
+            
+            toggleShopSelection(shop) {
+                if (this.selectedShopsForForm.includes(shop)) {
+                    this.selectedShopsForForm = [];
+                } else {
+                    this.selectedShopsForForm = [shop];
+                }
+                this.updateShopDisplay();
+                this.renderShopDropdown(Array.from(this.shopSet));
+                this.hideShopDropdown();
+            },
+            
+            updateShopDisplay() {
+                const display = document.getElementById('modal-proj-company-display');
+                if (!display) return;
+                
+                if (this.selectedShopsForForm.length === 0) {
+                    display.innerHTML = '<span class="text-slate-400">เลือกร้านค้า...</span>';
+                } else {
+                    display.innerHTML = this.selectedShopsForForm.map(shop => 
+                        `<span class="bg-brand-50 border border-brand-200 text-brand-700 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5"><i class="fa-solid fa-shop"></i> ${shop}</span>`
+                    ).join('');
+                }
+            },
+            
+            getShopData(shopName) {
+                if (!this.registeredShops) return null;
+                return this.registeredShops.find(s => (typeof s === 'string' ? s : s.name) === shopName);
+            },
+            
+            populateShopDropdown() {
+                const dropdown = document.getElementById('shop-custom-dropdown');
+                if (!dropdown) return;
+                
+                this.shopSet.clear();
+                
+                if (this.registeredShops && Array.isArray(this.registeredShops)) {
+                    this.registeredShops.forEach(shop => {
+                        const sName = typeof shop === 'string' ? shop : shop.name;
+                        if (sName && sName.trim() !== '') this.shopSet.add(sName.trim());
+                    });
+                }
+                
+                this.projects.forEach(p => {
+                    if (p.company) {
+                        const comps = Array.isArray(p.company) ? p.company : [p.company];
+                        comps.forEach(c => {
+                            if (c && c.trim() !== '') this.shopSet.add(c.trim());
+                        });
+                    }
+                });
+                this.renderShopDropdown(Array.from(this.shopSet));
+            },
+            
+            renderShopDropdown(shops) {
+                const dropdown = document.getElementById('shop-custom-dropdown');
+                if (!dropdown) return;
+                
+                dropdown.innerHTML = '';
+                if (shops.length === 0) {
+                    dropdown.innerHTML = '<div class="px-4 py-3 text-sm text-slate-500 text-center">ไม่มีประวัติร้านค้า</div>';
+                    return;
+                }
+                
+                shops.forEach(shop => {
+                    const item = document.createElement('div');
+                    item.className = 'px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-100 last:border-b-0 flex items-center justify-between select-none';
+                    
+                    const isChecked = this.selectedShopsForForm.includes(shop);
+                    
+                    const shopData = this.getShopData(shop);
+                    let logoHtml = `<div class="w-7 h-7 rounded bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200"><i class="fa-solid fa-shop text-[10px]"></i></div>`;
+                    if (shopData && shopData.logo) {
+                        logoHtml = `<img src="${shopData.logo}" class="h-7 max-w-[4rem] w-auto rounded object-contain bg-white border border-slate-200 shrink-0">`;
+                    }
+                    
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = 'flex items-center gap-3';
+                    labelSpan.innerHTML = `${logoHtml} <span class="${isChecked ? 'text-brand-600 font-bold' : 'font-medium'}">${shop}</span>`;
+                    
+                    const checkIcon = document.createElement('i');
+                    checkIcon.className = `fa-solid fa-check text-brand-500 transition-opacity ${isChecked ? 'opacity-100' : 'opacity-0'}`;
+                    
+                    item.appendChild(labelSpan);
+                    item.appendChild(checkIcon);
+                    
+                    item.onclick = (e) => {
+                        e.stopPropagation();
+                        this.toggleShopSelection(shop);
+                    };
+                    
+                    dropdown.appendChild(item);
+                });
+            },
+            
+            showShopDropdown() {
+                const dropdown = document.getElementById('shop-custom-dropdown');
+                if (dropdown) {
+                    dropdown.classList.remove('hidden');
+                    this.populateShopDropdown();
+                }
+            },
+            
+            hideShopDropdown() {
+                const dropdown = document.getElementById('shop-custom-dropdown');
+                if (dropdown) dropdown.classList.add('hidden');
             },
 
             // Rendering Projects Grid
@@ -2546,6 +3248,11 @@
                                     <span class="text-sm text-slate-500 flex items-center gap-1.5 border-l border-slate-200 pl-3">
                                         <i class="fa-solid fa-user-tie text-slate-400"></i> ${teacherText}
                                     </span>
+                                    ${this.getCompanyDisplayString(proj.company) ? `
+                                    <span class="text-sm text-slate-500 flex items-center gap-1.5 border-l border-slate-200 pl-3">
+                                        <i class="fa-solid fa-shop text-slate-400"></i> ${this.getCompanyDisplayString(proj.company)}
+                                    </span>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
@@ -2594,6 +3301,7 @@
                 let sumTarget = 0;
                 let sumFound = 0;
                 let sumProfit = 0;
+                let currentNo = 1;
 
                 proj.items.forEach((item, index) => {
                     // Calculations
@@ -2614,57 +3322,99 @@
                     sumFound += (item.qty || 0) * (item.foundPrice || 0);
 
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="text-center text-slate-500 font-medium">${index + 1}</td>
-                        <td>
-                            <input type="text" class="excel-input font-medium text-slate-800" data-id="${item.id}" data-field="name" value="${item.name}" onchange="appData.updateItem('${item.id}', 'name', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="ชื่อรายการ">
-                        </td>
-                        <td>
-                            <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="qty" value="${item.qty}" onchange="appData.updateItem('${item.id}', 'qty', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
-                        </td>
-                        <td>
-                            <input type="text" class="excel-input text-center" data-id="${item.id}" data-field="unit" value="${item.unit}" onchange="appData.updateItem('${item.id}', 'unit', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="หน่วย">
-                        </td>
-                        <td>
-                            <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="unitPrice" value="${item.unitPrice}" onchange="appData.updateItem('${item.id}', 'unitPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
-                        </td>
-                        <td class="col-total p-0">
-                            <div class="px-1 py-2 text-amber-900 text-[13px] sm:text-sm truncate" title="${this.formatCurrency(totalAmt)}">${this.formatCurrency(totalAmt)}</div>
-                        </td>
-                        <td>
-                            <input type="number" class="excel-input text-right text-blue-700" data-id="${item.id}" data-field="targetPrice" value="${item.targetPrice}" onchange="appData.updateItem('${item.id}', 'targetPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
-                        </td>
-                        <td>
-                            <input type="number" class="excel-input text-right text-emerald-700 font-semibold" data-id="${item.id}" data-field="foundPrice" value="${item.foundPrice}" onchange="appData.updateItem('${item.id}', 'foundPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
-                        </td>
-                        <td class="text-center font-bold ${profitClass}">
-                            ${profitPct !== 0 ? profitPct.toFixed(2) + '%' : '-'}
-                        </td>
-                        <td>
-                            <input type="text" class="excel-input text-xs" data-id="${item.id}" data-field="storeInfo" placeholder="ชื่อ/เบอร์ร้าน" value="${item.storeInfo || ''}" onchange="appData.updateItem('${item.id}', 'storeInfo', this.value)" onkeydown="appData.handleExcelKeydown(event)">
-                        </td>
-                        <td class="text-center">
-                            <div class="flex items-center justify-center gap-1 p-1">
-                                <input type="text" class="excel-input text-xs !min-h-[28px] !p-1 border border-slate-200 rounded" data-id="${item.id}" data-field="link" placeholder="URL" value="${item.link || ''}" onchange="appData.updateItem('${item.id}', 'link', this.value)" onkeydown="appData.handleExcelKeydown(event)">
-                                ${item.link ? `<a href="${item.link}" target="_blank" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors shrink-0" title="เปิดลิงก์"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            <div class="flex items-center justify-center gap-1">
-                                <button onclick="appData.duplicateItemRow('${item.id}')" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center" title="คัดลอกรายการ">
-                                    <i class="fa-regular fa-copy text-xs"></i>
-                                </button>
-                                <button onclick="appData.deleteItem('${item.id}')" class="w-7 h-7 rounded bg-red-50 hover:bg-red-100 text-red-500 transition-colors flex items-center justify-center" title="ลบรายการ">
-                                    <i class="fa-solid fa-trash-can text-xs"></i>
-                                </button>
-                            </div>
-                        </td>
-                    `;
+                    
+                    let displayNoStr = '';
+                    let seqCellContent = '';
+                    
+                    if (item.customNo && item.customNo.trim() !== '') {
+                        displayNoStr = item.customNo.trim();
+                        seqCellContent = '';
+                    } else {
+                        displayNoStr = currentNo.toString();
+                        seqCellContent = currentNo++;
+                    }
+                    
+                    let nameIndentClass = displayNoStr.includes('.') ? 'pl-8' : '';
+
+                    if (item.isHeader) {
+                        tr.innerHTML = `
+                            <td class="text-center text-slate-500 font-medium">${seqCellContent}</td>
+                            <td>
+                                <input type="text" class="excel-input text-center text-slate-500 font-medium" data-id="${item.id}" data-field="customNo" value="${item.customNo || ''}" onchange="appData.updateItem('${item.id}', 'customNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="เช่น 1.">
+                            </td>
+                            <td colspan="10" class="bg-slate-50">
+                                <input type="text" class="excel-input font-bold text-brand-600 bg-transparent w-full" data-id="${item.id}" data-field="name" value="${item.name || ''}" onchange="appData.updateItem('${item.id}', 'name', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="ชื่อหัวข้อ/หมวดหมู่">
+                            </td>
+                            <td class="text-center bg-slate-50">
+                                <div class="flex items-center justify-center gap-1">
+                                    <button class="w-7 h-7 rounded bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing" title="ลากเพื่อจัดเรียง">
+                                        <i class="fa-solid fa-grip-vertical text-xs"></i>
+                                    </button>
+                                    <button onclick="appData.deleteItem('${item.id}')" class="w-7 h-7 rounded bg-red-50 hover:bg-red-100 text-red-500 transition-colors flex items-center justify-center" title="ลบรายการ">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                    } else {
+                        tr.innerHTML = `
+                            <td class="text-center text-slate-500 font-medium">${seqCellContent}</td>
+                            <td>
+                                <input type="text" class="excel-input text-center text-slate-500" data-id="${item.id}" data-field="customNo" value="${item.customNo || ''}" onchange="appData.updateItem('${item.id}', 'customNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="เช่น 1.1">
+                            </td>
+                            <td>
+                                <input type="text" class="excel-input font-medium text-slate-800 ${nameIndentClass}" data-id="${item.id}" data-field="name" value="${item.name}" onchange="appData.updateItem('${item.id}', 'name', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="ชื่อรายการ">
+                            </td>
+                            <td>
+                                <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="qty" value="${item.qty}" onchange="appData.updateItem('${item.id}', 'qty', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
+                            </td>
+                            <td>
+                                <input type="text" class="excel-input text-center" data-id="${item.id}" data-field="unit" value="${item.unit || ''}" onchange="appData.updateItem('${item.id}', 'unit', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="หน่วย">
+                            </td>
+                            <td>
+                                <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="unitPrice" value="${item.unitPrice}" onchange="appData.updateItem('${item.id}', 'unitPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
+                            </td>
+                            <td class="col-total p-0">
+                                <div class="px-1 py-2 text-amber-900 text-[13px] sm:text-sm truncate" title="${this.formatCurrency(totalAmt)}">${this.formatCurrency(totalAmt)}</div>
+                            </td>
+                            <td>
+                                <input type="number" class="excel-input text-right text-blue-700" data-id="${item.id}" data-field="targetPrice" value="${item.targetPrice}" onchange="appData.updateItem('${item.id}', 'targetPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
+                            </td>
+                            <td>
+                                <input type="number" class="excel-input text-right text-emerald-700 font-semibold" data-id="${item.id}" data-field="foundPrice" value="${item.foundPrice}" onchange="appData.updateItem('${item.id}', 'foundPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
+                            </td>
+                            <td class="text-center font-bold ${profitClass}">
+                                ${profitPct !== 0 ? profitPct.toFixed(2) + '%' : '-'}
+                            </td>
+                            <td>
+                                <input type="text" class="excel-input text-xs" data-id="${item.id}" data-field="storeInfo" placeholder="ชื่อ/เบอร์ร้าน" value="${item.storeInfo || ''}" onchange="appData.updateItem('${item.id}', 'storeInfo', this.value)" onkeydown="appData.handleExcelKeydown(event)">
+                            </td>
+                            <td class="text-center">
+                                <div class="flex items-center justify-center gap-1 p-1">
+                                    <input type="text" class="excel-input text-xs !min-h-[28px] !p-1 border border-slate-200 rounded" data-id="${item.id}" data-field="link" placeholder="URL" value="${item.link || ''}" onchange="appData.updateItem('${item.id}', 'link', this.value)" onkeydown="appData.handleExcelKeydown(event)">
+                                    ${item.link ? `<a href="${item.link}" target="_blank" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors shrink-0" title="เปิดลิงก์"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="flex items-center justify-center gap-1">
+                                    <button class="w-7 h-7 rounded bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing" title="ลากเพื่อจัดเรียง">
+                                        <i class="fa-solid fa-grip-vertical text-xs"></i>
+                                    </button>
+                                    <button onclick="appData.duplicateItemRow('${item.id}')" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center" title="คัดลอกรายการ">
+                                        <i class="fa-regular fa-copy text-xs"></i>
+                                    </button>
+                                    <button onclick="appData.deleteItem('${item.id}')" class="w-7 h-7 rounded bg-red-50 hover:bg-red-100 text-red-500 transition-colors flex items-center justify-center" title="ลบรายการ">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        `;
+                    }
                     tbody.appendChild(tr);
                 });
 
                 if(proj.items.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="11" class="text-center p-8 text-slate-500 font-medium">ยังไม่มีรายการสิ่งของ กด "เพิ่มรายการสินค้า" เพื่อเริ่มต้น</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-slate-500 font-medium">ยังไม่มีรายการสิ่งของ กด "เพิ่มรายการสินค้า" หรือ "เพิ่มหัวข้อ" เพื่อเริ่มต้น</td></tr>`;
                 }
 
                 // Update Footers
@@ -2790,8 +3540,32 @@
                 
                 proj.items.push({
                     id: 'item_' + Date.now(),
+                    isHeader: false,
+                    customNo: '',
                     name: '',
                     qty: 1,
+                    unit: '',
+                    unitPrice: 0,
+                    targetPrice: 0,
+                    foundPrice: 0,
+                    storeInfo: '',
+                    link: ''
+                });
+                
+                this.syncCurrentProject();
+                this.renderExcelTable();
+            },
+
+            addHeaderRow() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                
+                proj.items.push({
+                    id: 'item_' + Date.now(),
+                    isHeader: true,
+                    customNo: '',
+                    name: '',
+                    qty: 0,
                     unit: '',
                     unitPrice: 0,
                     targetPrice: 0,
@@ -3260,6 +4034,34 @@
         // Initialize application when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             appData.init();
+            
+            const tbody = document.getElementById('excel-tbody');
+            if (tbody && typeof Sortable !== 'undefined') {
+                new Sortable(tbody, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'bg-slate-50',
+                    onEnd: function (evt) {
+                        if (!appData.currentProjectId) return;
+                        const proj = appData.projects.find(p => p.id === appData.currentProjectId);
+                        if (!proj) return;
+                        
+                        // Reorder the array
+                        const movedItem = proj.items.splice(evt.oldIndex, 1)[0];
+                        proj.items.splice(evt.newIndex, 0, movedItem);
+                        
+                        appData.syncCurrentProject();
+                        appData.renderExcelTable();
+                    }
+                });
+            }
+            
+            document.addEventListener('click', (e) => {
+                const container = document.getElementById('shop-dropdown-container');
+                if (container && !container.contains(e.target) && window.appData) {
+                    appData.hideShopDropdown();
+                }
+            });
         });
 
     </script>
@@ -3379,6 +4181,23 @@
                     }
                 }
             });
+            
+            // Listen for institution details
+            onSnapshot(doc(db, 'material_settings', 'institution_details'), (docSnap) => {
+                if (docSnap.exists()) {
+                    appData.institutionDetails = docSnap.data();
+                }
+            });
+            
+            // Listen for registered shops
+            onSnapshot(doc(db, 'material_settings', 'registered_shops'), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.shops && Array.isArray(data.shops)) {
+                        appData.registeredShops = data.shops;
+                    }
+                }
+            });
 
             window.recompressImage = function(base64Str, maxWidth = 800, quality = 0.5) {
                 return new Promise((resolve) => {
@@ -3401,10 +4220,16 @@
                                 height = maxWidth;
                             }
                         }
+
                         const canvas = document.createElement('canvas');
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
+                        
+                        // Fill white background to prevent transparent areas turning black in JPEG
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, width, height);
+                        
                         ctx.drawImage(img, 0, 0, width, height);
                         resolve(canvas.toDataURL('image/jpeg', quality));
                     };
@@ -3563,6 +4388,24 @@
                     console.error("Firebase Save Logo Error:", e);
                 }
             };
+            
+            window.saveInstitutionDetailsToFirestore = async function(detailsObj) {
+                try {
+                    await setDoc(doc(db, 'material_settings', 'institution_details'), detailsObj);
+                } catch (e) {
+                    console.error("Firebase Save Inst Details Error:", e);
+                }
+            };
+            
+            window.saveShopToFirestore = async function(shopsArray) {
+                try {
+                    await setDoc(doc(db, 'material_settings', 'registered_shops'), {
+                        shops: shopsArray
+                    }, { merge: true });
+                } catch (e) {
+                    console.error("Firebase Save Shop Error:", e);
+                }
+            };
         });
     </script>
     <!-- MOBILE BOTTOM NAV -->
@@ -3588,3 +4431,4 @@
     </nav>
 </body>
 </html>
+
