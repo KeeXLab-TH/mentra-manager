@@ -9,12 +9,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <!-- Boxicons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SortableJS for drag-and-drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 
     <style>
         :root {
@@ -687,7 +689,7 @@
             letter-spacing: normal !important;
         }
 
-        tbody tr:nth-child(even) {
+        #itemTable tbody tr:nth-child(even) {
             background-color: #f8fafc;
         }
 
@@ -924,6 +926,132 @@
             -webkit-column-break-inside: avoid !important;
         }
 
+        /* SortableJS drag and drop styling for template editor */
+        .header-zone {
+            min-height: 20px;
+        }
+        /* Info Row drag styles */
+        #pInfoRow > div {
+            cursor: default;
+        }
+        #pInfoRow.drag-mode > div {
+            cursor: grab;
+            outline: 2px dashed #cbd5e1;
+            outline-offset: 3px;
+            border-radius: 4px;
+            transition: outline 0.2s, background 0.2s;
+        }
+        #pInfoRow.drag-mode > div:hover {
+            outline-color: var(--primary-color, #1A6FBF);
+            background: rgba(26, 111, 191, 0.03);
+        }
+        .info-panel-ghost {
+            opacity: 0.4;
+            background: #e0ecfb !important;
+        }
+        /* Resize handle */
+        #pInfoResizer {
+            width: 10px;
+            flex-shrink: 0;
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            transition: background 0.15s;
+        }
+        #pInfoResizer::after {
+            content: '';
+            width: 3px;
+            height: 32px;
+            border-radius: 3px;
+            background: #d1d5db;
+            transition: background 0.15s, height 0.15s;
+        }
+        #pInfoResizer:hover::after,
+        #pInfoResizer.resizing::after {
+            background: var(--primary-color, #1A6FBF);
+            height: 48px;
+        }
+        .header-zone-resizer {
+            width: 12px;
+            flex-shrink: 0;
+            cursor: col-resize;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+        .header-zone-resizer::after {
+            content: '';
+            width: 3px;
+            height: 32px;
+            border-radius: 3px;
+            background: #cbd5e1;
+            transition: background 0.15s, height 0.15s;
+        }
+        .header-zone-resizer:hover::after,
+        .header-zone-resizer.resizing::after {
+            background: var(--primary-color, #1A6FBF);
+            height: 100%;
+        }
+        body.modal-open .header-zone-resizer {
+            display: flex;
+        }
+        body.info-resizing * {
+            user-select: none !important;
+            cursor: col-resize !important;
+        }
+        .sortable-active-container {
+            border: 2px dashed #cbd5e1;
+            background: rgba(248, 250, 252, 0.5);
+            min-height: 60px;
+        }
+        .sortable-active-container > * {
+            cursor: grab;
+            transition: outline 0.2s;
+        }
+        .sortable-active-container > *:hover {
+            outline: 2px dashed var(--primary-color, #1A6FBF);
+            outline-offset: 4px;
+            background: rgba(26, 111, 191, 0.02);
+        }
+        /* Header zone resizer - show when modal is open */
+        .header-resizer {
+            width: 14px;
+            cursor: col-resize;
+            background: transparent;
+            position: relative;
+            flex-shrink: 0;
+            z-index: 10;
+            display: none;
+        }
+        .modal-open .header-resizer {
+            display: block;
+        }
+        .header-resizer::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 10%;
+            bottom: 10%;
+            width: 2px;
+            background: #cbd5e1;
+            border-radius: 2px;
+            transition: background 0.2s;
+        }
+        .header-resizer:hover::after,
+        .header-resizer.resizing::after {
+            background: var(--primary-color, #1A6FBF);
+            top: 0;
+            bottom: 0;
+        }
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #f1f5f9;
+        }
     </style>
 
     <!-- Premium UI Overlay -->
@@ -1232,121 +1360,149 @@
             </div>
 
             <!-- Hidden Print Template for html2pdf -->
-            <div id="printArea" style="display: none; background: #ffffff;">
+            <div id="printArea" class="print-area" style="display: none; background: #ffffff;">
                 <div
                     style="width: 715px; min-height: 1020px; padding: 14px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column;">
 
                     <!-- ══ HEADER ══ -->
                     <div id="pHeaderSection"
-                        style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid var(--pdf-primary, #1A6FBF);">
-                        <!-- Left: Logo + Company -->
-                        <div style="display: flex; gap: 14px; align-items: flex-start; flex: 1;">
-                            <img id="pLogoImg" src="assets/img/logo.png"
-                                style="height: 56px; max-width: 250px; object-fit: contain; flex-shrink: 0; padding-right: 14px; border-right: 1px solid #e2e8f0;"
-                                alt="Company Logo">
-                            <div>
-                                <div id="pIssuerName"
-                                    style="font-size: 14.5px; font-weight: 700; color: #1e1b4b; line-height: 1.3; white-space: nowrap; letter-spacing: normal;">
-                                    บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
-                                <div id="pIssuerSubName"
-                                    style="font-size: 10.5px; font-weight: 600; color: var(--pdf-secondary, #E07B2F); margin: 1px 0 4px 0; white-space: nowrap;">
-                                    MENTRA SOLUTION CO., LTD. (Head Office)</div>
-                                <div id="pIssuerAddress" style="font-size: 11px; color: #6b7280; line-height: 1.5; letter-spacing: normal;">
-                                    115/123 ม.12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540
+                        style="display: flex; flex-direction: column; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid var(--pdf-primary, #1A6FBF); width: 100%; box-sizing: border-box; gap: 10px;">
+                        
+                        <!-- Row 1 (Top) -->
+                        <div id="header-row-1" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                            <div id="zone-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 12px;">
+                                <div id="block-logo" class="header-block">
+                                    <img id="pLogoImg" src="assets/img/logo.png"
+                                        style="height: 56px; max-width: 250px; object-fit: contain; flex-shrink: 0;"
+                                        alt="Company Logo">
                                 </div>
-                                <div id="pIssuerContact" style="font-size: 11px; color: #6b7280; letter-spacing: normal;">
-                                    <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;
-                                    <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">EMAIL:</span>
-                                    wattanachai966@gmail.com &nbsp;
-                                    <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TAX ID:</span> 0115568026644
+                                <div id="block-company" class="header-block">
+                                    <div id="pIssuerName"
+                                        style="font-size: 14.5px; font-weight: 700; color: #1e1b4b; line-height: 1.3; white-space: nowrap; letter-spacing: normal;">
+                                        บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
+                                    <div id="pIssuerSubName"
+                                        style="font-size: 10.5px; font-weight: 600; color: var(--pdf-secondary, #E07B2F); margin: 1px 0 4px 0; white-space: nowrap;">
+                                        MENTRA SOLUTION CO., LTD. (Head Office)</div>
+                                    <div id="pIssuerAddress" style="font-size: 11px; color: #6b7280; line-height: 1.5; letter-spacing: normal;">
+                                        115/123 ม.12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540
+                                    </div>
+                                    <div id="pIssuerContact" style="font-size: 11px; color: #6b7280; letter-spacing: normal;">
+                                        <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;
+                                        <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">EMAIL:</span>
+                                        wattanachai966@gmail.com &nbsp;
+                                        <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TAX ID:</span> 0115568026644
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="hResize1" class="header-zone-resizer" data-row="1" data-idx="0"></div>
+                            <div id="zone-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;">
+                            </div>
+                            <div id="hResize2" class="header-zone-resizer" data-row="1" data-idx="1"></div>
+                            <div id="zone-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 12px;">
+                                <div id="block-title" class="header-block">
+                                    <div
+                                        style="font-size: 21px; font-weight: 800; color: var(--pdf-primary, #1A6FBF); line-height: 1.1; white-space: nowrap; letter-spacing: normal;">
+                                        ใบเสนอราคา</div>
+                                    <div id="pIssuerQuotationText"
+                                        style="font-size: 11px; color: #6b7280; font-weight: 700; letter-spacing: 2px; margin-top: 3px;">
+                                        QUOTATION</div>
                                 </div>
                             </div>
                         </div>
-                        <!-- Right: Doc Title -->
-                        <div
-                            style="text-align: right; padding-left: 16px; border-left: 3px solid var(--pdf-primary, #1A6FBF); flex-shrink: 0; padding-top: 4px;">
-                            <div
-                                style="font-size: 21px; font-weight: 800; color: var(--pdf-primary, #1A6FBF); line-height: 1.1; white-space: nowrap; letter-spacing: normal;">
-                                ใบเสนอราคา</div>
-                            <div id="pIssuerQuotationText"
-                                style="font-size: 11px; color: #6b7280; font-weight: 700; letter-spacing: 2px; margin-top: 3px;">
-                                QUOTATION</div>
+                        
+                        <!-- Row 2 (Middle) -->
+                        <div id="header-row-2" style="display: none; justify-content: space-between; align-items: flex-start; width: 100%;">
+                            <div id="zone-mid-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 12px;"></div>
+                            <div id="hResize3" class="header-zone-resizer" data-row="2" data-idx="0"></div>
+                            <div id="zone-mid-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;"></div>
+                            <div id="hResize4" class="header-zone-resizer" data-row="2" data-idx="1"></div>
+                            <div id="zone-mid-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 12px;"></div>
                         </div>
+
+                        <!-- Row 3 (Bottom) -->
+                        <div id="header-row-3" style="display: none; justify-content: space-between; align-items: flex-start; width: 100%; gap: 10px;">
+                            <div id="zone-bot-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 12px;"></div>
+                            <div id="zone-bot-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;"></div>
+                            <div id="zone-bot-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 12px;"></div>
+                        </div>
+
                     </div>
 
                     <!-- ══ RECIPIENT + DOC INFO ══ -->
-                    <div
+                    <div id="pInfoRow"
                         style="display: flex; gap: 0; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e8edf5;">
                         <!-- Left: Recipient -->
-                        <div style="flex: 1.4; padding: 0 20px 0 0;">
-                            <div
-                                style="font-size: 9px; font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">
+                        <div id="pRecipientPanel" style="flex: 1.4; padding: 0 20px 0 0;">
+                            <div id="pRecipientTitle"
+                                style="font-size: 10px; font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: normal; margin-bottom: 8px; text-transform: uppercase;">
                                 RECIPIENT INFORMATION</div>
                             <table
                                 style="width: 100%; border-collapse: collapse; border: none !important; margin: 0; padding: 0;">
                                 <tr style="border: none !important;">
-                                    <td
-                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
+                                    <td id="labelTo"
+                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none;">
                                         ชื่อ / To:</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; font-weight: 700; color: #1e1b4b; line-height: 1.4; font-family: 'Sarabun', sans-serif;"
+                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; font-weight: 700; color: #1e1b4b; line-height: 1.4;"
                                         id="pToCompany"></td>
                                 </tr>
                                 <tr style="border: none !important;">
-                                    <td
-                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.5; font-family: 'Sarabun', sans-serif;">
+                                    <td id="labelAddress"
+                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.5; outline: none;">
                                         ที่อยู่:</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.5; word-break: break-word; white-space: normal; font-family: 'Sarabun', sans-serif;"
+                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.5; word-break: break-word; white-space: normal;"
                                         id="pToAddress"></td>
                                 </tr>
                                 <tr style="border: none !important;">
-                                    <td
-                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
+                                    <td id="labelAttn"
+                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none;">
                                         ติดต่อ / Attn:</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4; font-family: 'Sarabun', sans-serif;"
+                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4;"
                                         id="pToAttn"></td>
                                 </tr>
                                 <tr style="border: none !important;">
-                                    <td
-                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
+                                    <td id="labelTel"
+                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none;">
                                         โทร / Tel:</td>
                                     <td
-                                        style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4; font-family: 'Sarabun', sans-serif;">
+                                        style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4;">
                                         <span id="pToTel"></span>
                                         <span style="margin: 0 5px; color: #d1d5db;">|</span>
-                                        <span style="color: #6b7280; font-weight: 600;">อีเมล: </span><span
+                                        <span id="labelEmail" style="color: #6b7280; font-weight: 600; outline: none;">อีเมล: </span><span
                                             id="pToEmail"></span>
                                     </td>
                                 </tr>
                             </table>
                         </div>
+                        <!-- Resize Handle -->
+                        <div id="pInfoResizer" title="ลากเพื่อปรับขนาด"></div>
                         <!-- Right: Doc Details -->
-                        <div style="flex: 0.6; padding: 0 0 0 20px; border-left: 1px solid #e8edf5;">
-                            <div
-                                style="font-size: 9px; font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: 1.5px; margin-bottom: 8px; text-transform: uppercase;">
+                        <div id="pDocDetailsPanel" style="flex: 0.6; padding: 0 0 0 10px; border-left: 1px solid #e8edf5;">
+                            <div id="pDocDetailsTitle"
+                                style="font-size: 10px; font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: normal; margin-bottom: 8px; text-transform: uppercase;">
                                 DOCUMENT DETAILS</div>
                             <div
                                 style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                                <span style="color: #6b7280; font-weight: 600;">เลขที่ / Ref. No:</span>
+                                <span id="labelRefNo" style="color: #6b7280; font-weight: 600; outline: none;">เลขที่ / Ref. No:</span>
                                 <span style="font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: normal;" id="pRefNo"></span>
                             </div>
                             <div
                                 style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                                <span style="color: #6b7280; font-weight: 600;">วันที่ / Date:</span>
+                                <span id="labelDate" style="color: #6b7280; font-weight: 600; outline: none;">วันที่ / Date:</span>
                                 <span style="color: #1f2937; letter-spacing: normal;" id="pDocDate"></span>
                             </div>
                             <div
                                 style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                                <span style="color: #6b7280; font-weight: 600;">ยืนราคา / Validity:</span>
+                                <span id="labelValidity" style="color: #6b7280; font-weight: 600; outline: none;">ยืนราคา / Validity:</span>
                                 <span style="color: #1f2937; letter-spacing: normal;" id="pValidity"></span>
                             </div>
                             <div
                                 style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                                <span style="color: #6b7280; font-weight: 600;">ส่งมอบ / Delivery:</span>
+                                <span id="labelDelivery" style="color: #6b7280; font-weight: 600; outline: none;">ส่งมอบ / Delivery:</span>
                                 <span style="color: #1f2937; letter-spacing: normal;" id="pDelivery"></span>
                             </div>
                             <div
                                 style="display: flex; justify-content: space-between; font-size: 11px; letter-spacing: normal;">
-                                <span style="color: #6b7280; font-weight: 600;">ชำระเงิน / Payment:</span>
+                                <span id="labelPayment" style="color: #6b7280; font-weight: 600; outline: none;">ชำระเงิน / Payment:</span>
                                 <span style="color: #1f2937; letter-spacing: normal;" id="pPayment"></span>
                             </div>
                         </div>
@@ -1365,7 +1521,7 @@
                     <!-- ══ SUMMARY + REMARK ══ -->
                     <div style="display: flex; gap: 18px; align-items: flex-start; margin-top: 15px;">
                         <!-- Remark -->
-                        <div style="flex: 1;">
+                        <div style="flex: 1;" id="pRemarkContainer">
                             <div
                                 style="font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 5px; letter-spacing: normal;">
                                 หมายเหตุ (Remark):</div>
@@ -1374,16 +1530,16 @@
                                 -</div>
                         </div>
                         <!-- Totals -->
-                        <div style="flex: 0.85; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden;">
+                        <div id="pSummaryTotalsBox" style="flex: 0.85; border-radius: 6px; overflow: hidden;">
                             <table
-                                style="width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal;">
-                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                style="width: 100%; border-collapse: collapse; font-size: 11px; letter-spacing: normal;">
+                                <tr>
                                     <td style="padding: 6px 12px; color: #6b7280; letter-spacing: normal;">รวมเงิน (Sub
                                         Total):</td>
                                     <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
                                         id="pSubTotal">0.00</td>
                                 </tr>
-                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <tr>
                                     <td
                                         style="padding: 6px 12px; color: #6b7280; white-space: nowrap; letter-spacing: normal;">
                                         ภาษีมูลค่าเพิ่ม 7% (VAT):</td>
@@ -1399,7 +1555,7 @@
                                 </tr>
                             </table>
                             <div id="pBahtText"
-                                style="text-align: center; font-weight: 600; font-size: 11px; color: var(--pdf-primary, #1A6FBF); padding: 6px 12px; background: #fff; border-top: 1px solid #e2e8f0; letter-spacing: normal;">
+                                style="text-align: center; font-weight: 600; font-size: 11px; color: var(--pdf-primary, #1A6FBF); padding: 6px 12px; background: #fff; letter-spacing: normal;">
                                 (ศูนย์บาทถ้วน)
                             </div>
                         </div>
@@ -1413,22 +1569,22 @@
                         <div
                             style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px;">
                             <!-- Left: Buyer -->
-                            <div style="width: 280px; text-align: left;">
-                                <div
-                                    style="font-weight: 700; font-size: 12px; color: #1e1b4b; margin-bottom: 34px; text-align: center; font-family: 'Sarabun', sans-serif;">
+                            <div id="pBuyerSignatureBlock" style="width: 280px; text-align: left;">
+                                <div id="pLeftSignerTitle"
+                                    style="font-weight: 700; font-size: 12px; color: #1e1b4b; margin-bottom: 34px; text-align: center;">
                                     ผู้สั่งซื้อ</div>
                                 <div
-                                    style="display: flex; align-items: flex-end; margin-bottom: 8px; font-size: 11px; color: #374151; font-family: 'Sarabun', sans-serif;">
+                                    style="display: flex; align-items: flex-end; margin-bottom: 8px; font-size: 11px; color: #374151;">
                                     <span style="white-space: nowrap; margin-right: 4px; font-weight: 600;">ลงนาม /
                                         Signature:</span>
                                     <div style="flex: 1; border-bottom: 1px solid #9ca3af; height: 16px;"></div>
                                 </div>
-                                <div
-                                    style="font-size: 11px; color: #374151; margin-bottom: 8px; text-align: center; padding-left: 90px; letter-spacing: 0.5px; font-family: 'Sarabun', sans-serif;">
+                                <div id="pBuyerSignatureDots"
+                                    style="font-size: 11px; color: #374151; margin-bottom: 8px; text-align: center; padding-left: 90px; letter-spacing: 0.5px;">
                                     (............................................................)
                                 </div>
-                                <div
-                                    style="display: flex; align-items: flex-end; font-size: 11px; color: #374151; font-family: 'Sarabun', sans-serif;">
+                                <div id="pBuyerSignatureDate"
+                                    style="display: flex; align-items: flex-end; font-size: 11px; color: #374151;">
                                     <span style="white-space: nowrap; margin-right: 4px; font-weight: 600;">วันที่ /
                                         Date:</span>
                                     <div
@@ -1440,11 +1596,11 @@
                             <!-- Right: Seller -->
                             <div
                                 style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                                <div
+                                <div id="pRightSignerTitle"
                                     style="font-weight: 700; font-size: 12px; color: #1e1b4b; margin-bottom: 10px; font-family: 'Sarabun', sans-serif;">
                                     ขอแสดงความนับถือ / Sincerely Yours,</div>
                                 <!-- Signature Space -->
-                                <div
+                                <div id="pSellerSignatureSpace"
                                     style="height: 40px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 10px;">
                                 </div>
                                 <div id="pSellerName"
@@ -1473,7 +1629,98 @@
             </div>
             
             <div style="flex: 1; overflow-y: auto; padding: 20px;">
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">สีและโลโก้</h4>
+                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">รูปแบบส่วนหัว</h4>
+                <div class="form-group">
+                    <label>การเรียงตัว (Layout Direction)</label>
+                    <select id="settingHeaderDirection" class="form-control" onchange="applyLivePreview(); applyHeaderLayout(getCurrentHeaderLayout())">
+                        <option value="row">แนวนอน (Side-by-side)</option>
+                        <option value="column">แนวตั้ง (Stacked)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>จำนวนแถว Grid (Header Rows)</label>
+                    <select id="settingHeaderRows" class="form-control" onchange="applyHeaderLayout(getCurrentHeaderLayout())">
+                        <option value="1">1 แถว (1 Row)</option>
+                        <option value="2">2 แถว (2 Rows)</option>
+                        <option value="3" selected>3 แถว (3 Rows)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>การจัดวางข้อความ (Text Align)</label>
+                    <select id="settingHeaderTextAlign" class="form-control" onchange="applyHeaderLayout(getCurrentHeaderLayout())">
+                        <option value="auto">อัตโนมัติตามช่อง (Auto)</option>
+                        <option value="left">ชิดซ้าย (Left)</option>
+                        <option value="center">กึ่งกลาง (Center)</option>
+                        <option value="right">ชิดขวา (Right)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>การจัดวางแนวตั้ง (Vertical Align)</label>
+                    <select id="settingHeaderVAlign" class="form-control" onchange="applyHeaderLayout(getCurrentHeaderLayout())">
+                        <option value="flex-start">ชิดบน (Top)</option>
+                        <option value="center">กึ่งกลาง (Center)</option>
+                        <option value="flex-end">ชิดล่าง (Bottom)</option>
+                    </select>
+                </div>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ส่วนข้อมูลผู้รับ / เอกสาร</h4>
+                <div class="form-group">
+                    <label>ตำแหน่งแผง (Panel Layout)</label>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 0.5rem;" onclick="swapInfoPanels()">
+                            <i class='bx bx-transfer'></i> สลับซ้าย-ขวา
+                        </button>
+                        <button type="button" id="btnToggleDrag" class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 0.5rem;" onclick="toggleInfoDrag()">
+                            <i class='bx bx-move'></i> โหมดลาก
+                        </button>
+                    </div>
+                    <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 6px;">💡 กด "โหมดลาก" แล้วลากแผงในหน้าตัวอย่างเพื่อสลับตำแหน่ง</div>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="settingInfoDivider" checked style="width: 18px; height: 18px;" onchange="applyInfoPanelSettings()">
+                    <label style="margin: 0;">แสดงเส้นแบ่งกลาง (Divider)</label>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="settingShowHeaderLine" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
+                    <label style="margin: 0;">แสดงเส้นคั่นใต้หัวกระดาษ (Header Line)</label>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อหัวข้อฝั่งผู้รับ</label>
+                    <input type="text" id="settingRecipientTitle" class="form-control" value="RECIPIENT INFORMATION" oninput="applyInfoPanelSettings()">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อหัวข้อฝั่งเอกสาร</label>
+                    <input type="text" id="settingDocDetailsTitle" class="form-control" value="DOCUMENT DETAILS" oninput="applyInfoPanelSettings()">
+                </div>
+                
+                <div class="form-group" style="margin-top: 15px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background-color: #f8fafc;">
+                    <div style="padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="const c = document.getElementById('customLabelsContainer'); c.style.display = c.style.display === 'none' ? 'block' : 'none';">
+                        <span style="font-weight: 600; font-size: 0.85rem; color: #475569;"><i class='bx bx-edit-alt'></i> แก้ไขข้อความหัวข้อย่อย (Labels)</span>
+                        <i class='bx bx-chevron-down' style="font-size: 1.2rem; color: #64748b;"></i>
+                    </div>
+                    <div id="customLabelsContainer" style="display: none; padding: 15px; background-color: #fff; border-top: 1px solid #e2e8f0;">
+                        <h5 style="font-size: 0.8rem; color: #1A6FBF; margin-bottom: 10px; font-weight: 700;">ฝั่งข้อมูลผู้รับ</h5>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ชื่อ / To</label><input type="text" id="settingLabelTo" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ชื่อ / To:" oninput="applyInfoPanelSettings()"></div>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ที่อยู่</label><input type="text" id="settingLabelAddress" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ที่อยู่:" oninput="applyInfoPanelSettings()"></div>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ติดต่อ / Attn</label><input type="text" id="settingLabelAttn" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ติดต่อ / Attn:" oninput="applyInfoPanelSettings()"></div>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">โทร / Tel</label><input type="text" id="settingLabelTel" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="โทร / Tel:" oninput="applyInfoPanelSettings()"></div>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">อีเมล</label><input type="text" id="settingLabelEmail" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="อีเมล:" oninput="applyInfoPanelSettings()"></div>
+                        
+                        <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 15px 0;">
+                        
+                        <h5 style="font-size: 0.8rem; color: #1A6FBF; margin-bottom: 10px; font-weight: 700;">ฝั่งข้อมูลเอกสาร</h5>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">เลขที่ / Ref. No</label><input type="text" id="settingLabelRefNo" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="เลขที่ / Ref. No:" oninput="applyInfoPanelSettings()"></div>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">วันที่ / Date</label><input type="text" id="settingLabelDate" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="วันที่ / Date:" oninput="applyInfoPanelSettings()"></div>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ยืนราคา / Validity</label><input type="text" id="settingLabelValidity" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ยืนราคา / Validity:" oninput="applyInfoPanelSettings()"></div>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ส่งมอบ / Delivery</label><input type="text" id="settingLabelDelivery" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ส่งมอบ / Delivery:" oninput="applyInfoPanelSettings()"></div>
+                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ชำระเงิน / Payment</label><input type="text" id="settingLabelPayment" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ชำระเงิน / Payment:" oninput="applyInfoPanelSettings()"></div>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+
                 <div class="form-group">
                     <label>สีหลัก (Primary Color)</label>
                     <input type="color" id="settingPrimaryColor" class="form-control" value="#1A6FBF" style="height: 40px; padding: 2px; cursor: pointer;" oninput="applyLivePreview()">
@@ -1491,19 +1738,100 @@
 
                 <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ขนาดตัวอักษร</h4>
                 <div class="form-group">
-                    <label>ข้อความทั่วไป</label>
-                    <input type="range" id="settingFontSize" min="9" max="14" value="11" step="0.5" class="form-control" oninput="applyLivePreview()">
+                    <label>ข้อความทั่วไป (<span id="fontSizeLabel">11</span>px)</label>
+                    <input type="range" id="settingFontSize" min="8" max="16" value="11" step="0.5" class="form-control" oninput="document.getElementById('fontSizeLabel').innerText=this.value; applyLivePreview()">
                 </div>
                 <div class="form-group">
-                    <label>ขนาดหัวตาราง</label>
-                    <input type="range" id="settingHeaderFontSize" min="9" max="14" value="11" step="0.5" class="form-control" oninput="applyLivePreview()">
+                    <label>ขนาดหัวตาราง (<span id="hdrFontSizeLabel">11</span>px)</label>
+                    <input type="range" id="settingHeaderFontSize" min="8" max="16" value="11" step="0.5" class="form-control" oninput="document.getElementById('hdrFontSizeLabel').innerText=this.value; applyLivePreview()">
                 </div>
 
                 <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
 
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ผู้เสนอราคา</h4>
+                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">รูปแบบตัวอักษรและตาราง</h4>
                 <div class="form-group">
-                    <label>ชื่อผู้ลงนาม</label>
+                    <label>แบบอักษร (Font)</label>
+                    <select id="settingFontFamily" class="form-control" onchange="applyLivePreview()">
+                        <option value="Sarabun">Sarabun (ทางการ)</option>
+                        <option value="Prompt">Prompt (ทันสมัย)</option>
+                        <option value="Kanit">Kanit (อ่านง่าย)</option>
+                        <option value="Noto Sans Thai">Noto Sans Thai (สากล)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>น้ำหนักตัวอักษร (Font Weight)</label>
+                    <select id="settingFontWeight" class="form-control" onchange="applyLivePreview()">
+                        <option value="300">บาง (Light - 300)</option>
+                        <option value="400" selected>ปกติ (Regular - 400)</option>
+                        <option value="500">กลาง (Medium - 500)</option>
+                        <option value="600">หนาปานกลาง (Semi-Bold - 600)</option>
+                        <option value="700">หนา (Bold - 700)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>เส้นขอบตาราง (Table Border)</label>
+                    <select id="settingTableBorder" class="form-control" onchange="applyLivePreview()">
+                        <option value="rounded">ทรงมน (Rounded)</option>
+                        <option value="all">กรอบ 4 ด้าน (All Borders)</option>
+                        <option value="horizontal">เฉพาะแนวนอน (Horizontal)</option>
+                        <option value="none">ไม่มีเส้นขอบ (No Borders)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>หัวตาราง (Header Align)</label>
+                    <select id="settingTableHeaderAlign" class="form-control" onchange="applyLivePreview()">
+                        <option value="auto">ตามประเภท (Auto)</option>
+                        <option value="center">กึ่งกลาง (Center)</option>
+                        <option value="left">ชิดซ้าย (Left)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>พื้นหลังหัวตาราง (Header Style)</label>
+                    <select id="settingTableHeaderStyle" class="form-control" onchange="applyLivePreview()">
+                        <option value="solid">สีทึบตามธีม (Solid)</option>
+                        <option value="light">สีอ่อนตามธีม (Light)</option>
+                        <option value="transparent">โปร่งใส (Transparent)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="settingZebraStripes" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
+                    <label style="margin: 0;">แถบสีสลับ (Zebra Stripes)</label>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="settingShowRemark" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
+                    <label style="margin: 0;">แสดงหมายเหตุ (Show Remark)</label>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ผู้ลงนาม / ลายเซ็น</h4>
+                <div class="form-group">
+                    <label>รูปแบบช่องเซ็นผู้สั่งซื้อ (Buyer Signature)</label>
+                    <select id="settingSignatureFormat" class="form-control" onchange="applyLivePreview()">
+                        <option value="full">แสดงครบถ้วน (Full)</option>
+                        <option value="line_only">เฉพาะเส้นลงนาม (Line Only)</option>
+                        <option value="hidden">ซ่อนทั้งหมด (Hidden)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ขนาดพื้นที่เซ็นชื่อ (Signature Size)</label>
+                    <select id="settingSignatureSize" class="form-control" onchange="applyLivePreview()">
+                        <option value="30">เล็ก (Small)</option>
+                        <option value="40" selected>ปานกลาง (Medium)</option>
+                        <option value="60">ใหญ่ (Large)</option>
+                        <option value="80">ใหญ่มาก (Extra Large)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>หัวข้อฝ่ายผู้ซื้อ (ซ้าย)</label>
+                    <input type="text" id="settingLeftSignerTitle" class="form-control" value="ผู้สั่งซื้อ" oninput="applyLivePreview()">
+                </div>
+                <div class="form-group">
+                    <label>คำลงท้ายฝ่ายผู้เสนอราคา (ขวา)</label>
+                    <input type="text" id="settingSincerelyYours" class="form-control" value="ขอแสดงความนับถือ / Sincerely Yours," oninput="applyLivePreview()">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อผู้ลงนามฝ่ายผู้เสนอราคา</label>
                     <input type="text" id="settingSellerName" class="form-control" value="( นายวัฒนชัย เตียวแก )" oninput="applyLivePreview()">
                 </div>
                 <div class="form-group">
@@ -1692,14 +2020,31 @@
                             loadSavedRecipientsDropdown();
                         }
                         
-                        if (userData && userData.quotationTemplate) {
-                            applyTemplateSettings(userData.quotationTemplate);
+                        window.quotationTemplates = {};
+                        if (userData && userData.quotationTemplates) {
+                            window.quotationTemplates = userData.quotationTemplates;
                         } else {
-                            const localTemplate = localStorage.getItem('quotationTemplate');
-                            if (localTemplate) {
-                                applyTemplateSettings(JSON.parse(localTemplate));
+                            const localTemplates = localStorage.getItem('quotationTemplates');
+                            if (localTemplates) {
+                                window.quotationTemplates = JSON.parse(localTemplates);
                             }
                         }
+
+                        // Migration from old single template
+                        if (Object.keys(window.quotationTemplates).length === 0) {
+                            if (userData && userData.quotationTemplate) {
+                                const issuerName = userData.quotationTemplate.issuerName || "บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)";
+                                window.quotationTemplates[issuerName] = userData.quotationTemplate;
+                            } else {
+                                const localTemplate = localStorage.getItem('quotationTemplate');
+                                if (localTemplate) {
+                                    const parsed = JSON.parse(localTemplate);
+                                    const issuerName = parsed.issuerName || "บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)";
+                                    window.quotationTemplates[issuerName] = parsed;
+                                }
+                            }
+                        }
+                        
                         // Fetch registered shops for the issuer selector
                         try {
                             const shopsSnap = await getDoc(doc(db, 'material_settings', 'registered_shops'));
@@ -1709,6 +2054,10 @@
                         } catch (err) {
                             console.error("Error loading registered shops:", err);
                         }
+
+                        // Apply template for the current displayed issuer
+                        const currentIssuerDisplay = document.getElementById('currentIssuerDisplay').innerText;
+                        applyIssuerTemplate(currentIssuerDisplay);
                         
                         // Show body now that the user is fully verified
                         document.body.style.display = 'flex';
@@ -2005,19 +2354,93 @@
 
             const primaryColor = document.getElementById('settingPrimaryColor')?.value || '#1A6FBF';
             const headerFontSize = document.getElementById('settingHeaderFontSize')?.value || '11';
+            const zebraStripes = document.getElementById('settingZebraStripes') ? document.getElementById('settingZebraStripes').checked : true;
+
+            const fontFamily = document.getElementById('settingFontFamily') ? document.getElementById('settingFontFamily').value : "'Sarabun', 'Tahoma', sans-serif";
+            const tableBorder = document.getElementById('settingTableBorder') ? document.getElementById('settingTableBorder').value : 'rounded';
+            const tableHeaderAlign = document.getElementById('settingTableHeaderAlign') ? document.getElementById('settingTableHeaderAlign').value : 'auto';
+            const tableHeaderStyle = document.getElementById('settingTableHeaderStyle') ? document.getElementById('settingTableHeaderStyle').value : 'solid';
+
+            let tableOuterBorder = '';
+            let tableBorderRadius = '';
+            let cellBorder = 'border: 0.5px solid #e2e8f0;';
+            let thBorderRight = 'border-right: 1px solid rgba(255,255,255,0.18);';
+            
+            if (tableBorder === 'all') {
+                tableOuterBorder = `border: 1px solid ${primaryColor};`;
+                tableBorderRadius = '';
+                cellBorder = 'border: 0.5px solid #cbd5e1;';
+                thBorderRight = 'border-right: 1px solid rgba(255,255,255,0.3);';
+            } else if (tableBorder === 'horizontal') {
+                tableOuterBorder = `border-top: 2px solid ${primaryColor}; border-bottom: 2px solid ${primaryColor};`;
+                tableBorderRadius = '';
+                cellBorder = 'border-bottom: 0.5px solid #e2e8f0; border-top: none; border-left: none; border-right: none;';
+                thBorderRight = 'border-right: none;';
+            } else if (tableBorder === 'none') {
+                tableOuterBorder = 'border: none;';
+                tableBorderRadius = '';
+                cellBorder = 'border: none;';
+                thBorderRight = 'border-right: none;';
+            } else { // rounded (default)
+                tableOuterBorder = `border: 1px solid ${primaryColor};`;
+                tableBorderRadius = 'border-radius: 6px; overflow: hidden;';
+                cellBorder = 'border: 0.5px solid #e2e8f0;';
+                thBorderRight = 'border-right: 1px solid rgba(255,255,255,0.18);';
+            }
+
+            let rowBorder = 'border-bottom: 0.5px solid #e2e8f0;';
+            if (tableBorder === 'none') {
+                rowBorder = '';
+            }
+
+            let thBgColor = primaryColor;
+            let thTextColor = '#ffffff';
+            let thBorderBottom = `1px solid ${primaryColor}`;
+            let thBorderRightVal = thBorderRight;
+
+            if (tableHeaderStyle === 'light') {
+                let lightBg = 'rgba(26, 111, 191, 0.1)';
+                const hex = primaryColor.replace('#', '');
+                if(hex.length === 6 || hex.length === 8) {
+                    const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+                    lightBg = `rgba(${r}, ${g}, ${b}, 0.1)`;
+                }
+                thBgColor = lightBg;
+                thTextColor = primaryColor;
+                thBorderBottom = `1.5px solid ${primaryColor}`;
+                if (tableBorder !== 'none' && tableBorder !== 'horizontal') {
+                    const hex2 = primaryColor.replace('#', '');
+                    const r = parseInt(hex2.slice(0, 2), 16), g = parseInt(hex2.slice(2, 4), 16), b = parseInt(hex2.slice(4, 6), 16);
+                    thBorderRightVal = `1px solid rgba(${r}, ${g}, ${b}, 0.25)`;
+                } else {
+                    thBorderRightVal = 'none';
+                }
+            } else if (tableHeaderStyle === 'transparent') {
+                thBgColor = 'transparent';
+                thTextColor = '#1f2937';
+                thBorderBottom = `2px solid ${primaryColor}`;
+                thBorderRightVal = 'none';
+            }
+
+            if (tableBorder === 'none') {
+                thBorderBottom = 'none';
+                thBorderRightVal = 'none';
+            }
+
+            const thAlignSeq = tableHeaderAlign === 'auto' ? ['center', 'left', 'center', 'center', 'right', 'right'] : Array(6).fill(tableHeaderAlign);
 
             const rows = document.getElementById('itemsBody').children;
             
             const createTableHTML = (isFirst = true) => `
-                <table class="pItemsTable" style="width: 100%; border-collapse: collapse; margin-top: ${isFirst ? '0' : '-25px'}; margin-bottom: 0; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal; border: 1px solid ${primaryColor}; border-radius: 6px; overflow: hidden; page-break-inside: avoid;">
+                <table class="pItemsTable" style="width: 100%; border-collapse: collapse; margin-top: ${isFirst ? '0' : '-25px'}; margin-bottom: 0; font-family: ${fontFamily}; letter-spacing: normal; ${tableOuterBorder} ${tableBorderRadius} page-break-inside: avoid;">
                     <thead>
-                        <tr class="pTableHeadRow" style="background-color: ${primaryColor}; border-bottom: 1px solid ${primaryColor};">
-                            <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 38px;">ลำดับ</th>
-                            <th style="padding: 9px 7px; text-align: left; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; border-right: 1px solid rgba(255,255,255,0.18);">รายการสินค้า / รายละเอียด</th>
-                            <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">จำนวน</th>
-                            <th style="padding: 9px 7px; text-align: center; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 50px;">หน่วย</th>
-                            <th style="padding: 9px 7px; text-align: right; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.18); width: 95px;">ราคา/หน่วย</th>
-                            <th style="padding: 9px 7px; text-align: right; font-size: ${headerFontSize}px; font-weight: 600; color: #ffffff !important; background-color: ${primaryColor} !important; letter-spacing: normal; white-space: nowrap; width: 110px;">จำนวนเงิน</th>
+                        <tr class="pTableHeadRow" style="background-color: ${thBgColor}; border-bottom: ${thBorderBottom};">
+                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[0]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 38px;">ลำดับ</th>
+                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[1]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; border-right: ${thBorderRightVal};">รายการสินค้า / รายละเอียด</th>
+                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[2]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 50px;">จำนวน</th>
+                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[3]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 50px;">หน่วย</th>
+                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[4]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 95px;">ราคา/หน่วย</th>
+                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[5]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; width: 110px;">จำนวนเงิน</th>
                         </tr>
                     </thead>
                     <tbody style="letter-spacing: normal;">
@@ -2044,7 +2467,7 @@
                 const price = parseFloat(tr.querySelector('.item-price').value || 0);
                 const totalText = tr.querySelector('.item-total-text').innerText;
 
-                const zebraColor = (itemsInCurrentTable % 2 === 1) ? '#f8fafc' : 'transparent';
+                const zebraColor = (zebraStripes && itemsInCurrentTable % 2 === 1) ? '#f8fafc' : 'transparent';
                 
                 let displayNo = '';
                 if (customNo && customNo.trim() !== '') {
@@ -2066,20 +2489,20 @@
                 
                 if (isHeader) {
                     currentTableHTML += `
-                        <tr style="border-bottom: 0.5px solid #e2e8f0; letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
-                            <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
-                            <td colspan="5" style="padding: 7px 6px 7px ${descPadding}; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; font-weight: 700; color: #374151; letter-spacing: normal !important; text-align: left;">${descContent}</td>
+                        <tr style="${rowBorder} letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
+                            <td style="padding: 7px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
+                            <td colspan="5" style="padding: 7px 6px 7px ${descPadding}; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; letter-spacing: normal !important; text-align: left;">${descContent}</td>
                         </tr>
                     `;
                 } else {
                     currentTableHTML += `
-                        <tr style="border-bottom: 0.5px solid #e2e8f0; letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
-                            <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
-                            <td style="padding: 7px 6px 7px ${descPadding}; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">${descContent}</td>
-                            <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
-                            <td style="padding: 7px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
-                            <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
-                            <td style="padding: 7px 6px; text-align: right; border: 0.5px solid #e2e8f0; font-weight: 500; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
+                        <tr style="${rowBorder} letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
+                            <td style="padding: 7px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
+                            <td style="padding: 7px 6px 7px ${descPadding}; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">${descContent}</td>
+                            <td style="padding: 7px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
+                            <td style="padding: 7px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
+                            <td style="padding: 7px 6px; text-align: right; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
+                            <td style="padding: 7px 6px; text-align: right; ${cellBorder} font-weight: 500; font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
                         </tr>
                     `;
                 }
@@ -2091,15 +2514,15 @@
             const minRows = 5;
             if (itemsInCurrentTable < minRows) {
                 for (let i = itemsInCurrentTable; i < minRows; i++) {
-                    const zebraColor = (i % 2 === 1) ? '#f8fafc' : 'transparent';
+                    const zebraColor = (zebraStripes && i % 2 === 1) ? '#f8fafc' : 'transparent';
                     currentTableHTML += `
-                        <tr style="border-bottom: 0.5px solid #e2e8f0; letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
-                            <td style="padding: 5px 6px; text-align: center; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; border: 0.5px solid #e2e8f0; font-family: 'Sarabun', 'Tahoma', sans-serif !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <tr style="${rowBorder} letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
+                            <td style="padding: 5px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
                         </tr>
                     `;
                 }
@@ -2365,11 +2788,104 @@
         }
 
         function selectIssuerFromModal(companyName) {
-            applyIssuerTheme(companyName);
+            applyIssuerTemplate(companyName);
             closeIssuerSelectionModal();
-            // Automatically sync the UI settings to template memory
-            saveTemplateSettings(false); 
         }
+
+        function applyIssuerTemplate(companyName) {
+            const safeCompanyName = companyName || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+            
+            // 1. Apply the static theme (logo, colors, address, etc.)
+            applyIssuerTheme(safeCompanyName);
+            
+            // 2. Prepare default customizable template settings based on the shop's defaults
+            let shopTheme = '#1A6FBF';
+            let shopSigner = '( นายวัฒนชัย วิศวสุวรรณ )';
+            let shopHasLogo = true;
+            
+            if (safeCompanyName && registeredShopsCache) {
+                const shop = registeredShopsCache.find(s => {
+                    const sName = typeof s === 'string' ? s : (s.name || '');
+                    return sName.trim() === String(safeCompanyName).trim();
+                });
+                if (shop && typeof shop !== 'string') {
+                    if (shop.themeColor) shopTheme = shop.themeColor;
+                    if (shop.signer) shopSigner = shop.signer;
+                    if (!shop.logo) shopHasLogo = false;
+                }
+            }
+
+            const defaultSettings = {
+                primaryColor: shopTheme,
+                showLogo: shopHasLogo,
+                logoSize: 80,
+                fontSize: 14,
+                headerFontSize: 11,
+                sellerName: shopSigner,
+                sellerRole: 'ผู้เสนอราคา',
+                headerDirection: 'row',
+                headerTextAlign: 'auto',
+                headerVAlign: 'flex-start',
+                fontFamily: 'Sarabun',
+                fontWeight: '400',
+                tableBorder: 'rounded',
+                tableHeaderAlign: 'auto',
+                tableHeaderStyle: 'solid',
+                zebraStripes: true,
+                leftSignerTitle: 'ผู้สั่งซื้อ',
+                sincerelyYours: 'ขอแสดงความนับถือ / Sincerely Yours,',
+                issuerName: safeCompanyName,
+                headerLayout: {
+                    left: ["block-logo", "block-company"],
+                    center: [],
+                    right: ["block-title"],
+                    midLeft: [],
+                    midCenter: [],
+                    midRight: [],
+                    botLeft: [],
+                    botCenter: [],
+                    botRight: []
+                },
+                infoPanelOrder: ['pRecipientPanel', 'pInfoResizer', 'pDocDetailsPanel'],
+                infoPanelLeftFlex: '1.4',
+                infoPanelRightFlex: '0.6',
+                infoDivider: true,
+                recipientTitle: 'RECIPIENT INFORMATION',
+                docDetailsTitle: 'DOCUMENT DETAILS',
+                infoLabels: {
+                    to: 'ชื่อ / To:',
+                    address: 'ที่อยู่:',
+                    attn: 'ติดต่อ / Attn:',
+                    tel: 'โทร / Tel:',
+                    email: 'อีเมล:',
+                    refNo: 'เลขที่ / Ref. No:',
+                    date: 'วันที่ / Date:',
+                    validity: 'ยืนราคา / Validity:',
+                    delivery: 'ส่งมอบ / Delivery:',
+                    payment: 'ชำระเงิน / Payment:'
+                }
+            };
+
+            // 3. Load from localStorage / Firestore memory cache
+            const savedSettings = (window.quotationTemplates && window.quotationTemplates[safeCompanyName]) 
+                                  ? window.quotationTemplates[safeCompanyName] 
+                                  : null;
+            
+            // 4. Merge and apply
+            const finalSettings = Object.assign({}, defaultSettings, savedSettings);
+            
+            // Ensure deep properties are not lost if savedSettings exists but lacks them
+            if (savedSettings && !savedSettings.headerLayout) {
+                finalSettings.headerLayout = defaultSettings.headerLayout;
+            }
+            if (savedSettings && !savedSettings.headerDirection) {
+                finalSettings.headerDirection = defaultSettings.headerDirection;
+            }
+            
+            applyTemplateSettings(finalSettings);
+        }
+
+        let sortables = [];
 
         function openTemplateSettingsModal() {
             syncFormToPrintArea();
@@ -2386,11 +2902,47 @@
             printArea.style.transform = 'scale(0.85)';
             
             document.getElementById('templateSettingsModal').style.display = 'flex';
+            
+            // Enable SortableJS for drag-and-drop 3x3 grid header layout
+            const zones = [
+                'zone-left', 'zone-center', 'zone-right', 
+                'zone-mid-left', 'zone-mid-center', 'zone-mid-right',
+                'zone-bot-left', 'zone-bot-center', 'zone-bot-right'
+            ];
+            sortables = [];
+            
+            zones.forEach(zoneId => {
+                const zone = document.getElementById(zoneId);
+                if(zone) {
+                    zone.classList.add('sortable-active-container');
+                    sortables.push(new Sortable(zone, {
+                        group: 'header', // allow dragging between all 3 zones
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        onEnd: function (evt) {
+                            applyHeaderLayout(getCurrentHeaderLayout());
+                            applyLivePreview();
+                        }
+                    }));
+                }
+            });
+
             applyLivePreview(); // Sync the panel sliders to current preview
+            // Show resizers for header width adjustment
+            document.body.classList.add('modal-open');
+            setTimeout(() => initHeaderResizers(), 100);
         }
 
         function closeTemplateSettingsModal() {
             const printArea = document.getElementById('printArea');
+            
+            // Cleanup Sortable
+            sortables.forEach(s => s.destroy());
+            sortables = [];
+            document.querySelectorAll('.sortable-active-container').forEach(el => el.classList.remove('sortable-active-container'));
+            document.querySelectorAll('.header-resizer').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+
             if (printAreaOriginalParent) {
                 printAreaOriginalParent.insertBefore(printArea, printAreaOriginalNextSibling);
             }
@@ -2409,6 +2961,23 @@
             const headerFontSize = document.getElementById('settingHeaderFontSize').value;
             const sellerName = document.getElementById('settingSellerName').value;
             const sellerRole = document.getElementById('settingSellerRole').value;
+            const leftSignerTitle = document.getElementById('settingLeftSignerTitle') ? document.getElementById('settingLeftSignerTitle').value : 'ผู้สั่งซื้อ';
+            const sincerelyYours = document.getElementById('settingSincerelyYours') ? document.getElementById('settingSincerelyYours').value : 'ขอแสดงความนับถือ / Sincerely Yours,';
+            const fontFamily = document.getElementById('settingFontFamily') ? document.getElementById('settingFontFamily').value : 'Sarabun';
+            const fontWeight = document.getElementById('settingFontWeight') ? document.getElementById('settingFontWeight').value : '400';
+            const tableBorder = document.getElementById('settingTableBorder') ? document.getElementById('settingTableBorder').value : 'rounded';
+            const tableHeaderStyle = document.getElementById('settingTableHeaderStyle') ? document.getElementById('settingTableHeaderStyle').value : 'solid';
+            const zebraStripes = document.getElementById('settingZebraStripes') ? document.getElementById('settingZebraStripes').checked : true;
+            const showRemark = document.getElementById('settingShowRemark') ? document.getElementById('settingShowRemark').checked : true;
+            const showHeaderLine = document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true;
+            const sigFormat = document.getElementById('settingSignatureFormat') ? document.getElementById('settingSignatureFormat').value : 'full';
+            const sigSize = document.getElementById('settingSignatureSize') ? parseInt(document.getElementById('settingSignatureSize').value) : 40;
+
+            // Sync range input labels
+            const fsLabel = document.getElementById('fontSizeLabel');
+            if (fsLabel) fsLabel.innerText = fontSize;
+            const hfsLabel = document.getElementById('hdrFontSizeLabel');
+            if (hfsLabel) hfsLabel.innerText = headerFontSize;
 
             const printArea = document.getElementById('printArea');
             if (printArea) {
@@ -2420,52 +2989,245 @@
                 }
             }
 
-            // Apply Color
-            document.getElementById('pHeaderSection').style.borderBottom = `2.5px solid ${primaryColor}`;
-            document.querySelectorAll('.pItemsTable').forEach(tbl => tbl.style.borderColor = primaryColor);
-            
-            const headRows = document.querySelectorAll('.pTableHeadRow');
-            headRows.forEach(hr => {
-                hr.style.backgroundColor = primaryColor;
-                hr.style.borderBottom = `1px solid ${primaryColor}`;
-            });
-
-            document.getElementById('pSellerRole').style.color = primaryColor;
-            
-            const ths = document.querySelectorAll('.pTableHeadRow th');
-            ths.forEach(th => {
-                th.style.setProperty('background-color', primaryColor, 'important');
-                th.style.setProperty('border-bottom', `1.5px solid ${primaryColor}`, 'important');
-            });
-
-            // Apply color to Document Title (ใบเสนอราคา)
-            const titleContainer = document.querySelector('#pHeaderSection > div:nth-child(2)');
-            if (titleContainer) {
-                titleContainer.style.borderLeftColor = primaryColor;
-                const titleText = titleContainer.querySelector('div:first-child');
-                if (titleText) titleText.style.color = primaryColor;
+            // --- DYNAMIC CSS INJECTION (the reliable way for both preview & html2pdf cloning) ---
+            let styleEl = document.getElementById('dynamicPrintStyle');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamicPrintStyle';
+                document.head.appendChild(styleEl);
             }
 
+            // Compute header style
+            let thBg = primaryColor, thColor = '#fff';
+            const hex2 = primaryColor.replace('#', '');
+            const pr = parseInt(hex2.slice(0,2),16), pg = parseInt(hex2.slice(2,4),16), pb = parseInt(hex2.slice(4,6),16);
+            if (tableHeaderStyle === 'light') {
+                thBg = `rgba(${pr},${pg},${pb},0.1)`;
+                thColor = primaryColor;
+            } else if (tableHeaderStyle === 'transparent') {
+                thBg = 'transparent';
+                thColor = '#1f2937';
+            }
+
+            // Compute border styles
+            let outerBorder = `border: 1px solid ${primaryColor} !important; border-radius: 6px !important; overflow: hidden !important;`;
+            let cellBorderCSS = 'border: 0.5px solid #e2e8f0 !important;';
+            let rowBorderCSS = 'border-bottom: 0.5px solid #e2e8f0 !important;';
+            let thBorderCSS = `border: 0.5px solid rgba(255,255,255,0.2) !important; border-bottom: 1px solid ${primaryColor} !important;`;
+            let thBottomBdr = `border-bottom: 1px solid ${primaryColor} !important;`;
+
+            // Summary box and remark borders
+            let summaryOuterBorder = '1px solid #cbd5e1';
+            let summaryRowBorder = '1px solid #e2e8f0';
+            let summaryCellBorder = '0.5px solid #e2e8f0';
+            let remarkBorder = '1px solid #e5e7eb';
+
+            if (tableBorder === 'all') {
+                outerBorder = `border: 1px solid ${primaryColor} !important; border-radius: 0 !important;`;
+                cellBorderCSS = 'border: 0.5px solid #cbd5e1 !important;';
+                thBorderCSS = `border: 0.5px solid #cbd5e1 !important; border-bottom: 1px solid ${primaryColor} !important;`;
+            } else if (tableBorder === 'horizontal') {
+                outerBorder = `border-top: 2px solid ${primaryColor} !important; border-bottom: 2px solid ${primaryColor} !important; border-left: none !important; border-right: none !important; border-radius: 0 !important;`;
+                cellBorderCSS = 'border-bottom: 0.5px solid #e2e8f0 !important; border-top: none !important; border-left: none !important; border-right: none !important;';
+                rowBorderCSS = 'border-bottom: 0.5px solid #e2e8f0 !important;';
+                thBorderCSS = `border-top: none !important; border-left: none !important; border-right: none !important; border-bottom: 2px solid ${primaryColor} !important;`;
+                summaryOuterBorder = `border-top: 1.5px solid ${primaryColor} !important; border-bottom: 1.5px solid ${primaryColor} !important; border-left: none !important; border-right: none !important;`;
+                summaryRowBorder = 'border-bottom: 0.5px solid #e2e8f0 !important;';
+                summaryCellBorder = 'border-top: none !important; border-left: none !important; border-right: none !important; border-bottom: 0.5px solid #e2e8f0 !important;';
+            } else if (tableBorder === 'none') {
+                outerBorder = 'border: none !important; border-radius: 0 !important;';
+                cellBorderCSS = 'border: none !important;';
+                rowBorderCSS = 'border-bottom: none !important;';
+                thBorderCSS = 'border: none !important;';
+                thBottomBdr = 'border-bottom: none !important;';
+                summaryOuterBorder = 'none';
+                summaryRowBorder = 'none';
+                summaryCellBorder = 'none';
+                remarkBorder = 'none';
+            }
+
+            if (tableHeaderStyle === 'light') {
+                thBottomBdr = `border-bottom: 1.5px solid ${primaryColor} !important;`;
+                if (tableBorder === 'rounded' || tableBorder === 'all') {
+                    thBorderCSS = `border: 0.5px solid rgba(${pr},${pg},${pb},0.2) !important; border-bottom: 1.5px solid ${primaryColor} !important;`;
+                } else if (tableBorder === 'horizontal') {
+                    thBorderCSS = `border-top: none !important; border-left: none !important; border-right: none !important; border-bottom: 2.5px solid ${primaryColor} !important;`;
+                }
+            } else if (tableHeaderStyle === 'transparent') {
+                thBottomBdr = tableBorder === 'none' ? 'border-bottom: none !important;' : `border-bottom: 2px solid ${primaryColor} !important;`;
+                if (tableBorder === 'none') {
+                    thBorderCSS = 'border: none !important;';
+                } else {
+                    thBorderCSS = `border-top: none !important; border-left: none !important; border-right: none !important; border-bottom: 2px solid ${primaryColor} !important;`;
+                }
+            }
+
+            const zebraCSS = zebraStripes 
+                ? `.print-area .pItemsTable tbody tr:nth-child(even) { background-color: #f8fafc !important; }`
+                : `.print-area .pItemsTable tbody tr:nth-child(even) { background-color: transparent !important; }`;
+
+            styleEl.textContent = `
+                /* ===== DYNAMIC PRINT STYLES ===== */
+                body, input, select, textarea, button, * {
+                    font-family: '${fontFamily}', 'Tahoma', sans-serif !important;
+                }
+                .print-area > div {
+                    font-size: ${fontSize}px !important;
+                    font-weight: ${fontWeight} !important;
+                }
+                .print-area .pItemsTable {
+                    ${outerBorder}
+                }
+                .print-area .pTableHeadRow {
+                    background-color: ${thBg} !important;
+                    ${thBottomBdr}
+                }
+                .print-area .pTableHeadRow th {
+                    background-color: ${thBg} !important;
+                    color: ${thColor} !important;
+                    font-size: ${headerFontSize}px !important;
+                    ${thBorderCSS}
+                }
+                .print-area .pTableHeadRow th:last-child {
+                    border-right: none !important;
+                }
+                .print-area .pItemsTable td {
+                    ${cellBorderCSS}
+                }
+                .print-area .pItemsTable tbody tr {
+                    ${rowBorderCSS}
+                }
+                ${zebraCSS}
+                .print-area #pHeaderSection {
+                    ${showHeaderLine ? `border-bottom: 2.5px solid ${primaryColor} !important;` : 'border-bottom: none !important;'}
+                }
+                .print-area #pSellerRole {
+                    color: ${primaryColor} !important;
+                }
+                .print-area #pRecipientPanel table tr, 
+                .print-area #pDocDetailsPanel div {
+                    background-color: transparent !important;
+                }
+                .print-area #pSummaryTotalsBox {
+                    border: ${summaryOuterBorder} !important;
+                }
+                .print-area #pSummaryTotalsBox table tr {
+                    border-bottom: ${summaryRowBorder} !important;
+                }
+                .print-area #pSummaryTotalsBox #pBahtText {
+                    border-top: ${summaryRowBorder} !important;
+                }
+                .print-area #pSummaryTotalsBox td {
+                    border: ${summaryCellBorder} !important;
+                }
+                .print-area #pRemark {
+                    border: ${remarkBorder} !important;
+                }
+            `;
+
+            // Apply color to Document Title
+            const titleBlock = document.getElementById('block-title');
+            if (titleBlock) {
+                const titleText = titleBlock.querySelector('div:first-child');
+                if (titleText) titleText.style.color = primaryColor;
+            }
+            
+            const pRemarkContainer = document.getElementById('pRemarkContainer');
+            const pSummaryTotalsBox = document.getElementById('pSummaryTotalsBox');
+            if (pRemarkContainer) {
+                pRemarkContainer.style.display = showRemark ? 'block' : 'none';
+                if (!showRemark && pSummaryTotalsBox) {
+                    pSummaryTotalsBox.style.marginLeft = 'auto';
+                    pSummaryTotalsBox.style.flex = '0 0 46%';
+                } else if (pSummaryTotalsBox) {
+                    pSummaryTotalsBox.style.marginLeft = '0';
+                    pSummaryTotalsBox.style.flex = '0.85';
+                }
+            }
+
+            // Apply Signature Settings
+            const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
+            const pBuyerDots = document.getElementById('pBuyerSignatureDots');
+            const pBuyerDate = document.getElementById('pBuyerSignatureDate');
+            const pLeftTitle = document.getElementById('pLeftSignerTitle');
+            const pSellerSpace = document.getElementById('pSellerSignatureSpace');
+
+            if (pBuyerBlock && pBuyerDots && pBuyerDate) {
+                if (sigFormat === 'hidden') {
+                    pBuyerBlock.style.visibility = 'hidden';
+                } else if (sigFormat === 'line_only') {
+                    pBuyerBlock.style.visibility = 'visible';
+                    pBuyerDots.style.display = 'none';
+                    pBuyerDate.style.display = 'none';
+                } else {
+                    pBuyerBlock.style.visibility = 'visible';
+                    pBuyerDots.style.display = 'block';
+                    pBuyerDate.style.display = 'flex';
+                }
+            }
+            if (pLeftTitle) {
+                let marginBase = sigSize - 6;
+                if (sigFormat === 'line_only') {
+                     marginBase += 36;
+                }
+                pLeftTitle.style.marginBottom = marginBase + 'px';
+            }
+            if (pSellerSpace) {
+                pSellerSpace.style.height = sigSize + 'px';
+            }
 
             // Apply Logo
             const pLogo = document.getElementById('pLogoImg');
-            pLogo.style.display = showLogo ? 'block' : 'none';
-            pLogo.style.height = `${logoSize}px`;
-
-            // Apply Typography
-            const printContentDiv = document.querySelector('#printArea > div');
-            printContentDiv.style.fontSize = `${fontSize}px`;
-            
-            ths.forEach(th => {
-                th.style.fontSize = `${headerFontSize}px`;
-            });
+            if (pLogo) {
+                pLogo.style.display = showLogo ? 'block' : 'none';
+                pLogo.style.height = `${logoSize}px`;
+            }
 
             // Apply Seller Info
-            document.getElementById('pSellerName').innerText = sellerName;
-            document.getElementById('pSellerRole').innerText = sellerRole;
+            const pSellerName = document.getElementById('pSellerName');
+            const pSellerRole = document.getElementById('pSellerRole');
+            const pLeftSigner = document.getElementById('pLeftSignerTitle');
+            const pRightSigner = document.getElementById('pRightSignerTitle');
+            
+            if (pSellerName) pSellerName.innerText = sellerName;
+            if (pSellerRole) pSellerRole.innerText = sellerRole;
+            if (pLeftSigner) pLeftSigner.innerText = leftSignerTitle;
+            if (pRightSigner) pRightSigner.innerText = sincerelyYours;
+
+            // Re-render table data
+            syncFormToPrintArea();
+        }
+
+        function getCurrentHeaderLayout() {
+            const zTopLeft = document.getElementById('zone-left');
+            const zTopCenter = document.getElementById('zone-center');
+            const zTopRight = document.getElementById('zone-right');
+            
+            const zMidLeft = document.getElementById('zone-mid-left');
+            const zMidCenter = document.getElementById('zone-mid-center');
+            const zMidRight = document.getElementById('zone-mid-right');
+            
+            const zBotLeft = document.getElementById('zone-bot-left');
+            const zBotCenter = document.getElementById('zone-bot-center');
+            const zBotRight = document.getElementById('zone-bot-right');
+            
+            return {
+                left: Array.from(zTopLeft.children).map(el => el.id),
+                center: Array.from(zTopCenter.children).map(el => el.id),
+                right: Array.from(zTopRight.children).map(el => el.id),
+                
+                midLeft: zMidLeft ? Array.from(zMidLeft.children).map(el => el.id) : [],
+                midCenter: zMidCenter ? Array.from(zMidCenter.children).map(el => el.id) : [],
+                midRight: zMidRight ? Array.from(zMidRight.children).map(el => el.id) : [],
+                
+                botLeft: zBotLeft ? Array.from(zBotLeft.children).map(el => el.id) : [],
+                botCenter: zBotCenter ? Array.from(zBotCenter.children).map(el => el.id) : [],
+                botRight: zBotRight ? Array.from(zBotRight.children).map(el => el.id) : []
+            };
         }
 
         async function saveTemplateSettings(showAlert = true) {
+            const currentIssuerDisplay = document.getElementById('currentIssuerDisplay').innerText;
             const templateSettings = { 
                 primaryColor: document.getElementById('settingPrimaryColor').value,
                 showLogo: document.getElementById('settingShowLogo').checked,
@@ -2474,25 +3236,406 @@
                 headerFontSize: document.getElementById('settingHeaderFontSize').value,
                 sellerName: document.getElementById('settingSellerName').value,
                 sellerRole: document.getElementById('settingSellerRole').value,
-                issuerName: document.getElementById('currentIssuerDisplay').innerText
+                leftSignerTitle: document.getElementById('settingLeftSignerTitle') ? document.getElementById('settingLeftSignerTitle').value : 'ผู้สั่งซื้อ',
+                sincerelyYours: document.getElementById('settingSincerelyYours') ? document.getElementById('settingSincerelyYours').value : 'ขอแสดงความนับถือ / Sincerely Yours,',
+                headerDirection: document.getElementById('settingHeaderDirection').value,
+                headerRows: document.getElementById('settingHeaderRows') ? document.getElementById('settingHeaderRows').value : '3',
+                headerTextAlign: document.getElementById('settingHeaderTextAlign').value,
+                headerVAlign: document.getElementById('settingHeaderVAlign').value,
+                fontFamily: document.getElementById('settingFontFamily') ? document.getElementById('settingFontFamily').value : "Sarabun",
+                fontWeight: document.getElementById('settingFontWeight') ? document.getElementById('settingFontWeight').value : "400",
+                tableBorder: document.getElementById('settingTableBorder') ? document.getElementById('settingTableBorder').value : 'rounded',
+                tableHeaderAlign: document.getElementById('settingTableHeaderAlign') ? document.getElementById('settingTableHeaderAlign').value : 'auto',
+                tableHeaderStyle: document.getElementById('settingTableHeaderStyle') ? document.getElementById('settingTableHeaderStyle').value : 'solid',
+                zebraStripes: document.getElementById('settingZebraStripes') ? document.getElementById('settingZebraStripes').checked : true,
+                showRemark: document.getElementById('settingShowRemark') ? document.getElementById('settingShowRemark').checked : true,
+                showHeaderLine: document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true,
+                signatureFormat: document.getElementById('settingSignatureFormat') ? document.getElementById('settingSignatureFormat').value : 'full',
+                signatureSize: document.getElementById('settingSignatureSize') ? document.getElementById('settingSignatureSize').value : '40',
+                issuerName: currentIssuerDisplay,
+                headerLayout: getCurrentHeaderLayout(),
+                infoPanelOrder: getInfoPanelOrder(),
+                infoPanelLeftFlex: getInfoPanelFlex('left'),
+                infoPanelRightFlex: getInfoPanelFlex('right'),
+                infoDivider: document.getElementById('settingInfoDivider') ? document.getElementById('settingInfoDivider').checked : true,
+                headerFlex: {
+                    left: document.getElementById('zone-left') ? document.getElementById('zone-left').style.flex || '1' : '1',
+                    center: document.getElementById('zone-center') ? document.getElementById('zone-center').style.flex || '1' : '1',
+                    right: document.getElementById('zone-right') ? document.getElementById('zone-right').style.flex || '1' : '1',
+                    midLeft: document.getElementById('zone-mid-left') ? document.getElementById('zone-mid-left').style.flex || '1' : '1',
+                    midCenter: document.getElementById('zone-mid-center') ? document.getElementById('zone-mid-center').style.flex || '1' : '1',
+                    midRight: document.getElementById('zone-mid-right') ? document.getElementById('zone-mid-right').style.flex || '1' : '1',
+                    botLeft: document.getElementById('zone-bot-left') ? document.getElementById('zone-bot-left').style.flex || '1' : '1',
+                    botCenter: document.getElementById('zone-bot-center') ? document.getElementById('zone-bot-center').style.flex || '1' : '1',
+                    botRight: document.getElementById('zone-bot-right') ? document.getElementById('zone-bot-right').style.flex || '1' : '1'
+                },
+                recipientTitle: document.getElementById('settingRecipientTitle') ? document.getElementById('settingRecipientTitle').value : 'RECIPIENT INFORMATION',
+                docDetailsTitle: document.getElementById('settingDocDetailsTitle') ? document.getElementById('settingDocDetailsTitle').value : 'DOCUMENT DETAILS',
+                infoLabels: {
+                    to: document.getElementById('settingLabelTo') ? document.getElementById('settingLabelTo').value : 'ชื่อ / To:',
+                    address: document.getElementById('settingLabelAddress') ? document.getElementById('settingLabelAddress').value : 'ที่อยู่:',
+                    attn: document.getElementById('settingLabelAttn') ? document.getElementById('settingLabelAttn').value : 'ติดต่อ / Attn:',
+                    tel: document.getElementById('settingLabelTel') ? document.getElementById('settingLabelTel').value : 'โทร / Tel:',
+                    email: document.getElementById('settingLabelEmail') ? document.getElementById('settingLabelEmail').value : 'อีเมล:',
+                    refNo: document.getElementById('settingLabelRefNo') ? document.getElementById('settingLabelRefNo').value : 'เลขที่ / Ref. No:',
+                    date: document.getElementById('settingLabelDate') ? document.getElementById('settingLabelDate').value : 'วันที่ / Date:',
+                    validity: document.getElementById('settingLabelValidity') ? document.getElementById('settingLabelValidity').value : 'ยืนราคา / Validity:',
+                    delivery: document.getElementById('settingLabelDelivery') ? document.getElementById('settingLabelDelivery').value : 'ส่งมอบ / Delivery:',
+                    payment: document.getElementById('settingLabelPayment') ? document.getElementById('settingLabelPayment').value : 'ชำระเงิน / Payment:'
+                }
             };
             
-            localStorage.setItem('quotationTemplate', JSON.stringify(templateSettings));
+            if (!window.quotationTemplates) window.quotationTemplates = {};
+            window.quotationTemplates[currentIssuerDisplay] = templateSettings;
+            
+            localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
             applyTemplateSettings(templateSettings);
 
             if (currentUser) {
                 try {
                     await setDoc(doc(db, 'users', currentUser.uid), {
-                        quotationTemplate: templateSettings
+                        quotationTemplates: window.quotationTemplates
                     }, { merge: true });
-                    if(showAlert) alert('บันทึกการตั้งค่ารูปแบบฟอร์มลงคลาวด์สำเร็จ');
+                    if(showAlert) alert('บันทึกการตั้งค่ารูปแบบฟอร์มสำหรับร้านค้านี้ลงคลาวด์สำเร็จ');
                 } catch (err) {
                     console.error('Error saving template:', err);
                 }
             } else {
-                if(showAlert) alert('บันทึกการตั้งค่าในเครื่องนี้สำเร็จ');
+                if(showAlert) alert('บันทึกการตั้งค่าสำหรับร้านนี้ในเครื่องสำเร็จ');
             }
             closeTemplateSettingsModal();
+        }
+
+        function applyHeaderLayout(layout) {
+            if (!layout) return;
+            // Legacy migration check: if layout uses mainOrder, it's from the old version, ignore it.
+            if (layout.mainOrder) return;
+            
+            try {
+                const zTopLeft = document.getElementById('zone-left');
+                const zTopCenter = document.getElementById('zone-center');
+                const zTopRight = document.getElementById('zone-right');
+                
+                const zMidLeft = document.getElementById('zone-mid-left');
+                const zMidCenter = document.getElementById('zone-mid-center');
+                const zMidRight = document.getElementById('zone-mid-right');
+                
+                const zBotLeft = document.getElementById('zone-bot-left');
+                const zBotCenter = document.getElementById('zone-bot-center');
+                const zBotRight = document.getElementById('zone-bot-right');
+                
+                // Function to append blocks safely
+                const appendToZone = (zone, blockIds) => {
+                    if(blockIds && Array.isArray(blockIds)) {
+                        blockIds.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el && zone) zone.appendChild(el);
+                        });
+                    }
+                };
+                
+                appendToZone(zTopLeft, layout.left);
+                appendToZone(zTopCenter, layout.center);
+                appendToZone(zTopRight, layout.right);
+                
+                appendToZone(zMidLeft, layout.midLeft);
+                appendToZone(zMidCenter, layout.midCenter);
+                appendToZone(zMidRight, layout.midRight);
+                
+                // Legacy compatibility for layout.bottom
+                if (layout.bottom && (!layout.botLeft || layout.botLeft.length === 0)) {
+                    appendToZone(zBotLeft, layout.bottom);
+                } else {
+                    appendToZone(zBotLeft, layout.botLeft);
+                }
+                
+                appendToZone(zBotCenter, layout.botCenter);
+                appendToZone(zBotRight, layout.botRight);
+
+                // Re-align texts of inner elements if necessary based on zone
+                const headerDir = document.getElementById('settingHeaderDirection') ? document.getElementById('settingHeaderDirection').value : 'row';
+                const textAlignVal = document.getElementById('settingHeaderTextAlign') ? document.getElementById('settingHeaderTextAlign').value : 'auto';
+                const vAlignVal = document.getElementById('settingHeaderVAlign') ? document.getElementById('settingHeaderVAlign').value : 'flex-start';
+
+                // Apply vAlign to the row wrappers (the flex containers of the zones)
+                document.querySelectorAll('#pHeaderSection > div').forEach(row => {
+                    row.style.alignItems = vAlignVal;
+                });
+
+                document.querySelectorAll('.header-zone').forEach(zone => {
+                    zone.style.flexDirection = headerDir;
+                    
+                    let alignment = 'left';
+                    if (textAlignVal === 'auto') {
+                        if (zone.id.includes('center')) alignment = 'center';
+                        else if (zone.id.includes('right')) alignment = 'right';
+                    } else {
+                        alignment = textAlignVal;
+                    }
+                    
+                    let flexAlign = 'flex-start';
+                    if (alignment === 'center') flexAlign = 'center';
+                    else if (alignment === 'right') flexAlign = 'flex-end';
+
+                    if (headerDir === 'column') {
+                        zone.style.alignItems = flexAlign;
+                        zone.style.justifyContent = 'flex-start';
+                    } else {
+                        zone.style.justifyContent = flexAlign;
+                        zone.style.alignItems = 'center'; // cross-axis center in row mode
+                    }
+                    
+                    Array.from(zone.children).forEach(child => {
+                        child.style.textAlign = alignment;
+                    });
+                });
+                // Show/hide rows based on settingHeaderRows AND content
+                const maxRows = parseInt((document.getElementById('settingHeaderRows') || {value: '3'}).value) || 3;
+                const rowDefs = [
+                    { zones: ['zone-left', 'zone-center', 'zone-right'], rowId: null },
+                    { zones: ['zone-mid-left', 'zone-mid-center', 'zone-mid-right'], rowId: 'header-row-2' },
+                    { zones: ['zone-bot-left', 'zone-bot-center', 'zone-bot-right'], rowId: 'header-row-3' }
+                ];
+                rowDefs.forEach(({ zones: zoneIds, rowId }, rowIndex) => {
+                    const rowEl = rowId ? document.getElementById(rowId) : null;
+                    if (!rowEl) return;
+                    const withinLimit = (rowIndex + 1) <= maxRows;
+                    const anyHasContent = zoneIds.some(id => {
+                        const z = document.getElementById(id);
+                        return z && z.querySelector('.header-block') !== null;
+                    });
+                    rowEl.style.display = (withinLimit && anyHasContent) ? 'flex' : 'none';
+                });
+                
+                initHeaderResizers();
+            } catch (e) {
+                console.error("Error applying header layout", e);
+            }
+        }
+
+        function initHeaderResizers() {
+            // Row 1: zone-left | hResize1 | zone-center | hResize2 | zone-right
+            // Row 2: zone-mid-left | hResize3 | zone-mid-center | hResize4 | zone-mid-right
+            const resizerDefs = [
+                { id: 'hResize1', left: 'zone-left',     right: 'zone-center' },
+                { id: 'hResize2', left: 'zone-center',   right: 'zone-right'  },
+                { id: 'hResize3', left: 'zone-mid-left', right: 'zone-mid-center' },
+                { id: 'hResize4', left: 'zone-mid-center', right: 'zone-mid-right' }
+            ];
+
+            resizerDefs.forEach(def => {
+                const resizer = document.getElementById(def.id);
+                if (!resizer || resizer._resizerBound) return;
+                resizer._resizerBound = true;
+
+                resizer.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const row = resizer.closest('[id^="header-row-"]');
+                    const leftZone = document.getElementById(def.left);
+                    const rightZone = document.getElementById(def.right);
+                    if (!row || !leftZone || !rightZone) return;
+
+                    const startX = e.clientX;
+                    const startLeftFlex = parseFloat(leftZone.style.flex) || 1;
+                    const startRightFlex = parseFloat(rightZone.style.flex) || 1;
+                    resizer.classList.add('resizing');
+                    document.body.classList.add('info-resizing');
+
+                    const onMouseMove = (e) => {
+                        const totalWidth = row.offsetWidth;
+                        const deltaX = e.clientX - startX;
+                        const deltaRatio = deltaX / totalWidth;
+                        const totalFlex = startLeftFlex + startRightFlex;
+                        let newLeft = Math.max(0.1, startLeftFlex + deltaRatio * totalFlex);
+                        let newRight = Math.max(0.1, totalFlex - newLeft);
+                        leftZone.style.flex = newLeft.toFixed(3);
+                        rightZone.style.flex = newRight.toFixed(3);
+                    };
+                    const onMouseUp = () => {
+                        resizer.classList.remove('resizing');
+                        document.body.classList.remove('info-resizing');
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    };
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+            });
+        }
+
+        // ── Info Panel helpers ──────────────────────────────────────────
+        let _infoDragInstance = null;
+
+        function getInfoPanelOrder() {
+            const row = document.getElementById('pInfoRow');
+            if (!row) return ['pRecipientPanel', 'pInfoResizer', 'pDocDetailsPanel'];
+            return Array.from(row.children).map(c => c.id);
+        }
+
+        function getInfoPanelFlex(side) {
+            const row = document.getElementById('pInfoRow');
+            if (!row) return side === 'left' ? '1.4' : '0.6';
+            const panels = Array.from(row.children).filter(c => c.id !== 'pInfoResizer');
+            if (panels.length < 2) return side === 'left' ? '1.4' : '0.6';
+            return side === 'left' ? panels[0].style.flex : panels[1].style.flex;
+        }
+
+        function applyInfoPanelFlex(leftFlex, rightFlex) {
+            const row = document.getElementById('pInfoRow');
+            if (!row) return;
+            const panels = Array.from(row.children).filter(c => c.id !== 'pInfoResizer');
+            if (panels.length >= 2) {
+                panels[0].style.flex = leftFlex || '1.4';
+                panels[1].style.flex = rightFlex || '0.6';
+            }
+        }
+
+        function applyInfoPanelOrder(order) {
+            const row = document.getElementById('pInfoRow');
+            if (!row || !order || order.length < 2) return;
+            order.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) row.appendChild(el);
+            });
+            _syncInfoPanelBorders();
+        }
+
+        function _syncInfoPanelBorders() {
+            const showDivider = document.getElementById('settingInfoDivider') ? document.getElementById('settingInfoDivider').checked : true;
+            const row = document.getElementById('pInfoRow');
+            if (!row) return;
+            const panels = Array.from(row.children).filter(c => c.id !== 'pInfoResizer');
+            panels.forEach((p, i) => {
+                const isFirst = i === 0;
+                if (isFirst) {
+                    p.style.borderLeft = 'none';
+                    p.style.borderRight = 'none';
+                    p.style.paddingLeft = '0';
+                    p.style.paddingRight = '10px';
+                } else {
+                    p.style.borderLeft = showDivider ? '1px solid #e8edf5' : 'none';
+                    p.style.borderRight = 'none';
+                    p.style.paddingLeft = '10px';
+                    p.style.paddingRight = '0';
+                }
+            });
+            // Ensure resizer stays between the two panels
+            const resizer = document.getElementById('pInfoResizer');
+            if (resizer && panels.length >= 2) {
+                panels[0].after(resizer);
+            }
+        }
+
+        function initInfoResizer() {
+            const resizer = document.getElementById('pInfoResizer');
+            if (!resizer) return;
+            let isResizing = false;
+            let startX = 0;
+            let startLeftFlex = 0;
+            let startRightFlex = 0;
+
+            resizer.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                isResizing = true;
+                startX = e.clientX;
+                const row = document.getElementById('pInfoRow');
+                const panels = Array.from(row.children).filter(c => c.id !== 'pInfoResizer');
+                startLeftFlex = parseFloat(panels[0].style.flex) || 1.4;
+                startRightFlex = parseFloat(panels[1].style.flex) || 0.6;
+                resizer.classList.add('resizing');
+                document.body.classList.add('info-resizing');
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isResizing) return;
+                const row = document.getElementById('pInfoRow');
+                const panels = Array.from(row.children).filter(c => c.id !== 'pInfoResizer');
+                if (panels.length < 2) return;
+                const totalWidth = row.offsetWidth;
+                const deltaX = e.clientX - startX;
+                const deltaRatio = deltaX / totalWidth;
+                const totalFlex = startLeftFlex + startRightFlex;
+                let newLeftFlex = Math.max(0.2, startLeftFlex + deltaRatio * totalFlex);
+                let newRightFlex = Math.max(0.2, totalFlex - newLeftFlex);
+                panels[0].style.flex = newLeftFlex.toFixed(3);
+                panels[1].style.flex = newRightFlex.toFixed(3);
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (!isResizing) return;
+                isResizing = false;
+                resizer.classList.remove('resizing');
+                document.body.classList.remove('info-resizing');
+            });
+        }
+
+        function swapInfoPanels() {
+            const row = document.getElementById('pInfoRow');
+            if (!row || row.children.length < 2) return;
+            // Move first non-resizer panel to end
+            const panels = Array.from(row.children).filter(c => c.id !== 'pInfoResizer');
+            if (panels.length >= 2) row.appendChild(panels[0]);
+            _syncInfoPanelBorders();
+        }
+
+        function applyInfoPanelSettings() {
+            // Update titles
+            const recTitle = document.getElementById('settingRecipientTitle');
+            const docTitle = document.getElementById('settingDocDetailsTitle');
+            if (recTitle) {
+                const el = document.getElementById('pRecipientTitle');
+                if (el) el.textContent = recTitle.value;
+            }
+            if (docTitle) {
+                const el = document.getElementById('pDocDetailsTitle');
+                if (el) el.textContent = docTitle.value;
+            }
+
+            // Update Labels
+            const labelMap = {
+                'settingLabelTo': 'labelTo',
+                'settingLabelAddress': 'labelAddress',
+                'settingLabelAttn': 'labelAttn',
+                'settingLabelTel': 'labelTel',
+                'settingLabelEmail': 'labelEmail',
+                'settingLabelRefNo': 'labelRefNo',
+                'settingLabelDate': 'labelDate',
+                'settingLabelValidity': 'labelValidity',
+                'settingLabelDelivery': 'labelDelivery',
+                'settingLabelPayment': 'labelPayment'
+            };
+            for (const [settingId, labelId] of Object.entries(labelMap)) {
+                const sEl = document.getElementById(settingId);
+                const lEl = document.getElementById(labelId);
+                if (sEl && lEl) {
+                    lEl.innerText = sEl.value;
+                }
+            }
+
+            _syncInfoPanelBorders();
+        }
+
+        function toggleInfoDrag() {
+            const row = document.getElementById('pInfoRow');
+            const btn = document.getElementById('btnToggleDrag');
+            if (!row) return;
+            if (_infoDragInstance) {
+                // Disable drag mode
+                _infoDragInstance.destroy();
+                _infoDragInstance = null;
+                row.classList.remove('drag-mode');
+                if (btn) { btn.innerHTML = "<i class='bx bx-move'></i> โหมดลาก"; btn.classList.remove('btn-primary'); btn.classList.add('btn-outline'); }
+            } else {
+                // Enable drag mode
+                row.classList.add('drag-mode');
+                _infoDragInstance = Sortable.create(row, {
+                    animation: 180,
+                    ghostClass: 'info-panel-ghost',
+                    onEnd: function() { _syncInfoPanelBorders(); }
+                });
+                if (btn) { btn.innerHTML = "<i class='bx bx-lock-open'></i> ปิดโหมดลาก"; btn.classList.remove('btn-outline'); btn.classList.add('btn-primary'); }
+            }
         }
 
         function applyTemplateSettings(settings) {
@@ -2504,11 +3647,88 @@
             if (settings.headerFontSize) document.getElementById('settingHeaderFontSize').value = settings.headerFontSize;
             if (settings.sellerName) document.getElementById('settingSellerName').value = settings.sellerName;
             if (settings.sellerRole) document.getElementById('settingSellerRole').value = settings.sellerRole;
+            if (settings.leftSignerTitle) document.getElementById('settingLeftSignerTitle').value = settings.leftSignerTitle;
+            if (settings.sincerelyYours) document.getElementById('settingSincerelyYours').value = settings.sincerelyYours;
             
-            if (settings.issuerName && settings.issuerName !== "บริษัท เมนทรา โซลูชั่น จำกัด (สำนักงานใหญ่)") {
-                applyIssuerTheme(settings.issuerName);
+            const hdEl = document.getElementById('settingHeaderDirection');
+            if (hdEl) hdEl.value = settings.headerDirection ? settings.headerDirection : 'row';
+            const hrEl = document.getElementById('settingHeaderRows');
+            if (hrEl && settings.headerRows) hrEl.value = settings.headerRows;
+            
+            const htEl = document.getElementById('settingHeaderTextAlign');
+            if (htEl) htEl.value = settings.headerTextAlign ? settings.headerTextAlign : 'auto';
+            
+            const hvEl = document.getElementById('settingHeaderVAlign');
+            if (hvEl) hvEl.value = settings.headerVAlign ? settings.headerVAlign : 'flex-start';
+
+            const fontEl = document.getElementById('settingFontFamily');
+            if (fontEl) fontEl.value = settings.fontFamily ? settings.fontFamily : "Sarabun";
+
+            const weightEl = document.getElementById('settingFontWeight');
+            if (weightEl) weightEl.value = settings.fontWeight ? settings.fontWeight : "400";
+            
+            const tbEl = document.getElementById('settingTableBorder');
+            if (tbEl) tbEl.value = settings.tableBorder ? settings.tableBorder : 'rounded';
+            
+            const thaEl = document.getElementById('settingTableHeaderAlign');
+            if (thaEl) thaEl.value = settings.tableHeaderAlign ? settings.tableHeaderAlign : 'auto';
+
+            const thsEl = document.getElementById('settingTableHeaderStyle');
+            if (thsEl) thsEl.value = settings.tableHeaderStyle ? settings.tableHeaderStyle : 'solid';
+
+            const zebraEl = document.getElementById('settingZebraStripes');
+            if (zebraEl) zebraEl.checked = settings.zebraStripes !== undefined ? settings.zebraStripes : true;
+            
+            const showRemarkEl = document.getElementById('settingShowRemark');
+            if (showRemarkEl) showRemarkEl.checked = settings.showRemark !== undefined ? settings.showRemark : true;
+            
+            const showHeaderLineEl = document.getElementById('settingShowHeaderLine');
+            if (showHeaderLineEl) showHeaderLineEl.checked = settings.showHeaderLine !== undefined ? settings.showHeaderLine : true;
+            
+            const sigFormatEl = document.getElementById('settingSignatureFormat');
+            if (sigFormatEl) sigFormatEl.value = settings.signatureFormat || 'full';
+
+            const sigSizeEl = document.getElementById('settingSignatureSize');
+            if (sigSizeEl) sigSizeEl.value = settings.signatureSize || '40';
+            
+            if (settings.headerLayout) {
+                applyHeaderLayout(settings.headerLayout);
+            }
+
+            // Restore info panel
+            if (settings.infoPanelOrder) applyInfoPanelOrder(settings.infoPanelOrder);
+            if (settings.headerFlex) {
+                ['left', 'center', 'right', 'midLeft', 'midCenter', 'midRight', 'botLeft', 'botCenter', 'botRight'].forEach(z => {
+                    const el = document.getElementById('zone-' + z.replace(/[A-Z]/g, m => '-' + m.toLowerCase()));
+                    if (el && settings.headerFlex[z]) el.style.flex = settings.headerFlex[z];
+                });
+            }
+
+            if (settings.infoPanelLeftFlex && settings.infoPanelRightFlex) {
+                applyInfoPanelFlex(settings.infoPanelLeftFlex, settings.infoPanelRightFlex);
+            }
+            const dividerEl = document.getElementById('settingInfoDivider');
+            if (dividerEl && settings.infoDivider !== undefined) dividerEl.checked = settings.infoDivider;
+            const recTitleEl = document.getElementById('settingRecipientTitle');
+            if (recTitleEl && settings.recipientTitle) recTitleEl.value = settings.recipientTitle;
+            const docTitleEl = document.getElementById('settingDocDetailsTitle');
+            if (docTitleEl && settings.docDetailsTitle) docTitleEl.value = settings.docDetailsTitle;
+            
+            if (settings.infoLabels) {
+                if (document.getElementById('settingLabelTo')) document.getElementById('settingLabelTo').value = settings.infoLabels.to || 'ชื่อ / To:';
+                if (document.getElementById('settingLabelAddress')) document.getElementById('settingLabelAddress').value = settings.infoLabels.address || 'ที่อยู่:';
+                if (document.getElementById('settingLabelAttn')) document.getElementById('settingLabelAttn').value = settings.infoLabels.attn || 'ติดต่อ / Attn:';
+                if (document.getElementById('settingLabelTel')) document.getElementById('settingLabelTel').value = settings.infoLabels.tel || 'โทร / Tel:';
+                if (document.getElementById('settingLabelEmail')) document.getElementById('settingLabelEmail').value = settings.infoLabels.email || 'อีเมล:';
+                if (document.getElementById('settingLabelRefNo')) document.getElementById('settingLabelRefNo').value = settings.infoLabels.refNo || 'เลขที่ / Ref. No:';
+                if (document.getElementById('settingLabelDate')) document.getElementById('settingLabelDate').value = settings.infoLabels.date || 'วันที่ / Date:';
+                if (document.getElementById('settingLabelValidity')) document.getElementById('settingLabelValidity').value = settings.infoLabels.validity || 'ยืนราคา / Validity:';
+                if (document.getElementById('settingLabelDelivery')) document.getElementById('settingLabelDelivery').value = settings.infoLabels.delivery || 'ส่งมอบ / Delivery:';
+                if (document.getElementById('settingLabelPayment')) document.getElementById('settingLabelPayment').value = settings.infoLabels.payment || 'ชำระเงิน / Payment:';
             }
             
+            applyInfoPanelSettings();
+
             // Re-run apply function to update styles silently if modal is closed
             applyLivePreview();
         }
@@ -2806,8 +4026,9 @@
                 // Apply Issuer Theme if company exists
                 if (proj.company) {
                     let compName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
-                    applyIssuerTheme(compName);
-                    saveTemplateSettings(false);
+                    applyIssuerTemplate(compName);
+                } else {
+                    applyIssuerTemplate(null);
                 }
 
                 // Populate Customer Info
@@ -2926,9 +4147,9 @@
                 
                 if (proj.company) {
                     let compName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
-                    applyIssuerTheme(compName);
+                    applyIssuerTemplate(compName);
                 } else {
-                    applyIssuerTheme(null); // Reset to default if no company
+                    applyIssuerTemplate(null); // Reset to default if no company
                 }
                 
                 // Sync Customer Info from Institution Details
@@ -3300,6 +4521,12 @@
         window.showProjectsForInstitution = showProjectsForInstitution;
         window.backToInstitutionList = backToInstitutionList;
         window.addHeaderRow = addHeaderRow;
+        window.swapInfoPanels = swapInfoPanels;
+        window.toggleInfoDrag = toggleInfoDrag;
+        window.applyInfoPanelSettings = applyInfoPanelSettings;
+
+        // Init info panel resizer
+        initInfoResizer();
 
         // Initialize drag-and-drop reordering
         const initSortable = () => {

@@ -1942,6 +1942,7 @@
             // Convert Thai Numerals (๑-๙) to Arabic (1-9) for parser compatibility
             const thaiNums = ['๐', '๑', '๒', '๓', '๔', '๕', '๖', '๗', '๘', '๙'];
             rawText = rawText.replace(/[๐-๙]/g, match => thaiNums.indexOf(match));
+            rawText = rawText.replace(/ฒ/g, '7'); // Fix Tesseract OCR typo (๗ -> ฒ)
 
             const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
             if (lines.length === 0) return;
