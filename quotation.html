@@ -949,9 +949,9 @@
             opacity: 0.4;
             background: #e0ecfb !important;
         }
-        /* Resize handle */
+        /* Resize handle - only show when settings modal is open */
         #pInfoResizer {
-            width: 10px;
+            width: 0;
             flex-shrink: 0;
             cursor: col-resize;
             display: flex;
@@ -960,6 +960,10 @@
             position: relative;
             z-index: 2;
             transition: background 0.15s;
+            overflow: hidden;
+        }
+        body.modal-open #pInfoResizer {
+            width: 10px;
         }
         #pInfoResizer::after {
             content: '';
@@ -1510,7 +1514,7 @@
 
 
                     <!-- ══ INTRO ══ -->
-                    <p style="margin-bottom: 10px; font-size: 11px; color: #374151; letter-spacing: normal;">ทางบริษัทฯ
+                    <p id="pIntroText" style="margin-bottom: 10px; font-size: 11px; color: #374151; letter-spacing: normal;">ทางบริษัทฯ
                         มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:</p>
 
                     <!-- ══ ITEMS TABLE ══ -->
@@ -1520,17 +1524,22 @@
 
                     <!-- ══ SUMMARY + REMARK ══ -->
                     <div style="display: flex; gap: 18px; align-items: flex-start; margin-top: 15px;">
-                        <!-- Remark -->
-                        <div style="flex: 1;" id="pRemarkContainer">
-                            <div
-                                style="font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 5px; letter-spacing: normal;">
-                                หมายเหตุ (Remark):</div>
-                            <div id="pRemark"
-                                style="font-size: 11px; color: #4b5563; padding: 9px 12px; background: #f9fafb; border-radius: 5px; border: 1px solid #e5e7eb; min-height: 52px; white-space: normal; line-height: 1.6; letter-spacing: normal;">
-                                -</div>
+                        <!-- Left area (Remark + Baht Text) -->
+                        <div style="flex: 1; display: flex; flex-direction: column;" id="pLeftSummarySection">
+                            <!-- Remark -->
+                            <div style="flex: 1;" id="pRemarkContainer">
+                                <div
+                                    style="font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 5px; letter-spacing: normal;">
+                                    หมายเหตุ (Remark):</div>
+                                <div id="pRemark"
+                                    style="font-size: 11px; color: #4b5563; padding: 9px 12px; background: #f9fafb; border-radius: 5px; border: 1px solid #e5e7eb; min-height: 52px; white-space: normal; line-height: 1.6; letter-spacing: normal;">
+                                    -</div>
+                            </div>
+                            <!-- Left Baht Text Placeholder -->
+                            <div id="pLeftBahtTextContainer"></div>
                         </div>
                         <!-- Totals -->
-                        <div id="pSummaryTotalsBox" style="flex: 0.85; border-radius: 6px; overflow: hidden;">
+                        <div id="pSummaryTotalsBox" style="flex: 0.85; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
                             <table
                                 style="width: 100%; border-collapse: collapse; font-size: 11px; letter-spacing: normal;">
                                 <tr>
@@ -1554,9 +1563,12 @@
                                         id="pGrandTotal">0.00</td>
                                 </tr>
                             </table>
-                            <div id="pBahtText"
-                                style="text-align: center; font-weight: 600; font-size: 11px; color: var(--pdf-primary, #1A6FBF); padding: 6px 12px; background: #fff; letter-spacing: normal;">
-                                (ศูนย์บาทถ้วน)
+                            <!-- Right Baht Text Placeholder -->
+                            <div id="pRightBahtTextContainer">
+                                <div id="pBahtText"
+                                    style="text-align: center; font-weight: 600; font-size: 11px; color: var(--pdf-primary, #1A6FBF); padding: 6px 12px; background: #fff; letter-spacing: normal;">
+                                    (ศูนย์บาทถ้วน)
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1718,6 +1730,11 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label>ข้อความเกริ่นนำ (Intro Text)</label>
+                    <textarea id="settingIntroText" class="form-control" rows="2" style="font-family: 'Sarabun', sans-serif; font-size: 0.9rem;" oninput="applyLivePreview()">ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:</textarea>
+                </div>
+
                 <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
 
 
@@ -1797,9 +1814,16 @@
                     <input type="checkbox" id="settingZebraStripes" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
                     <label style="margin: 0;">แถบสีสลับ (Zebra Stripes)</label>
                 </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                 <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
                     <input type="checkbox" id="settingShowRemark" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
                     <label style="margin: 0;">แสดงหมายเหตุ (Show Remark)</label>
+                </div>
+                <div class="form-group">
+                    <label>ตำแหน่งตัวอักษรบอกจำนวนเงินรวม (ไทย)</label>
+                    <select id="settingBahtTextPosition" class="form-control" onchange="applyLivePreview()">
+                        <option value="right">ชิดขวา (ใต้ตารางยอดรวม)</option>
+                        <option value="left">ชิดซ้าย (ใต้หมายเหตุ)</option>
+                    </select>
                 </div>
 
                 <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
@@ -2963,12 +2987,14 @@
             const sellerRole = document.getElementById('settingSellerRole').value;
             const leftSignerTitle = document.getElementById('settingLeftSignerTitle') ? document.getElementById('settingLeftSignerTitle').value : 'ผู้สั่งซื้อ';
             const sincerelyYours = document.getElementById('settingSincerelyYours') ? document.getElementById('settingSincerelyYours').value : 'ขอแสดงความนับถือ / Sincerely Yours,';
+            const introText = document.getElementById('settingIntroText') ? document.getElementById('settingIntroText').value : 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:';
             const fontFamily = document.getElementById('settingFontFamily') ? document.getElementById('settingFontFamily').value : 'Sarabun';
             const fontWeight = document.getElementById('settingFontWeight') ? document.getElementById('settingFontWeight').value : '400';
             const tableBorder = document.getElementById('settingTableBorder') ? document.getElementById('settingTableBorder').value : 'rounded';
             const tableHeaderStyle = document.getElementById('settingTableHeaderStyle') ? document.getElementById('settingTableHeaderStyle').value : 'solid';
             const zebraStripes = document.getElementById('settingZebraStripes') ? document.getElementById('settingZebraStripes').checked : true;
             const showRemark = document.getElementById('settingShowRemark') ? document.getElementById('settingShowRemark').checked : true;
+            const bahtTextPos = document.getElementById('settingBahtTextPosition') ? document.getElementById('settingBahtTextPosition').value : 'right';
             const showHeaderLine = document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true;
             const sigFormat = document.getElementById('settingSignatureFormat') ? document.getElementById('settingSignatureFormat').value : 'full';
             const sigSize = document.getElementById('settingSignatureSize') ? parseInt(document.getElementById('settingSignatureSize').value) : 40;
@@ -3131,15 +3157,56 @@
                 const titleText = titleBlock.querySelector('div:first-child');
                 if (titleText) titleText.style.color = primaryColor;
             }
+
+            const pIntroText = document.getElementById('pIntroText');
+            if (pIntroText) {
+                pIntroText.innerHTML = introText.replace(/\n/g, '<br>');
+            }
             
             const pRemarkContainer = document.getElementById('pRemarkContainer');
             const pSummaryTotalsBox = document.getElementById('pSummaryTotalsBox');
+            const pLeftSummarySection = document.getElementById('pLeftSummarySection');
+            const bahtTextEl = document.getElementById('pBahtText');
+            const leftBahtContainer = document.getElementById('pLeftBahtTextContainer');
+            const rightBahtContainer = document.getElementById('pRightBahtTextContainer');
+
+            if (bahtTextEl && leftBahtContainer && rightBahtContainer) {
+                if (bahtTextPos === 'left') {
+                    leftBahtContainer.appendChild(bahtTextEl);
+                    bahtTextEl.style.border = 'none';
+                    bahtTextEl.style.borderRadius = '0';
+                    bahtTextEl.style.background = 'transparent';
+                    bahtTextEl.style.textAlign = 'center';
+                    bahtTextEl.style.marginTop = '8px';
+                    bahtTextEl.style.padding = '0';
+                    bahtTextEl.style.fontWeight = '600';
+                } else {
+                    rightBahtContainer.appendChild(bahtTextEl);
+                    bahtTextEl.style.border = 'none';
+                    bahtTextEl.style.borderTop = '1.5px solid ' + primaryColor;
+                    bahtTextEl.style.borderRadius = '0';
+                    bahtTextEl.style.background = '#fff';
+                    bahtTextEl.style.textAlign = 'center';
+                    bahtTextEl.style.marginTop = '0';
+                    bahtTextEl.style.padding = '6px 12px';
+                    bahtTextEl.style.fontWeight = '600';
+                }
+            }
+
             if (pRemarkContainer) {
                 pRemarkContainer.style.display = showRemark ? 'block' : 'none';
-                if (!showRemark && pSummaryTotalsBox) {
+            }
+
+            const hasLeftContent = showRemark || (bahtTextPos === 'left');
+            if (pLeftSummarySection) {
+                pLeftSummarySection.style.display = hasLeftContent ? 'flex' : 'none';
+            }
+
+            if (pSummaryTotalsBox) {
+                if (!hasLeftContent) {
                     pSummaryTotalsBox.style.marginLeft = 'auto';
                     pSummaryTotalsBox.style.flex = '0 0 46%';
-                } else if (pSummaryTotalsBox) {
+                } else {
                     pSummaryTotalsBox.style.marginLeft = '0';
                     pSummaryTotalsBox.style.flex = '0.85';
                 }
@@ -3249,9 +3316,11 @@
                 tableHeaderStyle: document.getElementById('settingTableHeaderStyle') ? document.getElementById('settingTableHeaderStyle').value : 'solid',
                 zebraStripes: document.getElementById('settingZebraStripes') ? document.getElementById('settingZebraStripes').checked : true,
                 showRemark: document.getElementById('settingShowRemark') ? document.getElementById('settingShowRemark').checked : true,
+                bahtTextPosition: document.getElementById('settingBahtTextPosition') ? document.getElementById('settingBahtTextPosition').value : 'right',
                 showHeaderLine: document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true,
                 signatureFormat: document.getElementById('settingSignatureFormat') ? document.getElementById('settingSignatureFormat').value : 'full',
                 signatureSize: document.getElementById('settingSignatureSize') ? document.getElementById('settingSignatureSize').value : '40',
+                introText: document.getElementById('settingIntroText') ? document.getElementById('settingIntroText').value : 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:',
                 issuerName: currentIssuerDisplay,
                 headerLayout: getCurrentHeaderLayout(),
                 infoPanelOrder: getInfoPanelOrder(),
@@ -3682,6 +3751,9 @@
             const showRemarkEl = document.getElementById('settingShowRemark');
             if (showRemarkEl) showRemarkEl.checked = settings.showRemark !== undefined ? settings.showRemark : true;
             
+            const bahtTextPosEl = document.getElementById('settingBahtTextPosition');
+            if (bahtTextPosEl) bahtTextPosEl.value = settings.bahtTextPosition || 'right';
+            
             const showHeaderLineEl = document.getElementById('settingShowHeaderLine');
             if (showHeaderLineEl) showHeaderLineEl.checked = settings.showHeaderLine !== undefined ? settings.showHeaderLine : true;
             
@@ -3690,6 +3762,9 @@
 
             const sigSizeEl = document.getElementById('settingSignatureSize');
             if (sigSizeEl) sigSizeEl.value = settings.signatureSize || '40';
+            
+            const introTextEl = document.getElementById('settingIntroText');
+            if (introTextEl) introTextEl.value = settings.introText !== undefined ? settings.introText : 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:';
             
             if (settings.headerLayout) {
                 applyHeaderLayout(settings.headerLayout);
