@@ -1112,6 +1112,10 @@
                 <div class="nav-icon">🛒</div>
                 <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
             </button>
+            <button class="nav-item" onclick="window.location.href='materials_purchasing_company.html'" id="nav-purchasing-company">
+                <div class="nav-icon">🏢</div>
+                <span class="nav-label">จัดการจัดซื้อ / วัสดุ (บริษัท)</span>
+            </button>
                         <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
                 <div class="nav-icon">📦</div>
                 <span class="nav-label">สินค้า</span>
@@ -2089,8 +2093,9 @@
                         // Auto Import Project if URL param is present
                         const urlParams = new URLSearchParams(window.location.search);
                         const autoImportId = urlParams.get('projectId');
+                        const autoImportSource = urlParams.get('source') || 'school';
                         if (autoImportId) {
-                            autoImportProject(autoImportId);
+                            autoImportProject(autoImportId, autoImportSource);
                         }
                     } else {
                         // User document deleted!
@@ -2635,9 +2640,57 @@
         // Stub to prevent ReferenceError from old calls, now handled by the modal.
         function loadSavedRecipientsDropdown() {}
 
-        function openRecipientModal() {
+        // Cache for firebase-loaded recipients
+        let firestoreRecipientsCache = [];
+
+        async function openRecipientModal() {
             document.getElementById('recipientModal').style.display = 'flex';
             document.getElementById('recipientSearchInput').value = '';
+            
+            // Show loading state
+            const container = document.getElementById('recipientCardsContainer');
+            container.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: #6b7280;"><i class='bx bx-loader-alt bx-spin' style="font-size:2rem;"></i><br>กำลังโหลดข้อมูล...</div>`;
+            
+            firestoreRecipientsCache = [];
+            
+            // Fetch institution details
+            try {
+                const instSnap = await getDoc(doc(db, 'material_settings', 'institution_details'));
+                if (instSnap.exists()) {
+                    const data = instSnap.data();
+                    Object.keys(data).forEach(name => {
+                        const d = data[name] || {};
+                        firestoreRecipientsCache.push({
+                            toCompany: name,
+                            toAddress: d.address || '',
+                            toAttn: d.contact || '',
+                            toTel: d.phone || '',
+                            toEmail: d.email || '',
+                            _source: 'school'
+                        });
+                    });
+                }
+            } catch(e) { console.error('Error loading institution_details:', e); }
+            
+            // Fetch company details
+            try {
+                const compSnap = await getDoc(doc(db, 'company_material_settings', 'company_details'));
+                if (compSnap.exists()) {
+                    const data = compSnap.data();
+                    Object.keys(data).forEach(name => {
+                        const d = data[name] || {};
+                        firestoreRecipientsCache.push({
+                            toCompany: name,
+                            toAddress: d.address || '',
+                            toAttn: d.contact || '',
+                            toTel: d.phone || '',
+                            toEmail: d.email || '',
+                            _source: 'company'
+                        });
+                    });
+                }
+            } catch(e) { console.error('Error loading company_details:', e); }
+            
             renderRecipientCards();
         }
 
@@ -2647,41 +2700,67 @@
 
         function renderRecipientCards(filterText = '') {
             const container = document.getElementById('recipientCardsContainer');
-            const recipients = getSavedRecipients();
             
-            if (recipients.length === 0) {
+            // Combine: localStorage + firestore (institutions + companies)
+            const saved = getSavedRecipients().map(r => ({ ...r, _source: 'saved' }));
+            const allRecipients = [
+                ...saved,
+                ...firestoreRecipientsCache
+            ];
+            
+            if (allRecipients.length === 0) {
                 container.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: #6b7280;">ไม่มีผู้รับที่บันทึกไว้<br><span style="font-size: 0.85rem;">(กรอกข้อมูลผู้รับแล้วกด "บันทึกผู้รับนี้" เพื่อบันทึก)</span></div>`;
                 return;
             }
-
+            
+            const filtered = allRecipients.filter(r => {
+                if (!filterText) return true;
+                return (r.toCompany || '').toLowerCase().includes(filterText.toLowerCase())
+                    || (r.toAttn || '').toLowerCase().includes(filterText.toLowerCase());
+            });
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 40px 20px; color: #6b7280;">ไม่พบรายชื่อที่ค้นหา</div>`;
+                return;
+            }
+            
+            const sourceBadge = {
+                saved:   { label: 'บันทึกไว้', bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
+                school:  { label: 'สถานศึกษา', bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0' },
+                company: { label: 'บริษัทเอกชน', bg: '#fdf4ff', color: '#7e22ce', border: '#e9d5ff' }
+            };
+            
             let html = '';
-            let count = 0;
-            recipients.forEach((r, index) => {
-                if (filterText && !r.toCompany.toLowerCase().includes(filterText.toLowerCase())) return;
+            filtered.forEach((r, idx) => {
+                const badge = sourceBadge[r._source] || sourceBadge.saved;
+                const localIndex = r._source === 'saved' ? getSavedRecipients().findIndex(s => s.toCompany === r.toCompany) : -1;
+                const deleteBtn = localIndex >= 0
+                    ? `<button onclick="event.stopPropagation(); deleteRecipientFromModal(${localIndex})" style="background:#fee2e2;color:#ef4444;border:none;padding:8px;border-radius:6px;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'" title="ลบ"><i class='bx bx-trash' style="font-size:1.1rem;"></i></button>`
+                    : '';
                 
-                count++;
                 html += `
-                    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);" onmouseover="this.style.borderColor='var(--primary-color, #1A6FBF)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 1px 2px 0 rgba(0, 0, 0, 0.05)';" onclick="selectRecipientFromModal(${index})">
-                        <div>
-                            <div style="font-weight: 600; font-size: 1.05rem; color: #1e293b; margin-bottom: 4px;">${r.toCompany}</div>
-                            <div style="font-size: 0.85rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 350px;">
-                                ${r.toAttn ? `<span style="margin-right: 8px;"><i class='bx bx-user'></i> ${r.toAttn}</span>` : ''}
-                                ${r.toTel ? `<span><i class='bx bx-phone'></i> ${r.toTel}</span>` : ''}
+                    <div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center;transition:all 0.2s;cursor:pointer;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);"
+                        onmouseover="this.style.borderColor='var(--primary-color,#1A6FBF)';this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.1)';"
+                        onmouseout="this.style.borderColor='#e2e8f0';this.style.boxShadow='0 1px 2px 0 rgba(0,0,0,0.05)';"
+                        onclick="selectRecipientByData(${idx}, firestoreRecipientsCache, getSavedRecipients(),'${r._source}','${r.toCompany.replace(/'/g, "\\'")}')"
+                    >
+                        <div style="flex:1;min-width:0;">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                                <span style="font-weight:600;font-size:1.05rem;color:#1e293b;">${r.toCompany}</span>
+                                <span style="font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:12px;border:1px solid ${badge.border};background:${badge.bg};color:${badge.color};white-space:nowrap;">${badge.label}</span>
+                            </div>
+                            <div style="font-size:0.85rem;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:350px;">
+                                ${r.toAttn ? `<span style="margin-right:8px;"><i class='bx bx-user'></i> ${r.toAttn}</span>` : ''}
+                                ${r.toTel  ? `<span><i class='bx bx-phone'></i> ${r.toTel}</span>` : ''}
                             </div>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <button onclick="event.stopPropagation(); deleteRecipientFromModal(${index})" style="background: #fee2e2; color: #ef4444; border: none; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'" title="ลบ">
-                                <i class='bx bx-trash' style="font-size: 1.1rem;"></i>
-                            </button>
-                            <button class="btn btn-primary" style="padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; display: flex; align-items: center; gap: 4px;"><i class='bx bx-check'></i> เลือก</button>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            ${deleteBtn}
+                            <button class="btn btn-primary" style="padding:6px 16px;font-size:0.9rem;border-radius:6px;display:flex;align-items:center;gap:4px;"><i class='bx bx-check'></i> เลือก</button>
                         </div>
                     </div>
                 `;
             });
-            
-            if (count === 0) {
-                html = `<div style="text-align: center; padding: 40px 20px; color: #6b7280;">ไม่พบรายชื่อที่ค้นหา</div>`;
-            }
             
             container.innerHTML = html;
         }
@@ -2700,6 +2779,24 @@
                 document.getElementById('toAttn').value = r.toAttn || '';
                 document.getElementById('toTel').value = r.toTel || '';
                 document.getElementById('toEmail').value = r.toEmail || '';
+            }
+            closeRecipientModal();
+        }
+
+        function selectRecipientByData(idx, firestoreCache, savedList, source, name) {
+            let r = null;
+            if (source === 'saved') {
+                r = savedList.find(s => s.toCompany === name);
+            } else {
+                r = firestoreCache.find(s => s.toCompany === name && s._source === source);
+            }
+            if (r) {
+                document.getElementById('toCompany').value = r.toCompany || '';
+                document.getElementById('toAddress').value = r.toAddress || '';
+                document.getElementById('toAttn').value = r.toAttn || '';
+                document.getElementById('toTel').value = r.toTel || '';
+                document.getElementById('toEmail').value = r.toEmail || '';
+                if (typeof applyLivePreview === 'function') applyLivePreview();
             }
             closeRecipientModal();
         }
@@ -4005,10 +4102,12 @@
             document.getElementById('importProjectModal').style.display = 'none';
         }
 
-        async function autoImportProject(projectId) {
+        async function autoImportProject(projectId, source) {
             try {
+                // Choose the correct collection based on source
+                const collectionName = (source === 'company') ? 'company_material_projects' : 'material_projects';
                 // Fetch project from Firestore
-                const projSnap = await getDoc(doc(db, 'material_projects', projectId));
+                const projSnap = await getDoc(doc(db, collectionName, projectId));
                 if (!projSnap.exists()) return;
                 const proj = projSnap.data();
 
@@ -4098,16 +4197,39 @@
                     tbody.appendChild(tr);
                 });
 
-                // Apply Issuer Theme if company exists
-                if (proj.company) {
-                    let compName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
-                    applyIssuerTemplate(compName);
+                // Apply Issuer Theme if company/shop exists
+                if (source === 'company') {
+                    // In company page: shop = quotation issuer, company = customer name
+                    const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : null;
+                    applyIssuerTemplate(shopName);
                 } else {
-                    applyIssuerTemplate(null);
+                    if (proj.company) {
+                        let compName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
+                        applyIssuerTemplate(compName);
+                    } else {
+                        applyIssuerTemplate(null);
+                    }
                 }
 
                 // Populate Customer Info
-                if (proj.institution && proj.institution.trim() !== '' && proj.institution.trim() !== 'ไม่ระบุสถานศึกษา') {
+                if (source === 'company') {
+                    // In company page: proj.company = company/customer name
+                    if (proj.company && proj.company.trim() !== '' && proj.company.trim() !== 'ไม่ระบุบริษัท') {
+                        const instName = proj.company.trim();
+                        document.getElementById('toCompany').value = instName;
+                        // Fetch company details from company_material_settings
+                        try {
+                            const compSnap = await getDoc(doc(db, 'company_material_settings', 'company_details'));
+                            if (compSnap.exists()) {
+                                const compDetails = compSnap.data()[instName] || {};
+                                document.getElementById('toAddress').value = compDetails.address || '';
+                                document.getElementById('toAttn').value = compDetails.contact || '';
+                                document.getElementById('toTel').value = compDetails.phone || '';
+                                document.getElementById('toEmail').value = compDetails.email || '';
+                            }
+                        } catch(e) {}
+                    }
+                } else if (proj.institution && proj.institution.trim() !== '' && proj.institution.trim() !== 'ไม่ระบุสถานศึกษา') {
                     const instName = proj.institution.trim();
                     document.getElementById('toCompany').value = instName;
                     
@@ -4666,3 +4788,4 @@
 </body>
 
 </html>
+
