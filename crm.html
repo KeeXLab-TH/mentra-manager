@@ -686,7 +686,11 @@
                     let amountVal = data.grandTotal || data.totalAmount || data.netTotal || data.totalPrice || data.budget || 0;
                     if ((!amountVal || amountVal === 0) && Array.isArray(data.items)) {
                         amountVal = data.items.reduce((sum, item) => {
-                            const itemTotal = parseFloat(item.total) || parseFloat(item.amount) || ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1));
+                            if (item.isHeader) return sum; // skip header rows
+                            const qty = parseFloat(item.qty) || 1;
+                            // materials_purchasing_company uses unitPrice, not price
+                            const unitPrice = parseFloat(item.unitPrice) || parseFloat(item.price) || 0;
+                            const itemTotal = parseFloat(item.total) || parseFloat(item.amount) || (unitPrice * qty);
                             return sum + (isNaN(itemTotal) ? 0 : itemTotal);
                         }, 0);
                     }
@@ -725,6 +729,10 @@
                         stageLabel = 'ตรวจสอบคุณสมบัติ';
                     }
 
+                    // Try to get phone/email from root data first, then look up from crm_contacts by company name
+                    const dealPhone = data.phone || data.contactPhone || data.companyDetails?.phone || null;
+                    const dealEmail = data.email || data.contactEmail || data.companyDetails?.email || null;
+
                     sampleDeals.push({
                         id: displayId,
                         title: projectTitle,
@@ -732,10 +740,11 @@
                         amount: (typeof amountVal === 'number' ? amountVal.toLocaleString('th-TH') : amountVal) + ' ฿',
                         stage: stage,
                         stageLabel: stageLabel,
-                        phone: data.phone || data.contactPhone || data.companyDetails?.phone || '-',
-                        email: data.email || data.contactEmail || data.companyDetails?.email || '-',
+                        phone: dealPhone || '-',
+                        email: dealEmail || '-',
                         rawDocId: docSnap.id,
-                        isCompanyModule: true
+                        isCompanyModule: true,
+                        _compName: compName // for enrichment lookup
                     });
 
                     // Add unique company contact to contacts table
@@ -756,6 +765,25 @@
                 companyContactsMap.forEach(c => {
                     if (!sampleContacts.some(sc => sc.company === c.company)) {
                         sampleContacts.push(c);
+                    }
+                });
+
+                // Enrich deals with phone/email from crm_contacts by company name
+                sampleDeals.forEach(deal => {
+                    if (deal.phone === '-' || deal.email === '-') {
+                        const matchedContact = sampleContacts.find(c =>
+                            c.company && deal._compName &&
+                            (c.company.replace(' (บริษัทเอกชน)', '').trim().toLowerCase() === deal._compName.toLowerCase() ||
+                             c.name?.toLowerCase() === deal._compName.toLowerCase())
+                        );
+                        if (matchedContact) {
+                            if (deal.phone === '-' && matchedContact.phone && matchedContact.phone !== '-') {
+                                deal.phone = matchedContact.phone;
+                            }
+                            if (deal.email === '-' && matchedContact.email && matchedContact.email !== '-') {
+                                deal.email = matchedContact.email;
+                            }
+                        }
                     }
                 });
 
