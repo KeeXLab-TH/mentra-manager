@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 
 <head>
@@ -2421,6 +2421,10 @@
                 <div class="nav-icon">📦</div>
                 <span class="nav-label">สินค้า</span>
             </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">💻</div>
+                <span class="nav-label">ทะเบียนครุภัณฑ์</span>
+            </button>
             <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
                 <div class="nav-icon">📷</div>
                 <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
@@ -2684,10 +2688,7 @@ async function init() {
                     badge.className = `role-badge ${role}`;
                 }
 
-                if (role === 'admin') {
-                    const adminMenu = document.getElementById('adminMenu');
-                    if (adminMenu) adminMenu.style.display = 'flex';
-                }
+                if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
             } else {
                 document.getElementById("userAvatar").textContent = user.email.charAt(0).toUpperCase();
                 document.getElementById("userName").textContent = user.displayName || user.email;

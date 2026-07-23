@@ -22,6 +22,12 @@
     <!-- SweetAlert2 for Popups -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
+
+    <!-- Premium UI Layer -->
+    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -569,7 +575,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 </head>
 
-<body class="text-slate-800 antialiased min-h-screen flex" style="display: flex !important;">
+<body class="text-slate-800 antialiased min-h-screen flex" style="display: none !important;">
 
     <!-- 
       Note: The Sidebar and Topbar are fully styled with Tailwind to match the Mentra Manager layout. 
@@ -598,11 +604,11 @@
                 <div class="nav-icon">🏠</div>
                 <span class="nav-label">Dashboard</span>
             </button>
-            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-projects">
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=projects'" id="nav-projects">
                 <div class="nav-icon">📁</div>
                 <span class="nav-label">โครงการทั้งหมด</span>
             </button>
-            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-items">
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=items'" id="nav-items">
                 <div class="nav-icon">📦</div>
                 <span class="nav-label">ราคาทุน / สิ่งของ</span>
             </button>
@@ -622,9 +628,13 @@
                 <div class="nav-icon">🏢</div>
                 <span class="nav-label">จัดการจัดซื้อ / วัสดุ (บริษัท)</span>
             </button>
-                        <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
                 <div class="nav-icon">📦</div>
                 <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">💻</div>
+                <span class="nav-label">ทะเบียนครุภัณฑ์</span>
             </button>
             <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
                 <div class="nav-icon">📷</div>
@@ -4177,6 +4187,11 @@
                     window.location.href = 'index.html?msg=rejected';
                     return;
                 }
+
+                if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
+
+                // Show body now that the user is fully verified
+                document.body.style.setProperty('display', 'flex', 'important');
 
                 // Update Auth UI logic here if any needed for this page
             } catch (e) {

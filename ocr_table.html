@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 
 <head>
@@ -26,6 +26,10 @@
 
     <!-- SheetJS (XLSX) CDN for Export to Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
+    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
 
     <style>
         /* ================================================
@@ -114,7 +118,7 @@
             color: var(--text);
             background-color: var(--bg);
             min-height: 100vh;
-            display: flex;
+            display: none;
             overflow-x: hidden;
         }
 
@@ -988,6 +992,9 @@
 
 <body>
 
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
@@ -997,40 +1004,54 @@
                 <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
             </div>
             <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar">
-                <i class="fa-solid fa-chevron-left"></i>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
             </button>
         </div>
 
         <nav class="sidebar-nav">
             <div class="nav-section-title">เมนูหลัก</div>
-            <a href="dashboard.html" class="nav-item">
+            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard">
                 <div class="nav-icon">🏠</div>
                 <span class="nav-label">Dashboard</span>
-            </a>
-            <a href="dashboard.html#projects" class="nav-item">
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=projects'" id="nav-projects">
                 <div class="nav-icon">📁</div>
                 <span class="nav-label">โครงการทั้งหมด</span>
-            </a>
-            <a href="products.html" class="nav-item">
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=items'" id="nav-items">
                 <div class="nav-icon">📦</div>
-                <span class="nav-label">ราคาทุน / สินค้า</span>
-            </a>
-            <a href="quotation.html" class="nav-item">
+                <span class="nav-label">ราคาทุน / สิ่งของ</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
                 <div class="nav-icon">📄</div>
                 <span class="nav-label">ใบเสนอราคา</span>
-            </a>
-            <a href="external_training.html" class="nav-item">
+            </button>
+            <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
                 <div class="nav-icon">🎓</div>
                 <span class="nav-label">ระบบตารางจัดอบรม</span>
-            </a>
-            <a href="materials_purchasing.html" class="nav-item">
+            </button>
+            <button class="nav-item" onclick="window.location.href='materials_purchasing.html'" id="nav-purchasing">
                 <div class="nav-icon">🛒</div>
                 <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
-            </a>
-            <a href="ocr_table.html" class="nav-item active">
+            </button>
+            <button class="nav-item" onclick="window.location.href='materials_purchasing_company.html'" id="nav-purchasing-company">
+                <div class="nav-icon">🏢</div>
+                <span class="nav-label">จัดการจัดซื้อ / วัสดุ (บริษัท)</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">💻</div>
+                <span class="nav-label">ทะเบียนครุภัณฑ์</span>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
                 <div class="nav-icon">📷</div>
-                <span class="nav-label">OCR เอกสารลงตาราง</span>
-            </a>
+                <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
+            </button>
         </nav>
     </aside>
 
@@ -1038,7 +1059,11 @@
     <div class="main-wrapper" id="mainWrapper">
         <header class="topbar">
             <button class="hamburger" onclick="toggleSidebar()">
-                <i class="fa-solid fa-bars"></i>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
             </button>
             <div class="topbar-breadcrumb">
                 <div class="breadcrumb-title">
@@ -1049,14 +1074,32 @@
                 </div>
             </div>
             <div class="topbar-right-menu">
+                <div id="adminMenu" style="display:none;">
+                    <button class="nav-item" onclick="window.location.href='dashboard.html?view=users'" id="nav-users">
+                        <div class="nav-icon">👥</div>
+                        <span class="nav-label">จัดการผู้ใช้งาน</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-add-project">
+                        <div class="nav-icon">➕</div>
+                        <span class="nav-label">เพิ่มโครงการใหม่</span>
+                    </button>
+                    <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                        <div class="nav-icon">🛠️</div>
+                        <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
+                    </a>
+                </div>
                 <div class="sidebar-user">
-                    <div class="user-avatar">M</div>
-                    <div class="user-info">
-                        <div class="user-name">ผู้ใช้งานระบบ</div>
-                        <div class="role-badge">Administrator</div>
+                    <div class="user-card">
+                        <div class="user-avatar" id="userAvatar">M</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">กำลังโหลด...</div>
+                            <div class="user-role">
+                                <span class="role-badge" id="userRoleBadge">-</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <button class="btn-logout" onclick="window.location.href='index.html'">
+                <button class="btn-logout" onclick="handleLogout()">
                     <i class="fa-solid fa-right-from-bracket"></i>
                     <span class="btn-logout-text">ออกจากระบบ</span>
                 </button>
@@ -2514,6 +2557,97 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
+    </script>
+
+    <!-- Firebase Auth & Guard Module -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { initializeFirestore, getDoc, doc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        let FIREBASE_CONFIG;
+        let app, auth, db;
+
+        async function initAuth() {
+            try {
+                const cfg = await import('./assets/js/firebase-config.js');
+                FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
+            } catch (e) {
+                console.warn('Failed to load config, using fallbacks');
+            }
+
+            if (!FIREBASE_CONFIG) {
+                FIREBASE_CONFIG = {
+                    apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
+                    authDomain: "mentra-manager-e039f.firebaseapp.com",
+                    projectId: "mentra-manager-e039f",
+                    storageBucket: "mentra-manager-e039f.firebasestorage.app",
+                    messagingSenderId: "563604754745",
+                    appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
+                };
+            }
+
+            app = initializeApp(FIREBASE_CONFIG);
+            auth = getAuth(app);
+            db = initializeFirestore(app, {});
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                try {
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (snap.exists()) {
+                        const userData = snap.data();
+                        
+                        // Check approval status
+                        const userStatus = userData.status || 'approved';
+                        if (userStatus === 'pending') {
+                            alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
+                            await signOut(auth);
+                            window.location.href = 'index.html?msg=pending';
+                            return;
+                        } else if (userStatus === 'rejected') {
+                            alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ');
+                            await signOut(auth);
+                            window.location.href = 'index.html?msg=rejected';
+                            return;
+                        }
+
+                        // Update avatar & name
+                        document.getElementById("userAvatar").textContent = (userData.firstName || user.displayName || user.email).charAt(0).toUpperCase();
+                        document.getElementById("userName").textContent = userData.displayName || userData.firstName || user.displayName || user.email;
+
+                        const role = userData.role || 'user';
+                        const badge = document.getElementById('userRoleBadge');
+                        if (badge) {
+                            badge.textContent = role === 'admin' ? 'Admin' : 'User';
+                            badge.className = `role-badge ${role}`;
+                        }
+
+                        if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
+                    } else {
+                        // User exists in Auth but not in Firestore - maybe deleted
+                        alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
+                        await signOut(auth);
+                        window.location.href = 'index.html?msg=deleted';
+                        return;
+                    }
+                } catch (e) {
+                    console.error("Error checking page permissions:", e);
+                }
+
+                document.body.style.display = 'flex';
+            });
+        }
+
+        window.handleLogout = () => {
+            signOut(auth).then(() => { window.location.href = 'index.html'; });
+        };
+
+        initAuth();
     </script>
 </body>
 

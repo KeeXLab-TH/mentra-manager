@@ -374,6 +374,7 @@
             const btn = document.createElement('button');
             btn.className = 'mnav-item' + (isActive(cfg.href) ? ' active' : '');
             btn.setAttribute('aria-label', cfg.label);
+            btn.dataset.page = cfg.href.split('?')[0]; // Tag page for permission hide
             btn.innerHTML = `<span class="mnav-icon-wrap"><span class="mnav-icon">${cfg.icon}</span><span class="mnav-dot"></span></span><span class="mnav-label">${cfg.label}</span>`;
             btn.addEventListener('click', (e) => {
                 addMnavRipple(e, btn);
@@ -431,6 +432,7 @@
             const card = document.createElement('button');
             card.className = 'mnav-sheet-card';
             card.style.animationDelay = `${0.13 + i * 0.045}s`;
+            card.dataset.page = cfg.href.split('?')[0]; // Tag page for permission hide
             card.innerHTML = `<div class="mnav-sheet-card-icon">${cfg.icon}</div><div class="mnav-sheet-card-label">${cfg.label}</div>`;
             card.addEventListener('click', () => { closeSheet(); setTimeout(() => { window.location.href = cfg.href; }, 220); });
             grid.appendChild(card);
@@ -656,3 +658,115 @@
     }
     init();
 })();
+
+/* ────────────────────────────────────────────
+   V. GLOBAL SIDEBAR & PAGE PERMISSION GUARD
+   ──────────────────────────────────────────── */
+window.applySidebarPermissions = function(userData) {
+    if (!userData) return;
+
+    // 1. Hide/Show Admin Console menu based on Role
+    const adminMenus = document.querySelectorAll('#adminMenu, a[href*="console_admin.html"], button[onclick*="console_admin.html"], [data-page*="console_admin.html"]');
+    adminMenus.forEach(el => {
+        if (userData.role === 'admin') {
+            el.style.display = '';
+        } else {
+            el.style.display = 'none';
+        }
+    });
+
+    // 2. Hide navigation items for pages that are disabled for this non-admin user
+    if (userData.role !== 'admin' && userData.allowedPages) {
+        const PAGE_SELECTOR_MAP = {
+            'dashboard.html': [
+                '#nav-dashboard', '#nav-projects', '#nav-items', 
+                'a[href*="dashboard.html"]', 'button[onclick*="dashboard"]',
+                'button[onclick*="navigateTo(\'dashboard\')"]', 'button[onclick*="navigateTo(\'projects\')"]', 'button[onclick*="navigateTo(\'items\')"]',
+                '[data-page*="dashboard.html"]'
+            ],
+            'materials_purchasing.html': [
+                '#nav-purchasing', 'a[href*="materials_purchasing.html"]', 'button[onclick*="materials_purchasing.html"]',
+                '[data-page*="materials_purchasing.html"]'
+            ],
+            'materials_purchasing_company.html': [
+                '#nav-purchasing-company', 'a[href*="materials_purchasing_company.html"]', 'button[onclick*="materials_purchasing_company.html"]',
+                '[data-page*="materials_purchasing_company.html"]'
+            ],
+            'quotation.html': [
+                '#nav-quotation', 'a[href*="quotation.html"]', 'button[onclick*="quotation.html"]',
+                '[data-page*="quotation.html"]'
+            ],
+            'products.html': [
+                '#nav-products', 'a[href*="products.html"]', 'button[onclick*="products.html"]',
+                '[data-page*="products.html"]'
+            ],
+            'equipments.html': [
+                '#nav-equipments', 'a[href*="equipments.html"]', 'button[onclick*="equipments.html"]',
+                '[data-page*="equipments.html"]'
+            ],
+            'external_training.html': [
+                '#nav-training', 'a[href*="external_training.html"]', 'button[onclick*="external_training.html"]',
+                '[data-page*="external_training.html"]'
+            ],
+            'register_training.html': [
+                '#nav-register-training', 'a[href*="register_training.html"]', 'button[onclick*="register_training.html"]',
+                '[data-page*="register_training.html"]'
+            ],
+            'ocr_table.html': [
+                '#nav-ocr', 'a[href*="ocr_table.html"]', 'button[onclick*="ocr_table.html"]',
+                '[data-page*="ocr_table.html"]'
+            ],
+            'certificate_template.html': [
+                '#nav-certificate', 'a[href*="certificate_template.html"]', 'button[onclick*="certificate_template.html"]',
+                '[data-page*="certificate_template.html"]'
+            ]
+        };
+
+        Object.keys(userData.allowedPages).forEach(pageKey => {
+            if (userData.allowedPages[pageKey] === false) {
+                const selectors = PAGE_SELECTOR_MAP[pageKey] || [];
+                selectors.forEach(sel => {
+                    document.querySelectorAll(sel).forEach(el => {
+                        el.style.display = 'none';
+                    });
+                });
+            }
+        });
+    }
+
+    // 3. Highlight current active sidebar item based on current page URL
+    try {
+        let currentFile = window.location.pathname.split('/').pop() || 'dashboard.html';
+        currentFile = currentFile.split('?')[0].split('#')[0];
+        if (currentFile === '' || currentFile === '/') currentFile = 'dashboard.html';
+
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(el => {
+            const href = el.getAttribute('href') || '';
+            const onclick = el.getAttribute('onclick') || '';
+            if ((href && href.includes(currentFile)) || (onclick && onclick.includes(currentFile))) {
+                el.classList.add('active');
+            }
+        });
+    } catch(e) {}
+};
+
+window.checkPageAccess = function(userData) {
+    if (!userData) return true;
+
+    let currentFile = window.location.pathname.split('/').pop() || 'index.html';
+    if (!currentFile || currentFile === '' || currentFile === '/') currentFile = 'dashboard.html';
+    currentFile = currentFile.split('?')[0].split('#')[0];
+
+    // If non-admin user and current page is explicitly set to false
+    if (userData.role !== 'admin' && userData.allowedPages && userData.allowedPages[currentFile] === false) {
+        alert('ขออภัย บัญชีของคุณไม่มีสิทธิ์เข้าถึงหน้าเว็บนี้ กรุณาติดต่อผู้ดูแลระบบ');
+        window.location.href = 'dashboard.html';
+        return false;
+    }
+
+    // Apply sidebar permissions & menu display
+    window.applySidebarPermissions(userData);
+
+    return true;
+};

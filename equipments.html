@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 
 <head>
@@ -2417,9 +2417,13 @@
                 <div class="nav-icon">🏢</div>
                 <span class="nav-label">จัดการจัดซื้อ / วัสดุ (บริษัท)</span>
             </button>
-                        <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
                 <div class="nav-icon">📦</div>
                 <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">💻</div>
+                <span class="nav-label">ทะเบียนครุภัณฑ์</span>
             </button>
             <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
                 <div class="nav-icon">📷</div>
@@ -2691,7 +2695,7 @@ async function init() {
         
         try {
             const snap = await getDoc(doc(db, 'users', user.uid));
-            if (snap.exists()) {
+                if (snap.exists()) {
                 const userData = snap.data();
                 document.getElementById("userAvatar").textContent = (userData.firstName || user.displayName || user.email).charAt(0).toUpperCase();
                 document.getElementById("userName").textContent = userData.displayName || userData.firstName || user.displayName || user.email;
@@ -2703,10 +2707,8 @@ async function init() {
                     badge.className = `role-badge ${role}`;
                 }
 
-                if (role === 'admin') {
-                    const adminMenu = document.getElementById('adminMenu');
-                    if (adminMenu) adminMenu.style.display = 'flex';
-                }
+                if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
+
             } else {
                 document.getElementById("userAvatar").textContent = user.email.charAt(0).toUpperCase();
                 document.getElementById("userName").textContent = user.displayName || user.email;

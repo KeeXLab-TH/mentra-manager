@@ -1116,9 +1116,13 @@
                 <div class="nav-icon">🏢</div>
                 <span class="nav-label">จัดการจัดซื้อ / วัสดุ (บริษัท)</span>
             </button>
-                        <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
                 <div class="nav-icon">📦</div>
                 <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">💻</div>
+                <span class="nav-label">ทะเบียนครุภัณฑ์</span>
             </button>
             <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
                 <div class="nav-icon">📷</div>
@@ -1931,7 +1935,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
-            initializeFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc,
+            initializeFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc, deleteField,
             persistentLocalCache, persistentMultipleTabManager
         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -2000,6 +2004,8 @@
                             window.location.href = 'index.html?msg=rejected';
                             return;
                         }
+
+                        if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
 
                         // Populate User Profile in Sidebar
                         const { displayName, role, firstName } = userData;
@@ -2642,6 +2648,7 @@
 
         // Cache for firebase-loaded recipients
         let firestoreRecipientsCache = [];
+        let allRecipientsFiltered = []; // used by select handler
 
         async function openRecipientModal() {
             document.getElementById('recipientModal').style.display = 'flex';
@@ -2730,19 +2737,21 @@
                 company: { label: 'บริษัทเอกชน', bg: '#fdf4ff', color: '#7e22ce', border: '#e9d5ff' }
             };
             
+            allRecipientsFiltered = filtered; // store globally for click handler
+            
             let html = '';
             filtered.forEach((r, idx) => {
                 const badge = sourceBadge[r._source] || sourceBadge.saved;
-                const localIndex = r._source === 'saved' ? getSavedRecipients().findIndex(s => s.toCompany === r.toCompany) : -1;
-                const deleteBtn = localIndex >= 0
-                    ? `<button onclick="event.stopPropagation(); deleteRecipientFromModal(${localIndex})" style="background:#fee2e2;color:#ef4444;border:none;padding:8px;border-radius:6px;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'" title="ลบ"><i class='bx bx-trash' style="font-size:1.1rem;"></i></button>`
+                const safeName = (r.toCompany || '').replace(/'/g, "\\'");
+                const deleteBtn = r._source === 'saved'
+                    ? `<button onclick="event.stopPropagation(); deleteRecipientItem('${r._source}', '${safeName}')" style="background:#fee2e2;color:#ef4444;border:none;padding:8px;border-radius:6px;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'" title="ลบ"><i class='bx bx-trash' style="font-size:1.1rem;"></i></button>`
                     : '';
                 
                 html += `
                     <div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center;transition:all 0.2s;cursor:pointer;box-shadow:0 1px 2px 0 rgba(0,0,0,0.05);"
                         onmouseover="this.style.borderColor='var(--primary-color,#1A6FBF)';this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.1)';"
                         onmouseout="this.style.borderColor='#e2e8f0';this.style.boxShadow='0 1px 2px 0 rgba(0,0,0,0.05)';"
-                        onclick="selectRecipientByData(${idx}, firestoreRecipientsCache, getSavedRecipients(),'${r._source}','${r.toCompany.replace(/'/g, "\\'")}')"
+                        onclick="selectRecipientByIndex(${idx})"
                     >
                         <div style="flex:1;min-width:0;">
                             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
@@ -2783,6 +2792,19 @@
             closeRecipientModal();
         }
 
+        function selectRecipientByIndex(idx) {
+            const r = allRecipientsFiltered[idx];
+            if (r) {
+                document.getElementById('toCompany').value = r.toCompany || '';
+                document.getElementById('toAddress').value = r.toAddress || '';
+                document.getElementById('toAttn').value = r.toAttn || '';
+                document.getElementById('toTel').value = r.toTel || '';
+                document.getElementById('toEmail').value = r.toEmail || '';
+                if (typeof applyLivePreview === 'function') applyLivePreview();
+            }
+            closeRecipientModal();
+        }
+
         function selectRecipientByData(idx, firestoreCache, savedList, source, name) {
             let r = null;
             if (source === 'saved') {
@@ -2801,24 +2823,52 @@
             closeRecipientModal();
         }
 
-        async function deleteRecipientFromModal(index) {
-            const recipients = getSavedRecipients();
-            const r = recipients[index];
-            if (r && confirm(`คุณต้องการลบรายชื่อ "${r.toCompany}" ใช่หรือไม่?`)) {
-                recipients.splice(index, 1);
+        async function deleteRecipientItem(source, companyName) {
+            if (!confirm(`คุณต้องการลบรายชื่อ "${companyName}" ใช่หรือไม่?`)) return;
+
+            if (source === 'saved') {
+                let recipients = getSavedRecipients();
+                recipients = recipients.filter(r => r.toCompany !== companyName);
                 localStorage.setItem('saved_recipients', JSON.stringify(recipients));
-                renderRecipientCards(document.getElementById('recipientSearchInput').value);
-                
-                // Sync delete to Firestore if logged in
+
                 if (currentUser) {
                     try {
                         await setDoc(doc(db, 'users', currentUser.uid), {
+                            savedRecipients: recipients,
                             saved_recipients: recipients
                         }, { merge: true });
                     } catch (err) {
                         console.error('Error syncing recipient deletion:', err);
                     }
                 }
+            } else if (source === 'school') {
+                try {
+                    await setDoc(doc(db, 'material_settings', 'institution_details'), {
+                        [companyName]: deleteField()
+                    }, { merge: true });
+                    firestoreRecipientsCache = firestoreRecipientsCache.filter(r => !(r.toCompany === companyName && r._source === 'school'));
+                } catch (err) {
+                    console.error('Error deleting institution detail:', err);
+                }
+            } else if (source === 'company') {
+                try {
+                    await setDoc(doc(db, 'company_material_settings', 'company_details'), {
+                        [companyName]: deleteField()
+                    }, { merge: true });
+                    firestoreRecipientsCache = firestoreRecipientsCache.filter(r => !(r.toCompany === companyName && r._source === 'company'));
+                } catch (err) {
+                    console.error('Error deleting company detail:', err);
+                }
+            }
+
+            renderRecipientCards(document.getElementById('recipientSearchInput').value);
+        }
+
+        async function deleteRecipientFromModal(index) {
+            const recipients = getSavedRecipients();
+            const r = recipients[index];
+            if (r) {
+                await deleteRecipientItem('saved', r.toCompany);
             }
         }
 
@@ -4697,7 +4747,10 @@
         window.closeRecipientModal = closeRecipientModal;
         window.filterRecipientCards = filterRecipientCards;
         window.selectRecipientFromModal = selectRecipientFromModal;
+        window.selectRecipientByIndex = selectRecipientByIndex;
+        window.selectRecipientByData = selectRecipientByData;
         window.deleteRecipientFromModal = deleteRecipientFromModal;
+        window.deleteRecipientItem = deleteRecipientItem;
         window.saveCurrentRecipient = saveCurrentRecipient;
         window.openTemplateSettingsModal = openTemplateSettingsModal;
         window.closeTemplateSettingsModal = closeTemplateSettingsModal;

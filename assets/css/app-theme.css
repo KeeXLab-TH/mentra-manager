@@ -234,15 +234,34 @@ body::after {
 
 
 /* ================================================================
-   V. TOPBAR GLASSMORPHISM UPGRADE
+   V. PREMIUM TOPBAR ACCENT & GRADIENT
    ================================================================ */
-@supports (backdrop-filter: blur(1px)) {
-    .topbar {
-        background: var(--glass-bg) !important;
-        backdrop-filter: blur(var(--glass-blur)) saturate(1.4) !important;
-        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4) !important;
-        border-bottom: 1px solid var(--glass-border) !important;
-    }
+.topbar {
+    background: linear-gradient(90deg, #edf5fd 0%, #ffffff 60%, #fffbf8 100%) !important;
+    border-bottom: 2px solid #1A6FBF !important;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(26, 111, 191, 0.05) !important;
+}
+
+.topbar::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    right: 0;
+    width: 30%;
+    height: 2px;
+    background: #E07B2F !important;
+    z-index: 2;
+}
+
+[data-theme="dark"] .topbar {
+    background: linear-gradient(90deg, #111e30 0%, #0b1320 60%, #171720 100%) !important;
+    border-bottom: 2px solid #1A6FBF !important;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="dark"] .topbar::after {
+    background: #E07B2F !important;
 }
 
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 
 <head>
@@ -2180,9 +2180,13 @@
                 <div class="nav-icon">🏢</div>
                 <span class="nav-label">จัดการจัดซื้อ / วัสดุ (บริษัท)</span>
             </button>
-                        <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
                 <div class="nav-icon">📦</div>
                 <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">💻</div>
+                <span class="nav-label">ทะเบียนครุภัณฑ์</span>
             </button>
             <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
                 <div class="nav-icon">📷</div>
@@ -4042,15 +4046,12 @@
                 document.getElementById('userAvatar').textContent = initials;
                 document.getElementById('userName').textContent = name;
 
+                // แสดง role badge
                 const badge = document.getElementById('userRoleBadge');
                 badge.textContent = role === 'admin' ? 'Admin' : 'User';
                 badge.className = `role-badge ${role === 'admin' ? 'admin' : 'user'}`;
 
-                // แสดง adminMenu ถ้าเป็น admin
-                if (role === 'admin') {
-                    const adminMenu = document.getElementById('adminMenu');
-                    if (adminMenu) adminMenu.style.display = 'block';
-                }
+                if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
 
                 // ===== FIRESTORE REAL-TIME SYNCHRONISATION =====
                 // 1. Establish Real-time database listener on training_requests collection
