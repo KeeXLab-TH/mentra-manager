@@ -660,10 +660,189 @@
 })();
 
 /* ────────────────────────────────────────────
+   IV-B. DYNAMIC USER PROFILE DROPDOWN
+   ──────────────────────────────────────────── */
+function initAccountDropdown(userData) {
+    const topbarRight = document.querySelector('.topbar-right-menu');
+    if (!topbarRight) return;
+
+    // Avoid duplicate initialization
+    if (document.querySelector('.user-dropdown-wrapper')) return;
+
+    const sidebarUser = topbarRight.querySelector('.sidebar-user');
+    if (!sidebarUser) return;
+
+    const userCard = sidebarUser.querySelector('.user-card');
+    const oldLogoutBtn = sidebarUser.querySelector('.btn-logout');
+    const oldAdminMenu = topbarRight.querySelector('#adminMenu');
+
+    if (!userCard) return;
+
+    // Sync profile details to the DOM user card dynamically
+    const nameEl = userCard.querySelector('.user-name') || document.getElementById('userName');
+    const avatarEl = userCard.querySelector('.user-avatar') || document.getElementById('userAvatar');
+    const badgeEl = userCard.querySelector('.role-badge') || document.getElementById('userRoleBadge');
+
+    if (nameEl && userData.name) {
+        nameEl.textContent = userData.name;
+    }
+    if (avatarEl && userData.name) {
+        avatarEl.textContent = userData.name.substring(0, 1).toUpperCase();
+    }
+    if (badgeEl && userData.role) {
+        badgeEl.textContent = userData.role === 'admin' ? 'Administrator' : userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+    }
+
+    // Create wrapper
+    const wrapper = document.createElement('div');
+    wrapper.className = 'user-dropdown-wrapper';
+
+    // Insert wrapper into sidebar-user
+    sidebarUser.insertBefore(wrapper, userCard);
+    wrapper.appendChild(userCard);
+
+    // Add caret to user-card
+    const caret = document.createElement('i');
+    caret.className = 'fa-solid fa-chevron-down user-card-caret';
+    userCard.appendChild(caret);
+
+    // Create dropdown menu element
+    const dropdown = document.createElement('div');
+    dropdown.className = 'user-profile-dropdown';
+
+    // 1. Add Dropdown Header
+    const dropdownHeader = document.createElement('div');
+    dropdownHeader.className = 'user-dropdown-header';
+    
+    const headerName = document.createElement('div');
+    headerName.className = 'user-dropdown-header-name';
+    headerName.textContent = userData.name || 'User Profile';
+    
+    const headerRole = document.createElement('div');
+    headerRole.className = 'user-dropdown-header-role';
+    headerRole.textContent = userData.role === 'admin' ? 'Administrator' : userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+    
+    dropdownHeader.appendChild(headerName);
+    dropdownHeader.appendChild(headerRole);
+    dropdown.appendChild(dropdownHeader);
+
+    // Divider
+    const headerDivider = document.createElement('div');
+    headerDivider.className = 'user-dropdown-divider';
+    dropdown.appendChild(headerDivider);
+
+    // Add Admin items if user is admin
+    const isAdmin = userData && userData.role === 'admin';
+
+    if (isAdmin) {
+        // 1. Manage Users
+        const itemUsers = document.createElement('button');
+        itemUsers.className = 'user-dropdown-item';
+        itemUsers.innerHTML = `
+            <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>จัดการผู้ใช้งาน</span>
+        `;
+        itemUsers.onclick = () => window.location.href = 'dashboard.html?view=users';
+        dropdown.appendChild(itemUsers);
+
+        // 2. Add New Project
+        const itemAdd = document.createElement('button');
+        itemAdd.className = 'user-dropdown-item';
+        itemAdd.innerHTML = `
+            <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                <line x1="12" y1="11" x2="12" y2="17"></line>
+                <line x1="9" y1="14" x2="15" y2="14"></line>
+            </svg>
+            <span>เพิ่มโครงการใหม่</span>
+        `;
+        itemAdd.onclick = () => window.location.href = 'dashboard.html';
+        dropdown.appendChild(itemAdd);
+
+        // 3. Admin Console
+        const itemConsole = document.createElement('button');
+        itemConsole.className = 'user-dropdown-item';
+        itemConsole.innerHTML = `
+            <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+                <line x1="15" y1="3" x2="15" y2="21"></line>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="3" y1="15" x2="21" y2="15"></line>
+            </svg>
+            <span>Admin Console (สิทธิ์ด่วน)</span>
+        `;
+        itemConsole.onclick = () => window.location.href = 'console_admin.html';
+        dropdown.appendChild(itemConsole);
+
+        // Divider
+        const divider = document.createElement('div');
+        divider.className = 'user-dropdown-divider';
+        dropdown.appendChild(divider);
+    }
+
+    // Add Logout Item
+    const itemLogout = document.createElement('button');
+    itemLogout.className = 'user-dropdown-item logout-item';
+    itemLogout.innerHTML = `
+        <svg class="dropdown-item-icon" style="color: #ef4444;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>ออกจากระบบ</span>
+    `;
+    itemLogout.onclick = () => {
+        if (oldLogoutBtn) {
+            oldLogoutBtn.click();
+        } else if (typeof handleLogout === 'function') {
+            handleLogout();
+        } else if (window.handleLogout) {
+            window.handleLogout();
+        } else {
+            window.location.href = 'index.html';
+        }
+    };
+    dropdown.appendChild(itemLogout);
+
+    wrapper.appendChild(dropdown);
+
+    // Hide old elements
+    if (oldLogoutBtn) oldLogoutBtn.style.display = 'none';
+    if (oldAdminMenu) oldAdminMenu.style.display = 'none';
+
+    // Toggling behaviour
+    userCard.onclick = (e) => {
+        e.stopPropagation();
+        const show = dropdown.classList.toggle('show');
+        wrapper.classList.toggle('active', show);
+    };
+
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) {
+            dropdown.classList.remove('show');
+            wrapper.classList.remove('active');
+        }
+    });
+}
+
+/* ────────────────────────────────────────────
    V. GLOBAL SIDEBAR & PAGE PERMISSION GUARD
    ──────────────────────────────────────────── */
 window.applySidebarPermissions = function(userData) {
     if (!userData) return;
+
+    // Initialize the account dropdown menu (moving admin menu items and logout inside it)
+    try {
+        initAccountDropdown(userData);
+    } catch(err) {
+        console.error('Dropdown init error:', err);
+    }
 
     // 1. Hide/Show Admin Console menu based on Role
     const adminMenus = document.querySelectorAll('#adminMenu, a[href*="console_admin.html"], button[onclick*="console_admin.html"], [data-page*="console_admin.html"]');

@@ -1063,15 +1063,15 @@ tbody tr:hover td {
     .mnav-sheet-avatar {
         width: 44px !important;
         height: 44px !important;
-        border-radius: 14px !important;
-        background: linear-gradient(135deg, #1A6FBF, #0b3d6e) !important;
+        border-radius: 10px !important;
+        background: linear-gradient(135deg, #ff781e 0%, #e05e00 100%) !important;
         color: #fff !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
         font-size: 18px !important;
         font-weight: 800 !important;
-        box-shadow: 0 4px 12px rgba(26,111,191,0.3) !important;
+        box-shadow: 0 4px 12px rgba(224, 123, 47, 0.25) !important;
         flex-shrink: 0 !important;
     }
 
@@ -1629,4 +1629,422 @@ tbody tr:hover td {
     .breadcrumb-sub {
         color: rgba(255, 255, 255, 0.85) !important;
     }
+}
+
+/* ================================================================
+   TOPBAR RIGHT MENU, USER CARD & ADMIN MENU STYLING
+   ================================================================ */
+.topbar-right-menu {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    margin-left: auto !important;
+}
+
+.topbar-right-menu #adminMenu {
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+.topbar-right-menu #adminMenu .nav-section-title {
+    display: none !important;
+}
+
+.topbar-right-menu .nav-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 8px 12px !important;
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+    border-radius: var(--radius-sm) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    font-family: 'Kanit', sans-serif !important;
+}
+
+.topbar-right-menu .nav-item:hover {
+    background: var(--bg) !important;
+    color: var(--primary) !important;
+}
+
+.topbar-right-menu .nav-label {
+    display: none !important;
+}
+
+@media (min-width: 1200px) {
+    .topbar-right-menu .nav-label {
+        display: block !important;
+        font-size: 13px !important;
+    }
+}
+
+.topbar-right-menu .sidebar-user {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    gap: 12px !important;
+}
+
+.topbar-right-menu .user-card {
+    cursor: pointer !important;
+    background: #f8fafc !important; /* bg-slate-50 style */
+    border: 1px solid #e2e8f0 !important; /* border-slate-200 */
+    padding: 8px 16px !important; /* Increased padding */
+    border-radius: 12px !important; /* rounded-xl */
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important; /* Increased gap */
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+.topbar-right-menu .user-card:hover {
+    background: #f1f5f9 !important; /* Hover background slate-100 */
+    border-color: #cbd5e1 !important; /* border-slate-300 */
+    transform: translateY(-1px) !important;
+}
+
+.topbar-right-menu .user-avatar {
+    width: 40px !important; /* Increased from 36px */
+    height: 40px !important; /* Increased from 36px */
+    border-radius: 10px !important; /* Perfect squircle! */
+    background: linear-gradient(135deg, #ff781e 0%, #d85d00 100%) !important; /* Rich vibrant brand orange gradient */
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 800 !important;
+    font-size: 16px !important; /* Larger text */
+    box-shadow: 0 3px 8px rgba(224, 123, 47, 0.25) !important;
+    flex-shrink: 0 !important;
+}
+
+.topbar-right-menu .user-info {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important; /* Spacing between name and role */
+}
+
+.topbar-right-menu .user-name {
+    font-size: 14px !important; /* Increased from 13px */
+    font-weight: 700 !important;
+    color: #0f172a !important; /* Dark Slate 900 */
+    max-width: 180px !important; /* Increased from 150px to prevent early truncation */
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-family: 'Kanit', sans-serif !important;
+    line-height: 1.25 !important;
+}
+
+.topbar-right-menu .user-role {
+    display: flex !important;
+    align-items: center !important;
+}
+
+.topbar-right-menu .role-badge {
+    background: transparent !important;
+    color: #64748b !important; /* Slate 500 */
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 11.5px !important; /* Increased from 11px */
+    font-weight: 500 !important;
+    text-transform: capitalize !important;
+    font-family: 'Kanit', sans-serif !important;
+    display: inline-block !important;
+    line-height: 1.2 !important;
+}
+
+.topbar-right-menu .btn-logout {
+    margin: 0 !important;
+    padding: 8px 16px !important;
+    width: auto !important;
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: var(--danger) !important;
+    border-radius: var(--radius-sm) !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+    font-family: 'Kanit', sans-serif !important;
+}
+
+.topbar-right-menu .btn-logout:hover {
+    background: var(--danger) !important;
+    color: white !important;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .topbar-right-menu .nav-item {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+[data-theme="dark"] .topbar-right-menu .nav-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .topbar-right-menu .user-name {
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .topbar-right-menu .role-badge {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Hide original topbar admin menu and logout button since they are moved to dropdown */
+body .topbar-right-menu #adminMenu,
+body .topbar-right-menu #adminMenu[style*="block"],
+body .topbar-right-menu #adminMenu[style*="flex"],
+body .topbar-right-menu > .btn-logout,
+body .topbar-right-menu .sidebar-user > .btn-logout {
+    display: none !important;
+}
+
+/* ================================================================
+   USER PROFILE DROPDOWN MENU
+   ================================================================ */
+.user-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.topbar-right-menu .user-card {
+    cursor: pointer;
+    padding: 6px 12px !important;
+    border-radius: var(--radius-md) !important;
+    transition: background 0.2s ease, transform 0.2s ease;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.topbar-right-menu .user-card:hover {
+    background: rgba(26, 111, 191, 0.05) !important;
+}
+
+.topbar-right-menu .user-card:active {
+    transform: scale(0.98);
+}
+
+[data-theme="dark"] .topbar-right-menu .user-card:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Caret icon inside the user card to show it is a dropdown */
+.user-card-caret {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-left: 4px;
+    transition: transform var(--dur-fast) var(--ease-out-expo);
+}
+
+.user-dropdown-wrapper.active .user-card-caret {
+    transform: rotate(180deg);
+}
+
+/* The actual dropdown content */
+.user-profile-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 220px;
+    background: #ffffff;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    padding: 6px;
+    animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: top right;
+}
+
+[data-theme="dark"] .user-profile-dropdown {
+    background: #1e293b;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.user-profile-dropdown.show {
+    display: flex !important;
+}
+
+/* Dropdown item styles */
+.user-dropdown-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important; /* Force left alignment */
+    gap: 12px !important;
+    padding: 10px 16px !important; /* Spacious padding matching header */
+    color: #475569 !important; /* Slate 600 */
+    text-decoration: none !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    border: none !important;
+    width: 100% !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    transition: all 0.15s ease !important;
+    font-family: 'Kanit', sans-serif !important;
+}
+
+.user-dropdown-item:hover {
+    background: rgba(26, 111, 191, 0.05) !important;
+    color: var(--primary) !important;
+}
+
+[data-theme="dark"] .user-dropdown-item {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+[data-theme="dark"] .user-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #ffffff !important;
+}
+
+/* Special styles for logout button in dropdown */
+.user-dropdown-item.logout-item {
+    color: #ef4444 !important; /* Danger Red */
+}
+
+.user-dropdown-item.logout-item:hover {
+    background: rgba(239, 68, 68, 0.06) !important;
+    color: #ef4444 !important;
+}
+
+[data-theme="dark"] .user-dropdown-item.logout-item:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #ef4444 !important;
+}
+
+/* Divider inside the dropdown */
+.user-dropdown-divider {
+    height: 1px;
+    background: var(--border-color, #e2e8f0);
+    margin: 4px 6px;
+}
+
+[data-theme="dark"] .user-dropdown-divider {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* ================================================================
+   USER PROFILE DROPDOWN MENU - PREMIUM EXTENSIONS
+   ================================================================ */
+/* Speech bubble pointer / triangle tip */
+.user-profile-dropdown::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -6px !important;
+    right: 30px !important;
+    width: 10px !important;
+    height: 10px !important;
+    background: #ffffff !important;
+    border-left: 1px solid var(--border-color, #e2e8f0) !important;
+    border-top: 1px solid var(--border-color, #e2e8f0) !important;
+    transform: rotate(45deg) !important;
+    z-index: 1001 !important;
+}
+
+[data-theme="dark"] .user-profile-dropdown::before {
+    background: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Dropdown Header Details */
+.user-dropdown-header {
+    padding: 10px 14px 8px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    font-family: 'Kanit', sans-serif !important;
+}
+
+.user-dropdown-header-name {
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    line-height: 1.3 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.user-dropdown-header-role {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: #64748b !important;
+    margin-top: 2px !important;
+}
+
+[data-theme="dark"] .user-dropdown-header-name {
+    color: #f8fafc !important;
+}
+
+[data-theme="dark"] .user-dropdown-header-role {
+    color: #94a3b8 !important;
+}
+
+/* FontAwesome icons within the dropdown */
+.dropdown-item-icon {
+    font-size: 14px !important;
+    width: 18px !important;
+    text-align: center !important;
+    color: #64748b !important;
+    transition: color 0.2s ease, transform 0.2s ease !important;
+}
+
+.user-dropdown-item:hover .dropdown-item-icon {
+    color: var(--primary) !important;
+    transform: scale(1.1) !important;
+}
+
+.user-dropdown-item.logout-item:hover .dropdown-item-icon {
+    color: #ef4444 !important;
+}
+
+[data-theme="dark"] .dropdown-item-icon {
+    color: #94a3b8 !important;
+}
+
+/* Hover sliding translation text */
+.user-dropdown-item span {
+    transition: transform 0.2s ease !important;
+    display: inline-block !important;
+}
+
+.user-dropdown-item:hover span {
+    transform: translateX(4px) !important;
 }
