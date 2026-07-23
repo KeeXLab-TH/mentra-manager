@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>ปฏิทินตารางงาน (Personal Calendar) — Mentra Manager</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
+    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --sidebar-w: 260px;
+            --sidebar-w-collapsed: 72px;
+            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
+            --header-h: 68px;
+            --primary: #1A6FBF;
+            --primary-light: #e8f1fb;
+            --secondary: #E07B2F;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --t-normal: 0.25s ease;
+            --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            --border-color: #e2e8f0;
+            --bg: #f0f4f9;
+            --text: #1a202c;
+            --text-main: #1a202c;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            display: none;
+            font-family: 'Kanit', 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: width var(--t-slow), transform var(--t-slow);
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-w-collapsed);
+        }
+
+        .sidebar.collapsed .sidebar-logo-text,
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .user-info,
+        .sidebar.collapsed .btn-logout-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            display: none;
+        }
+
+        .sidebar-logo {
+            padding: 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: var(--header-h);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo img {
+            width: 40px !important;
+            height: 40px !important;
+            max-width: 40px !important;
+            max-height: 40px !important;
+            object-fit: contain !important;
+            background: white !important;
+            border-radius: 10px !important;
+            padding: 4px !important;
+            flex-shrink: 0 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-logo-text .app-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .sidebar-logo-text .app-sub {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.60);
+            font-weight: 400;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        .sidebar-nav {
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.45);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 8px 12px 4px;
+        }
+
+        .sidebar .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-item:hover, .sidebar .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .main-wrapper {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 100vh;
+            transition: margin-left var(--t-slow);
+        }
+
+        .sidebar.collapsed + .main-wrapper,
+        body.sidebar-collapsed .main-wrapper {
+            margin-left: var(--sidebar-w-collapsed);
+        }
+
+        /* Topbar Header Layout */
+        .topbar {
+            height: var(--header-h);
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 0 28px !important;
+            gap: 16px !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 50 !important;
+        }
+
+        .hamburger {
+            display: none !important;
+            background: none !important;
+            border: none !important;
+            cursor: pointer !important;
+            color: var(--text-secondary) !important;
+            padding: 8px !important;
+            border-radius: var(--radius-sm) !important;
+        }
+
+        @media (max-width: 1024px) {
+            .hamburger {
+                display: block !important;
+            }
+        }
+
+        .topbar-breadcrumb {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+        }
+
+        .breadcrumb-title {
+            font-size: 18px !important;
+            font-weight: 800 !important;
+            color: var(--text) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+
+        .breadcrumb-sub {
+            font-size: 12px !important;
+            color: var(--text-secondary) !important;
+            margin-top: 2px !important;
+        }
+
+        .topbar-right-menu {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 16px !important;
+            margin-left: auto !important;
+        }
+
+        .workspace-container {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+            padding: 24px;
+            height: calc(100vh - var(--header-h));
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        @media (max-width: 1024px) {
+            .workspace-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+                height: auto;
+                overflow: visible;
+            }
+        }
+
+        /* ===== CALENDAR CONTAINER ===== */
+        .calendar-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--depth-1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        [data-theme="dark"] .calendar-card {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .calendar-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .calendar-nav-btn {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+        }
+
+        .calendar-nav-btn:hover {
+            background: var(--bg-hover);
+            color: var(--primary);
+            border-color: var(--primary-light);
+        }
+
+        [data-theme="dark"] .calendar-nav-btn {
+            background: #334155;
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+        }
+
+        .calendar-month-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--text-main);
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .calendar-grid-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .weekday-name {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 8px;
+            flex: 1;
+        }
+
+        .calendar-day-cell {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 60px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        [data-theme="dark"] .calendar-day-cell {
+            background: #0f172a;
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .calendar-day-cell:hover {
+            border-color: var(--primary-light);
+            background: #f0f9ff;
+        }
+
+        [data-theme="dark"] .calendar-day-cell:hover {
+            background: #1e3a8a30;
+        }
+
+        .calendar-day-cell.selected {
+            background: rgba(26, 111, 191, 0.08) !important;
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 1px var(--primary) !important;
+        }
+
+        .calendar-day-cell.other-month {
+            opacity: 0.38;
+            background: transparent;
+        }
+
+        .calendar-day-cell.today {
+            background: #eff6ff !important;
+            border-color: var(--primary) !important;
+        }
+
+        [data-theme="dark"] .calendar-day-cell.today {
+            background: #1e3a8a50 !important;
+        }
+
+        .day-num {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .calendar-day-cell.today .day-num {
+            color: var(--primary);
+        }
+
+        .day-event-dots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .event-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        /* Color classes */
+        .event-work { background: #3b82f6; }
+        .event-meeting { background: #8b5cf6; }
+        .event-personal { background: #f97316; }
+        .event-urgent { background: #ef4444; }
+
+        /* ===== RIGHT SCHEDULE PANEL ===== */
+        .schedule-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--depth-1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        [data-theme="dark"] .schedule-card {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .schedule-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        .schedule-date-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .btn-add-event {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn-add-event:hover {
+            opacity: 0.9;
+        }
+
+        .events-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 4px;
+        }
+
+        .no-events-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #94a3b8;
+            padding: 40px 20px;
+            flex: 1;
+        }
+
+        .no-events-placeholder i {
+            font-size: 36px;
+            margin-bottom: 12px;
+            color: #cbd5e1;
+        }
+
+        .event-item {
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        [data-theme="dark"] .event-item {
+            background: #0f172a;
+        }
+
+        .event-item:hover {
+            transform: translateX(2px);
+            background: #f1f5f9;
+        }
+
+        [data-theme="dark"] .event-item:hover {
+            background: #1e293b;
+        }
+
+        .event-item.work { border-left-color: #3b82f6; }
+        .event-item.meeting { border-left-color: #8b5cf6; }
+        .event-item.personal { border-left-color: #f97316; }
+        .event-item.urgent { border-left-color: #ef4444; }
+
+        .event-item-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .event-item-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .event-item-time {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        [data-theme="dark"] .event-item-time {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        .event-item-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .event-item-user {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ===== MODAL & FORM ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            width: 440px;
+            max-width: 90vw;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        [data-theme="dark"] .modal-card {
+            background: #1e293b;
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #94a3b8;
+        }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13.5px;
+            background: #ffffff;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        [data-theme="dark"] .form-input, [data-theme="dark"] .form-select, [data-theme="dark"] .form-textarea {
+            background: #0f172a;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-cancel {
+            padding: 8px 16px;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        [data-theme="dark"] .btn-cancel {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        .btn-save {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-delete-event {
+            margin-right: auto;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* ===== ADMIN USER FILTER ===== */
+        .admin-filter-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            border-radius: var(--radius-sm);
+            padding: 4px 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        [data-theme="dark"] .admin-filter-container {
+            background: #334155;
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-filter-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .admin-filter-select {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-layout">
+        <!-- SIDEBAR OVERLAY (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <div class="sidebar-logo-text">
+                <div class="app-name">Mentra Manager</div>
+                <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
+            </div>
+            <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">เมนูหลัก</div>
+            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard">
+                <div class="nav-icon">🏠</div>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=projects'" id="nav-projects">
+                <div class="nav-icon">📁</div>
+                <span class="nav-label">โครงการทั้งหมด</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=items'" id="nav-items">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">ราคาทุน / สิ่งของ</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
+                <div class="nav-icon">📄</div>
+                <span class="nav-label">ใบเสนอราคา</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
+                <div class="nav-icon">🎓</div>
+                <span class="nav-label">ระบบตารางจัดอบรม</span>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='calendar.html'" id="nav-calendar">
+                <div class="nav-icon">📅</div>
+                <span class="nav-label">ปฏิทินตารางงาน</span>
+            </button>
+            <div class="nav-item-group" id="nav-purchasing-group">
+                <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main">
+                    <div class="nav-icon">🛒</div>
+                    <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
+                    <i class="fa-solid fa-chevron-down submenu-caret"></i>
+                </button>
+                <div class="sidebar-submenu" id="purchasingSubmenu">
+                    <a href="materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
+                        <span class="submenu-icon">🏫</span>
+                        <span class="nav-label">สถานศึกษา</span>
+                    </a>
+                    <a href="materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
+                        <span class="submenu-icon">🏢</span>
+                        <span class="nav-label">บริษัทเอกชน</span>
+                    </a>
+                </div>
+            </div>
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">💻</div>
+                <span class="nav-label">ทะเบียนครุภัณฑ์</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
+                <div class="nav-icon">📷</div>
+                <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-wrapper" id="mainWrapper">
+        <header class="topbar">
+            <button class="hamburger" onclick="toggleSidebar()">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="topbar-breadcrumb">
+                <div class="breadcrumb-title">
+                    <i class="fa-solid fa-calendar-days" style="color: var(--primary);"></i>
+                    ปฏิทินตารางงาน <span class="badge-ocr" style="background: rgba(224,123,47,0.1); color:#e07b2f; border:1px solid rgba(224,123,47,0.2);">Schedule & Tasks</span>
+                </div>
+                <div class="breadcrumb-sub">ระบบจัดการตารางเวลา นัดหมาย และงานส่วนบุคคลประจำวัน</div>
+            </div>
+            <div class="topbar-right-menu">
+                <div id="adminMenu" style="display:none;">
+                    <button class="nav-item" onclick="window.location.href='dashboard.html?view=users'" id="nav-users">
+                        <div class="nav-icon">👥</div>
+                        <span class="nav-label">จัดการผู้ใช้งาน</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-add-project">
+                        <div class="nav-icon">➕</div>
+                        <span class="nav-label">เพิ่มโครงการใหม่</span>
+                    </button>
+                    <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                        <div class="nav-icon">🛠️</div>
+                        <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
+                    </a>
+                </div>
+                <div class="sidebar-user">
+                    <div class="user-card">
+                        <div class="user-avatar" id="userAvatar">M</div>
+                        <div class="user-info">
+                            <div class="user-name" id="userName">กำลังโหลด...</div>
+                            <div class="user-role">
+                                <span class="role-badge" id="userRoleBadge">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-logout" onclick="handleLogout()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <polyline points="21 12 9 12"></polyline>
+                        </svg>
+                        <span class="btn-logout-text">ออกจากระบบ</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ===== WORKSPACE ===== -->
+        <main class="workspace-container">
+            <!-- Left Side: Interactive Calendar -->
+            <section class="calendar-card">
+                <div class="calendar-header">
+                    <div class="calendar-title-wrapper">
+                        <button class="calendar-nav-btn" onclick="prevMonth()"><i class="fa-solid fa-chevron-left"></i></button>
+                        <h2 class="calendar-month-title" id="calendarMonthYear">กรกฎาคม 2026</h2>
+                        <button class="calendar-nav-btn" onclick="nextMonth()"><i class="fa-solid fa-chevron-right"></i></button>
+                        <button class="calendar-nav-btn" style="width: auto; padding: 0 12px; font-size:12px; font-weight:600;" onclick="goToToday()">วันนี้</button>
+                    </div>
+
+                    <!-- Admin Filter Dropdown -->
+                    <div id="adminFilterWrapper" class="admin-filter-container" style="display: none;">
+                        <span class="admin-filter-label"><i class="fa-solid fa-filter"></i> แผนงานของ:</span>
+                        <select id="userFilterSelect" class="admin-filter-select" onchange="onUserFilterChange()">
+                            <option value="my">งานของฉัน</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="calendar-grid-wrapper">
+                    <div class="calendar-weekdays">
+                        <div class="weekday-name">อา.</div>
+                        <div class="weekday-name">จ.</div>
+                        <div class="weekday-name">อ.</div>
+                        <div class="weekday-name">พ.</div>
+                        <div class="weekday-name">พฤ.</div>
+                        <div class="weekday-name">ศ.</div>
+                        <div class="weekday-name">ส.</div>
+                    </div>
+                    <div class="calendar-days" id="calendarDaysGrid">
+                        <!-- Rendered dynamically by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Daily Task Sheet -->
+            <section class="schedule-card">
+                <div class="schedule-header">
+                    <h3 class="schedule-date-title" id="scheduleDateTitle">นัดหมายวันนี้</h3>
+                    <button class="btn-add-event" onclick="openAddEventModal()"><i class="fa-solid fa-plus"></i> เพิ่มนัดหมาย</button>
+                </div>
+                <div class="events-list" id="eventsListContainer">
+                    <!-- Events rendered dynamically -->
+                </div>
+            </section>
+        </main>
+    </div>
+    </div>
+
+    <!-- ===== EVENT CREATOR/EDITOR MODAL ===== -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle">เพิ่มรายการนัดหมาย/กิจกรรม</h4>
+                <button class="modal-close-btn" onclick="closeEventModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="formEventId">
+                <div class="form-group">
+                    <label class="form-label" for="formEventTitle">หัวเรื่องนัดหมาย / ชื่องาน *</label>
+                    <input type="text" id="formEventTitle" class="form-input" placeholder="ระบุชื่องานหรือนัดหมาย...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="formEventDate">วันที่ปฏิบัติงาน *</label>
+                    <input type="date" id="formEventDate" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="formEventTime">เวลาปฏิบัติงาน (ไม่ระบุได้)</label>
+                    <input type="time" id="formEventTime" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="formEventType">ประเภทงาน</label>
+                    <select id="formEventType" class="form-select">
+                        <option value="work">💼 งานทั่วไป (Work)</option>
+                        <option value="meeting">👥 การประชุม (Meeting)</option>
+                        <option value="personal">🍊 ส่วนตัว (Personal)</option>
+                        <option value="urgent">🔴 เร่งด่วนมาก (Urgent)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="formEventDesc">รายละเอียดเพิ่มเติม</label>
+                    <textarea id="formEventDesc" class="form-textarea" rows="3" placeholder="ระบุรายละเอียดโครงการ นัดหมาย สถานที่ หรือหมายเหตุ..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-delete-event" id="btnDeleteEvent" style="display: none;" onclick="deleteEventClick()">ลบรายการ</button>
+                <button class="btn-cancel" onclick="closeEventModal()">ยกเลิก</button>
+                <button class="btn-save" onclick="saveEventClick()">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Modular -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { 
+            getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
+            collection, query, where, onSnapshot, orderBy 
+        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
+            authDomain: "mentra-manager-e039f.firebaseapp.com",
+            projectId: "mentra-manager-e039f",
+            storageBucket: "mentra-manager-e039f.firebasestorage.app",
+            messagingSenderId: "563604754745",
+            appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Global State Variables
+        let currentUser = null;
+        let currentUserData = null;
+        let selectedDate = new Date(); // Holds selected day
+        let currentYear = selectedDate.getFullYear();
+        let currentMonth = selectedDate.getMonth();
+        let allEvents = [];
+        let allUsers = [];
+        let activeFilterUserId = 'my'; // 'my' means current user, otherwise contains specific uid, 'all' for all users
+
+        // Thai Month Names
+        const THAI_MONTHS = [
+            "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+            "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+        ];
+
+        // Handle Logout
+        window.handleLogout = async function() {
+            try {
+                await signOut(auth);
+                window.location.href = 'index.html';
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        // DOM Listeners & Auth Guard
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = user;
+
+            try {
+                // Fetch User Details from Firestore
+                const userSnap = await getDoc(doc(db, 'users', user.uid));
+                if (!userSnap.exists()) {
+                    await signOut(auth);
+                    window.location.href = 'index.html?msg=deleted';
+                    return;
+                }
+
+                currentUserData = userSnap.data();
+                
+                // Permission and UI setup
+                if (window.checkPageAccess && !window.checkPageAccess(currentUserData)) return;
+
+                // Sync details to topbar elements
+                document.getElementById('userName').textContent = currentUserData.name || 'User';
+                const badge = document.getElementById('userRoleBadge');
+                badge.textContent = currentUserData.role === 'admin' ? 'Admin' : 'User';
+                badge.className = `role-badge ${currentUserData.role}`;
+
+                // Show screen body
+                document.body.style.setProperty('display', 'flex', 'important');
+
+                // Initialize System
+                if (currentUserData.role === 'admin') {
+                    setupAdminMode();
+                }
+
+                initCalendarSystem();
+
+            } catch (err) {
+                console.warn('Init error:', err);
+                document.body.style.setProperty('display', 'flex', 'important');
+            }
+        });
+
+        // Set up Admin User Filter option
+        async function setupAdminMode() {
+            document.getElementById('adminFilterWrapper').style.display = 'flex';
+            
+            try {
+                const querySnap = await getDocs(collection(db, 'users'));
+                allUsers = [];
+                querySnap.forEach(doc => {
+                    allUsers.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Populate select option
+                const select = document.getElementById('userFilterSelect');
+                select.innerHTML = '<option value="my">งานของฉัน</option><option value="all">งานของทุกคน (ทั้งหมด)</option>';
+                allUsers.forEach(u => {
+                    if (u.id !== currentUser.uid) {
+                        const option = document.createElement('option');
+                        option.value = u.id;
+                        option.textContent = u.name || `${u.firstName || ''} ${u.lastName || ''}`;
+                        select.appendChild(option);
+                    }
+                });
+            } catch(e) {
+                console.warn('Admin load users error:', e);
+            }
+        }
+
+        // Handle User Change in selector
+        window.onUserFilterChange = function() {
+            activeFilterUserId = document.getElementById('userFilterSelect').value;
+            fetchEventsAndRender();
+        };
+
+        // Init Calendar Grid
+        function initCalendarSystem() {
+            // Today Select & Load
+            goToToday();
+            
+            // Start real-time listener for events
+            listenToEvents();
+        }
+
+        // Listen to Events dynamically based on active filter
+        let unsubscribeEvents = null;
+        function listenToEvents() {
+            if (unsubscribeEvents) unsubscribeEvents();
+
+            let q = collection(db, 'calendar_events');
+
+            unsubscribeEvents = onSnapshot(q, (snapshot) => {
+                allEvents = [];
+                snapshot.forEach(docSnap => {
+                    allEvents.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                
+                // Sort client-side by date and time
+                allEvents.sort((a, b) => {
+                    const dateA = a.date || '';
+                    const dateB = b.date || '';
+                    if (dateA !== dateB) return dateA.localeCompare(dateB);
+                    const timeA = a.time || '23:59';
+                    const timeB = b.time || '23:59';
+                    return timeA.localeCompare(timeB);
+                });
+
+                renderMonthView();
+                renderDailySchedule();
+            }, (error) => {
+                console.error("Events fetch error:", error);
+            });
+        }
+
+        // Fetch & Render Month & Daily details
+        function fetchEventsAndRender() {
+            renderMonthView();
+            renderDailySchedule();
+        }
+
+        // Render Calendar Grid
+        window.renderMonthView = function() {
+            const grid = document.getElementById('calendarDaysGrid');
+            const title = document.getElementById('calendarMonthYear');
+            grid.innerHTML = '';
+
+            // Set Title
+            title.textContent = `${THAI_MONTHS[currentMonth]} พ.ศ. ${currentYear + 543}`;
+
+            // Calculation
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const prevTotalDays = new Date(currentYear, currentMonth, 0).getDate();
+
+            // Render Prev Month Day cells
+            for (let i = firstDayIndex; i > 0; i--) {
+                const dayNum = prevTotalDays - i + 1;
+                const cell = createDayCell(currentYear, currentMonth - 1, dayNum, true);
+                grid.appendChild(cell);
+            }
+
+            // Render Current Month Day cells
+            for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
+                const cell = createDayCell(currentYear, currentMonth, dayNum, false);
+                grid.appendChild(cell);
+            }
+
+            // Fill up remaining cells to make 6 rows (42 cells)
+            const totalRendered = firstDayIndex + totalDays;
+            const remaining = 42 - totalRendered;
+            for (let i = 1; i <= remaining; i++) {
+                const cell = createDayCell(currentYear, currentMonth + 1, i, true);
+                grid.appendChild(cell);
+            }
+        };
+
+        // Create individual cell
+        function createDayCell(year, month, day, isOtherMonth) {
+            // Correct month limits
+            const d = new Date(year, month, day);
+            const dateStr = formatDateString(d);
+
+            const cell = document.createElement('div');
+            cell.className = 'calendar-day-cell';
+            if (isOtherMonth) cell.classList.add('other-month');
+
+            // Today check
+            const todayStr = formatDateString(new Date());
+            if (dateStr === todayStr) {
+                cell.classList.add('today');
+            }
+
+            // Selected check
+            const selectedStr = formatDateString(selectedDate);
+            if (dateStr === selectedStr) {
+                cell.classList.add('selected');
+            }
+
+            // Day Number
+            const numEl = document.createElement('div');
+            numEl.className = 'day-num';
+            numEl.textContent = d.getDate();
+            cell.appendChild(numEl);
+
+            // Filter Events for this day
+            const dayEvents = filterEventsForUser(allEvents).filter(e => e.date === dateStr);
+
+            // Event indicators
+            if (dayEvents.length > 0) {
+                const dotContainer = document.createElement('div');
+                dotContainer.className = 'day-event-dots';
+
+                // Display up to 4 dots
+                dayEvents.slice(0, 4).forEach(e => {
+                    const dot = document.createElement('div');
+                    dot.className = `event-dot event-${e.type || 'work'}`;
+                    dotContainer.appendChild(dot);
+                });
+                cell.appendChild(dotContainer);
+            }
+
+            // Click Handler
+            cell.onclick = () => {
+                selectedDate = d;
+                currentYear = d.getFullYear();
+                currentMonth = d.getMonth();
+                
+                // Redraw
+                renderMonthView();
+                renderDailySchedule();
+            };
+
+            return cell;
+        }
+
+        // Filter events based on active user filter
+        function filterEventsForUser(events) {
+            if (activeFilterUserId === 'all') {
+                return events;
+            } else if (activeFilterUserId === 'my') {
+                return events.filter(e => e.userId === currentUser.uid);
+            } else {
+                return events.filter(e => e.userId === activeFilterUserId);
+            }
+        }
+
+        // Render Right Side Tasks list
+        window.renderDailySchedule = function() {
+            const container = document.getElementById('eventsListContainer');
+            const title = document.getElementById('scheduleDateTitle');
+            container.innerHTML = '';
+
+            const dateStr = formatDateString(selectedDate);
+            const formattedThaiDate = formatThaiFullDate(selectedDate);
+            title.textContent = `ตารางงาน: ${formattedThaiDate}`;
+
+            // Filter
+            const dayEvents = filterEventsForUser(allEvents).filter(e => e.date === dateStr);
+
+            if (dayEvents.length === 0) {
+                container.innerHTML = `
+                    <div class="no-events-placeholder">
+                        <i class="fa-regular fa-calendar-check"></i>
+                        <p class="font-bold text-[14px]">ไม่มีรายการนัดหมายสำหรับวันนี้</p>
+                        <p class="text-[12px] mt-1">กดปุ่ม "เพิ่มนัดหมาย" ด้านบนเพื่อเพิ่มรายการใหม่</p>
+                    </div>
+                `;
+                return;
+            }
+
+            dayEvents.forEach(e => {
+                const item = document.createElement('div');
+                item.className = `event-item ${e.type || 'work'}`;
+                
+                const timeText = e.time ? e.time : 'ตลอดวัน';
+
+                item.innerHTML = `
+                    <div class="event-item-top">
+                        <div class="event-item-title">${escapeHTML(e.title)}</div>
+                        <div class="event-item-time">${timeText}</div>
+                    </div>
+                    <div class="event-item-desc">${escapeHTML(e.description || 'ไม่มีรายละเอียดนัดหมาย')}</div>
+                    <div class="event-item-user">
+                        <i class="fa-solid fa-circle-user"></i> โดย: ${escapeHTML(e.userName || 'สมาชิก')}
+                    </div>
+                `;
+
+                // Edit click
+                item.onclick = () => openEditEventModal(e);
+
+                container.appendChild(item);
+            });
+        };
+
+        // Navigation
+        window.prevMonth = function() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderMonthView();
+        };
+
+        window.nextMonth = function() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderMonthView();
+        };
+
+        window.goToToday = function() {
+            selectedDate = new Date();
+            currentYear = selectedDate.getFullYear();
+            currentMonth = selectedDate.getMonth();
+            renderMonthView();
+            renderDailySchedule();
+        };
+
+        // Helper: Format Date String to YYYY-MM-DD
+        function formatDateString(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        // Helper: Format Thai Date Name
+        function formatThaiFullDate(date) {
+            const daysThai = ["วันอาทิตย์ที่", "วันจันทร์ที่", "วันอังคารที่", "วันพุธที่", "วันพฤหัสบดีที่", "วันศุกร์ที่", "วันเสาร์ที่"];
+            const d = date.getDate();
+            const m = THAI_MONTHS[date.getMonth()];
+            const y = date.getFullYear() + 543;
+            return `${daysThai[date.getDay()]} ${d} ${m} พ.ศ. ${y}`;
+        }
+
+        // Helper: Escape HTML
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+
+        // Modal triggers
+        window.openAddEventModal = function() {
+            document.getElementById('modalTitle').textContent = 'เพิ่มรายการนัดหมาย/กิจกรรม';
+            document.getElementById('formEventId').value = '';
+            document.getElementById('formEventTitle').value = '';
+            document.getElementById('formEventDate').value = formatDateString(selectedDate);
+            document.getElementById('formEventTime').value = '';
+            document.getElementById('formEventType').value = 'work';
+            document.getElementById('formEventDesc').value = '';
+            document.getElementById('btnDeleteEvent').style.display = 'none';
+
+            document.getElementById('eventModal').style.display = 'flex';
+        };
+
+        window.openEditEventModal = function(eventObj) {
+            // Access permission guard: admins can edit anything, users can only edit their own
+            const canEdit = currentUserData.role === 'admin' || eventObj.userId === currentUser.uid;
+
+            document.getElementById('modalTitle').textContent = canEdit ? 'แก้ไขรายละเอียดนัดหมาย' : 'รายละเอียดการนัดหมาย (อ่านอย่างเดียว)';
+            document.getElementById('formEventId').value = eventObj.id;
+            document.getElementById('formEventTitle').value = eventObj.title;
+            document.getElementById('formEventDate').value = eventObj.date;
+            document.getElementById('formEventTime').value = eventObj.time || '';
+            document.getElementById('formEventType').value = eventObj.type || 'work';
+            document.getElementById('formEventDesc').value = eventObj.description || '';
+
+            // Hiding save/delete button if read-only
+            const saveBtn = document.querySelector('.modal-footer .btn-save');
+            const deleteBtn = document.getElementById('btnDeleteEvent');
+
+            if (canEdit) {
+                saveBtn.style.display = 'inline-block';
+                deleteBtn.style.display = 'inline-block';
+            } else {
+                saveBtn.style.display = 'none';
+                deleteBtn.style.display = 'none';
+            }
+
+            document.getElementById('eventModal').style.display = 'flex';
+        };
+
+        window.closeEventModal = function() {
+            document.getElementById('eventModal').style.display = 'none';
+        };
+
+        // Form Submit Save Action
+        window.saveEventClick = async function() {
+            const id = document.getElementById('formEventId').value;
+            const title = document.getElementById('formEventTitle').value.trim();
+            const date = document.getElementById('formEventDate').value;
+            const time = document.getElementById('formEventTime').value;
+            const type = document.getElementById('formEventType').value;
+            const description = document.getElementById('formEventDesc').value.trim();
+
+            if (!title) {
+                Swal.fire({ icon: 'warning', title: 'คำเตือน', text: 'กรุณากรอกหัวเรื่องงานหรือรายละเอียด', confirmButtonColor: '#1A6FBF' });
+                return;
+            }
+
+            if (!date) {
+                Swal.fire({ icon: 'warning', title: 'คำเตือน', text: 'กรุณาระบุวันที่จัดกิจกรรม', confirmButtonColor: '#1A6FBF' });
+                return;
+            }
+
+            const payload = {
+                title: title,
+                date: date,
+                time: time,
+                type: type,
+                description: description,
+                userId: currentUser.uid,
+                userName: currentUserData.name || 'User',
+                updatedAt: new Date()
+            };
+
+            try {
+                if (id) {
+                    // Update
+                    // We only allow editing if user is admin or the owner
+                    const docRef = doc(db, 'calendar_events', id);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists() && currentUserData.role !== 'admin' && docSnap.data().userId !== currentUser.uid) {
+                        Swal.fire({ icon: 'error', title: 'ไม่มีสิทธิ์', text: 'คุณไม่มีสิทธิ์แก้ไขรายการนี้' });
+                        return;
+                    }
+                    // Keep original userId and userName if updating other user's event
+                    if (docSnap.exists() && currentUserData.role === 'admin') {
+                        payload.userId = docSnap.data().userId;
+                        payload.userName = docSnap.data().userName;
+                    }
+                    await updateDoc(docRef, payload);
+                } else {
+                    // Create
+                    payload.createdAt = new Date();
+                    await addDoc(collection(db, 'calendar_events'), payload);
+                }
+                
+                closeEventModal();
+                Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'บันทึกรายการนัดหมายเรียบร้อยแล้ว', timer: 1500, showConfirmButton: false });
+            } catch (err) {
+                console.error(err);
+                Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: `ไม่สามารถบันทึกได้: ${err.message}` });
+            }
+        };
+
+        // Form Delete Event Action
+        window.deleteEventClick = async function() {
+            const id = document.getElementById('formEventId').value;
+            if (!id) return;
+
+            const res = await Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: "คุณแน่ใจว่าต้องการลบรายการนัดหมายนี้ใช่หรือไม่? ข้อมูลจะหายไปถาวร",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'ใช่, ต้องการลบ!',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (res.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, 'calendar_events', id));
+                    closeEventModal();
+                    Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'ลบรายการนัดหมายแล้ว', timer: 1500, showConfirmButton: false });
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: `ไม่สามารถลบได้: ${err.message}` });
+                }
+            }
+        };
+    </script>
+</body>
+
+</html>

@@ -55,6 +55,41 @@
     --scrollbar-track: transparent;
 }
 
+/* ================================================================
+   SIDEBAR GLOBAL SPACING (applies to all pages)
+   ================================================================ */
+.sidebar-nav {
+    padding: 18px 14px !important;
+    gap: 8px !important;
+}
+
+.sidebar .nav-item {
+    padding: 13px 16px !important;
+    min-height: 48px !important;
+    gap: 14px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    border-radius: 12px !important;
+    letter-spacing: 0.2px !important;
+}
+
+.sidebar .nav-item .nav-icon {
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    flex-shrink: 0 !important;
+}
+
+.nav-section-title {
+    padding: 18px 14px 8px !important;
+    margin-top: 12px !important;
+    font-size: 12px !important;
+    letter-spacing: 1px !important;
+}
+
 
 /* ================================================================
    II. DARK MODE DESIGN TOKENS
@@ -2047,4 +2082,133 @@ body .topbar-right-menu .sidebar-user > .btn-logout {
 
 .user-dropdown-item:hover span {
     transform: translateX(4px) !important;
+}
+
+/* ================================================================
+   SIDEBAR COLLAPSIBLE SUB-MENU STYLES
+   ================================================================ */
+.nav-item-group {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+}
+
+.nav-item-has-submenu {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.submenu-caret {
+    font-size: 11px !important;
+    transition: transform 0.25s ease !important;
+    margin-left: auto !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.nav-item-has-submenu.open .submenu-caret {
+    transform: rotate(180deg) !important;
+    color: #ffffff !important;
+}
+
+.sidebar-submenu {
+    display: none;
+    flex-direction: column !important;
+    gap: 2px !important;
+    padding-left: 32px !important;
+    margin-top: 2px !important;
+    margin-bottom: 4px !important;
+    transition: all 0.25s ease !important;
+}
+
+.sidebar-submenu.open {
+    display: flex !important;
+}
+
+.submenu-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 8px 12px !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    font-family: 'Kanit', sans-serif !important;
+}
+
+.submenu-item:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+}
+
+.submenu-item.active {
+    background: #E07B2F !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(224, 123, 47, 0.3) !important;
+}
+
+.sidebar.collapsed .sidebar-submenu {
+    display: none !important;
+}
+
+.sidebar.collapsed .submenu-caret {
+    display: none !important;
+}
+
+/* ================================================================
+   COMPACT SLEEK SIDEBAR NAVIGATION SPACING
+   ================================================================ */
+.sidebar-nav {
+    padding: 10px 10px !important;
+    gap: 2px !important;
+    overflow-y: auto !important;
+}
+
+.nav-section-title {
+    font-size: 10.5px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.8px !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    padding: 8px 10px 2px !important;
+    margin-bottom: 2px !important;
+}
+
+.sidebar .nav-item {
+    padding: 6px 10px !important;
+    gap: 10px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    min-height: 38px !important;
+    margin: 0 !important;
+    transition: all 0.2s ease !important;
+}
+
+.sidebar .nav-icon {
+    font-size: 14px !important;
+    width: 26px !important;
+    height: 26px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.sidebar-submenu {
+    padding-left: 28px !important;
+    gap: 2px !important;
+    margin-top: 1px !important;
+    margin-bottom: 3px !important;
+}
+
+.submenu-item {
+    padding: 6px 10px !important;
+    font-size: 12.5px !important;
+    min-height: 32px !important;
+    gap: 8px !important;
 }

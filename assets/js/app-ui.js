@@ -854,8 +854,8 @@ window.applySidebarPermissions = function(userData) {
         }
     });
 
-    // 2. Hide navigation items for pages that are disabled for this non-admin user
-    if (userData.role !== 'admin' && userData.allowedPages) {
+    // 2. Hide navigation items for pages that are disabled for this user (including admins if explicitly configured)
+    if (userData.allowedPages) {
         const PAGE_SELECTOR_MAP = {
             'dashboard.html': [
                 '#nav-dashboard', '#nav-projects', '#nav-items', 
@@ -864,7 +864,7 @@ window.applySidebarPermissions = function(userData) {
                 '[data-page*="dashboard.html"]'
             ],
             'materials_purchasing.html': [
-                '#nav-purchasing', 'a[href*="materials_purchasing.html"]', 'button[onclick*="materials_purchasing.html"]',
+                '#nav-purchasing', '#nav-purchasing-school', 'a[href*="materials_purchasing.html"]', 'button[onclick*="materials_purchasing.html"]',
                 '[data-page*="materials_purchasing.html"]'
             ],
             'materials_purchasing_company.html': [
@@ -887,6 +887,14 @@ window.applySidebarPermissions = function(userData) {
                 '#nav-training', 'a[href*="external_training.html"]', 'button[onclick*="external_training.html"]',
                 '[data-page*="external_training.html"]'
             ],
+            'calendar.html': [
+                '#nav-calendar', 'a[href*="calendar.html"]', 'button[onclick*="calendar.html"]',
+                '[data-page*="calendar.html"]'
+            ],
+            'crm.html': [
+                '#nav-crm', 'a[href*="crm.html"]', 'button[onclick*="crm.html"]',
+                '[data-page*="crm.html"]'
+            ],
             'register_training.html': [
                 '#nav-register-training', 'a[href*="register_training.html"]', 'button[onclick*="register_training.html"]',
                 '[data-page*="register_training.html"]'
@@ -906,11 +914,20 @@ window.applySidebarPermissions = function(userData) {
                 const selectors = PAGE_SELECTOR_MAP[pageKey] || [];
                 selectors.forEach(sel => {
                     document.querySelectorAll(sel).forEach(el => {
-                        el.style.display = 'none';
+                        el.style.setProperty('display', 'none', 'important');
                     });
                 });
             }
         });
+
+        // Hide main group if both sub-pages are disabled
+        const isSchoolDisabled = userData.allowedPages['materials_purchasing.html'] === false;
+        const isCompanyDisabled = userData.allowedPages['materials_purchasing_company.html'] === false;
+        if (isSchoolDisabled && isCompanyDisabled) {
+            document.querySelectorAll('#nav-purchasing-group').forEach(el => {
+                el.style.setProperty('display', 'none', 'important');
+            });
+        }
     }
 
     // 3. Highlight current active sidebar item based on current page URL
@@ -937,8 +954,8 @@ window.checkPageAccess = function(userData) {
     if (!currentFile || currentFile === '' || currentFile === '/') currentFile = 'dashboard.html';
     currentFile = currentFile.split('?')[0].split('#')[0];
 
-    // If non-admin user and current page is explicitly set to false
-    if (userData.role !== 'admin' && userData.allowedPages && userData.allowedPages[currentFile] === false) {
+    // If current page is explicitly set to false in allowedPages (applies to ALL accounts including Admin)
+    if (userData.allowedPages && userData.allowedPages[currentFile] === false) {
         alert('ขออภัย บัญชีของคุณไม่มีสิทธิ์เข้าถึงหน้าเว็บนี้ กรุณาติดต่อผู้ดูแลระบบ');
         window.location.href = 'dashboard.html';
         return false;
@@ -949,3 +966,40 @@ window.checkPageAccess = function(userData) {
 
     return true;
 };
+
+/* ================================================================
+   SIDEBAR SUB-MENU TOGGLE & AUTO-EXPAND LOGIC
+   ================================================================ */
+window.toggleSubmenu = function(submenuId, btn) {
+    const submenu = document.getElementById(submenuId);
+    if (!submenu) return;
+
+    const isOpen = submenu.classList.contains('open');
+    if (isOpen) {
+        submenu.classList.remove('open');
+        if (btn) btn.classList.remove('open');
+    } else {
+        submenu.classList.add('open');
+        if (btn) btn.classList.add('open');
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        let path = window.location.pathname.split('/').pop() || '';
+        if (path.includes('materials_purchasing')) {
+            const submenu = document.getElementById('purchasingSubmenu');
+            const mainBtn = document.getElementById('nav-purchasing-main');
+            if (submenu) submenu.classList.add('open');
+            if (mainBtn) mainBtn.classList.add('open');
+
+            if (path.includes('materials_purchasing_company.html')) {
+                const companyItem = document.getElementById('nav-purchasing-company');
+                if (companyItem) companyItem.classList.add('active');
+            } else if (path.includes('materials_purchasing.html')) {
+                const schoolItem = document.getElementById('nav-purchasing-school');
+                if (schoolItem) schoolItem.classList.add('active');
+            }
+        }
+    } catch(e) {}
+});

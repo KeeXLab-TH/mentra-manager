@@ -2409,14 +2409,31 @@
                 <div class="nav-icon">🎓</div>
                 <span class="nav-label">ระบบตารางจัดอบรม</span>
             </button>
-            <button class="nav-item" onclick="window.location.href='materials_purchasing.html'" id="nav-purchasing">
-                <div class="nav-icon">🛒</div>
-                <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
+            <button class="nav-item" onclick="window.location.href='calendar.html'" id="nav-calendar">
+                <div class="nav-icon">📅</div>
+                <span class="nav-label">ปฏิทินตารางงาน</span>
             </button>
-            <button class="nav-item" onclick="window.location.href='materials_purchasing_company.html'" id="nav-purchasing-company">
-                <div class="nav-icon">🏢</div>
-                <span class="nav-label">จัดการจัดซื้อ / วัสดุ (บริษัท)</span>
+            <button class="nav-item" onclick="window.location.href='crm.html'" id="nav-crm">
+                <div class="nav-icon">📊</div>
+                <span class="nav-label">ระบบ CRM</span>
             </button>
+            <div class="nav-item-group" id="nav-purchasing-group">
+                <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main">
+                    <div class="nav-icon">🛒</div>
+                    <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
+                    <i class="fa-solid fa-chevron-down submenu-caret"></i>
+                </button>
+                <div class="sidebar-submenu" id="purchasingSubmenu">
+                    <a href="materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
+                        <span class="submenu-icon">🏫</span>
+                        <span class="nav-label">สถานศึกษา</span>
+                    </a>
+                    <a href="materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
+                        <span class="submenu-icon">🏢</span>
+                        <span class="nav-label">บริษัทเอกชน</span>
+                    </a>
+                </div>
+            </div>
             <button class="nav-item active" onclick="window.location.href='products.html'" id="nav-products">
                 <div class="nav-icon">📦</div>
                 <span class="nav-label">สินค้า</span>

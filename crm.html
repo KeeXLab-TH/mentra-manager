@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>ระบบบริหารความสัมพันธ์ลูกค้า (A-CRM) — Mentra Manager</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
+    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+
+    <style>
+        /* ===== RESET ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { overflow-x: hidden; max-width: 100vw; }
+
+        :root {
+            --sidebar-w: 260px;
+            --sidebar-w-collapsed: 72px;
+            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
+            --header-h: 60px;
+            --primary: #1A6FBF;
+            --primary-light: #e8f1fb;
+            --secondary: #E07B2F;
+            --radius: 12px;
+            --border: #e5e7eb;
+            --bg: #f4f6f8;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            display: none;
+            font-family: 'Kanit', 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            display: flex; flex-direction: column;
+            height: 100vh; position: fixed; left: 0; top: 0; z-index: 100;
+            transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        .sidebar.collapsed { width: var(--sidebar-w-collapsed); }
+        .sidebar.collapsed .sidebar-logo-text, .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-section-title, .sidebar.collapsed .user-info,
+        .sidebar.collapsed .btn-logout-text { opacity: 0; width: 0; overflow: hidden; white-space: nowrap; display: none; }
+
+        .sidebar-logo {
+            padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; gap: 12px; min-height: var(--header-h); flex-shrink: 0; position: relative;
+        }
+        .sidebar-logo img {
+            width: 36px !important; height: 36px !important; object-fit: contain !important;
+            background: white !important; border-radius: 8px !important; padding: 3px !important;
+            flex-shrink: 0 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .sidebar-logo-text .app-name { font-size: 14px; font-weight: 800; color: white; white-space: nowrap; }
+        .sidebar-logo-text .app-sub { font-size: 10px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+
+        .sidebar-nav { padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; flex: 1; }
+        .nav-section-title { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 12px 4px; }
+        .sidebar .nav-item {
+            display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px;
+            color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 500; cursor: pointer;
+            border: none; background: transparent; width: 100%; text-align: left; transition: all 0.2s; text-decoration: none;
+        }
+        .sidebar .nav-item:hover, .sidebar .nav-item.active { background: rgba(255,255,255,0.15); color: white; }
+
+        /* ===== MAIN WRAPPER ===== */
+        .main-wrapper {
+            margin-left: var(--sidebar-w); display: flex; flex-direction: column;
+            min-width: 0; min-height: 100vh; transition: margin-left 0.35s cubic-bezier(0.4,0,0.2,1);
+            width: calc(100% - var(--sidebar-w));
+        }
+        .sidebar.collapsed + .main-wrapper, body.sidebar-collapsed .main-wrapper {
+            margin-left: var(--sidebar-w-collapsed);
+            width: calc(100% - var(--sidebar-w-collapsed));
+        }
+
+        /* ===== TOPBAR ===== */
+        .topbar {
+            height: var(--header-h); display: flex !important; align-items: center !important;
+            padding: 0 20px !important; gap: 12px !important; position: sticky !important;
+            top: 0 !important; z-index: 50 !important; background: var(--card-bg); border-bottom: 1px solid var(--border);
+            min-width: 0; max-width: 100%;
+        }
+        .hamburger { display: none !important; background: none !important; border: none !important; cursor: pointer !important; color: var(--text-secondary) !important; padding: 6px !important; border-radius: 6px !important; }
+        @media (max-width: 1024px) { .hamburger { display: block !important; } }
+
+        .topbar-breadcrumb { flex: 1 !important; min-width: 0; }
+        .breadcrumb-title { font-size: 16px !important; font-weight: 800 !important; color: var(--text) !important; display: flex !important; align-items: center !important; gap: 8px !important; }
+        .breadcrumb-sub { font-size: 11px !important; color: var(--text-muted) !important; }
+        .topbar-right-menu { display: flex !important; align-items: center !important; gap: 12px !important; margin-left: auto !important; flex-shrink: 0; }
+
+        /* ===== CRM MAIN CONTAINER ===== */
+        .crm-container {
+            padding: 16px;
+            display: flex; flex-direction: column; gap: 16px;
+            min-width: 0; max-width: 100%; overflow: hidden;
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .global-search-bar {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 8px 14px; min-width: 0;
+        }
+        .global-search-input { border: none; outline: none; flex: 1; min-width: 0; font-family: inherit; font-size: 13px; color: var(--text); background: transparent; }
+
+        /* ===== KPI CARDS - SIMPLE FLEX WRAP ===== */
+        .kpi-grid {
+            display: flex; flex-wrap: wrap; gap: 10px;
+        }
+        .kpi-card {
+            flex: 1 1 160px; max-width: 240px;
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 12px 14px; display: flex; align-items: center; gap: 10px;
+            transition: box-shadow 0.2s;
+        }
+        .kpi-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .kpi-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+        .kpi-info { min-width: 0; }
+        .kpi-val { font-size: 18px; font-weight: 800; color: var(--text); white-space: nowrap; }
+        .kpi-label { font-size: 10.5px; color: var(--text-muted); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ===== PIPELINE / KANBAN ===== */
+        .pipeline-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 14px; overflow: hidden;
+        }
+        .pipeline-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+        .pipeline-header h2 { font-size: 14px; font-weight: 700; color: var(--text); margin: 0; }
+        .pipeline-header p { font-size: 11px; color: var(--text-muted); margin: 0; }
+
+        .kanban-board {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .kanban-board::-webkit-scrollbar { height: 4px; }
+        .kanban-board::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        .kanban-col {
+            flex: 0 0 260px; min-width: 220px;
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+            padding: 10px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .kanban-col-header {
+            display: flex; align-items: center; justify-content: space-between;
+            font-weight: 700; font-size: 12px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0;
+        }
+        .kanban-deal-card {
+            background: #fff; border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px; display: flex; flex-direction: column; gap: 6px;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .kanban-deal-card:hover { border-color: var(--primary); box-shadow: 0 3px 10px rgba(26,111,191,0.1); }
+        .deal-title { font-weight: 600; font-size: 12.5px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .deal-company { font-size: 11px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .deal-value { font-weight: 800; font-size: 14px; color: var(--primary); }
+        .deal-actions { display: flex; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px dashed #f1f5f9; }
+        .action-icon-btn {
+            width: 26px; height: 26px; border-radius: 6px; border: 1px solid #e2e8f0;
+            background: #f8fafc; display: flex; align-items: center; justify-content: center;
+            font-size: 11px; color: #475569; cursor: pointer; transition: all 0.15s;
+        }
+        .action-icon-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+
+        /* ===== SECTION CARDS ===== */
+        .section-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 14px; display: flex; flex-direction: column; gap: 10px;
+            min-width: 0; overflow: hidden;
+        }
+        .section-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .section-header h3 { font-size: 13px; font-weight: 700; color: var(--text); margin: 0; }
+        .section-header p { font-size: 10.5px; color: var(--text-muted); margin: 0; }
+
+        /* ===== TABLES ===== */
+        .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+        .custom-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .custom-table th {
+            text-align: left; padding: 8px 10px; background: #f8fafc; color: var(--text-muted);
+            font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 11px;
+        }
+        .custom-table td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; color: var(--text); vertical-align: middle; }
+        .custom-table tr:hover { background: #fafbfc; }
+
+        .status-badge {
+            display: inline-block; padding: 3px 8px; border-radius: 20px;
+            font-size: 10.5px; font-weight: 600; white-space: nowrap;
+        }
+        .badge-lead { background: #dbeafe; color: #2563eb; }
+        .badge-opp { background: #fef3c7; color: #d97706; }
+        .badge-customer { background: #d1fae5; color: #059669; }
+
+        /* ===== ACTIVITY ===== */
+        .activity-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--primary);
+        }
+        .activity-time { font-size: 11px; font-weight: 700; color: var(--primary); white-space: nowrap; }
+
+        /* ===== MINI CALENDAR ===== */
+        .mini-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 11px; }
+        .mini-day { padding: 4px; border-radius: 4px; color: #475569; }
+        .mini-day.active { background: var(--primary); color: white; font-weight: 700; }
+        .mini-day.has-event { position: relative; }
+        .mini-day.has-event::after { content: ''; width: 3px; height: 3px; background: #e07b2f; border-radius: 50%; position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%); }
+
+        /* ===== TWO COLUMN STACK ===== */
+        .two-col-grid { display: flex; flex-direction: column; gap: 14px; }
+        @media (min-width: 1100px) {
+            .two-col-grid { flex-direction: row; }
+            .two-col-grid > * { flex: 1; min-width: 0; }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .main-wrapper { margin-left: 0; width: 100%; }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-layout">
+        <!-- SIDEBAR OVERLAY (mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+                <div class="sidebar-logo-text">
+                    <div class="app-name">Mentra Manager</div>
+                    <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
+                </div>
+                <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">เมนูหลัก</div>
+                <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard">
+                    <div class="nav-icon">🏠</div>
+                    <span class="nav-label">Dashboard</span>
+                </button>
+                <button class="nav-item" onclick="window.location.href='dashboard.html?view=projects'" id="nav-projects">
+                    <div class="nav-icon">📁</div>
+                    <span class="nav-label">โครงการทั้งหมด</span>
+                </button>
+                <button class="nav-item" onclick="window.location.href='dashboard.html?view=items'" id="nav-items">
+                    <div class="nav-icon">📦</div>
+                    <span class="nav-label">ราคาทุน / สิ่งของ</span>
+                </button>
+                <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
+                    <div class="nav-icon">📄</div>
+                    <span class="nav-label">ใบเสนอราคา</span>
+                </button>
+                <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
+                    <div class="nav-icon">🎓</div>
+                    <span class="nav-label">ระบบตารางจัดอบรม</span>
+                </button>
+                <button class="nav-item" onclick="window.location.href='calendar.html'" id="nav-calendar">
+                    <div class="nav-icon">📅</div>
+                    <span class="nav-label">ปฏิทินตารางงาน</span>
+                </button>
+                <button class="nav-item active" onclick="window.location.href='crm.html'" id="nav-crm">
+                    <div class="nav-icon">📊</div>
+                    <span class="nav-label">ระบบ CRM</span>
+                </button>
+                <div class="nav-item-group" id="nav-purchasing-group">
+                    <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main">
+                        <div class="nav-icon">🛒</div>
+                        <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
+                        <i class="fa-solid fa-chevron-down submenu-caret"></i>
+                    </button>
+                    <div class="sidebar-submenu" id="purchasingSubmenu">
+                        <a href="materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
+                            <span class="submenu-icon">🏫</span>
+                            <span class="nav-label">สถานศึกษา</span>
+                        </a>
+                        <a href="materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
+                            <span class="submenu-icon">🏢</span>
+                            <span class="nav-label">บริษัทเอกชน</span>
+                        </a>
+                    </div>
+                </div>
+                <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+                    <div class="nav-icon">📦</div>
+                    <span class="nav-label">สินค้า</span>
+                </button>
+                <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                    <div class="nav-icon">💻</div>
+                    <span class="nav-label">ทะเบียนครุภัณฑ์</span>
+                </button>
+                <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
+                    <div class="nav-icon">📷</div>
+                    <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <div class="main-wrapper" id="mainWrapper">
+            <header class="topbar">
+                <button class="hamburger" onclick="toggleSidebar()">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <div class="topbar-breadcrumb">
+                    <div class="breadcrumb-title">
+                        <i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i>
+                        ระบบบริหารความสัมพันธ์ลูกค้า <span class="badge-ocr" style="background: rgba(224,123,47,0.1); color:#e07b2f; border:1px solid rgba(224,123,47,0.2);">A-CRM System</span>
+                    </div>
+                    <div class="breadcrumb-sub">ติดตามผู้มุ่งหวัง โอกาสทางการขาย และวิเคราะห์ช่องทางการขายครบวงจร</div>
+                </div>
+                <div class="topbar-right-menu">
+                    <div id="adminMenu" style="display:none;">
+                        <button class="nav-item" onclick="window.location.href='dashboard.html?view=users'" id="nav-users">
+                            <div class="nav-icon">👥</div>
+                            <span class="nav-label">จัดการผู้ใช้งาน</span>
+                        </button>
+                        <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                            <div class="nav-icon">🛠️</div>
+                            <span class="nav-label">Admin Console</span>
+                        </a>
+                    </div>
+                    <div class="sidebar-user">
+                        <div class="user-card">
+                            <div class="user-avatar" id="userAvatar">M</div>
+                            <div class="user-info">
+                                <div class="user-name" id="userName">กำลังโหลด...</div>
+                                <div class="user-role">
+                                    <span class="role-badge" id="userRoleBadge">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-logout" onclick="handleLogout()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <polyline points="21 12 9 12"></polyline>
+                            </svg>
+                            <span class="btn-logout-text">ออกจากระบบ</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- CRM WORKSPACE -->
+            <main class="crm-container">
+
+                <!-- ===== GLOBAL SEARCH & TOP ACTION ===== -->
+                <div class="global-search-bar">
+                    <i class="fa-solid fa-magnifying-glass" style="color: var(--text-secondary);"></i>
+                    <input type="text" id="globalSearchInput" class="global-search-input" placeholder="ค้นหาทั่วโลก (Global Search): ค้นหาชื่อลูกค้า, บริษัท, ใบเสนอราคา หรือดีลงาน..." onkeyup="filterCrmData()">
+                    <button class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-700 transition" onclick="openAddLeadModal()">
+                        <i class="fa-solid fa-plus"></i> เพิ่มผู้มุ่งหวังใหม่
+                    </button>
+                </div>
+
+                <!-- ===== KPI SUMMARY CARDS ===== -->
+                <section class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background: #e0f2fe; color: #0284c7;">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="kpi-val" id="kpiLeads">100 ราย</div>
+                            <div class="kpi-label">ผู้มุ่งหวังทั้งหมด (Total Leads)</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background: #fef3c7; color: #d97706;">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                        <div>
+                            <div class="kpi-val" id="kpiOpps">20 ราย</div>
+                            <div class="kpi-label">โอกาสทางการขายที่เปิดอยู่ (Open Opps)</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background: #f3e8ff; color: #9333ea;">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                        </div>
+                        <div>
+                            <div class="kpi-val" id="kpiQuotes">10 ฉบับ</div>
+                            <div class="kpi-label">ใบเสนอราคาที่ส่งแล้ว (Quotations Sent)</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background: #d1fae5; color: #059669;">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div>
+                            <div class="kpi-val" id="kpiWon">50 ราย</div>
+                            <div class="kpi-label">ปิดการขายสำเร็จ (Won Deals)</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon" style="background: #ffedd5; color: #ea580c;">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <div class="kpi-val" id="kpiRate">75%</div>
+                            <div class="kpi-label">อัตราการเปลี่ยนเป็นลูกค้า (Conv. Rate)</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ===== SALES PIPELINE (KANBAN BOARD) ===== -->
+                <section class="pipeline-card">
+                    <div class="pipeline-header">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800"><i class="fa-solid fa-diagram-project" style="color: var(--primary);"></i> ช่องทางการขาย (Sales Pipeline - Kanban)</h2>
+                            <p class="text-xs text-slate-500">ติดตามสถานะและกระบวนการขายตามแต่ละขั้นตอน</p>
+                        </div>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-semibold">4 ขั้นตอนการขาย</span>
+                    </div>
+
+                    <div class="kanban-board">
+                        <!-- 1. ใหม่ (New) -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header text-slate-700">
+                                <span><i class="fa-solid fa-sparkles text-blue-500"></i> ใหม่ (New)</span>
+                                <span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full" id="countNew">2</span>
+                            </div>
+                            <div id="colNewCards" class="flex flex-col gap-3"></div>
+                        </div>
+
+                        <!-- 2. ตรวจสอบคุณสมบัติ (Qualified) -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header text-slate-700">
+                                <span><i class="fa-solid fa-list-check text-amber-500"></i> ตรวจสอบคุณสมบัติ (Qualified)</span>
+                                <span class="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full" id="countQualified">2</span>
+                            </div>
+                            <div id="colQualifiedCards" class="flex flex-col gap-3"></div>
+                        </div>
+
+                        <!-- 3. เสนอราคา (Proposal) -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header text-slate-700">
+                                <span><i class="fa-solid fa-file-contract text-purple-500"></i> เสนอราคา (Proposal)</span>
+                                <span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full" id="countProposal">2</span>
+                            </div>
+                            <div id="colProposalCards" class="flex flex-col gap-3"></div>
+                        </div>
+
+                        <!-- 4. ปิดการขาย (Closed) -->
+                        <div class="kanban-col">
+                            <div class="kanban-col-header text-slate-700">
+                                <span><i class="fa-solid fa-trophy text-emerald-500"></i> ปิดการขาย (Closed)</span>
+                                <span class="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full" id="countClosed">2</span>
+                            </div>
+                            <div id="colClosedCards" class="flex flex-col gap-3"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ===== TWO COLUMN GRID: CONTACTS & RECENT QUOTATIONS ===== -->
+                <div class="two-col-grid">
+                    <!-- Contacts Panel -->
+                    <section class="section-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-address-book" style="color: var(--primary);"></i> รายชื่อติดต่อ (Contacts)</h3>
+                                <p class="text-xs text-slate-500">ตารางแสดงรายชื่อและสถานะลูกค้าในระบบ</p>
+                            </div>
+                            <input type="text" id="contactSearchInput" placeholder="ค้นหารายชื่อ..." class="text-xs border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-blue-500" onkeyup="filterContacts()">
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>ชื่อ (Name)</th>
+                                        <th>บริษัท (Company)</th>
+                                        <th>สถานะ (Status)</th>
+                                        <th>ปฏิสัมพันธ์ล่าสุด (Last Interaction)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contactsTableBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Recent Quotations Panel -->
+                    <section class="section-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-file-signature" style="color: var(--primary);"></i> ใบเสนอราคาล่าสุด (Recent Quotations)</h3>
+                                <p class="text-xs text-slate-500">ติดตามสถานะใบเสนอราคาล่าสุดที่จัดทำขึ้น</p>
+                            </div>
+                            <a href="quotation.html" class="text-xs text-blue-600 font-semibold hover:underline">ดูทั้งหมด <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>รหัส (ID)</th>
+                                        <th>ลูกค้า (Client)</th>
+                                        <th>จำนวนเงิน (Amount)</th>
+                                        <th>สถานะ (Status)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quotesTableBody">
+                                    <!-- Rendered dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ===== ACTIVITY & CALENDAR PANEL ===== -->
+                <section class="section-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800"><i class="fa-solid fa-calendar-check" style="color: var(--primary);"></i> กิจกรรมและปฏิทิน (Activity & Calendar)</h3>
+                            <p class="text-xs text-slate-500">จัดการนัดหมายและการติดต่อลูกค้าที่กำลังจะมาถึง</p>
+                        </div>
+                        <a href="calendar.html" class="text-xs text-blue-600 font-semibold hover:underline">ไปยังปฏิทินเต็ม <i class="fa-solid fa-calendar"></i></a>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Upcoming Activities (2 cols) -->
+                        <div class="lg:col-span-2 flex flex-col gap-3">
+                            <div class="text-xs font-bold text-slate-600 uppercase tracking-wider">กิจกรรมที่จะเกิดขึ้น (Upcoming Activities)</div>
+                            <div id="upcomingActivitiesList" class="flex flex-col gap-2.5">
+                                <!-- Dynamic items -->
+                            </div>
+                        </div>
+
+                        <!-- Mini Calendar (1 col) -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+                                <span id="miniCalTitle">กรกฎาคม 2569</span>
+                                <i class="fa-solid fa-calendar-day text-blue-500"></i>
+                            </div>
+                            <div class="mini-calendar-grid font-semibold text-slate-500 border-b pb-1">
+                                <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
+                            </div>
+                            <div class="mini-calendar-grid" id="miniCalDays">
+                                <!-- Days rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Firebase SDK Modular -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { 
+            getFirestore, doc, getDoc, getDocs, collection, onSnapshot, addDoc 
+        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
+            authDomain: "mentra-manager-e039f.firebaseapp.com",
+            projectId: "mentra-manager-e039f",
+            storageBucket: "mentra-manager-e039f.firebasestorage.app",
+            messagingSenderId: "563604754745",
+            appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentUserData = null;
+
+        // Real Data Arrays (Loaded from Firestore)
+        let sampleContacts = [];
+        let sampleDeals = [];
+        let sampleQuotes = [];
+        let sampleActivities = [];
+
+        // Auth Listener
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = user;
+
+            try {
+                const userSnap = await getDoc(doc(db, 'users', user.uid));
+                if (!userSnap.exists()) {
+                    await signOut(auth);
+                    window.location.href = 'index.html?msg=deleted';
+                    return;
+                }
+
+                currentUserData = userSnap.data();
+                if (window.checkPageAccess && !window.checkPageAccess(currentUserData)) return;
+
+                document.getElementById('userName').textContent = currentUserData.name || 'User';
+                const badge = document.getElementById('userRoleBadge');
+                badge.textContent = currentUserData.role === 'admin' ? 'Admin' : 'User';
+                badge.className = `role-badge ${currentUserData.role}`;
+
+                if (currentUserData.role === 'admin') {
+                    document.getElementById('adminMenu').style.display = 'flex';
+                }
+
+                document.body.style.setProperty('display', 'flex', 'important');
+
+                // Start Real-time Firestore Listeners
+                listenToCrmData();
+
+            } catch (err) {
+                console.warn('Init error:', err);
+                document.body.style.setProperty('display', 'flex', 'important');
+            }
+        });
+
+        // Real-time Listeners for Firestore Collections
+        function listenToCrmData() {
+            // 1. Listen to crm_contacts & company details
+            onSnapshot(collection(db, 'crm_contacts'), (snap) => {
+                const contactsMap = new Map();
+                snap.forEach(docSnap => {
+                    const d = docSnap.data();
+                    contactsMap.set(d.name || docSnap.id, { id: docSnap.id, ...d });
+                });
+
+                // Merge contacts with sampleContacts
+                sampleContacts = Array.from(contactsMap.values());
+                renderContactsTable();
+                updateKpis();
+            }, (err) => console.warn('Contacts error:', err));
+
+            // 2. Listen to company_material_projects (บริษัทเอกชน)
+            onSnapshot(collection(db, 'company_material_projects'), (snap) => {
+                sampleDeals = [];
+                const companyContactsMap = new Map();
+
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const compName = data.companyName || data.companyDetails?.name || data.institutionName || data.clientName || data.customerName || data.company || 'บริษัทเอกชน';
+                    
+                    // Calculate total amount from root or items array
+                    let amountVal = data.grandTotal || data.totalAmount || data.netTotal || data.totalPrice || data.budget || 0;
+                    if ((!amountVal || amountVal === 0) && Array.isArray(data.items)) {
+                        amountVal = data.items.reduce((sum, item) => {
+                            const itemTotal = parseFloat(item.total) || parseFloat(item.amount) || ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1));
+                            return sum + (isNaN(itemTotal) ? 0 : itemTotal);
+                        }, 0);
+                    }
+
+                    // Format project title nicely
+                    let projectTitle = data.projectName || data.title;
+                    if (!projectTitle) {
+                        if (data.name && data.name.includes('/')) {
+                            projectTitle = `โครงการจัดซื้อวัสดุ (เลขที่ ${data.name})`;
+                        } else if (data.name) {
+                            projectTitle = `โครงการ ${data.name}`;
+                        } else {
+                            projectTitle = 'โครงการจัดซื้อวัสดุอุปกรณ์ (บริษัท)';
+                        }
+                    }
+
+                    // Format Display ID
+                    let displayId = data.id || docSnap.id;
+                    if (data.no || data.projectNo) {
+                        displayId = `ดีล #${data.no || data.projectNo}`;
+                    } else if (displayId.startsWith('proj_')) {
+                        displayId = `ดีล #${displayId.replace('proj_', '')}`;
+                    }
+                    
+                    // Determine Kanban Stage based on project status
+                    let stage = 'proposal';
+                    let stageLabel = 'เสนอราคา';
+                    if (data.status === 'completed' || data.status === 'closed' || data.isClosed) {
+                        stage = 'closed';
+                        stageLabel = 'ปิดการขาย';
+                    } else if (data.status === 'new' || data.status === 'draft') {
+                        stage = 'new';
+                        stageLabel = 'ใหม่';
+                    } else if (data.status === 'qualified' || data.status === 'review') {
+                        stage = 'qualified';
+                        stageLabel = 'ตรวจสอบคุณสมบัติ';
+                    }
+
+                    sampleDeals.push({
+                        id: displayId,
+                        title: projectTitle,
+                        company: compName,
+                        amount: (typeof amountVal === 'number' ? amountVal.toLocaleString('th-TH') : amountVal) + ' ฿',
+                        stage: stage,
+                        stageLabel: stageLabel,
+                        phone: data.phone || data.contactPhone || data.companyDetails?.phone || '-',
+                        email: data.email || data.contactEmail || data.companyDetails?.email || '-',
+                        rawDocId: docSnap.id,
+                        isCompanyModule: true
+                    });
+
+                    // Add unique company contact to contacts table
+                    if (compName && !companyContactsMap.has(compName)) {
+                        companyContactsMap.set(compName, {
+                            name: data.contactName || data.contactPerson || compName,
+                            company: compName + ' (บริษัทเอกชน)',
+                            status: stage === 'closed' ? 'Customer' : 'Opportunity',
+                            statusLabel: stage === 'closed' ? 'ลูกค้า' : 'โอกาสทางการขาย',
+                            lastContact: data.updatedAt ? new Date(data.updatedAt.seconds * 1000).toLocaleDateString('th-TH') : 'ล่าสุด',
+                            phone: data.phone || data.contactPhone || '-',
+                            email: data.email || data.contactEmail || '-'
+                        });
+                    }
+                });
+
+                // Merge company contacts into main contacts array
+                companyContactsMap.forEach(c => {
+                    if (!sampleContacts.some(sc => sc.company === c.company)) {
+                        sampleContacts.push(c);
+                    }
+                });
+
+                renderKanbanBoard();
+                renderContactsTable();
+                renderCompanyQuotes(snap);
+                updateKpis();
+            }, (err) => console.warn('Company projects error:', err));
+
+            // 3. Listen to standard quotations
+            onSnapshot(collection(db, 'quotations'), (snap) => {
+                renderCompanyQuotes(null, snap);
+            }, (err) => console.warn('Quotes error:', err));
+
+            // 4. Listen to calendar_events for activities
+            onSnapshot(collection(db, 'calendar_events'), (snap) => {
+                sampleActivities = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    sampleActivities.push({
+                        time: data.time ? data.time + ' น.' : 'ตลอดวัน',
+                        title: data.title || 'นัดหมายลูกค้า',
+                        client: data.desc || data.creatorName || '',
+                        icon: data.type === 'meeting' ? 'fa-video' : (data.type === 'urgent' ? 'fa-circle-exclamation' : 'fa-calendar-check')
+                    });
+                });
+                renderActivitiesList();
+                renderMiniCalendar();
+            }, (err) => console.warn('Events error:', err));
+        }
+
+        // Helper to render Quotations & Company Project Quotes
+        let companyProjectsCache = null;
+        let mainQuotesCache = null;
+        function renderCompanyQuotes(companySnap, quotesSnap) {
+            if (companySnap) companyProjectsCache = companySnap;
+            if (quotesSnap) mainQuotesCache = quotesSnap;
+
+            sampleQuotes = [];
+
+            if (companyProjectsCache) {
+                companyProjectsCache.forEach(docSnap => {
+                    const d = docSnap.data();
+                    let amountVal = d.grandTotal || d.totalAmount || d.netTotal || d.totalPrice || d.budget || 0;
+                    if ((!amountVal || amountVal === 0) && Array.isArray(d.items)) {
+                        amountVal = d.items.reduce((sum, item) => {
+                            const itemTotal = parseFloat(item.total) || parseFloat(item.amount) || ((parseFloat(item.price) || 0) * (parseFloat(item.qty) || 1));
+                            return sum + (isNaN(itemTotal) ? 0 : itemTotal);
+                        }, 0);
+                    }
+
+                    const compName = d.companyName || d.companyDetails?.name || d.institutionName || 'บริษัทเอกชน';
+
+                    sampleQuotes.push({
+                        id: d.id || docSnap.id,
+                        client: compName + ' [บริษัทเอกชน]',
+                        amount: (typeof amountVal === 'number' ? amountVal.toLocaleString('th-TH') : amountVal) + ' ฿',
+                        status: d.status === 'closed' ? 'Customer' : 'Opportunity',
+                        statusLabel: d.status === 'closed' ? 'ลูกค้า' : 'เสนอราคา (บริษัท)'
+                    });
+                });
+            }
+
+            if (mainQuotesCache) {
+                mainQuotesCache.forEach(docSnap => {
+                    const d = docSnap.data();
+                    const amountVal = d.grandTotal || d.totalAmount || 0;
+                    sampleQuotes.push({
+                        id: d.quotationNo || docSnap.id,
+                        client: d.clientName || d.customerName || 'ลูกค้าสถาบัน/บริษัท',
+                        amount: (typeof amountVal === 'number' ? amountVal.toLocaleString('th-TH') : amountVal) + ' ฿',
+                        status: 'Opportunity',
+                        statusLabel: 'เสนอราคาแล้ว'
+                    });
+                });
+            }
+
+            renderQuotesTable();
+            updateKpis();
+        }
+
+        // Dynamic KPI Calculation
+        function updateKpis() {
+            const totalLeads = sampleContacts.length;
+            const openOpps = sampleDeals.filter(d => d.stage !== 'closed').length;
+            const quotesSent = sampleQuotes.length;
+            const wonDeals = sampleDeals.filter(d => d.stage === 'closed').length;
+            const convRate = totalLeads > 0 ? Math.round((wonDeals / totalLeads) * 100) + '%' : '0%';
+
+            document.getElementById('kpiLeads').textContent = `${totalLeads} ราย`;
+            document.getElementById('kpiOpps').textContent = `${openOpps} ราย`;
+            document.getElementById('kpiQuotes').textContent = `${quotesSent} ฉบับ`;
+            document.getElementById('kpiWon').textContent = `${wonDeals} ราย`;
+            document.getElementById('kpiRate').textContent = convRate;
+        }
+
+        // Logout
+        window.handleLogout = async function() {
+            try {
+                await signOut(auth);
+                window.location.href = 'index.html';
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        // Render Kanban Deals
+        function renderKanbanBoard() {
+            const cols = {
+                new: document.getElementById('colNewCards'),
+                qualified: document.getElementById('colQualifiedCards'),
+                proposal: document.getElementById('colProposalCards'),
+                closed: document.getElementById('colClosedCards')
+            };
+
+            Object.values(cols).forEach(col => col.innerHTML = '');
+
+            let counts = { new: 0, qualified: 0, proposal: 0, closed: 0 };
+
+            if (sampleDeals.length === 0) {
+                Object.keys(cols).forEach(key => {
+                    cols[key].innerHTML = '<div class="text-xs text-slate-400 p-4 text-center border border-dashed border-slate-200 rounded-lg">ไม่มีรายการ</div>';
+                });
+            } else {
+                sampleDeals.forEach(deal => {
+                    counts[deal.stage]++;
+                    const card = document.createElement('div');
+                    card.className = 'kanban-deal-card';
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-400">${deal.id || 'D-100'}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-md font-semibold bg-slate-100 text-slate-600">${deal.stageLabel || deal.stage}</span>
+                        </div>
+                        <div class="deal-title">${deal.title}</div>
+                        <div class="deal-company"><i class="fa-regular fa-building text-slate-400"></i> ${deal.company || '-'}</div>
+                        <div class="deal-value">${deal.amount || '0 ฿'}</div>
+                        <div class="deal-actions">
+                            <button class="action-icon-btn" onclick="event.stopPropagation(); quickCall('${deal.phone || ''}')" title="โทรหาลูกค้า">
+                                <i class="fa-solid fa-phone"></i>
+                            </button>
+                            <button class="action-icon-btn" onclick="event.stopPropagation(); quickEmail('${deal.email || ''}')" title="ส่งอีเมล">
+                                <i class="fa-solid fa-envelope"></i>
+                            </button>
+                            <button class="action-icon-btn" onclick="event.stopPropagation(); window.location.href='calendar.html'" title="นัดหมายประชุม">
+                                <i class="fa-solid fa-calendar-plus"></i>
+                            </button>
+                        </div>
+                    `;
+                    card.onclick = () => viewDealDetail(deal);
+                    if (cols[deal.stage]) cols[deal.stage].appendChild(card);
+                });
+            }
+
+            document.getElementById('countNew').textContent = counts.new;
+            document.getElementById('countQualified').textContent = counts.qualified;
+            document.getElementById('countProposal').textContent = counts.proposal;
+            document.getElementById('countClosed').textContent = counts.closed;
+        }
+
+        // Render Contacts Table
+        function renderContactsTable() {
+            const tbody = document.getElementById('contactsTableBody');
+            tbody.innerHTML = '';
+
+            if (sampleContacts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-slate-400 py-8">ยังไม่มีรายชื่อผู้มุ่งหวัง/ลูกค้าในระบบ (กดปุ่ม "+ เพิ่มผู้มุ่งหวังใหม่" ด้านบนเพื่อเพิ่มข้อมูล)</td></tr>`;
+                return;
+            }
+
+            sampleContacts.forEach(c => {
+                const tr = document.createElement('tr');
+                let badgeClass = c.status === 'Lead' ? 'badge-lead' : (c.status === 'Opportunity' ? 'badge-opp' : 'badge-customer');
+                
+                // Clean name vs company logic
+                let contactName = c.name || 'ไม่ระบุชื่อ';
+                let fullCompanyName = c.company || '-';
+                let companyBadge = '';
+
+                if (fullCompanyName.includes('(บริษัทเอกชน)')) {
+                    fullCompanyName = fullCompanyName.replace(' (บริษัทเอกชน)', '').trim();
+                    companyBadge = '<span class="inline-block text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-normal border border-blue-200 whitespace-nowrap flex-shrink-0">เอกชน</span>';
+                }
+
+                // Format short display name for company (convert บริษัท to บจก.)
+                let displayCompanyName = fullCompanyName.replace(/^บริษัท\s*/, 'บจก. ');
+
+                // If name is identical to company name, display clean contact label
+                if (contactName === c.company || contactName.includes('บริษัท')) {
+                    contactName = '<span class="text-slate-600 font-semibold text-xs whitespace-nowrap"><i class="fa-solid fa-building text-slate-400 mr-1"></i>ฝ่ายจัดซื้อ</span>';
+                }
+
+                tr.innerHTML = `
+                    <td class="font-bold text-slate-800 whitespace-nowrap">${contactName}</td>
+                    <td class="text-slate-700 font-medium">
+                        <div class="flex items-center gap-1.5 max-w-[200px] sm:max-w-[250px]">
+                            <span class="truncate font-semibold text-slate-800" title="${fullCompanyName}">${displayCompanyName}</span>
+                            ${companyBadge}
+                        </div>
+                    </td>
+                    <td class="whitespace-nowrap"><span class="status-badge ${badgeClass}">${c.statusLabel || c.status || 'ผู้มุ่งหวัง'}</span></td>
+                    <td class="text-slate-500 text-xs whitespace-nowrap">${c.lastContact || 'วันนี้'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Quotes Table
+        function renderQuotesTable() {
+            const tbody = document.getElementById('quotesTableBody');
+            tbody.innerHTML = '';
+
+            if (sampleQuotes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-slate-400 py-8">ยังไม่มีข้อมูลใบเสนอราคาในระบบ</td></tr>`;
+                return;
+            }
+
+            sampleQuotes.forEach(q => {
+                const tr = document.createElement('tr');
+                let badgeClass = q.status === 'Opportunity' ? 'badge-opp' : 'badge-customer';
+
+                // Format ID
+                let displayId = q.id || '-';
+                if (displayId.startsWith('proj_')) {
+                    displayId = `ดีล #${displayId.replace('proj_', '')}`;
+                }
+
+                // Format Client
+                let fullClientText = q.client || '-';
+                let typeBadge = '';
+                if (fullClientText.includes('[บริษัทเอกชน]')) {
+                    fullClientText = fullClientText.replace('[บริษัทเอกชน]', '').trim();
+                    typeBadge = '<span class="inline-block text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-normal border border-blue-200 whitespace-nowrap flex-shrink-0">เอกชน</span>';
+                }
+
+                let displayClientText = fullClientText.replace(/^บริษัท\s*/, 'บจก. ');
+
+                tr.innerHTML = `
+                    <td class="font-bold text-blue-600 whitespace-nowrap">${displayId}</td>
+                    <td class="text-slate-700 font-medium">
+                        <div class="flex items-center gap-1.5 max-w-[200px] sm:max-w-[250px]">
+                            <span class="truncate font-semibold text-slate-800" title="${fullClientText}">${displayClientText}</span>
+                            ${typeBadge}
+                        </div>
+                    </td>
+                    <td class="font-extrabold text-slate-900 whitespace-nowrap">${q.amount}</td>
+                    <td class="whitespace-nowrap"><span class="status-badge ${badgeClass}">${q.statusLabel}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Activities
+        function renderActivitiesList() {
+            const container = document.getElementById('upcomingActivitiesList');
+            container.innerHTML = '';
+
+            if (sampleActivities.length === 0) {
+                container.innerHTML = `<div class="text-xs text-slate-400 p-4 text-center border border-dashed border-slate-200 rounded-lg">ไม่มีกิจกรรมนัดหมายที่จะเกิดขึ้น</div>`;
+                return;
+            }
+
+            sampleActivities.forEach(act => {
+                const div = document.createElement('div');
+                div.className = 'activity-item';
+                div.innerHTML = `
+                    <div class="activity-time"><i class="fa-solid ${act.icon || 'fa-calendar'}"></i> ${act.time}</div>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-slate-800">${act.title}</span>
+                        <span class="text-xs text-slate-500">${act.client}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Render Mini Calendar
+        function renderMiniCalendar() {
+            const daysContainer = document.getElementById('miniCalDays');
+            daysContainer.innerHTML = '';
+
+            const now = new Date();
+            const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const activeToday = now.getDate();
+
+            for (let i = 1; i <= totalDays; i++) {
+                const dayDiv = document.createElement('div');
+                let classes = 'mini-day';
+                if (i === activeToday) classes += ' active';
+                dayDiv.className = classes;
+                dayDiv.textContent = i;
+                daysContainer.appendChild(dayDiv);
+            }
+        }
+
+        // Quick Actions
+        window.quickCall = function(phone) {
+            if (!phone) {
+                Swal.fire('ไม่พบเบอร์โทรศัพท์', 'ยังไม่ได้ระบุเบอร์โทรศัพท์สำหรับลูกค้ารายนี้', 'warning');
+                return;
+            }
+            Swal.fire({
+                title: 'ติดต่อทางโทรศัพท์',
+                html: `ต้องการโทรติดต่อเบอร์ <b class="text-blue-600">${phone}</b> ใช่หรือไม่?`,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'โทรออก',
+                cancelButtonText: 'ยกเลิก'
+            }).then(r => {
+                if (r.isConfirmed) window.location.href = `tel:${phone}`;
+            });
+        };
+
+        window.quickEmail = function(email) {
+            if (!email) {
+                Swal.fire('ไม่พบอีเมล', 'ยังไม่ได้ระบุอีเมลสำหรับลูกค้ารายนี้', 'warning');
+                return;
+            }
+            Swal.fire({
+                title: 'ส่งอีเมลหาลูกค้า',
+                html: `ต้องการเปิดโปรแกรมอีเมลส่งหา <b class="text-blue-600">${email}</b> ใช่หรือไม่?`,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'ส่งอีเมล',
+                cancelButtonText: 'ยกเลิก'
+            }).then(r => {
+                if (r.isConfirmed) window.location.href = `mailto:${email}`;
+            });
+        };
+
+        window.viewDealDetail = function(deal) {
+            let extraBtnHtml = deal.isCompanyModule ? `
+                <div class="mt-3 pt-2 border-t text-center">
+                    <button class="bg-blue-600 text-white text-xs px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 w-full" onclick="window.location.href='materials_purchasing_company.html?project=${deal.rawDocId || deal.id}'">
+                        <i class="fa-solid fa-building"></i> เปิดดูโครงการในระบบจัดซื้อ (บริษัทเอกชน)
+                    </button>
+                </div>
+            ` : '';
+
+            Swal.fire({
+                title: deal.title,
+                html: `
+                    <div class="text-left text-sm flex flex-col gap-2 p-2">
+                        <div><b>รหัสดีล:</b> ${deal.id || '-'}</div>
+                        <div><b>ชื่อลูกค้า/บริษัท:</b> ${deal.company || '-'}</div>
+                        <div><b>มูลค่าโครงการ:</b> <span class="text-blue-600 font-extrabold">${deal.amount || '0 ฿'}</span></div>
+                        <div><b>ขั้นตอนการขาย:</b> ${deal.stageLabel || deal.stage || '-'}</div>
+                        <div><b>เบอร์โทรติดต่อ:</b> ${deal.phone || '-'}</div>
+                        <div><b>อีเมล:</b> ${deal.email || '-'}</div>
+                        ${extraBtnHtml}
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonText: 'ปิดหน้าต่าง'
+            });
+        };
+
+        window.openAddLeadModal = function() {
+            Swal.fire({
+                title: 'เพิ่มผู้มุ่งหวังใหม่ (New Lead)',
+                html: `
+                    <input id="swalName" class="swal2-input" placeholder="ชื่อ-นามสกุล ลูกค้า *">
+                    <input id="swalCompany" class="swal2-input" placeholder="ชื่อบริษัท / หน่วยงาน">
+                    <input id="swalPhone" class="swal2-input" placeholder="เบอร์โทรศัพท์">
+                    <input id="swalEmail" class="swal2-input" placeholder="อีเมล">
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกผู้มุ่งหวัง',
+                cancelButtonText: 'ยกเลิก',
+                preConfirm: () => {
+                    const name = document.getElementById('swalName').value.trim();
+                    if (!name) {
+                        Swal.showValidationMessage('กรุณาระบุชื่อลูกค้า');
+                        return false;
+                    }
+                    return {
+                        name: name,
+                        company: document.getElementById('swalCompany').value.trim() || '-',
+                        phone: document.getElementById('swalPhone').value.trim() || '-',
+                        email: document.getElementById('swalEmail').value.trim() || '-'
+                    }
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed && result.value) {
+                    try {
+                        await addDoc(collection(db, 'crm_contacts'), {
+                            name: result.value.name,
+                            company: result.value.company,
+                            status: 'Lead',
+                            statusLabel: 'ผู้มุ่งหวัง',
+                            lastContact: 'วันนี้',
+                            phone: result.value.phone,
+                            email: result.value.email,
+                            createdAt: new Date()
+                        });
+                        Swal.fire('บันทึกเรียบร้อย!', 'เพิ่มข้อมูลผู้มุ่งหวังใหม่เข้าสู่ระบบ CRM แล้ว', 'success');
+                    } catch (e) {
+                        console.error(e);
+                        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+                    }
+                }
+            });
+        };
+
+        window.filterCrmData = function() {
+            const query = document.getElementById('globalSearchInput').value.toLowerCase();
+            filterContacts(query);
+        };
+
+        window.filterContacts = function(customQuery) {
+            const query = (customQuery !== undefined ? customQuery : document.getElementById('contactSearchInput').value).toLowerCase();
+            const tbody = document.getElementById('contactsTableBody');
+            tbody.innerHTML = '';
+
+            const filtered = sampleContacts.filter(c => (c.name || '').toLowerCase().includes(query) || (c.company || '').toLowerCase().includes(query));
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-slate-400 py-6">ไม่พบรายชื่อที่ค้นหา</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(c => {
+                const tr = document.createElement('tr');
+                let badgeClass = c.status === 'Lead' ? 'badge-lead' : (c.status === 'Opportunity' ? 'badge-opp' : 'badge-customer');
+                tr.innerHTML = `
+                    <td class="font-bold text-slate-800">${c.name}</td>
+                    <td class="text-slate-600">${c.company || '-'}</td>
+                    <td><span class="status-badge ${badgeClass}">${c.statusLabel || c.status || 'ผู้มุ่งหวัง'}</span></td>
+                    <td class="text-slate-500 text-xs">${c.lastContact || 'วันนี้'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+    </script>
+</body>
+
+</html>
