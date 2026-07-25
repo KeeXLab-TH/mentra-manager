@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>นามบัตรดิจิทัล (Business Card) — Mentra Manager</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- PDF & Canvas Libraries for Downloading Card -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
+    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+
+    <style>
+        :root {
+            /* Brand Colors */
+            --primary: #1A6FBF;
+            --primary-dark: #145999;
+            --primary-darker: #0e4a85;
+            --primary-light: #e8f1fb;
+            --primary-glow: rgba(26, 111, 191, 0.18);
+
+            --secondary: #E07B2F;
+            --secondary-dark: #c4681f;
+            --secondary-light: #fdf0e6;
+
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --bg: #f0f4f9;
+            --bg-card: #ffffff;
+
+            --sidebar-w: 260px;
+            --sidebar-w-collapsed: 72px;
+            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
+            --header-h: 68px;
+
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 24px rgba(26, 111, 191, 0.06);
+            --shadow-lg: 0 16px 36px rgba(26, 111, 191, 0.12);
+            --shadow-card: 0 20px 40px rgba(11, 61, 110, 0.18);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+
+            --t-normal: 0.25s ease;
+            --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        button, input, select, textarea {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        body {
+            font-family: 'Kanit', 'Inter', sans-serif;
+            font-size: 14.5px;
+            color: var(--text);
+            background-color: var(--bg);
+            min-height: 100vh;
+            display: none;
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: width var(--t-slow), transform var(--t-slow);
+            overflow: hidden;
+            will-change: width, transform;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-w-collapsed);
+        }
+
+        .sidebar.collapsed .sidebar-logo-text,
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .user-info,
+        .sidebar.collapsed .btn-logout-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .sidebar.collapsed .sidebar-logo {
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .sidebar.collapsed .collapse-btn svg {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-logo {
+            padding: 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: var(--header-h);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            background: white;
+            border-radius: 10px;
+            padding: 4px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-logo-text {
+            transition: opacity var(--t-normal), width var(--t-normal);
+            overflow: hidden;
+        }
+
+        .sidebar-logo-text .app-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .sidebar-logo-text .app-sub {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.50);
+            font-weight: 400;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        .collapse-btn {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            transition: background 0.15s ease, transform var(--t-normal);
+        }
+
+        .collapse-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .nav-section-title {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: rgba(255, 255, 255, 0.38);
+            padding: 8px 12px 4px;
+            margin-top: 10px;
+            white-space: nowrap;
+            transition: opacity var(--t-normal);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 13px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.70);
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: background 0.15s ease, color 0.15s ease;
+            margin-bottom: 2px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: 'Kanit', sans-serif;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.10);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.16);
+            color: white;
+            font-weight: 600;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 3px;
+            background: var(--secondary);
+            border-radius: 0 3px 3px 0;
+        }
+
+        .nav-item.active .nav-icon {
+            background: var(--secondary);
+            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.4);
+            color: white !important;
+        }
+
+        .nav-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .nav-label {
+            transition: opacity var(--t-normal);
+            overflow: hidden;
+        }
+
+        .nav-item-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-submenu {
+            display: none;
+            flex-direction: column;
+            gap: 0.2rem;
+            padding-left: 2.75rem;
+            padding-top: 0.3rem;
+            padding-bottom: 0.3rem;
+        }
+
+        .sidebar-submenu.open {
+            display: flex;
+        }
+
+        .submenu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 0.8rem;
+            border-radius: var(--radius-sm);
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: all 0.15s ease;
+        }
+
+        .submenu-item:hover, .submenu-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        /* ===== MAIN WRAPPER ===== */
+        .main-wrapper {
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left var(--t-slow);
+        }
+
+        .sidebar.collapsed + .main-wrapper {
+            margin-left: var(--sidebar-w-collapsed);
+        }
+
+        /* TOPBAR */
+        .topbar {
+            height: var(--header-h);
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .hamburger {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-title-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+            border-radius: 30px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .btn-logout {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.85rem;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* ===== CONTENT AREA ===== */
+        .content-container {
+            padding: 2rem;
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* CARD DISPLAY SECTION */
+        .card-preview-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .cards-dual-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .card-box-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-label-tag {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .single-business-card {
+            width: 500px;
+            height: 290px;
+            max-width: 100%;
+            border-radius: 0;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ===== FRONT SIDE (PREMIUM CLEAN CORPORATE DESIGN) ===== */
+        .card-front-minimal {
+            background: linear-gradient(135deg, #0f345c 0%, #17487d 50%, #205c9e 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+        }
+
+        /* Subtle Soft Orange Gradient Light Wave at Top-Right Corner */
+        .front-accent-bar-bottom {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(224, 123, 47, 0.28) 0%, rgba(224, 123, 47, 0) 70%);
+            pointer-events: none;
+        }
+
+        /* Centered Content Container */
+        .front-content-center {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.2rem 2rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Compact White Frame Box for Logo */
+        .front-logo-wrapper {
+            background: #ffffff;
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin-bottom: 1.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-logo-large {
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .card-front-comp-th {
+            font-size: 1.35rem;
+            font-weight: 700;
+            font-family: 'Kanit', sans-serif;
+            color: #ffffff;
+            line-height: 1.25;
+            letter-spacing: 0.5px;
+        }
+
+        .card-front-comp-en {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #ff9d42;
+            font-family: 'Kanit', 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        /* ===== BACK SIDE (All Personal & Contact Info) ===== */
+        .card-back-full {
+            background: #ffffff;
+            color: var(--text);
+            padding: 1.5rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .card-back-full::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 10px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .back-top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-logo-back {
+            height: 72px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .person-name-th {
+            font-size: 1.18rem;
+            font-weight: 700;
+            font-family: 'Kanit', sans-serif;
+            color: var(--primary-darker);
+            line-height: 1.2;
+            letter-spacing: normal;
+            white-space: nowrap;
+        }
+
+        .person-name-en {
+            font-size: 0.82rem;
+            font-family: 'Kanit', 'Inter', sans-serif;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            letter-spacing: normal;
+            white-space: nowrap;
+        }
+
+        .person-title {
+            font-size: 0.76rem;
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            color: white;
+            padding: 3px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 500;
+            box-shadow: 0 2px 6px rgba(224, 123, 47, 0.3);
+        }
+
+        .qr-box-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            flex-shrink: 0;
+        }
+
+        .qr-code-img {
+            width: 88px;
+            height: 88px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            padding: 4px;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            object-fit: contain;
+        }
+
+        .qr-label {
+            font-size: 0.68rem;
+            font-weight: 600;
+            font-family: 'Kanit', sans-serif;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .back-middle-contacts {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem;
+            font-size: 0.73rem;
+            background: var(--bg);
+            padding: 0.45rem 0.65rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            margin: 0.35rem 0;
+            overflow: hidden;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            white-space: nowrap;
+            color: var(--text);
+            font-family: 'Kanit', sans-serif;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .back-bottom-address {
+            font-size: 0.75rem;
+            font-family: 'Kanit', sans-serif;
+            color: #475569;
+            border-top: 1px solid var(--border);
+            padding-top: 0.5rem;
+            line-height: 1.4;
+        }
+
+        /* ===== CONTROLS AND FORM PANEL ===== */
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .panel-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            padding: 2rem;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text);
+            background-color: var(--bg);
+            transition: all 0.15s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        /* Button controls */
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px var(--primary-glow);
+            transition: all 0.15s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s ease;
+        }
+
+        /* Loading Spinner */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid var(--primary-light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-wrapper { margin-left: 0 !important; }
+            .content-container { padding: 1rem; }
+            .card-3d-wrapper { height: 260px; }
+            .person-name-th { font-size: 1.15rem; }
+            .card-contact-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p style="font-weight: 600; color: var(--primary-dark);">กำลังโหลดข้อมูลนามบัตร...</p>
+    </div>
+
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <div class="sidebar-logo-text">
+                <div class="app-name">Mentra Manager</div>
+                <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
+            </div>
+            <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">เมนูหลัก</div>
+            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard">
+                <div class="nav-icon">🏠</div>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=projects'" id="nav-projects">
+                <div class="nav-icon">📁</div>
+                <span class="nav-label">โครงการทั้งหมด</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=items'" id="nav-items">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">ราคาทุน / สิ่งของ</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
+                <div class="nav-icon">📄</div>
+                <span class="nav-label">ใบเสนอราคา</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
+                <div class="nav-icon">🎓</div>
+                <span class="nav-label">ระบบตารางจัดอบรม</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='calendar.html'" id="nav-calendar">
+                <div class="nav-icon">📅</div>
+                <span class="nav-label">ปฏิทินตารางงาน</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='crm.html'" id="nav-crm">
+                <div class="nav-icon">📊</div>
+                <span class="nav-label">ระบบ CRM</span>
+            </button>
+            <div class="nav-item-group" id="nav-purchasing-group">
+                <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main">
+                    <div class="nav-icon">🛒</div>
+                    <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
+                    <i class="fa-solid fa-chevron-down submenu-caret"></i>
+                </button>
+                <div class="sidebar-submenu" id="purchasingSubmenu">
+                    <a href="materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
+                        <span class="submenu-icon">🏫</span>
+                        <span class="nav-label">สถานศึกษา</span>
+                    </a>
+                    <a href="materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
+                        <span class="submenu-icon">🏢</span>
+                        <span class="nav-label">บริษัทเอกชน</span>
+                    </a>
+                </div>
+            </div>
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">💻</div>
+                <span class="nav-label">ข้อมูลร้านสำหรับสั่งวัสดุ</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='internship_journal.html'" id="nav-internship">
+                <div class="nav-icon">📓</div>
+                <span class="nav-label">บันทึกการฝึกงาน</span>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='business_card.html'" id="nav-business-card">
+                <div class="nav-icon">🪪</div>
+                <span class="nav-label">นามบัตรดิจิทัล</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
+                <div class="nav-icon">📷</div>
+                <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- ===== MAIN WRAPPER ===== -->
+    <div class="main-wrapper" id="mainWrapper">
+        
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="page-title-badge">
+                    <div style="width:34px; height:34px; border-radius:8px; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:1.1rem;">🪪</div>
+                    <span>นามบัตรดิจิทัล (Business Card)</span>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName" style="font-weight:600; font-size:0.88rem;">Loading...</span>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENT AREA -->
+        <main class="content-container">
+
+            <!-- CARD PREVIEW DUAL SECTION -->
+            <div class="card-preview-section">
+                <!-- Language Mode Switcher -->
+                <div style="display:flex; background:rgba(255,255,255,0.8); border:1px solid var(--border); border-radius:30px; padding:4px; gap:4px; box-shadow:var(--shadow-sm);">
+                    <button id="langBtnTh" onclick="switchCardLang('TH')" style="padding:0.45rem 1.25rem; border-radius:20px; border:none; background:var(--primary); color:white; font-weight:700; font-size:0.88rem; cursor:pointer; transition:all 0.15s ease;">
+                        🇹🇭 โหมดนามบัตรภาษาไทย
+                    </button>
+                    <button id="langBtnEn" onclick="switchCardLang('EN')" style="padding:0.45rem 1.25rem; border-radius:20px; border:none; background:transparent; color:var(--text-secondary); font-weight:600; font-size:0.88rem; cursor:pointer; transition:all 0.15s ease;">
+                        🇬🇧 English Business Card Mode
+                    </button>
+                </div>
+
+                <div class="cards-dual-container">
+                    
+                    <!-- FRONT OF CARD (ELEGANT LIGHT BLUE DESIGN) -->
+                    <div class="card-box-wrapper">
+                        <div class="card-label-tag"><i class="fa-solid fa-id-card"></i> ด้านหน้าบัตร (Front Side)</div>
+                        <div class="single-business-card card-front-minimal" id="cardFrontSide">
+                            <div class="front-accent-bar-bottom"></div>
+                            <div class="front-content-center">
+                                <div class="front-logo-wrapper">
+                                    <img src="assets/img/logo.png" alt="Mentra Logo" class="card-logo-large" onerror="this.src='https://via.placeholder.com/140x50?text=MENTRA'">
+                                </div>
+                                <div class="card-front-comp-th" id="prevCompNameTh"></div>
+                                <div class="card-front-comp-en" id="prevCompNameEn"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BACK OF CARD (ALL PERSONAL INFO & CONTACTS) -->
+                    <div class="card-box-wrapper">
+                        <div class="card-label-tag"><i class="fa-solid fa-address-card"></i> ด้านหลังบัตร (Back Side)</div>
+                        <div class="single-business-card card-back-full" id="cardBackSide">
+                            
+                            <!-- Top: Logo + Name, Title & QR -->
+                            <div class="back-top-section">
+                                <div style="display:flex; align-items:center; gap:0.9rem; flex:1; padding-right:0.75rem;">
+                                    <img src="assets/img/logo.png" alt="Mentra Logo" class="card-logo-back" onerror="this.src='https://via.placeholder.com/100x32?text=MENTRA'">
+                                    <div style="display:flex; flex-direction:column; gap:2px;">
+                                        <div class="person-name-th" id="prevNamePrimary"></div>
+                                        <div class="person-name-en" id="prevNameSecondary"></div>
+                                        <div class="person-title" id="prevTitle" style="margin-top:4px; align-self:flex-start;"></div>
+                                    </div>
+                                </div>
+                                <div class="qr-box-wrapper">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://line.me" id="prevQrImg" class="qr-code-img" alt="LINE QR Code">
+                                    <span class="qr-label" id="prevQrLabel"><i class="fa-brands fa-line" style="color:#00B900;"></i> แอดไลน์</span>
+                                </div>
+                            </div>
+
+                            <!-- Middle: Phone, Email & LINE ID -->
+                            <div class="back-middle-contacts" id="prevMiddleContacts">
+                                <div class="contact-item" id="prevPhoneItem">
+                                    <i class="fa-solid fa-phone" style="color:var(--primary);"></i>
+                                    <span id="prevPhone"></span>
+                                </div>
+                                <div class="contact-item" id="prevEmailItem">
+                                    <i class="fa-solid fa-envelope" style="color:var(--primary);"></i>
+                                    <span id="prevEmail"></span>
+                                </div>
+                                <div class="contact-item" id="prevLineItem">
+                                    <i class="fa-brands fa-line" style="color:#00B900; font-size:1rem;"></i>
+                                    <span id="prevLineId"></span>
+                                </div>
+                            </div>
+
+                            <!-- Bottom: Address & Company Name -->
+                            <div class="back-bottom-address">
+                                <div style="font-weight:700; color:var(--primary-darker); margin-bottom:2px;" id="prevBackCompPrimary"></div>
+                                <div><i class="fa-solid fa-location-dot" style="color:var(--secondary); margin-right:3px;"></i> <span id="prevAddressPrimary"></span></div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn-primary" onclick="downloadCardAsImage('FRONT')">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลดรูปหน้าบัตร
+                    </button>
+                    <button class="btn-primary" onclick="downloadCardAsImage('BACK')">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลดรูปหลังบัตร
+                    </button>
+                </div>
+            </div>
+
+            <!-- EDITOR FORM PANEL -->
+            <div class="editor-grid">
+                <section class="panel-card">
+                    <div class="panel-title">
+                        <i class="fa-solid fa-pen-to-square" style="color:var(--primary);"></i>
+                        <span>กรอกข้อมูลนามบัตรของคุณ (Edit Card Information)</span>
+                    </div>
+
+                    <form id="cardForm" onsubmit="saveCardInformation(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-user"></i> ชื่อ - นามสกุล (ภาษาไทย)</label>
+                                <input type="text" class="form-control" id="inputNameTh" placeholder="ระบุชื่อ - นามสกุลภาษาไทย" oninput="updateCardLivePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-user"></i> Name - Surname (English)</label>
+                                <input type="text" class="form-control" id="inputNameEn" placeholder="Specify English Name - Surname" oninput="updateCardLivePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-briefcase"></i> ตำแหน่ง (ภาษาไทย)</label>
+                                <input type="text" class="form-control" id="inputTitleTh" placeholder="เช่น กรรมการผู้จัดการ / นักพัฒนาซอฟต์แวร์" oninput="updateCardLivePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-briefcase"></i> Position / Title (English)</label>
+                                <input type="text" class="form-control" id="inputTitleEn" placeholder="e.g. Managing Director / Software Developer" oninput="updateCardLivePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-phone"></i> เบอร์โทรศัพท์ติดต่อ</label>
+                                <input type="text" class="form-control" id="inputPhone" placeholder="ระบุเบอร์โทรศัพท์ติดต่อ" oninput="updateCardLivePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fa-brands fa-line" style="color:#00B900;"></i> ID LINE</label>
+                                <input type="text" class="form-control" id="inputLineId" placeholder="ระบุ ID LINE (ถ้ามี)" oninput="updateCardLivePreview()">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-envelope" style="color:var(--primary);"></i> อีเมลติดต่อ (Email)</label>
+                                <input type="email" class="form-control" id="inputEmail" placeholder="เช่น example@mentrasolution.com" oninput="updateCardLivePreview()">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label><i class="fa-solid fa-qrcode"></i> อัปโหลดรูป QR Code LINE</label>
+                                <input type="file" class="form-control" id="inputQrFile" accept="image/*" onchange="handleQrUpload(event)">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label><i class="fa-solid fa-building"></i> ชื่อบริษัท (ภาษาไทย)</label>
+                                <input type="text" class="form-control" id="inputCompTh" value="บริษัท เมนทร้า โซลูชั่น จำกัด" readonly style="background-color: var(--primary-light); color: var(--primary-darker); font-weight: 600; cursor: not-allowed;">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label><i class="fa-solid fa-building"></i> Company Name (English)</label>
+                                <input type="text" class="form-control" id="inputCompEn" value="MENTRA SOLUTION CO., LTD." readonly style="background-color: var(--primary-light); color: var(--primary-darker); font-weight: 600; cursor: not-allowed;">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label><i class="fa-solid fa-location-dot"></i> ที่อยู่บริษัท (ภาษาไทย)</label>
+                                <input type="text" class="form-control" id="inputAddressTh" value="115/123 หมู่ที่ 12 ตำบลบางแก้ว อำเภอบางพลี จ.สมุทรปราการ 10540" readonly style="background-color: var(--primary-light); color: var(--primary-darker); font-weight: 600; cursor: not-allowed;">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label><i class="fa-solid fa-location-dot"></i> Company Address (English)</label>
+                                <input type="text" class="form-control" id="inputAddressEn" value="115/123 M.12, Bang Kaeo, Bang Phli, Samut Prakan 10540" readonly style="background-color: var(--primary-light); color: var(--primary-darker); font-weight: 600; cursor: not-allowed;">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.75rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                            <button type="submit" class="btn-accent">
+                                <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลนามบัตร
+                            </button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- FIREBASE AND CORE APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { initializeFirestore, doc, getDoc, setDoc, persistentLocalCache, persistentMultipleTabManager } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        let app, auth, db;
+        let currentUser = null;
+        let currentQrBase64 = '';
+
+        async function init() {
+            try {
+                const cfg = await import('./assets/js/firebase-config.js');
+                const FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
+                app = initializeApp(FIREBASE_CONFIG);
+                auth = getAuth(app);
+                db = initializeFirestore(app, {
+                    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+                });
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (!user) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    currentUser = user;
+
+                    const userSnap = await getDoc(doc(db, 'users', user.uid));
+                    let uData = userSnap.exists() ? userSnap.data() : {};
+                    const displayName = uData.displayName || uData.firstName || user.displayName || user.email;
+                    document.getElementById("userAvatar").textContent = displayName.charAt(0).toUpperCase();
+                    document.getElementById("userName").textContent = displayName;
+
+                    if (window.checkPageAccess && !window.checkPageAccess(uData)) return;
+
+                    await loadCardData(user.uid);
+
+                    document.body.style.display = 'block';
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                });
+            } catch (err) {
+                console.error("Init Error:", err);
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+            }
+        }
+
+        let currentCardLang = 'TH'; // 'TH' or 'EN'
+
+        // Switch Card Language Mode
+        window.switchCardLang = function(lang) {
+            currentCardLang = lang;
+            const btnTh = document.getElementById('langBtnTh');
+            const btnEn = document.getElementById('langBtnEn');
+
+            if (lang === 'TH') {
+                btnTh.style.background = 'var(--primary)';
+                btnTh.style.color = 'white';
+                btnTh.style.fontWeight = '700';
+
+                btnEn.style.background = 'transparent';
+                btnEn.style.color = 'var(--text-secondary)';
+                btnEn.style.fontWeight = '600';
+            } else {
+                btnEn.style.background = 'var(--primary)';
+                btnEn.style.color = 'white';
+                btnEn.style.fontWeight = '700';
+
+                btnTh.style.background = 'transparent';
+                btnTh.style.color = 'var(--text-secondary)';
+                btnTh.style.fontWeight = '600';
+            }
+            updateCardLivePreview();
+        };
+
+        // Live Preview Update (without DEMO dummy text)
+        window.updateCardLivePreview = function() {
+            const nameTh = (document.getElementById('inputNameTh')?.value || '').trim();
+            const nameEn = (document.getElementById('inputNameEn')?.value || '').trim();
+            const titleTh = (document.getElementById('inputTitleTh')?.value || '').trim();
+            const titleEn = (document.getElementById('inputTitleEn')?.value || '').trim();
+            const phone = (document.getElementById('inputPhone')?.value || '').trim();
+            const lineId = (document.getElementById('inputLineId')?.value || '').trim();
+            const email = (document.getElementById('inputEmail')?.value || '').trim();
+            const compTh = (document.getElementById('inputCompTh')?.value || '').trim();
+            const compEn = (document.getElementById('inputCompEn')?.value || '').trim();
+            const addrTh = (document.getElementById('inputAddressTh')?.value || '').trim();
+            const addrEn = (document.getElementById('inputAddressEn')?.value || '').trim();
+
+            const qrLabelText = (currentCardLang === 'TH') ? 'แอดไลน์' : 'ADD LINE';
+            const prevQrLabel = document.getElementById('prevQrLabel');
+            if (prevQrLabel) {
+                prevQrLabel.innerHTML = `<i class="fa-brands fa-line" style="color:#00B900;"></i> ${qrLabelText}`;
+            }
+
+            if (currentCardLang === 'TH') {
+                // Thai Primary Mode
+                document.getElementById('prevCompNameTh').textContent = compTh;
+                document.getElementById('prevCompNameEn').textContent = compEn;
+
+                document.getElementById('prevNamePrimary').textContent = nameTh;
+                document.getElementById('prevNameSecondary').textContent = nameEn;
+                document.getElementById('prevTitle').textContent = titleTh || titleEn;
+                document.getElementById('prevTitle').style.display = (titleTh || titleEn) ? 'inline-block' : 'none';
+
+                document.getElementById('prevBackCompPrimary').textContent = compTh;
+                document.getElementById('prevAddressPrimary').textContent = addrTh;
+            } else {
+                // English Primary Mode
+                document.getElementById('prevCompNameTh').textContent = compEn;
+                document.getElementById('prevCompNameEn').textContent = compTh;
+
+                document.getElementById('prevNamePrimary').textContent = nameEn;
+                document.getElementById('prevNameSecondary').textContent = nameTh;
+                document.getElementById('prevTitle').textContent = titleEn || titleTh;
+                document.getElementById('prevTitle').style.display = (titleEn || titleTh) ? 'inline-block' : 'none';
+
+                document.getElementById('prevBackCompPrimary').textContent = compEn;
+                document.getElementById('prevAddressPrimary').textContent = addrEn;
+            }
+
+            // Phone display
+            const phoneItem = document.getElementById('prevPhoneItem');
+            if (phoneItem) {
+                phoneItem.style.display = phone ? 'flex' : 'none';
+                document.getElementById('prevPhone').textContent = phone;
+            }
+
+            // LINE ID display (hide icon and text if empty)
+            const lineItem = document.getElementById('prevLineItem');
+            if (lineItem) {
+                lineItem.style.display = lineId ? 'flex' : 'none';
+                document.getElementById('prevLineId').textContent = lineId;
+            }
+
+            // Email display
+            const emailItem = document.getElementById('prevEmailItem');
+            if (emailItem) {
+                emailItem.style.display = email ? 'flex' : 'none';
+                document.getElementById('prevEmail').textContent = email;
+            }
+
+            // Hide middle contacts bar if phone, line, and email are all empty
+            const middleContacts = document.getElementById('prevMiddleContacts');
+            if (middleContacts) {
+                middleContacts.style.display = (phone || lineId || email) ? 'flex' : 'none';
+            }
+
+            if (currentQrBase64) {
+                document.getElementById('prevQrImg').src = currentQrBase64;
+                document.getElementById('prevQrImg').style.display = 'block';
+                if (prevQrLabel) prevQrLabel.style.display = 'flex';
+            } else {
+                document.getElementById('prevQrImg').style.display = 'none';
+                if (prevQrLabel) prevQrLabel.style.display = 'none';
+            }
+        };
+
+        // Handle QR File Upload
+        window.handleQrUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentQrBase64 = e.target.result;
+                document.getElementById('prevQrImg').src = currentQrBase64;
+                document.getElementById('prevQrImg').style.display = 'block';
+                const prevQrLabel = document.getElementById('prevQrLabel');
+                if (prevQrLabel) prevQrLabel.style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // Load Card Data from Firestore
+        async function loadCardData(userId) {
+            try {
+                const docSnap = await getDoc(doc(db, 'business_cards', userId));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('inputNameTh').value = data.nameTh || '';
+                    document.getElementById('inputNameEn').value = data.nameEn || '';
+                    document.getElementById('inputTitleTh').value = data.titleTh || data.title || '';
+                    document.getElementById('inputTitleEn').value = data.titleEn || data.title || '';
+                    document.getElementById('inputPhone').value = data.phone || '';
+                    document.getElementById('inputLineId').value = data.lineId || '';
+                    document.getElementById('inputEmail').value = data.email || currentUser?.email || '';
+                    if (data.qrCodeBase64) {
+                        currentQrBase64 = data.qrCodeBase64;
+                    }
+                }
+                updateCardLivePreview();
+            } catch (err) {
+                console.error("Load card error:", err);
+            }
+        }
+
+        // Save Card Information
+        window.saveCardInformation = async function(event) {
+            event.preventDefault();
+            if (!currentUser) return;
+
+            const cardData = {
+                nameTh: document.getElementById('inputNameTh').value.trim(),
+                nameEn: document.getElementById('inputNameEn').value.trim(),
+                titleTh: document.getElementById('inputTitleTh').value.trim(),
+                titleEn: document.getElementById('inputTitleEn').value.trim(),
+                phone: document.getElementById('inputPhone').value.trim(),
+                lineId: document.getElementById('inputLineId').value.trim(),
+                email: document.getElementById('inputEmail').value.trim(),
+                compTh: document.getElementById('inputCompTh').value.trim(),
+                compEn: document.getElementById('inputCompEn').value.trim(),
+                addressTh: document.getElementById('inputAddressTh').value.trim(),
+                addressEn: document.getElementById('inputAddressEn').value.trim(),
+                qrCodeBase64: currentQrBase64,
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                await setDoc(doc(db, 'business_cards', currentUser.uid), cardData, { merge: true });
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                Swal.fire({
+                    title: 'บันทึกสำเร็จ!',
+                    text: 'ข้อมูลนามบัตรบันทึกเรียบร้อยแล้ว',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                console.error("Save card error:", err);
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลนามบัตรได้', 'error');
+            }
+        };
+
+        // Download Card as Image
+        window.downloadCardAsImage = function(side) {
+            const targetId = (side === 'FRONT') ? 'cardFrontSide' : 'cardBackSide';
+            const element = document.getElementById(targetId);
+            
+            html2canvas(element, { scale: 3 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `business_card_${side.toLowerCase()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        };
+
+        // Logout & Sidebar
+        window.handleLogout = function() {
+            signOut(auth).then(() => { window.location.href = 'index.html'; });
+        };
+
+        const SIDEBAR_COLLAPSED_KEY = 'mentra_sidebar_collapsed';
+
+        window.toggleSidebarCollapse = function() {
+            const sidebar = document.getElementById('sidebar');
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            localStorage.setItem(SIDEBAR_COLLAPSED_KEY, isCollapsed ? '1' : '0');
+        };
+
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('mobile-open');
+            if (overlay) overlay.classList.toggle('active');
+        };
+
+        window.closeSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.classList.remove('active');
+        };
+
+        (function restoreSidebarState() {
+            if (window.innerWidth <= 768) return;
+            const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+            if (saved === '1') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) sidebar.classList.add('collapsed');
+            }
+        })();
+
+        window.toggleSubmenu = function(id, btn) {
+            const submenu = document.getElementById(id);
+            const parent = btn.parentElement;
+            if (submenu) {
+                submenu.classList.toggle('open');
+                if (parent) parent.classList.toggle('open');
+            }
+        };
+
+        init();
+    </script>
+</body>
+</html>

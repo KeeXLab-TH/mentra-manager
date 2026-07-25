@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>บันทึกการฝึกงาน (Internship Journal) — Mentra Manager</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
+    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+
+    <style>
+        :root {
+            /* Brand Colors */
+            --primary: #1A6FBF;
+            --primary-dark: #145999;
+            --primary-darker: #0e4a85;
+            --primary-light: #e8f1fb;
+            --primary-glow: rgba(26, 111, 191, 0.18);
+
+            --secondary: #E07B2F;
+            --secondary-dark: #c4681f;
+            --secondary-light: #fdf0e6;
+            --secondary-glow: rgba(224, 123, 47, 0.18);
+
+            /* Semantic Colors */
+            --success: #10b981;
+            --success-light: #e6fcf5;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --info: #3b82f6;
+            --info-light: #eff6ff;
+
+            /* UI Colors */
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --bg: #f0f4f9;
+            --bg-card: #ffffff;
+            --white: #ffffff;
+
+            --sidebar-w: 260px;
+            --sidebar-w-collapsed: 72px;
+            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
+            --header-h: 68px;
+
+            /* Shadows */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 8px 24px rgba(26, 111, 191, 0.06);
+            --shadow-lg: 0 16px 36px rgba(26, 111, 191, 0.1);
+            --shadow-xl: 0 24px 48px rgba(26, 111, 191, 0.16);
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-xl: 24px;
+
+            --t-fast: 0.15s ease;
+            --t-normal: 0.25s ease;
+            --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        button, input, select, textarea {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        body {
+            font-family: 'Kanit', 'Inter', sans-serif;
+            font-size: 14.5px;
+            color: var(--text);
+            background-color: var(--bg);
+            min-height: 100vh;
+            display: none;
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: width var(--t-slow), transform var(--t-slow);
+            overflow: hidden;
+            will-change: width, transform;
+        }
+
+        /* Collapsed state (desktop) */
+        .sidebar.collapsed {
+            width: var(--sidebar-w-collapsed);
+        }
+
+        .sidebar.collapsed .sidebar-logo-text,
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .user-info,
+        .sidebar.collapsed .btn-logout-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .sidebar.collapsed .user-card {
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .btn-logout {
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .sidebar.collapsed .sidebar-logo {
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .sidebar.collapsed .collapse-btn svg {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-logo {
+            padding: 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: var(--header-h);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            background: white;
+            border-radius: 10px;
+            padding: 4px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-logo-text {
+            transition: opacity var(--t-normal), width var(--t-normal);
+            overflow: hidden;
+        }
+
+        .sidebar-logo-text .app-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .sidebar-logo-text .app-sub {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.50);
+            font-weight: 400;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        /* Collapse toggle button */
+        .collapse-btn {
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+            transition: background var(--t-fast), transform var(--t-normal);
+        }
+
+        .collapse-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .collapse-btn svg {
+            transition: transform var(--t-slow);
+            flex-shrink: 0;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .nav-section-title {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: rgba(255, 255, 255, 0.38);
+            padding: 8px 12px 4px;
+            margin-top: 10px;
+            white-space: nowrap;
+            transition: opacity var(--t-normal);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 13px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.70);
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: background var(--t-fast), color var(--t-fast);
+            margin-bottom: 2px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: 'Kanit', sans-serif;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.10);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.16);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Active accent indicator bar */
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 3px;
+            background: var(--secondary);
+            border-radius: 0 3px 3px 0;
+        }
+
+        .nav-item.active .nav-icon {
+            background: var(--secondary);
+            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.4);
+            color: white !important;
+        }
+
+        .nav-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+            transition: background var(--t-fast), box-shadow var(--t-fast);
+        }
+
+        .nav-label {
+            transition: opacity var(--t-normal);
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .nav-label {
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+        }
+
+        /* Submenu Styling */
+        .nav-item-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item-has-submenu {
+            justify-content: space-between;
+        }
+
+        .submenu-caret {
+            font-size: 0.75rem;
+            transition: transform var(--t-fast);
+        }
+
+        .nav-item-group.open .submenu-caret {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-submenu {
+            display: none;
+            flex-direction: column;
+            gap: 0.2rem;
+            padding-left: 2.75rem;
+            padding-top: 0.3rem;
+            padding-bottom: 0.3rem;
+        }
+
+        .sidebar-submenu.open {
+            display: flex;
+        }
+
+        .submenu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 0.8rem;
+            border-radius: var(--radius-sm);
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: all var(--t-fast);
+        }
+
+        .submenu-item:hover, .submenu-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .sidebar.collapsed .sidebar-submenu {
+            display: none !important;
+        }
+
+        /* ===== MAIN WRAPPER ===== */
+        .main-wrapper {
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left var(--t-slow);
+        }
+
+        .sidebar.collapsed + .main-wrapper {
+            margin-left: var(--sidebar-w-collapsed);
+        }
+
+        /* TOPBAR */
+        .topbar {
+            height: var(--header-h);
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .hamburger {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background var(--t-fast);
+        }
+
+        .hamburger:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .page-title-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .page-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+            border-radius: 30px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px rgba(26, 111, 191, 0.3);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+
+        .role-badge {
+            font-size: 0.68rem;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .role-badge.admin {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .role-badge.user {
+            background: #e0f2fe;
+            color: #0284c7;
+        }
+
+        .btn-logout {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.85rem;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all var(--t-fast);
+        }
+
+        .btn-logout:hover {
+            background: var(--danger-light);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* MAIN CONTENT CONTAINER */
+        .content-container {
+            padding: 2rem;
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ===== PROFILE HEADER CARD ===== */
+        .profile-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+
+        .profile-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .profile-title-group h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .lock-status-tag {
+            font-size: 0.78rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .lock-status-tag.own {
+            background: var(--success-light);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .lock-status-tag.readonly {
+            background: var(--warning-light);
+            color: var(--secondary-dark);
+            border: 1px solid rgba(224, 123, 47, 0.3);
+        }
+
+        /* Profile Form Grid */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text);
+            background-color: var(--bg);
+            transition: all var(--t-fast);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: var(--white);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .form-control:disabled {
+            background-color: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .profile-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        /* ===== USER SELECTOR & WORKSPACE SELECTOR ===== */
+        .journal-selector-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            background: var(--white);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .user-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .user-picker-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .user-select {
+            max-width: 320px;
+            background-color: var(--white);
+            font-weight: 600;
+        }
+
+        /* ===== BUTTON STYLES ===== */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px var(--primary-glow);
+            transition: all var(--t-fast);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all var(--t-fast);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg);
+            border-color: var(--text-muted);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px var(--secondary-glow);
+            transition: all var(--t-fast);
+        }
+
+        .btn-accent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--secondary-glow);
+        }
+
+        /* ===== DAILY LOG CARDS SECTION ===== */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .journal-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .log-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: all var(--t-normal);
+        }
+
+        .log-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .log-header {
+            padding: 1.25rem 1.75rem;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-date-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 1.05rem;
+        }
+
+        .log-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--t-fast);
+        }
+
+        .btn-icon:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-icon.danger:hover {
+            background: var(--danger-light);
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .log-body {
+            padding: 1.75rem;
+        }
+
+        .log-topic {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+        }
+
+        .log-text {
+            color: #334155;
+            line-height: 1.7;
+            white-space: pre-line;
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Image Gallery inside card */
+        .log-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 4/3;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform var(--t-slow);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        /* View Switcher Controls */
+        .view-switch-btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--text-secondary);
+            font-family: 'Kanit', sans-serif;
+            font-weight: 500;
+            font-size: 0.88rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all var(--t-fast);
+        }
+
+        .view-switch-btn.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Calendar Card Styling */
+        .calendar-card {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .calendar-month-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .calendar-day-head {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            padding: 0.5rem 0;
+        }
+
+        .calendar-cell {
+            min-height: 80px;
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid transparent;
+            transition: all var(--t-fast);
+            cursor: pointer;
+        }
+
+        .calendar-cell:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .calendar-cell.other-month {
+            opacity: 0.35;
+            background: #f8fafc;
+        }
+
+        .calendar-cell.today {
+            border-color: var(--secondary);
+            background: var(--secondary-light);
+        }
+
+        .cell-day-number {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .calendar-cell.today .cell-day-number {
+            color: var(--secondary-dark);
+        }
+
+        .cell-event-badge {
+            background: var(--primary);
+            color: white;
+            font-size: 0.72rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            border: 2px dashed var(--border);
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-light);
+        }
+
+        .empty-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* ===== MODAL STYLES ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--t-normal);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 650px;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform var(--t-normal);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.75rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg);
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-close-modal {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.35rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--t-fast);
+        }
+
+        .btn-close-modal:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 1.75rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .modal-footer {
+            padding: 1.25rem 1.75rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            background: var(--bg);
+        }
+
+        /* Image Upload Box */
+        .upload-area {
+            border: 2px dashed var(--primary);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+            background: var(--primary-light);
+            cursor: pointer;
+            transition: all var(--t-fast);
+        }
+
+        .upload-area:hover {
+            background: #dbeafe;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1/1;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn-remove-preview {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        /* Loading Spinner Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 5px solid var(--primary-light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            .main-wrapper {
+                margin-left: 0 !important;
+            }
+            .content-container {
+                padding: 1rem;
+            }
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            .journal-selector-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .user-select {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p style="font-weight: 600; color: var(--primary-dark);">กำลังโหลดข้อมูล...</p>
+    </div>
+
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <div class="sidebar-logo-text">
+                <div class="app-name">Mentra Manager</div>
+                <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
+            </div>
+            <!-- Desktop collapse toggle -->
+            <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">เมนูหลัก</div>
+            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard">
+                <div class="nav-icon">🏠</div>
+                <span class="nav-label">Dashboard</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=projects'" id="nav-projects">
+                <div class="nav-icon">📁</div>
+                <span class="nav-label">โครงการทั้งหมด</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='dashboard.html?view=items'" id="nav-items">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">ราคาทุน / สิ่งของ</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
+                <div class="nav-icon">📄</div>
+                <span class="nav-label">ใบเสนอราคา</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
+                <div class="nav-icon">🎓</div>
+                <span class="nav-label">ระบบตารางจัดอบรม</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='calendar.html'" id="nav-calendar">
+                <div class="nav-icon">📅</div>
+                <span class="nav-label">ปฏิทินตารางงาน</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='crm.html'" id="nav-crm">
+                <div class="nav-icon">📊</div>
+                <span class="nav-label">ระบบ CRM</span>
+            </button>
+            <div class="nav-item-group" id="nav-purchasing-group">
+                <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main">
+                    <div class="nav-icon">🛒</div>
+                    <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
+                    <i class="fa-solid fa-chevron-down submenu-caret"></i>
+                </button>
+                <div class="sidebar-submenu" id="purchasingSubmenu">
+                    <a href="materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
+                        <span class="submenu-icon">🏫</span>
+                        <span class="nav-label">สถานศึกษา</span>
+                    </a>
+                    <a href="materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
+                        <span class="submenu-icon">🏢</span>
+                        <span class="nav-label">บริษัทเอกชน</span>
+                    </a>
+                </div>
+            </div>
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+                <div class="nav-icon">📦</div>
+                <span class="nav-label">สินค้า</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                <div class="nav-icon">💻</div>
+                <span class="nav-label">ข้อมูลร้านสำหรับสั่งวัสดุ</span>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='internship_journal.html'" id="nav-internship">
+                <div class="nav-icon">📓</div>
+                <span class="nav-label">บันทึกการฝึกงาน</span>
+            </button>
+            <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
+                <div class="nav-icon">📷</div>
+                <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- ===== MAIN WRAPPER ===== -->
+    <div class="main-wrapper" id="mainWrapper">
+        
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="page-title-badge">
+                    <div class="page-icon">📓</div>
+                    <span>บันทึกการฝึกงาน (Internship Journal)</span>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="user-profile">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Loading...</span>
+                        <span class="role-badge user" id="userRoleBadge">User</span>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>ออกจากระบบ</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENT AREA -->
+        <main class="content-container">
+
+
+
+            <!-- PROFILE INFO CARD -->
+            <section class="profile-card">
+                <div class="profile-header-top">
+                    <div class="profile-title-group">
+                        <i class="fa-solid fa-id-card" style="font-size: 1.5rem; color: var(--primary);"></i>
+                        <h2>ข้อมูลผู้ฝึกงาน (Internship Profile)</h2>
+                    </div>
+                </div>
+
+                <form id="profileForm" onsubmit="saveProfileInfo(event)">
+                    <div class="profile-grid">
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-user"></i> ชื่อ</label>
+                            <input type="text" class="form-control" id="profFirstName" placeholder="ระบุชื่อ" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-user"></i> นามสกุล</label>
+                            <input type="text" class="form-control" id="profLastName" placeholder="ระบุนามสกุล" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-briefcase"></i> ตำแหน่ง</label>
+                            <input type="text" class="form-control" id="profPosition" placeholder="เช่น นักศึกษาฝึกงาน / Web Developer">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-sitemap"></i> แผนก / ฝ่าย</label>
+                            <input type="text" class="form-control" id="profDepartment" placeholder="เช่น ไอที / พัฒนาซอฟต์แวร์">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-building-columns"></i> วิทยาลัย / สถาบันการศึกษา</label>
+                            <input type="text" class="form-control" id="profCollege" placeholder="เช่น วิทยาลัยเทคนิค... / มหาวิทยาลัย...">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-calendar-range"></i> ระยะเวลาการฝึกงาน</label>
+                            <input type="text" class="form-control" id="profDuration" placeholder="เช่น 1 มิ.ย. 2026 - 31 ส.ค. 2026">
+                        </div>
+                    </div>
+
+                    <div class="profile-actions" id="profileActions">
+                        <button type="submit" class="btn-primary" id="btnSaveProfile">
+                            <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลส่วนตัว
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- DAILY LOG SECTION -->
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="fa-solid fa-book-open" style="color: var(--secondary);"></i>
+                    <span>บันทึกการฝึกงานรายวัน</span>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <div style="display: flex; gap: 0.3rem;">
+                        <button class="view-switch-btn active" id="btnFeedView" onclick="switchLogView('FEED')">
+                            <i class="fa-solid fa-list"></i> ฟีดรายการ
+                        </button>
+                        <button class="view-switch-btn" id="btnCalView" onclick="switchLogView('CALENDAR')">
+                            <i class="fa-solid fa-calendar-days"></i> มุมมองปฏิทิน
+                        </button>
+                    </div>
+                    <button class="btn-accent" id="btnAddLogBtn" onclick="openAddLogModal()">
+                        <i class="fa-solid fa-plus"></i> เพิ่มบันทึกประจำวัน
+                    </button>
+                </div>
+            </div>
+
+            <!-- CALENDAR VIEW CONTAINER -->
+            <div class="calendar-card" id="journalCalendarView" style="display: none;">
+                <div class="calendar-nav-bar">
+                    <button class="btn-icon" onclick="changeCalMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <div class="calendar-month-title" id="calMonthTitle">พฤษภาคม 2026</div>
+                    <button class="btn-icon" onclick="changeCalMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <div class="calendar-grid" id="calGrid">
+                    <!-- Dynamic Calendar Grid -->
+                </div>
+            </div>
+
+            <!-- FEED OF DAILY LOGS -->
+            <div class="journal-feed" id="journalFeed">
+                <!-- Log Cards will be rendered here -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ===== MODAL FOR ADDING / EDITING DAILY LOG ===== -->
+    <div class="modal-overlay" id="logModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title" id="logModalTitle">
+                    <i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i>
+                    <span>เพิ่มบันทึกการฝึกงานรายวัน</span>
+                </div>
+                <button class="btn-close-modal" onclick="closeLogModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form id="logForm" onsubmit="handleSaveLog(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="logId">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-calendar-day"></i> วันที่ฝึกงาน</label>
+                        <input type="date" class="form-control" id="logDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-heading"></i> หัวข้อ / งานที่ได้รับมอบหมาย</label>
+                        <input type="text" class="form-control" id="logTopic" list="topicSuggestions" placeholder="เช่น พัฒนาหน้าจอ UI บันทึกการฝึกงาน" autocomplete="off" required>
+                        <datalist id="topicSuggestions">
+                            <!-- Populated dynamically from previous topics -->
+                        </datalist>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-align-left"></i> รายละเอียดการทำงานประจำวัน</label>
+                        <textarea class="form-control" id="logDetail" rows="5" placeholder="อธิบายรายละเอียดการทำงาน ปัญหาที่พบ หรือสิ่งที่เรียนรู้ในวันนี้..." required></textarea>
+                    </div>
+
+                    <!-- IMAGE UPLOAD CONTAINER -->
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-image"></i> แนบรูปภาพประกอบ (สามารถแนบได้หลายรูป)</label>
+                        <div class="upload-area" onclick="document.getElementById('logImagesInput').click()">
+                            <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                            <p style="font-weight: 600; color: var(--primary-dark);">คลิกที่นี่เพื่อเลือกรูปภาพ</p>
+                            <p style="font-size: 0.78rem; color: var(--text-muted);">รองรับไฟล์ JPG, PNG, WEBP</p>
+                        </div>
+                        <input type="file" id="logImagesInput" multiple accept="image/*" style="display: none;" onchange="handleImageSelection(event)">
+                        
+                        <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeLogModal()">ยกเลิก</button>
+                    <button type="submit" class="btn-primary" id="btnSaveLogSubmit">
+                        <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FIREBASE AND CORE APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { 
+            initializeFirestore, collection, addDoc, getDoc, getDocs, doc, setDoc, updateDoc, 
+            deleteDoc, orderBy, query, persistentLocalCache, persistentMultipleTabManager 
+        } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        let app, auth, db;
+        let currentUser = null;
+        let selectedOwnerId = null;
+        let isOwner = false;
+        let activeLogImages = []; // Stores Base64 string of images for current editing log
+
+        // Initial setup
+        async function init() {
+            try {
+                const cfg = await import('./assets/js/firebase-config.js');
+                const FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
+                app = initializeApp(FIREBASE_CONFIG);
+                auth = getAuth(app);
+                db = initializeFirestore(app, {
+                    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+                });
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (!user) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    currentUser = user;
+                    selectedOwnerId = user.uid;
+
+                    // Setup Header User Badge
+                    const userSnap = await getDoc(doc(db, 'users', user.uid));
+                    let uData = userSnap.exists() ? userSnap.data() : {};
+                    const displayName = uData.displayName || uData.firstName || user.displayName || user.email;
+                    document.getElementById("userAvatar").textContent = displayName.charAt(0).toUpperCase();
+                    document.getElementById("userName").textContent = displayName;
+                    
+                    const role = uData.role || 'user';
+                    const badge = document.getElementById('userRoleBadge');
+                    if (badge) {
+                        badge.textContent = role === 'admin' ? 'Admin' : 'User';
+                        badge.className = `role-badge ${role}`;
+                    }
+
+                    if (window.checkPageAccess && !window.checkPageAccess(uData)) return;
+
+                    // Load User List for Dropdown
+                    await loadUsersList();
+                    // Load Profile and Daily Logs for selected owner
+                    await loadJournalData(selectedOwnerId);
+
+                    document.body.style.display = 'block';
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                });
+            } catch (err) {
+                console.error("Init Error:", err);
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
+            }
+        }
+
+        // Load all registered users for user selector
+        async function loadUsersList() {
+            try {
+                const select = document.getElementById('journalUserSelect');
+                select.innerHTML = '';
+
+                const usersSnap = await getDocs(collection(db, 'users'));
+                usersSnap.forEach(docSnap => {
+                    const u = docSnap.data();
+                    const name = u.displayName || (u.firstName ? `${u.firstName} ${u.lastName || ''}` : u.email);
+                    const option = document.createElement('option');
+                    option.value = docSnap.id;
+                    option.textContent = name + (docSnap.id === currentUser.uid ? ' (ฉัน)' : '');
+                    if (docSnap.id === selectedOwnerId) option.selected = true;
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.warn("Error loading users dropdown", e);
+            }
+        }
+
+        // Switch viewed journal owner
+        window.switchJournalOwner = async function(targetUserId) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            selectedOwnerId = targetUserId;
+            await loadJournalData(selectedOwnerId);
+            document.getElementById('loadingOverlay').style.display = 'none';
+        };
+
+        // Load Profile and Logs for selected user
+        async function loadJournalData(userId) {
+            isOwner = (userId === currentUser.uid);
+
+            // Update Permission Indicator & Button states
+            const accessTag = document.getElementById('accessNotice');
+            const addLogBtn = document.getElementById('btnAddLogBtn');
+            const profileActions = document.getElementById('profileActions');
+            const profileInputs = document.querySelectorAll('#profileForm input');
+
+            if (isOwner) {
+                if (accessTag) {
+                    accessTag.className = 'lock-status-tag own';
+                    accessTag.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> สมุดบันทึกของคุณ (สามารถเพิ่ม/แก้ไขได้)';
+                }
+                addLogBtn.style.display = 'inline-flex';
+                profileActions.style.display = 'flex';
+                profileInputs.forEach(i => i.disabled = false);
+            } else {
+                if (accessTag) {
+                    accessTag.className = 'lock-status-tag readonly';
+                    accessTag.innerHTML = '<i class="fa-solid fa-lock"></i> อ่านอย่างเดียว (ไม่สามารถแก้ไขของคนอื่นได้)';
+                }
+                addLogBtn.style.display = 'none';
+                profileActions.style.display = 'none';
+                profileInputs.forEach(i => i.disabled = true);
+            }
+
+            // 1. Fetch Profile
+            try {
+                const profRef = doc(db, 'internship_profiles', userId);
+                const profSnap = await getDoc(profRef);
+                if (profSnap.exists()) {
+                    const p = profSnap.data();
+                    document.getElementById('profFirstName').value = p.firstName || '';
+                    document.getElementById('profLastName').value = p.lastName || '';
+                    document.getElementById('profPosition').value = p.position || '';
+                    document.getElementById('profDepartment').value = p.department || '';
+                    document.getElementById('profCollege').value = p.college || '';
+                    document.getElementById('profDuration').value = p.duration || '';
+                } else {
+                    // Reset if no profile created yet
+                    document.getElementById('profileForm').reset();
+                }
+            } catch (err) {
+                console.error("Error loading profile:", err);
+            }
+
+            // 2. Fetch Daily Logs
+            await renderDailyLogs(userId);
+        }
+
+        let currentActiveView = 'FEED'; // 'FEED' or 'CALENDAR'
+        let calCurrentDate = new Date();
+        let loadedLogsMap = {}; // Maps YYYY-MM-DD to log array
+
+        window.switchLogView = function(view) {
+            currentActiveView = view;
+            const btnFeed = document.getElementById('btnFeedView');
+            const btnCal = document.getElementById('btnCalView');
+            const feedView = document.getElementById('journalFeed');
+            const calView = document.getElementById('journalCalendarView');
+
+            if (view === 'CALENDAR') {
+                btnFeed.classList.remove('active');
+                btnCal.classList.add('active');
+                feedView.style.display = 'none';
+                calView.style.display = 'block';
+                renderCalendarGrid();
+            } else {
+                btnCal.classList.remove('active');
+                btnFeed.classList.add('active');
+                calView.style.display = 'none';
+                feedView.style.display = 'flex';
+            }
+        };
+
+        window.changeCalMonth = function(delta) {
+            calCurrentDate.setMonth(calCurrentDate.getMonth() + delta);
+            renderCalendarGrid();
+        };
+
+        function renderCalendarGrid() {
+            const year = calCurrentDate.getFullYear();
+            const month = calCurrentDate.getMonth();
+
+            const monthNames = [
+                "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+                "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+            ];
+            document.getElementById('calMonthTitle').textContent = `${monthNames[month]} ${year + 543}`;
+
+            const grid = document.getElementById('calGrid');
+            grid.innerHTML = '';
+
+            const dayHeads = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
+            dayHeads.forEach(d => {
+                const head = document.createElement('div');
+                head.className = 'calendar-day-head';
+                head.textContent = d;
+                grid.appendChild(head);
+            });
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDaysMonth = new Date(year, month + 1, 0).getDate();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // Render Previous Month Padding Days
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const dayNum = prevMonthDays - i;
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell other-month';
+                cell.innerHTML = `<span class="cell-day-number">${dayNum}</span>`;
+                grid.appendChild(cell);
+            }
+
+            // Render Current Month Days
+            for (let d = 1; d <= totalDaysMonth; d++) {
+                const cell = document.createElement('div');
+                const mStr = String(month + 1).padStart(2, '0');
+                const dStr = String(d).padStart(2, '0');
+                const dateKey = `${year}-${mStr}-${dStr}`;
+
+                let cellClass = 'calendar-cell';
+                if (dateKey === todayStr) cellClass += ' today';
+                cell.className = cellClass;
+
+                let logsForDate = loadedLogsMap[dateKey] || [];
+                let badgesHtml = '';
+                logsForDate.forEach(l => {
+                    badgesHtml += `<div class="cell-event-badge"><i class="fa-solid fa-pencil"></i> ${escapeHtml(l.topic)}</div>`;
+                });
+
+                cell.innerHTML = `
+                    <span class="cell-day-number">${d}</span>
+                    <div style="display:flex; flex-direction:column; gap:2px;">${badgesHtml}</div>
+                `;
+
+                cell.onclick = () => {
+                    if (logsForDate.length > 0) {
+                        switchLogView('FEED');
+                    } else if (isOwner) {
+                        openAddLogModal();
+                        document.getElementById('logDate').value = dateKey;
+                    }
+                };
+
+                grid.appendChild(cell);
+            }
+        }
+
+        // Render Logs Feed
+        async function renderDailyLogs(userId) {
+            const feedContainer = document.getElementById('journalFeed');
+            feedContainer.innerHTML = '';
+            loadedLogsMap = {};
+
+            try {
+                const logsRef = collection(db, 'internship_profiles', userId, 'daily_logs');
+                const q = query(logsRef, orderBy('date', 'desc'));
+                const querySnap = await getDocs(q);
+
+                if (querySnap.empty) {
+                    feedContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon"><i class="fa-solid fa-book"></i></div>
+                            <div class="empty-title">ยังไม่มีรายการบันทึกการฝึกงาน</div>
+                            <p>${isOwner ? 'กดปุ่ม "เพิ่มบันทึกประจำวัน" ด้านบนเพื่อเริ่มลงบันทึกงานของคุณ' : 'เจ้าของสมุดบันทึกนี้ยังไม่ได้ลงข้อมูล'}</p>
+                        </div>
+                    `;
+                    renderCalendarGrid();
+                    return;
+                }
+
+                const uniqueTopics = new Set();
+                querySnap.forEach(docSnap => {
+                    const log = docSnap.data();
+                    if (log.topic) uniqueTopics.add(log.topic.trim());
+
+                    const logId = docSnap.id;
+
+                    if (log.date) {
+                        if (!loadedLogsMap[log.date]) loadedLogsMap[log.date] = [];
+                        loadedLogsMap[log.date].push(log);
+                    }
+
+                    const dateObj = new Date(log.date);
+                    const formattedDate = isNaN(dateObj.getTime()) ? log.date : dateObj.toLocaleDateString('th-TH', {
+                        year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+                    });
+
+                    // Build Images HTML
+                    let imagesHtml = '';
+                    if (log.images && log.images.length > 0) {
+                        imagesHtml = `<div class="log-gallery">`;
+                        log.images.forEach(imgUrl => {
+                            imagesHtml += `
+                                <div class="gallery-item" onclick="viewFullImage('${imgUrl}')">
+                                    <img src="${imgUrl}" alt="รูปประกอบการฝึกงาน" loading="lazy">
+                                </div>
+                            `;
+                        });
+                        imagesHtml += `</div>`;
+                    }
+
+                    // Action buttons (Only if owner)
+                    let actionsHtml = '';
+                    if (isOwner) {
+                        actionsHtml = `
+                            <div class="log-actions">
+                                <button class="btn-icon" onclick="openEditLogModal('${logId}')" title="แก้ไข">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button class="btn-icon danger" onclick="deleteLog('${logId}')" title="ลบ">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'log-card';
+                    card.innerHTML = `
+                        <div class="log-header">
+                            <div class="log-date-badge">
+                                <i class="fa-solid fa-calendar-check"></i>
+                                <span>${formattedDate}</span>
+                            </div>
+                            ${actionsHtml}
+                        </div>
+                        <div class="log-body">
+                            <div class="log-topic">${escapeHtml(log.topic)}</div>
+                            <div class="log-text">${escapeHtml(log.detail)}</div>
+                            ${imagesHtml}
+                        </div>
+                    `;
+                    feedContainer.appendChild(card);
+                });
+
+                // Populate topic suggestions datalist
+                const datalist = document.getElementById('topicSuggestions');
+                if (datalist) {
+                    datalist.innerHTML = '';
+                    uniqueTopics.forEach(top => {
+                        const opt = document.createElement('option');
+                        opt.value = top;
+                        datalist.appendChild(opt);
+                    });
+                }
+
+                renderCalendarGrid();
+            } catch (err) {
+                console.error("Error rendering logs:", err);
+                feedContainer.innerHTML = `<div class="empty-state"><p style="color: var(--danger);">เกิดข้อผิดพลาดในการโหลดบันทึกประจำวัน</p></div>`;
+            }
+        }
+
+        // Save Profile Information
+        window.saveProfileInfo = async function(event) {
+            event.preventDefault();
+            if (!isOwner) return;
+
+            const profileData = {
+                firstName: document.getElementById('profFirstName').value.trim(),
+                lastName: document.getElementById('profLastName').value.trim(),
+                position: document.getElementById('profPosition').value.trim(),
+                department: document.getElementById('profDepartment').value.trim(),
+                college: document.getElementById('profCollege').value.trim(),
+                duration: document.getElementById('profDuration').value.trim(),
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                await setDoc(doc(db, 'internship_profiles', currentUser.uid), profileData, { merge: true });
+                document.getElementById('loadingOverlay').style.display = 'none';
+                Swal.fire({
+                    title: 'บันทึกสำเร็จ!',
+                    text: 'บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                console.error("Save profile error:", err);
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลส่วนตัวได้', 'error');
+            }
+        };
+
+        // Modal Controls for Log
+        window.openAddLogModal = function() {
+            if (!isOwner) return;
+            document.getElementById('logForm').reset();
+            document.getElementById('logId').value = '';
+            document.getElementById('logModalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> <span>เพิ่มบันทึกการฝึกงานรายวัน</span>';
+            // Default date to today
+            document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
+            activeLogImages = [];
+            renderImagePreviews();
+            document.getElementById('logModal').classList.add('active');
+        };
+
+        window.openEditLogModal = async function(logId) {
+            if (!isOwner) return;
+            try {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                const docSnap = await getDoc(doc(db, 'internship_profiles', currentUser.uid, 'daily_logs', logId));
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('logId').value = logId;
+                    document.getElementById('logDate').value = data.date || '';
+                    document.getElementById('logTopic').value = data.topic || '';
+                    document.getElementById('logDetail').value = data.detail || '';
+                    activeLogImages = data.images || [];
+                    renderImagePreviews();
+
+                    document.getElementById('logModalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> <span>แก้ไขบันทึกการฝึกงาน</span>';
+                    document.getElementById('logModal').classList.add('active');
+                }
+            } catch (e) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลบันทึกนี้ได้', 'error');
+            }
+        };
+
+        window.closeLogModal = function() {
+            document.getElementById('logModal').classList.remove('active');
+        };
+
+        // Handle Image Selection and Convert to Base64
+        window.handleImageSelection = function(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    activeLogImages.push(e.target.result);
+                    renderImagePreviews();
+                };
+                reader.readAsDataURL(file);
+            });
+            event.target.value = ''; // Reset input
+        };
+
+        window.removeImagePreview = function(index) {
+            activeLogImages.splice(index, 1);
+            renderImagePreviews();
+        };
+
+        function renderImagePreviews() {
+            const grid = document.getElementById('imagePreviewGrid');
+            grid.innerHTML = '';
+            activeLogImages.forEach((imgSrc, idx) => {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                div.innerHTML = `
+                    <img src="${imgSrc}">
+                    <button type="button" class="btn-remove-preview" onclick="removeImagePreview(${idx})">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        // Save / Update Daily Log
+        window.handleSaveLog = async function(event) {
+            event.preventDefault();
+            if (!isOwner) return;
+
+            const logId = document.getElementById('logId').value;
+            const logData = {
+                date: document.getElementById('logDate').value,
+                topic: document.getElementById('logTopic').value.trim(),
+                detail: document.getElementById('logDetail').value.trim(),
+                images: activeLogImages,
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                const colRef = collection(db, 'internship_profiles', currentUser.uid, 'daily_logs');
+
+                if (logId) {
+                    await updateDoc(doc(colRef, logId), logData);
+                } else {
+                    logData.createdAt = new Date().toISOString();
+                    await addDoc(colRef, logData);
+                }
+
+                document.getElementById('loadingOverlay').style.display = 'none';
+                closeLogModal();
+                Swal.fire({
+                    title: 'บันทึกสำเร็จ!',
+                    text: 'บันทึกข้อมูลการฝึกงานเรียบร้อยแล้ว',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                await renderDailyLogs(currentUser.uid);
+            } catch (err) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                console.error("Save log error:", err);
+                Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+            }
+        };
+
+        // Delete Daily Log
+        window.deleteLog = async function(logId) {
+            if (!isOwner) return;
+            const confirm = await Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: 'คุณต้องการลบบันทึกการฝึกงานนี้ใช่หรือไม่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'ใช่, ลบเลย',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (confirm.isConfirmed) {
+                try {
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    await deleteDoc(doc(db, 'internship_profiles', currentUser.uid, 'daily_logs', logId));
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    Swal.fire('ลบสำเร็จ', 'ลบบันทึกการฝึกงานแล้ว', 'success');
+                    await renderDailyLogs(currentUser.uid);
+                } catch (e) {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถลบบันทึกได้', 'error');
+                }
+            }
+        };
+
+        // View Full Image Modal
+        window.viewFullImage = function(url) {
+            Swal.fire({
+                imageUrl: url,
+                imageAlt: 'รูปภาพการฝึกงาน',
+                showCloseButton: true,
+                showConfirmButton: false,
+                width: 'auto'
+            });
+        };
+
+        // Logout
+        window.handleLogout = function() {
+            signOut(auth).then(() => {
+                window.location.href = 'index.html';
+            });
+        };
+
+        // Sidebar Controls (Matching other pages)
+        const SIDEBAR_COLLAPSED_KEY = 'mentra_sidebar_collapsed';
+
+        window.toggleSidebarCollapse = function() {
+            const sidebar = document.getElementById('sidebar');
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            localStorage.setItem(SIDEBAR_COLLAPSED_KEY, isCollapsed ? '1' : '0');
+        };
+
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('mobile-open');
+            if (overlay) overlay.classList.toggle('active');
+        };
+
+        window.closeSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('mobile-open');
+            if (overlay) overlay.classList.remove('active');
+        };
+
+        (function restoreSidebarState() {
+            if (window.innerWidth <= 768) return;
+            const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+            if (saved === '1') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) sidebar.classList.add('collapsed');
+            }
+        })();
+
+        window.toggleSubmenu = function(id, btn) {
+            const submenu = document.getElementById(id);
+            const parent = btn.parentElement;
+            if (submenu) {
+                submenu.classList.toggle('open');
+                if (parent) parent.classList.toggle('open');
+            }
+        };
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        init();
+    </script>
+    <script src="assets/js/app-ui.js"></script>
+</body>
+</html>

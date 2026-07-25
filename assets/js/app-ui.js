@@ -906,6 +906,14 @@ window.applySidebarPermissions = function(userData) {
             'certificate_template.html': [
                 '#nav-certificate', 'a[href*="certificate_template.html"]', 'button[onclick*="certificate_template.html"]',
                 '[data-page*="certificate_template.html"]'
+            ],
+            'internship_journal.html': [
+                '#nav-internship', 'a[href*="internship_journal.html"]', 'button[onclick*="internship_journal.html"]',
+                '[data-page*="internship_journal.html"]'
+            ],
+            'business_card.html': [
+                '#nav-business-card', 'a[href*="business_card.html"]', 'button[onclick*="business_card.html"]',
+                '[data-page*="business_card.html"]'
             ]
         };
 
