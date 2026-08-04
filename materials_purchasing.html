@@ -112,6 +112,28 @@
             background-color: #f8fafc; /* slate-50 */
         }
 
+        /* Row Highlight Styles */
+        .excel-table tr.row-highlight-green, .excel-table tr.row-highlight-green td {
+            background-color: #d1fae5 !important; /* emerald-100 */
+        }
+        .excel-table tr.row-highlight-green:hover, .excel-table tr.row-highlight-green:hover td {
+            background-color: #a7f3d0 !important; /* emerald-200 */
+        }
+
+        .excel-table tr.row-highlight-yellow, .excel-table tr.row-highlight-yellow td {
+            background-color: #fef08a !important; /* yellow-200 */
+        }
+        .excel-table tr.row-highlight-yellow:hover, .excel-table tr.row-highlight-yellow:hover td {
+            background-color: #fde047 !important; /* yellow-300 */
+        }
+
+        .excel-table tr.row-highlight-red, .excel-table tr.row-highlight-red td {
+            background-color: #ffe4e6 !important; /* rose-100 */
+        }
+        .excel-table tr.row-highlight-red:hover, .excel-table tr.row-highlight-red:hover td {
+            background-color: #fecdd3 !important; /* rose-200 */
+        }
+
         /* Column Resizer */
         .col-resizer {
             position: absolute;
@@ -3428,7 +3450,11 @@
                     sumTarget += (item.qty || 0) * (item.targetPrice || 0);
                     sumFound += (item.qty || 0) * (item.foundPrice || 0);
 
+                    const activeColor = this.getItemRowColor(item);
                     const tr = document.createElement('tr');
+                    if (activeColor) {
+                        tr.className = `row-highlight-${activeColor}`;
+                    }
                     
                     let displayNoStr = '';
                     let seqCellContent = '';
@@ -3442,6 +3468,31 @@
                     }
                     
                     let nameIndentClass = displayNoStr.includes('.') ? 'pl-8' : '';
+
+                    const isManual = Boolean(item.isManualColor);
+
+                    const colorMenuBtn = `
+                        <div class="relative inline-block text-left" id="color-menu-${item.id}">
+                            <button onclick="appData.toggleColorMenu(event, '${item.id}')" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center relative" title="${isManual ? 'กำหนดสีเอง' : 'ไฮไลท์สีอัตโนมัติตามการกรอก'}">
+                                <i class="fa-solid fa-highlighter text-xs ${activeColor === 'green' ? 'text-emerald-600 font-bold' : activeColor === 'yellow' ? 'text-amber-500 font-bold' : activeColor === 'red' ? 'text-red-500 font-bold' : ''}"></i>
+                                ${isManual ? '<span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-500 ring-1 ring-white" title="ปรับแต่งเอง"></span>' : ''}
+                            </button>
+                            <div id="color-popup-${item.id}" class="hidden absolute right-0 bottom-full mb-1 z-30 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 flex items-center gap-1.5">
+                                <button onclick="appData.setRowColor(event, '${item.id}', 'green')" class="w-6 h-6 rounded-full bg-emerald-400 hover:bg-emerald-500 border border-emerald-500 flex items-center justify-center text-white text-[10px] shadow-sm transition-transform hover:scale-110" title="สีเขียว (กำหนดเอง)">
+                                    ${activeColor === 'green' && isManual ? '<i class="fa-solid fa-check"></i>' : ''}
+                                </button>
+                                <button onclick="appData.setRowColor(event, '${item.id}', 'yellow')" class="w-6 h-6 rounded-full bg-amber-300 hover:bg-amber-400 border border-amber-400 flex items-center justify-center text-amber-900 text-[10px] shadow-sm transition-transform hover:scale-110" title="สีเหลือง (กำหนดเอง)">
+                                    ${activeColor === 'yellow' && isManual ? '<i class="fa-solid fa-check"></i>' : ''}
+                                </button>
+                                <button onclick="appData.setRowColor(event, '${item.id}', 'red')" class="w-6 h-6 rounded-full bg-rose-400 hover:bg-rose-500 border border-rose-500 flex items-center justify-center text-white text-[10px] shadow-sm transition-transform hover:scale-110" title="สีแดง (กำหนดเอง)">
+                                    ${activeColor === 'red' && isManual ? '<i class="fa-solid fa-check"></i>' : ''}
+                                </button>
+                                <button onclick="appData.setRowColor(event, '${item.id}', 'auto')" class="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 text-[10px] shadow-sm transition-transform hover:scale-110" title="อัตโนมัติ (ตามการกรอกข้อมูล)">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
 
                     if (item.isHeader) {
                         tr.innerHTML = `
@@ -3457,6 +3508,7 @@
                                     <button class="w-7 h-7 rounded bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing" title="ลากเพื่อจัดเรียง">
                                         <i class="fa-solid fa-grip-vertical text-xs"></i>
                                     </button>
+                                    ${colorMenuBtn}
                                     <button onclick="appData.deleteItem('${item.id}')" class="w-7 h-7 rounded bg-red-50 hover:bg-red-100 text-red-500 transition-colors flex items-center justify-center" title="ลบรายการ">
                                         <i class="fa-solid fa-trash-can text-xs"></i>
                                     </button>
@@ -3507,6 +3559,7 @@
                                     <button class="w-7 h-7 rounded bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing" title="ลากเพื่อจัดเรียง">
                                         <i class="fa-solid fa-grip-vertical text-xs"></i>
                                     </button>
+                                    ${colorMenuBtn}
                                     <button onclick="appData.duplicateItemRow('${item.id}')" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center" title="คัดลอกรายการ">
                                         <i class="fa-regular fa-copy text-xs"></i>
                                     </button>
@@ -3758,6 +3811,83 @@
                 this.syncCurrentProject();
                 this.renderExcelTable();
                 this.showToast('ล้างข้อมูลตารางแล้ว', 'success');
+            },
+
+            getItemRowColor(item) {
+                if (item.manualColor !== undefined && item.manualColor !== null) {
+                    return item.manualColor === 'none' ? '' : item.manualColor;
+                }
+                if (item.rowColor && item.isManualColor) {
+                    return item.rowColor;
+                }
+
+                // Auto-detect based on fields completion
+                if (item.isHeader) {
+                    return (item.name && item.name.trim() !== '') ? 'green' : '';
+                }
+
+                const name = (item.name || '').trim();
+                const qty = Number(item.qty) || 0;
+                const unit = (item.unit || '').trim();
+                const unitPrice = Number(item.unitPrice) || 0;
+                const targetPrice = Number(item.targetPrice) || 0;
+                const foundPrice = Number(item.foundPrice) || 0;
+                const link = (item.link || '').trim();
+                const storeInfo = (item.storeInfo || '').trim();
+
+                // Check if row has any data at all
+                const hasAnyData = Boolean(name || qty > 0 || unit || unitPrice > 0 || targetPrice > 0 || foundPrice > 0 || link || storeInfo);
+                if (!hasAnyData) {
+                    return ''; // Completely empty / untouched row
+                }
+
+                const hasLinkOrStore = Boolean(link !== '' || storeInfo !== '');
+
+                // 🟢 GREEN Criteria: Complete item (name, qty > 0, unit, and price > 0)
+                if (name !== '' && qty > 0 && unit !== '' && unitPrice > 0) {
+                    return 'green';
+                }
+
+                // 🔴 RED Criteria: Item added (name, qty, unit) BUT no price AND no store link
+                if (name !== '' && qty > 0 && unit !== '' && unitPrice === 0 && !hasLinkOrStore) {
+                    return 'red';
+                }
+
+                // 🟡 YELLOW Criteria: Work-in-progress (e.g. Has store link/info but missing price, or partial fields)
+                return 'yellow';
+            },
+
+            setRowColor(event, itemId, color) {
+                if (event) event.stopPropagation();
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                const item = proj.items.find(i => i.id === itemId);
+                if (!item) return;
+
+                if (color === 'auto') {
+                    delete item.manualColor;
+                    delete item.rowColor;
+                    item.isManualColor = false;
+                } else {
+                    item.manualColor = color;
+                    item.rowColor = color;
+                    item.isManualColor = true;
+                }
+                this.syncCurrentProject();
+                this.renderExcelTable();
+            },
+
+            toggleColorMenu(event, itemId) {
+                if (event) event.stopPropagation();
+                const popup = document.getElementById(`color-popup-${itemId}`);
+                const isHidden = popup ? popup.classList.contains('hidden') : true;
+                
+                // Hide all color popups
+                document.querySelectorAll('[id^="color-popup-"]').forEach(el => el.classList.add('hidden'));
+                
+                if (isHidden && popup) {
+                    popup.classList.remove('hidden');
+                }
             },
 
             importExcel(event) {
@@ -4167,6 +4297,9 @@
                 const container = document.getElementById('shop-dropdown-container');
                 if (container && !container.contains(e.target) && window.appData) {
                     appData.hideShopDropdown();
+                }
+                if (!e.target.closest('[id^="color-menu-"]')) {
+                    document.querySelectorAll('[id^="color-popup-"]').forEach(el => el.classList.add('hidden'));
                 }
             });
         });
