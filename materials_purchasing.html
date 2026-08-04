@@ -512,6 +512,10 @@
             transition: margin-left var(--t-slow);
         }
 
+        body.no-sidebar .main-wrapper {
+            margin-left: 0 !important;
+        }
+
         .topbar {
             height: var(--header-h);
             background: #ffffff;
@@ -798,6 +802,15 @@
 
             <!-- VIEW 2: EXCEL-STYLE TABLE (PROJECT DETAILS) -->
             <div id="view-project-details" class="hidden space-y-6">
+                <!-- Read-Only Banner -->
+                <div id="read-only-banner" class="hidden bg-gradient-to-r from-amber-500 to-amber-600 text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-md flex items-center justify-between gap-3 transition-all">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-eye text-lg"></i>
+                        <span>โหมดดูได้อย่างเดียว (Read-Only) — ไม่สามารถแก้ไขข้อมูลในโครงการนี้ได้</span>
+                    </div>
+                    <span class="text-xs bg-amber-700/60 px-3 py-1 rounded-lg border border-amber-400/30">View Mode</span>
+                </div>
+
                 <!-- Back & Header -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <div class="flex items-start gap-4">
@@ -820,19 +833,23 @@
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                        <button onclick="appData.openShareModal()" class="h-10 px-3.5 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="แชร์ลิงก์โครงการ">
+                            <i class="fa-solid fa-share-nodes"></i>
+                            <span>แชร์ลิงก์</span>
+                        </button>
                         <button onclick="appData.openQuotationForProject()" class="h-10 px-4 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ออกใบเสนอราคาสำหรับโครงการนี้">
                             <i class="fa-solid fa-file-invoice-dollar"></i>
                             <span class="hidden sm:inline">ออกใบเสนอราคา</span>
                         </button>
-                        <button onclick="appData.openEditProjectModal()" class="w-10 h-10 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-100 hover:text-brand-700 transition-colors flex items-center justify-center shadow-sm" title="แก้ไขรายละเอียดโครงการ">
+                        <button id="btn-edit-project" onclick="appData.openEditProjectModal()" class="w-10 h-10 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-100 hover:text-brand-700 transition-colors flex items-center justify-center shadow-sm" title="แก้ไขรายละเอียดโครงการ">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
-                        <button onclick="appData.deleteProject()" class="w-10 h-10 rounded-lg border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors flex items-center justify-center shadow-sm" title="ลบโครงการ">
+                        <button id="btn-delete-project" onclick="appData.deleteProject()" class="w-10 h-10 rounded-lg border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors flex items-center justify-center shadow-sm" title="ลบโครงการ">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                         <!-- Status Dropdown -->
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2" id="project-status-container">
                             <span class="text-sm font-semibold text-slate-600">สถานะ:</span>
                             <select id="detail-project-status" onchange="appData.updateProjectStatus(this.value)" class="border-2 border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold outline-none focus:border-brand-500 transition-colors cursor-pointer bg-white">
                                 <option value="Processing">กำลังดำเนินงาน</option>
@@ -864,20 +881,20 @@
                             <button onclick="appData.resetColumnWidths()" class="bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="คืนค่าความกว้างคอลัมน์">
                                 <i class="fa-solid fa-arrows-left-right-to-line"></i> รีเซ็ตความกว้าง
                             </button>
-                            <button onclick="appData.confirmClearTable()" class="bg-white border-2 border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="ล้างข้อมูลทั้งหมด">
+                            <button id="btn-clear-table" onclick="appData.confirmClearTable()" class="bg-white border-2 border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="ล้างข้อมูลทั้งหมด">
                                 <i class="fa-solid fa-trash-can"></i> ล้างตาราง
                             </button>
                             <input type="file" id="excel-upload-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="appData.importExcel(event)">
-                            <button onclick="document.getElementById('excel-upload-input').click()" class="bg-emerald-50 border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="นำเข้าข้อมูลจากไฟล์ Excel">
+                            <button id="btn-import-excel" onclick="document.getElementById('excel-upload-input').click()" class="bg-emerald-50 border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="นำเข้าข้อมูลจากไฟล์ Excel">
                                 <i class="fa-solid fa-file-import"></i> นำเข้า Excel
                             </button>
                             <button onclick="appData.openExportModal()" class="bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="ส่งออกข้อมูลเป็นไฟล์ Excel">
                                 <i class="fa-solid fa-file-export"></i> ส่งออก Excel
                             </button>
-                            <button onclick="appData.addHeaderRow()" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm">
+                            <button id="btn-add-header" onclick="appData.addHeaderRow()" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm">
                                 <i class="fa-solid fa-heading"></i> เพิ่มหัวข้อ
                             </button>
-                            <button onclick="appData.addEmptyItemRow()" class="bg-brand-500 border-2 border-brand-500 text-white hover:bg-brand-600 hover:border-brand-600 px-4 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-2 text-sm">
+                            <button id="btn-add-item" onclick="appData.addEmptyItemRow()" class="bg-brand-500 border-2 border-brand-500 text-white hover:bg-brand-600 hover:border-brand-600 px-4 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-2 text-sm">
                                 <i class="fa-solid fa-plus"></i> เพิ่มรายการสินค้า
                             </button>
                         </div>
@@ -1434,6 +1451,58 @@
                 </div>
             </div>
 
+            <!-- ===== SHARE LINK MODAL ===== -->
+            <div id="share-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300 opacity-0">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="share-modal-content">
+                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-share-nodes text-purple-600"></i> แชร์ลิงก์โครงการ
+                        </h3>
+                        <button onclick="appData.closeShareModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-6 space-y-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">เลือกสิทธิ์การใช้งาน (Permissions)</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label onclick="appData.updateSharePermission('view')" id="share-perm-view-card" class="flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-purple-500 bg-purple-50/50">
+                                    <input type="radio" name="sharePerm" value="view" checked class="mt-1 text-purple-600 focus:ring-purple-500">
+                                    <div>
+                                        <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-eye text-purple-600"></i> ดูได้อย่างเดียว</div>
+                                        <div class="text-[11px] text-slate-500 mt-0.5 leading-tight">ผู้ได้รับลิงก์สามารถดูตารางได้ แต่ไม่สามารถแก้ไขข้อมูลได้</div>
+                                    </div>
+                                </label>
+                                <label onclick="appData.updateSharePermission('edit')" id="share-perm-edit-card" class="flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-slate-200 hover:border-slate-300">
+                                    <input type="radio" name="sharePerm" value="edit" class="mt-1 text-purple-600 focus:ring-purple-500">
+                                    <div>
+                                        <div class="font-bold text-sm text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-pen-to-square text-emerald-600"></i> แก้ไขได้</div>
+                                        <div class="text-[11px] text-slate-500 mt-0.5 leading-tight">ผู้ได้รับลิงก์สามารถเปิดดูและแก้ไขตารางข้อมูลได้เต็มรูปแบบ</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">ลิงก์สำหรับแชร์</label>
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="share-url-input" readonly class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl p-3 font-mono outline-none select-all focus:border-purple-400" value="">
+                                <button onclick="appData.copyShareUrl()" class="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl text-sm transition-all flex items-center gap-2 shrink-0 shadow-sm hover:shadow">
+                                    <i class="fa-solid fa-copy"></i> คัดลอกลิงก์
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-5 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+                        <button onclick="appData.closeShareModal()" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors text-sm">
+                            ปิดหน้าต่าง
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -1449,6 +1518,84 @@
             currentInstitution: null,
             uploadingLogoFor: null,
             selectedLogoBase64: null,
+            sharePermission: 'view',
+            isReadOnly: false,
+            hasAutoOpenedSharedProject: false,
+
+            // Share Modal Logic
+            openShareModal() {
+                if (!this.currentProjectId) return;
+                const modal = document.getElementById('share-modal');
+                const content = document.getElementById('share-modal-content');
+                if (!modal || !content) return;
+                
+                this.updateSharePermission(this.sharePermission || 'view');
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }, 10);
+            },
+
+            closeShareModal() {
+                const modal = document.getElementById('share-modal');
+                const content = document.getElementById('share-modal-content');
+                if (!modal || !content) return;
+                
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }, 300);
+            },
+
+            updateSharePermission(perm) {
+                this.sharePermission = perm;
+                
+                const viewCard = document.getElementById('share-perm-view-card');
+                const editCard = document.getElementById('share-perm-edit-card');
+                const viewRadio = viewCard ? viewCard.querySelector('input') : null;
+                const editRadio = editCard ? editCard.querySelector('input') : null;
+                
+                if (perm === 'view') {
+                    if (viewRadio) viewRadio.checked = true;
+                    if (viewCard) viewCard.className = "flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-purple-500 bg-purple-50/50";
+                    if (editCard) editCard.className = "flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-slate-200 hover:border-slate-300";
+                } else {
+                    if (editRadio) editRadio.checked = true;
+                    if (editCard) editCard.className = "flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-purple-500 bg-purple-50/50";
+                    if (viewCard) viewCard.className = "flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-slate-200 hover:border-slate-300";
+                }
+                
+                const baseUrl = window.location.origin + window.location.pathname;
+                const shareUrl = `${baseUrl}?projectId=${encodeURIComponent(this.currentProjectId)}&mode=${perm}`;
+                const input = document.getElementById('share-url-input');
+                if (input) input.value = shareUrl;
+            },
+
+            copyShareUrl() {
+                const input = document.getElementById('share-url-input');
+                if (!input || !input.value) return;
+                
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(input.value).then(() => {
+                        this.showToast('คัดลอกลิงก์แชร์เรียบร้อยแล้ว!', 'success');
+                    }).catch(() => {
+                        input.select();
+                        document.execCommand('copy');
+                        this.showToast('คัดลอกลิงก์แชร์เรียบร้อยแล้ว!', 'success');
+                    });
+                } else {
+                    input.select();
+                    document.execCommand('copy');
+                    this.showToast('คัดลอกลิงก์แชร์เรียบร้อยแล้ว!', 'success');
+                }
+            },
 
             // Helpers for formatting
             formatCurrency(num) {
@@ -2288,6 +2435,41 @@
 
                 const proj = this.projects.find(p => p.id === projectId);
                 if (!proj) return;
+
+                // Handle Read-Only UI controls
+                const sidebar = document.getElementById('sidebar');
+                const banner = document.getElementById('read-only-banner');
+                const btnEdit = document.getElementById('btn-edit-project');
+                const btnDelete = document.getElementById('btn-delete-project');
+                const statusContainer = document.getElementById('project-status-container');
+                const btnClear = document.getElementById('btn-clear-table');
+                const btnImport = document.getElementById('btn-import-excel');
+                const btnAddHeader = document.getElementById('btn-add-header');
+                const btnAddItem = document.getElementById('btn-add-item');
+
+                if (this.isReadOnly) {
+                    document.body.classList.add('no-sidebar');
+                    if (sidebar) sidebar.style.display = 'none';
+                    if (banner) banner.classList.remove('hidden');
+                    if (btnEdit) btnEdit.classList.add('hidden');
+                    if (btnDelete) btnDelete.classList.add('hidden');
+                    if (statusContainer) statusContainer.classList.add('hidden');
+                    if (btnClear) btnClear.classList.add('hidden');
+                    if (btnImport) btnImport.classList.add('hidden');
+                    if (btnAddHeader) btnAddHeader.classList.add('hidden');
+                    if (btnAddItem) btnAddItem.classList.add('hidden');
+                } else {
+                    document.body.classList.remove('no-sidebar');
+                    if (sidebar) sidebar.style.display = '';
+                    if (banner) banner.classList.add('hidden');
+                    if (btnEdit) btnEdit.classList.remove('hidden');
+                    if (btnDelete) btnDelete.classList.remove('hidden');
+                    if (statusContainer) statusContainer.classList.remove('hidden');
+                    if (btnClear) btnClear.classList.remove('hidden');
+                    if (btnImport) btnImport.classList.remove('hidden');
+                    if (btnAddHeader) btnAddHeader.classList.remove('hidden');
+                    if (btnAddItem) btnAddItem.classList.remove('hidden');
+                }
 
                 this.updateProjectDetailsUI(proj);
                 this.renderExcelTable();
@@ -3573,6 +3755,16 @@
                     tbody.appendChild(tr);
                 });
 
+                if (this.isReadOnly) {
+                    tbody.querySelectorAll('input').forEach(inp => {
+                        inp.disabled = true;
+                        inp.classList.add('cursor-not-allowed');
+                    });
+                    tbody.querySelectorAll('.drag-handle, [id^="color-menu-"], button[onclick*="deleteItem"], button[onclick*="duplicateItemRow"]').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+
                 if(proj.items.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-slate-500 font-medium">ยังไม่มีรายการสิ่งของ กด "เพิ่มรายการสินค้า" หรือ "เพิ่มหัวข้อ" เพื่อเริ่มต้น</td></tr>`;
                 }
@@ -3695,6 +3887,10 @@
             },
 
             addEmptyItemRow() {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
                 
@@ -3717,6 +3913,10 @@
             },
 
             addHeaderRow() {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
                 
@@ -3739,6 +3939,10 @@
             },
 
             updateItem(itemId, field, value) {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
                 
@@ -3769,6 +3973,10 @@
             },
 
             deleteItem(itemId) {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 this.openConfirmModal('ยืนยันการลบ', 'ยืนยันการลบสินค้ารายการนี้ออกจากตารางหรือไม่?', () => {
                     const proj = this.projects.find(p => p.id === this.currentProjectId);
                     if (!proj) return;
@@ -3781,6 +3989,10 @@
             },
 
             duplicateItemRow(itemId) {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
                 
@@ -3798,6 +4010,10 @@
             },
 
             confirmClearTable() {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 this.openConfirmModal('ยืนยันล้างตาราง', 'ข้อมูลรายการสินค้าทั้งหมดจะถูกลบและไม่สามารถกู้คืนได้ คุณต้องการดำเนินการต่อหรือไม่?', () => {
                     this.clearAllItems();
                 });
@@ -4353,38 +4569,76 @@
         const db = getFirestore(app);
 
         onAuthStateChanged(auth, async (user) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramProjId = urlParams.get('projectId');
+            const paramMode = urlParams.get('mode');
+            const isPublicView = Boolean(paramProjId && paramMode === 'view');
+
             if (!user) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            // Load user profile
-            try {
-                const snap = await getDoc(doc(db, 'users', user.uid));
-                if (!snap.exists()) {
-                    await signOut(auth);
-                    window.location.href = 'index.html?msg=deleted';
+                if (isPublicView) {
+                    // Allow unauthenticated guest access for Read-Only shared link
+                    appData.isReadOnly = true;
+                    document.body.style.setProperty('display', 'flex', 'important');
+                    
+                    document.body.classList.add('no-sidebar');
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar) sidebar.style.display = 'none';
+                    
+                    // Update Topbar UI for Guest
+                    const userNameEl = document.getElementById('userName');
+                    const userAvatarEl = document.getElementById('userAvatar');
+                    const userRoleBadge = document.getElementById('userRoleBadge');
+                    if (userNameEl) userNameEl.innerText = 'ผู้เข้าชมทั่วไป (Guest)';
+                    if (userAvatarEl) userAvatarEl.innerText = '👁️';
+                    if (userRoleBadge) {
+                        userRoleBadge.innerText = 'View Only';
+                        userRoleBadge.className = 'role-badge bg-amber-100 text-amber-800 border border-amber-200';
+                    }
+                    
+                    // Replace Logout button with Login button
+                    const logoutBtn = document.querySelector('.btn-logout');
+                    if (logoutBtn) {
+                        logoutBtn.onclick = () => window.location.href = 'index.html';
+                        logoutBtn.innerHTML = `
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                            <span class="btn-logout-text">เข้าสู่ระบบ</span>
+                        `;
+                    }
+                } else {
+                    window.location.href = 'index.html';
                     return;
                 }
-                const userData = snap.data();
-                if (userData.status === 'pending') {
-                    await signOut(auth);
-                    window.location.href = 'index.html?msg=pending';
-                    return;
-                } else if (userData.status === 'rejected') {
-                    await signOut(auth);
-                    window.location.href = 'index.html?msg=rejected';
-                    return;
+            } else {
+                // Load user profile if logged in
+                try {
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (!snap.exists()) {
+                        await signOut(auth);
+                        window.location.href = 'index.html?msg=deleted';
+                        return;
+                    }
+                    const userData = snap.data();
+                    if (userData.status === 'pending') {
+                        await signOut(auth);
+                        window.location.href = 'index.html?msg=pending';
+                        return;
+                    } else if (userData.status === 'rejected') {
+                        await signOut(auth);
+                        window.location.href = 'index.html?msg=rejected';
+                        return;
+                    }
+
+                    if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
+
+                    // Show body now that the user is fully verified
+                    document.body.style.setProperty('display', 'flex', 'important');
+                } catch (e) {
+                    console.warn('User load issue:', e);
                 }
-
-                if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
-
-                // Show body now that the user is fully verified
-                document.body.style.setProperty('display', 'flex', 'important');
-
-                // Update Auth UI logic here if any needed for this page
-            } catch (e) {
-                console.warn('User load issue:', e);
             }
 
             // Real-time Firestore sync
@@ -4394,11 +4648,30 @@
                     docs.push({ id: doc.id, ...doc.data() });
                 });
                 
-                // Sort by date or created descending if needed, for now just use docs
-                // Assuming newer IDs (proj_timestamp) have higher string values, we can reverse sort
+                // Sort by date or created descending
                 docs.sort((a, b) => b.id.localeCompare(a.id));
                 
                 appData.projects = docs;
+                
+                // Check if opened via Shared Link URL params
+                const urlParams = new URLSearchParams(window.location.search);
+                const paramProjId = urlParams.get('projectId');
+                const paramMode = urlParams.get('mode');
+                
+                if (paramMode === 'view') {
+                    appData.isReadOnly = true;
+                } else if (paramMode === 'edit') {
+                    appData.isReadOnly = false;
+                }
+                
+                if (paramProjId && !appData.hasAutoOpenedSharedProject) {
+                    const sharedProj = docs.find(p => p.id === paramProjId);
+                    if (sharedProj) {
+                        appData.hasAutoOpenedSharedProject = true;
+                        appData.showProjectDetails(paramProjId);
+                        return;
+                    }
+                }
                 
                 // Trigger view updates based on what is active
                 if (!document.getElementById('view-institutions').classList.contains('hidden')) {
