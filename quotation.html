@@ -2545,11 +2545,15 @@
                 const descPadding = isSubItem ? '24px' : '6px';
                 
                 const col1Content = isSubItem ? '' : displayNo;
+                // Insert zero-width spaces before Thai consonants/leading vowels to help html2canvas line-break correctly
+                // Does NOT break before combining chars: ำ ั ิ ี ึ ื ุ ู ่ ้ ๊ ๋ ์ etc.
+                const addThaiBreaks = (text) => text.replace(/([\u0E00-\u0E7F])([\u0E01-\u0E2E\u0E40-\u0E44])/g, '$1\u200B$2');
+                const formattedDesc = addThaiBreaks(desc || '-');
                 const descContent = isSubItem ? 
                     `<div style="display: flex; align-items: flex-start; gap: 6px;">
                         <span style="color: #374151; font-weight: 700; flex-shrink: 0;">${displayNo}</span>
-                        <span>${desc}</span>
-                    </div>` : desc;
+                        <span>${formattedDesc}</span>
+                    </div>` : formattedDesc;
                 
                 if (isHeader) {
                     currentTableHTML += `

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ใบเสร็จรับเงิน — Mentra Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
+    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Kanit', 'Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#e8f1fb', 100: '#cce1f5', 500: '#1A6FBF', 600: '#145999', 700: '#0e4a85', 900: '#0b3d6e' },
+                        accent: { 50: '#fdf0e6', 500: '#E07B2F', 600: '#c4681f' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .excel-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .excel-table th, .excel-table td { border: 1px solid #d1d5db; padding: 0; vertical-align: middle; }
+        .excel-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; padding: 10px 8px; text-align: center; white-space: nowrap; }
+        .col-total { background-color: #fef08a; font-weight: 600; text-align: right; }
+        body {
+            background-color: #f0f4f9;
+            font-family: 'Kanit', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        :root {
+            --sidebar-w: 260px;
+            --sidebar-w-collapsed: 72px;
+            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
+            --header-h: 68px;
+            --primary: #1A6FBF;
+            --primary-light: #e8f1fb;
+            --secondary: #E07B2F;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --t-fast: 0.15s ease;
+            --t-normal: 0.25s ease;
+            --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===== SIDEBAR & LOGO LAYOUT ===== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: width var(--t-slow), transform var(--t-slow);
+            overflow: hidden;
+        }
+        .sidebar.collapsed {
+            width: var(--sidebar-w-collapsed);
+        }
+        .sidebar.collapsed .sidebar-logo-text,
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .user-info,
+        .sidebar.collapsed .btn-logout-text,
+        .sidebar.collapsed .submenu-caret {
+            display: none !important;
+        }
+        .sidebar.collapsed .sidebar-logo {
+            justify-content: center;
+            padding-right: 0;
+        }
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+        }
+        .sidebar-logo {
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: var(--header-h);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .sidebar-logo img {
+            width: 40px !important;
+            height: 40px !important;
+            max-width: 40px !important;
+            max-height: 40px !important;
+            object-fit: contain;
+            background: white;
+            border-radius: 10px;
+            padding: 4px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .sidebar-logo-text .app-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+        .sidebar-logo-text .app-sub {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.50);
+            font-weight: 400;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+        .collapse-btn {
+            position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
+            width: 24px; height: 24px; background: white; border: none; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            color: var(--primary); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); z-index: 10;
+        }
+        .sidebar-nav {
+            flex: 1; padding: 12px 10px; overflow-y: auto; overflow-x: hidden;
+        }
+        .nav-section-title {
+            font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+            color: rgba(255, 255, 255, 0.38); padding: 8px 12px 4px; margin-top: 10px; white-space: nowrap;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px; padding: 11px 13px;
+            border-radius: var(--radius-md); cursor: pointer; color: rgba(255, 255, 255, 0.70);
+            font-size: 13.5px; font-weight: 500; transition: background 0.15s, color 0.15s;
+            margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left;
+            font-family: 'Kanit', sans-serif; position: relative; white-space: nowrap; text-decoration: none;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(255, 255, 255, 0.14); color: white; }
+        .nav-icon {
+            width: 32px; height: 32px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.10);
+            display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+        }
+        .sidebar-submenu { display: none; padding-left: 14px; margin-top: 2px; margin-bottom: 4px; flex-direction: column; gap: 2px; }
+        .sidebar-submenu.open { display: flex; }
+        .submenu-item {
+            display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+            color: rgba(255, 255, 255, 0.65); font-size: 13px; font-weight: 500; text-decoration: none;
+        }
+        .submenu-item:hover, .submenu-item.active { background: rgba(255, 255, 255, 0.14); color: white; }
+        .submenu-caret { margin-left: auto; font-size: 11px; transition: transform 0.2s; opacity: 0.7; }
+        .nav-item.open .submenu-caret { transform: rotate(180deg); }
+
+        /* ===== MAIN WRAPPER & TOPBAR ===== */
+        .main-wrapper {
+            flex: 1; margin-left: var(--sidebar-w); display: flex; flex-direction: column;
+            min-height: 100vh; min-width: 0; transition: margin-left var(--t-slow);
+        }
+        .sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-w-collapsed); }
+        .topbar {
+            height: var(--header-h); background: #ffffff; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; padding: 0 24px; justify-content: space-between;
+            flex-shrink: 0; z-index: 90; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+        .topbar-breadcrumb { display: flex; flex-direction: column; }
+        .breadcrumb-title { font-size: 16px; font-weight: 700; color: #1e293b; }
+        .breadcrumb-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+        .topbar-right-menu { display: flex; align-items: center; gap: 12px; }
+        .user-info-bar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--primary), #2563eb); display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; flex-shrink: 0; }
+        .user-details { display: flex; flex-direction: column; }
+        .user-name { font-size: 13px; font-weight: 600; color: #334155; line-height: 1.2; }
+        .role-badge { font-size: 10px; color: #64748b; }
+        .btn-logout { padding: 7px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #ef4444; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; font-family: 'Kanit', sans-serif; }
+        .btn-logout:hover { background: #ef4444; color: white; border-color: #ef4444; }
+        .content-area { flex: 1; padding: 24px; overflow-y: auto; background-color: #f0f4f9; }
+        .workflow-stepper { display: flex; align-items: center; justify-content: center; gap: 0; padding: 20px 16px; background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%); border-radius: 16px; border: 1px solid #e2e8f0; }
+        .workflow-step { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 0 0 auto; min-width: 140px; z-index: 2; cursor: pointer; transition: transform 0.2s; }
+        .workflow-step:hover { transform: translateY(-2px); }
+        .workflow-step.disabled { opacity: 0.5; cursor: not-allowed; }
+        .workflow-step.disabled:hover { transform: none; }
+        .step-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; border: 3px solid #cbd5e1; background: white; color: #94a3b8; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .workflow-step.active .step-circle { border-color: #3b82f6; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; box-shadow: 0 4px 16px rgba(59,130,246,0.35); animation: pulse-step 2s ease-in-out infinite; }
+        .workflow-step.completed .step-circle { border-color: #10b981; background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+        @keyframes pulse-step { 0%, 100% { box-shadow: 0 4px 16px rgba(59,130,246,0.35); } 50% { box-shadow: 0 4px 24px rgba(59,130,246,0.55); } }
+        .step-label { font-size: 12px; font-weight: 600; color: #94a3b8; text-align: center; line-height: 1.3; max-width: 130px; }
+        .workflow-step.active .step-label { color: #2563eb; }
+        .workflow-step.completed .step-label { color: #059669; }
+        .step-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: #f1f5f9; color: #94a3b8; }
+        .workflow-step.active .step-status { background: #dbeafe; color: #2563eb; }
+        .workflow-step.completed .step-status { background: #d1fae5; color: #059669; }
+        .step-connector { flex: 1; height: 3px; background: #e2e8f0; min-width: 40px; max-width: 120px; border-radius: 2px; z-index: 1; margin: 0 -8px; align-self: flex-start; margin-top: 23px; }
+        .step-connector.completed { background: linear-gradient(90deg, #10b981, #34d399); }
+        .activity-log-item { display: flex; gap: 12px; padding: 12px 16px; border-left: 3px solid #e2e8f0; margin-left: 8px; transition: all 0.2s; }
+        .activity-log-item:hover { background: #f8fafc; border-left-color: #3b82f6; }
+        .activity-log-item .log-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+        .activity-log-item .log-content { flex: 1; min-width: 0; }
+        .activity-log-item .log-action { font-weight: 600; font-size: 13px; color: #334155; }
+        .activity-log-item .log-time { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+        .activity-log-item .log-user { font-size: 11px; color: #64748b; margin-top: 1px; }
+        .receipt-field-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+        .receipt-field-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .receipt-field-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; outline: none; transition: border-color 0.2s; font-family: 'Kanit', sans-serif; }
+        .receipt-field-input:focus { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+        .completion-banner { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; border-radius: 16px; text-align: center; }
+        @media (max-width: 640px) {
+            .workflow-stepper { padding: 12px 8px; } .workflow-step { min-width: 80px; }
+            .step-circle { width: 36px; height: 36px; font-size: 14px; }
+            .step-label { font-size: 10px; max-width: 80px; } .step-connector { min-width: 20px; margin-top: 17px; }
+        }
+        @media (max-width: 768px) { body { padding-bottom: 70px !important; } }
+    </style>
+</head>
+
+<body class="text-slate-800 antialiased min-h-screen flex" style="display: none !important;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <div class="sidebar-logo-text"><div class="app-name">Mentra Manager</div><div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div></div>
+            <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6" /></svg></button>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">เมนูหลัก</div>
+            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard"><div class="nav-icon">🏠</div><span class="nav-label">Dashboard</span></button>
+            <button class="nav-item" onclick="window.location.href='sales_dashboard.html'" id="nav-sales-dashboard">
+                <div class="nav-icon">📑</div>
+                <span class="nav-label">ระบบเอกสารงานขาย</span>
+            </button>
+            <div class="nav-item-group" id="nav-purchasing-group">
+                <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main"><div class="nav-icon">🛒</div><span class="nav-label">จัดการจัดซื้อ / วัสดุ</span><i class="fa-solid fa-chevron-down submenu-caret"></i></button>
+                <div class="sidebar-submenu" id="purchasingSubmenu">
+                    <a href="materials_purchasing.html" class="submenu-item"><span class="submenu-icon">🏫</span><span class="nav-label">สถานศึกษา</span></a>
+                    <a href="materials_purchasing_company.html" class="submenu-item"><span class="submenu-icon">🏢</span><span class="nav-label">บริษัทเอกชน</span></a>
+                </div>
+            </div>
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products"><div class="nav-icon">📦</div><span class="nav-label">สินค้า</span></button>
+        </nav>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper flex-1 flex flex-col min-h-screen overflow-x-hidden">
+        <header class="topbar">
+            <div class="topbar-breadcrumb">
+                <span class="breadcrumb-title" id="pageTitle">ใบเสร็จรับเงิน</span>
+                <span class="breadcrumb-sub" id="pageSubtitle">ระบบออกเอกสารงานขาย — ขั้นตอนที่ 3</span>
+            </div>
+            <div class="topbar-actions" id="topbarActions"></div>
+            <div class="topbar-right-menu">
+                <div class="user-info-bar" id="userInfoBar"><div class="user-avatar" id="userAvatar">👤</div><div class="user-details"><span class="user-name" id="userName">ผู้ใช้งาน</span><span class="role-badge" id="userRoleBadge">User</span></div></div>
+                <button class="btn-logout" id="btnLogout" onclick="logoutUser()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg><span class="btn-logout-text">ออกจากระบบ</span></button>
+            </div>
+        </header>
+
+        <main class="content-area flex-1 p-5 md:p-8 space-y-6">
+            <!-- No Project -->
+            <div id="no-project-msg" class="text-center py-20">
+                <div class="w-24 h-24 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-teal-100"><i class="fa-solid fa-receipt text-4xl text-teal-500"></i></div>
+                <h2 class="text-2xl font-bold text-slate-700 mb-3">ไม่พบโครงการ</h2>
+                <p class="text-slate-500 mb-6">กรุณาเลือกโครงการจากหน้าจัดการวัสดุ</p>
+                <button onclick="window.location.href='materials_purchasing.html'" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> กลับหน้าจัดการวัสดุ</button>
+            </div>
+
+            <!-- RECEIPT VIEW -->
+            <div id="receipt-view" class="hidden space-y-6">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <button onclick="window.location.href='sales_invoice.html?projectId=' + encodeURIComponent(receiptApp.projectId)" class="w-10 h-10 shrink-0 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-brand-500 transition-colors mt-1"><i class="fa-solid fa-arrow-left"></i></button>
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800" id="rcp-project-name">ชื่อโครงการ</h2>
+                            <div class="flex flex-wrap items-center gap-3 mt-2 text-sm text-slate-600">
+                                <span class="bg-teal-100 px-2.5 py-1 rounded-md font-mono text-teal-700 font-semibold text-xs border border-teal-200" id="rcp-doc-number">RCP-XXXX</span>
+                                <span class="bg-slate-100 px-2.5 py-1 rounded-md font-mono text-slate-700 font-semibold text-xs border border-slate-200" id="rcp-project-code">รหัสงาน: ---</span>
+                                <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar text-slate-400"></i> <span id="rcp-project-date">---</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                        <button onclick="window.location.href='sales_invoice.html?projectId=' + encodeURIComponent(receiptApp.projectId)" class="h-10 px-4 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap"><i class="fa-solid fa-arrow-left"></i> กลับใบกำกับภาษี</button>
+                        <button id="btn-confirm-receipt" onclick="receiptApp.confirmReceipt()" class="h-10 px-4 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap"><i class="fa-solid fa-circle-check"></i><span class="hidden sm:inline">ยืนยันใบเสร็จรับเงิน</span></button>
+                    </div>
+                </div>
+
+                <!-- WORKFLOW STEPPER -->
+                <div class="workflow-stepper">
+                    <div class="workflow-step completed" id="wf-step-1" onclick="receiptApp.onWorkflowStepClick(1)"><div class="step-circle"><i class="fa-solid fa-file-invoice-dollar"></i></div><div class="step-label">ใบเสนอราคา</div><div class="step-status" id="wf-status-1">ยืนยันแล้ว ✓</div></div>
+                    <div class="step-connector completed" id="wf-connector-1"></div>
+                    <div class="workflow-step completed" id="wf-step-2" onclick="receiptApp.onWorkflowStepClick(2)"><div class="step-circle"><i class="fa-solid fa-file-invoice"></i></div><div class="step-label">ใบกำกับภาษี /<br>ใบแจ้งหนี้ / ใบส่งของ</div><div class="step-status" id="wf-status-2">ยืนยันแล้ว ✓</div></div>
+                    <div class="step-connector completed" id="wf-connector-2"></div>
+                    <div class="workflow-step active" id="wf-step-3" onclick="receiptApp.onWorkflowStepClick(3)"><div class="step-circle"><i class="fa-solid fa-receipt"></i></div><div class="step-label">ใบเสร็จรับเงิน</div><div class="step-status" id="wf-status-3">กำลังดำเนินการ</div></div>
+                </div>
+
+                <!-- COMPLETION BANNER -->
+                <div id="completion-banner" class="completion-banner hidden">
+                    <div class="text-5xl mb-3">🎉</div>
+                    <h3 class="text-2xl font-bold mb-2">กระบวนการเอกสารเสร็จสมบูรณ์!</h3>
+                    <p class="text-emerald-100">ใบเสนอราคา → ใบกำกับภาษี → ใบเสร็จรับเงิน ครบทุกขั้นตอนแล้ว</p>
+                </div>
+
+                <!-- RECEIPT FIELDS -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                    <h3 class="font-bold text-slate-700 flex items-center gap-2 mb-4"><i class="fa-solid fa-receipt text-teal-500"></i> ข้อมูลใบเสร็จรับเงิน</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="receipt-field-card"><div class="receipt-field-label">เลขที่เอกสาร</div><input type="text" id="rcp-field-docnum" class="receipt-field-input font-mono" placeholder="RCP-2026-0001" onchange="receiptApp.saveField('docNumber', this.value)"></div>
+                        <div class="receipt-field-card"><div class="receipt-field-label">จำนวนเงินที่ชำระ (บาท)</div><input type="number" id="rcp-field-amount" class="receipt-field-input text-right" placeholder="0.00" step="0.01" onchange="receiptApp.saveField('paidAmount', parseFloat(this.value) || 0)"></div>
+                        <div class="receipt-field-card"><div class="receipt-field-label">วันที่ชำระเงิน</div><input type="date" id="rcp-field-paiddate" class="receipt-field-input" onchange="receiptApp.saveField('paidDate', this.value)"></div>
+                        <div class="receipt-field-card"><div class="receipt-field-label">วิธีชำระเงิน</div>
+                            <select id="rcp-field-method" class="receipt-field-input" onchange="receiptApp.saveField('paymentMethod', this.value)">
+                                <option value="">เลือก...</option><option value="cash">เงินสด</option><option value="transfer">โอนเงิน</option><option value="cheque">เช็ค</option><option value="credit_card">บัตรเครดิต</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="receipt-field-card"><div class="receipt-field-label">เลขอ้างอิง / เลขเช็ค</div><input type="text" id="rcp-field-refno" class="receipt-field-input" placeholder="เลขอ้างอิงการชำระเงิน" onchange="receiptApp.saveField('referenceNo', this.value)"></div>
+                        <div class="receipt-field-card"><div class="receipt-field-label">หมายเหตุ</div><input type="text" id="rcp-field-notes" class="receipt-field-input" placeholder="หมายเหตุเพิ่มเติม..." onchange="receiptApp.saveField('notes', this.value)"></div>
+                    </div>
+                </div>
+
+                <!-- SUMMARY FROM INVOICE -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 bg-slate-50/50"><h3 class="font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-table-list text-teal-500"></i> สรุปยอดจากใบกำกับภาษี</h3></div>
+                    <div class="overflow-x-auto">
+                        <table class="excel-table"><thead><tr><th style="width:50px">#</th><th style="min-width:200px">รายการ</th><th style="width:80px">จำนวน</th><th style="width:70px">หน่วย</th><th style="width:100px">ราคา/หน่วย</th><th style="width:120px" class="col-total">จำนวนเงิน</th></tr></thead><tbody id="rcp-table-body"></tbody></table>
+                    </div>
+                    <div class="p-4 bg-gradient-to-r from-teal-50 to-white border-t border-teal-100">
+                        <div class="flex flex-col items-end gap-2 text-sm">
+                            <div class="flex items-center gap-4"><span class="text-slate-600 font-medium">ยอดรวมสุทธิ:</span><span class="font-extrabold text-2xl text-teal-600 w-36 text-right" id="rcp-grand-total">฿0.00</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50 cursor-pointer" onclick="document.getElementById('rcp-activity-body').classList.toggle('hidden')">
+                        <h3 class="font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-indigo-500"></i> บันทึกกิจกรรม <span id="rcp-activity-count" class="ml-1.5 px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600 font-semibold">0</span></h3>
+                        <i class="fa-solid fa-chevron-down text-slate-400"></i>
+                    </div>
+                    <div id="rcp-activity-body" class="divide-y divide-slate-100 max-h-[400px] overflow-y-auto hidden"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.receiptApp = {
+            projectId: null, project: null,
+            showToast(msg, type = 'info') { Swal.fire({ toast: true, position: 'top-end', icon: type, title: msg, showConfirmButton: false, timer: 2500, timerProgressBar: true, customClass: { popup: 'mentra-swal-popup' } }); },
+            _ensureDocWorkflow(proj) {
+                if (!proj.docWorkflow) { proj.docWorkflow = { currentStep: 1, quotation: { status: 'draft' }, invoice: { status: 'pending' }, receipt: { status: 'pending', createdAt: null, confirmedAt: null, confirmedBy: null, docNumber: null } }; }
+                if (!proj.receiptData) { proj.receiptData = { paidAmount: 0, paidDate: null, paymentMethod: '', referenceNo: '', notes: '' }; }
+                if (!proj.activityLog) proj.activityLog = [];
+            },
+            addActivityLog(proj, action, details, icon) {
+                if (!proj.activityLog) proj.activityLog = [];
+                const un = document.getElementById('userName');
+                proj.activityLog.unshift({ action, details, icon: icon || 'fa-solid fa-circle-info', timestamp: new Date().toISOString(), user: un ? un.innerText : 'ระบบ' });
+                if (proj.activityLog.length > 200) proj.activityLog = proj.activityLog.slice(0, 200);
+            },
+            loadProject(proj) {
+                this.project = proj; this._ensureDocWorkflow(proj);
+                if (proj.docWorkflow.currentStep < 3) {
+                    document.getElementById('no-project-msg').innerHTML = '<div class="w-24 h-24 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-teal-100"><i class="fa-solid fa-lock text-4xl text-teal-500"></i></div><h2 class="text-2xl font-bold text-slate-700 mb-3">ยังไม่สามารถออกใบเสร็จได้</h2><p class="text-slate-500 mb-6">กรุณายืนยันใบกำกับภาษีก่อน</p><button onclick="window.location.href=\'sales_invoice.html?projectId=' + encodeURIComponent(this.projectId) + '\'" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md transition-all inline-flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> กลับใบกำกับภาษี</button>';
+                    return;
+                }
+                document.getElementById('no-project-msg').classList.add('hidden');
+                document.getElementById('receipt-view').classList.remove('hidden');
+                document.getElementById('rcp-project-name').innerText = proj.name || 'ไม่มีชื่อ';
+                document.getElementById('rcp-project-code').innerText = 'รหัสงาน: ' + (proj.code || '-');
+                document.getElementById('rcp-doc-number').innerText = proj.docWorkflow.receipt.docNumber || 'RCP-XXXX';
+                let dd = '-'; if (proj.date) { const d = new Date(proj.date); if (!isNaN(d.getTime())) dd = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }); }
+                document.getElementById('rcp-project-date').innerText = dd;
+                const rd = proj.receiptData || {};
+                document.getElementById('rcp-field-docnum').value = proj.docWorkflow.receipt.docNumber || '';
+                document.getElementById('rcp-field-amount').value = rd.paidAmount || '';
+                document.getElementById('rcp-field-paiddate').value = rd.paidDate || '';
+                document.getElementById('rcp-field-method').value = rd.paymentMethod || '';
+                document.getElementById('rcp-field-refno').value = rd.referenceNo || '';
+                document.getElementById('rcp-field-notes').value = rd.notes || '';
+                this.renderTable(); this.updateWorkflowUI(); this.renderActivityLog();
+                // Show completion banner if already confirmed
+                if (proj.docWorkflow.receipt.status === 'confirmed') document.getElementById('completion-banner').classList.remove('hidden');
+            },
+            renderTable() {
+                const proj = this.project; if (!proj) return;
+                const items = this._getItemsList(proj.items);
+                const tbody = document.getElementById('rcp-table-body'); if (!tbody) return;
+                let html = '', subtotal = 0, rowNum = 0;
+                items.forEach(item => {
+                    if (item.isHeader) return; rowNum++;
+                    const qty = parseFloat(item.qty) || 0, price = parseFloat(item.unitPrice) || parseFloat(item.targetPrice) || 0, total = qty * price;
+                    subtotal += total;
+                    html += '<tr><td class="text-center text-sm text-slate-500 px-2">' + rowNum + '</td><td class="px-3 py-2 text-sm">' + (item.name || '-') + '</td><td class="text-center text-sm">' + (qty || '-') + '</td><td class="text-center text-sm">' + (item.unit || '-') + '</td><td class="text-right text-sm px-2">' + (price ? price.toLocaleString('th-TH', {minimumFractionDigits: 2}) : '-') + '</td><td class="col-total text-sm px-2">' + (total ? total.toLocaleString('th-TH', {minimumFractionDigits: 2}) : '-') + '</td></tr>';
+                });
+                if (rowNum === 0) html = '<tr><td colspan="6" class="text-center text-slate-400 py-8">ไม่มีรายการ</td></tr>';
+                tbody.innerHTML = html;
+                const taxRate = (proj.invoiceData && proj.invoiceData.taxRate) || 7, grand = subtotal + subtotal * (taxRate / 100);
+                document.getElementById('rcp-grand-total').innerText = '฿' + grand.toLocaleString('th-TH', {minimumFractionDigits: 2});
+            },
+            _getItemsList(items) { if (!items) return []; if (Array.isArray(items)) return items.filter(Boolean); return Object.keys(items).map(k => ({ id: k, ...items[k] })).filter(Boolean); },
+            saveField(field, value) {
+                if (!this.project) return; this._ensureDocWorkflow(this.project);
+                if (field === 'docNumber') { this.project.docWorkflow.receipt.docNumber = value; }
+                else { if (!this.project.receiptData) this.project.receiptData = {}; this.project.receiptData[field] = value; }
+                this.syncProject();
+            },
+            syncProject() { if (this.project && window.saveProjectToFirestore) window.saveProjectToFirestore(this.project); },
+            updateWorkflowUI() {
+                const proj = this.project; if (!proj) return;
+                const wf = proj.docWorkflow, step = wf.currentStep || 1;
+                for (let i = 1; i <= 3; i++) { const s = document.getElementById('wf-step-' + i), st = document.getElementById('wf-status-' + i); if (!s) continue; s.classList.remove('active','completed','disabled'); if (i < step) { s.classList.add('completed'); if (st) st.textContent = 'ยืนยันแล้ว ✓'; } else if (i === step) { s.classList.add('active'); if (st) st.textContent = 'กำลังดำเนินการ'; } else { s.classList.add('disabled'); if (st) st.textContent = 'รอดำเนินการ'; } }
+                if (wf.receipt.status === 'confirmed') { const s3 = document.getElementById('wf-step-3'), st3 = document.getElementById('wf-status-3'); if (s3) { s3.classList.remove('active','disabled'); s3.classList.add('completed'); } if (st3) st3.textContent = 'เสร็จสมบูรณ์ ✓'; }
+                const c1 = document.getElementById('wf-connector-1'), c2 = document.getElementById('wf-connector-2');
+                if (c1) c1.classList.toggle('completed', step > 1); if (c2) c2.classList.toggle('completed', step > 2 || wf.receipt.status === 'confirmed');
+                const bc = document.getElementById('btn-confirm-receipt');
+                if (bc) bc.classList.toggle('hidden', wf.receipt.status === 'confirmed');
+            },
+            confirmReceipt() {
+                const proj = this.project; if (!proj) return; this._ensureDocWorkflow(proj);
+                if (proj.docWorkflow.receipt.status === 'confirmed') { this.showToast('ใบเสร็จรับเงินยืนยันแล้ว', 'info'); return; }
+                Swal.fire({ title: 'ยืนยันใบเสร็จรับเงิน?', html: '<p style="color:#64748b;">เมื่อยืนยันแล้ว กระบวนการเอกสารจะ<b>เสร็จสมบูรณ์ทั้งหมด</b><br><br><small style="color:#94a3b8;">คุณยังสามารถกลับมาดูข้อมูลได้</small></p>', icon: 'question', showCancelButton: true, confirmButtonText: '<i class="fa-solid fa-circle-check"></i> ยืนยัน', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#10b981', customClass: { popup: 'mentra-swal-popup' } }).then(r => {
+                    if (r.isConfirmed) {
+                        const now = new Date().toISOString();
+                        proj.docWorkflow.receipt.status = 'confirmed'; proj.docWorkflow.receipt.confirmedAt = now;
+                        const ue = document.getElementById('userName'); proj.docWorkflow.receipt.confirmedBy = ue ? ue.innerText : 'ระบบ';
+                        this.addActivityLog(proj, 'receipt_confirmed', 'ยืนยันใบเสร็จรับเงิน (' + proj.docWorkflow.receipt.docNumber + ') — กระบวนการเสร็จสมบูรณ์ ✅', 'fa-solid fa-circle-check');
+                        this.syncProject(); this.updateWorkflowUI(); this.renderActivityLog();
+                        document.getElementById('completion-banner').classList.remove('hidden');
+                        
+                        Swal.fire({
+                            title: '🎉 กระบวนการเสร็จสมบูรณ์!',
+                            text: 'ท่านได้ดำเนินการออกเอกสารครบทุกขั้นตอนแล้ว',
+                            icon: 'success',
+                            showCancelButton: true,
+                            confirmButtonText: '<i class="fa-solid fa-house"></i> กลับหน้าหลัก',
+                            cancelButtonText: 'ปิด',
+                            confirmButtonColor: '#10b981',
+                            customClass: { popup: 'mentra-swal-popup' }
+                        }).then((nextResult) => {
+                            if (nextResult.isConfirmed) {
+                                window.location.href = 'dashboard.html';
+                            }
+                        });
+                    }
+                });
+            },
+            onWorkflowStepClick(n) {
+                const proj = this.project; if (!proj) return;
+                if (n === 1) window.location.href = 'materials_purchasing.html?projectId=' + encodeURIComponent(this.projectId);
+                else if (n === 2) window.location.href = 'sales_invoice.html?projectId=' + encodeURIComponent(this.projectId);
+                else if (n === 3) this.showToast('คุณอยู่ในหน้านี้แล้ว', 'info');
+            },
+            renderActivityLog() {
+                const proj = this.project, body = document.getElementById('rcp-activity-body'), badge = document.getElementById('rcp-activity-count'); if (!body) return;
+                const logs = proj && proj.activityLog ? proj.activityLog : []; if (badge) badge.textContent = logs.length;
+                if (logs.length === 0) { body.innerHTML = '<div class="py-8 text-center text-slate-400">ยังไม่มีกิจกรรม</div>'; return; }
+                const iconMap = { 'project_created': { bg: 'bg-blue-100', text: 'text-blue-600' }, 'quotation_confirmed': { bg: 'bg-emerald-100', text: 'text-emerald-600' }, 'invoice_created': { bg: 'bg-amber-100', text: 'text-amber-600' }, 'invoice_confirmed': { bg: 'bg-emerald-100', text: 'text-emerald-600' }, 'receipt_created': { bg: 'bg-teal-100', text: 'text-teal-600' }, 'receipt_confirmed': { bg: 'bg-emerald-100', text: 'text-emerald-600' } };
+                body.innerHTML = logs.map(log => {
+                    const m = iconMap[log.action] || { bg: 'bg-slate-100', text: 'text-slate-600' };
+                    const dt = new Date(log.timestamp), ts = dt.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                    return '<div class="activity-log-item"><div class="log-icon ' + m.bg + ' ' + m.text + '"><i class="' + (log.icon || 'fa-solid fa-circle-info') + '"></i></div><div class="log-content"><div class="log-action">' + (log.details || log.action) + '</div><div class="log-time"><i class="fa-regular fa-clock mr-1"></i>' + ts + '</div><div class="log-user"><i class="fa-regular fa-user mr-1"></i>' + (log.user || 'ระบบ') + '</div></div></div>';
+                }).join('');
+            }
+        };
+
+        window.toggleSidebarCollapse = function() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.toggle('collapsed');
+        };
+        window.logoutUser = function() {
+            if (window.firebaseAuth) {
+                window.firebaseAuth.signOut().then(() => { window.location.href = 'index.html'; });
+            } else {
+                window.location.href = 'index.html';
+            }
+        };
+    </script>
+
+    <script type="module">
+        import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        let FIREBASE_CONFIG; window.GAS_URL = null;
+        try { const cfg = await import('./assets/js/firebase-config.js'); FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG; window.GAS_URL = cfg.GAS_URL || null; } catch (e) { console.warn('firebase-config.js not found'); }
+        if (!FIREBASE_CONFIG) { FIREBASE_CONFIG = { apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU", authDomain: "mentra-manager-e039f.firebaseapp.com", projectId: "mentra-manager-e039f", storageBucket: "mentra-manager-e039f.firebasestorage.app", messagingSenderId: "563604754745", appId: "1:563604754745:web:ea0892fafb48b74dcf58e8" }; }
+        if (!window.GAS_URL) window.GAS_URL = 'https://script.google.com/macros/s/AKfycbxJIaFnBOtQUjoxjkVYiK2OBbGvbMlgeR5FSsO0n0vfYNHHc6pfPIki7CCFTeEh63m5/exec';
+        const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+        const auth = getAuth(app), db = getFirestore(app);
+        window.firebaseAuth = auth;
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramProjId = urlParams.get('projectId');
+        receiptApp.projectId = paramProjId;
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+            try {
+                const snap = await getDoc(doc(db, 'users', user.uid));
+                if (!snap.exists()) { await signOut(auth); window.location.href = 'index.html?msg=deleted'; return; }
+                const ud = snap.data();
+                if (ud.status === 'pending' || ud.status === 'rejected') { await signOut(auth); window.location.href = 'index.html?msg=' + ud.status; return; }
+                document.body.style.setProperty('display', 'flex', 'important');
+                const un = document.getElementById('userName'); if (un) un.innerText = ud.displayName || ud.name || user.email;
+            } catch (e) { document.body.style.setProperty('display', 'flex', 'important'); }
+            if (!paramProjId) return;
+            onSnapshot(doc(db, 'material_projects', paramProjId), (ds) => { if (ds.exists()) receiptApp.loadProject({ id: ds.id, ...ds.data() }); });
+            window.saveProjectToFirestore = async function(projData) {
+                try { await setDoc(doc(db, 'material_projects', projData.id), JSON.parse(JSON.stringify(projData))); }
+                catch (e) { console.error("Save Error:", e); alert('บันทึกผิดพลาด: ' + e.message); }
+            };
+        });
+    </script>
+</body>
+</html>

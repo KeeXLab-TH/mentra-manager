@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>Mentra Manager — Dashboard</title>
+    <title>Mentra Manager — ภาพรวมเอกสารงานขาย</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -116,7 +116,7 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            display: none; /* Hidden by default until authenticated */
+            display: flex;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
@@ -2209,6 +2209,7 @@
     <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
     <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -2330,8 +2331,8 @@
                 </svg>
             </button>
             <div class="topbar-breadcrumb">
-                <div class="breadcrumb-title" id="pageTitle">Dashboard</div>
-                <div class="breadcrumb-sub" id="pageSubtitle">ภาพรวมโครงการทั้งหมด</div>
+                <div class="breadcrumb-title" id="pageTitle">ระบบเอกสารงานขาย</div>
+                <div class="breadcrumb-sub" id="pageSubtitle">ติดตามสถานะใบเสนอราคา ใบกำกับภาษี และใบเสร็จรับเงิน</div>
             </div>
             <div class="topbar-actions" id="topbarActions"></div>
             
@@ -2394,71 +2395,123 @@
                         </select>
                     </div>
                 </div>
-                <div class="stats-grid">
-                    <div class="stat-card purple-accent">
-                        <div class="stat-icon purple">💰</div>
-                        <div class="stat-info">
-                            <div class="stat-num" id="statTotalBudget" style="color: #6d28d9;">฿0.00</div>
-                            <div class="stat-label">ยอดงบประมาณรวม</div>
-                        </div>
-                    </div>
+                <!-- Stat Cards Grid (5 Cards) -->
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                     <div class="stat-card blue-accent">
                         <div class="stat-icon blue">📁</div>
                         <div class="stat-info">
-                            <div class="stat-num" id="statTotal">0</div>
-                            <div class="stat-label">โครงการทั้งหมด</div>
+                            <div class="stat-num" id="stat-total-projects">0</div>
+                            <div class="stat-label">เอกสาร/โครงการทั้งหมด</div>
                         </div>
                     </div>
                     <div class="stat-card orange-accent">
-                        <div class="stat-icon orange">⚡</div>
+                        <div class="stat-icon orange">📝</div>
                         <div class="stat-info">
-                            <div class="stat-num" id="statActive">0</div>
-                            <div class="stat-label">กำลังดำเนินการ</div>
+                            <div class="stat-num" id="stat-q-draft">0</div>
+                            <div class="stat-label">รอเสนอราคา (ฉบับร่าง)</div>
+                        </div>
+                    </div>
+                    <div class="stat-card blue-accent" style="border-left: 4px solid #0284c7;">
+                        <div class="stat-icon blue" style="background: #e0f2fe; color: #0284c7;">🎯</div>
+                        <div class="stat-info">
+                            <div class="stat-num" id="stat-q-confirmed" style="color: #0284c7;">0</div>
+                            <div class="stat-label">ยืนยันใบเสนอราคาแล้ว</div>
+                        </div>
+                    </div>
+                    <div class="stat-card purple-accent">
+                        <div class="stat-icon purple" style="color: #6d28d9; background: #ede9fe;">🧾</div>
+                        <div class="stat-info">
+                            <div class="stat-num" id="stat-invoice" style="color: #6d28d9;">0</div>
+                            <div class="stat-label">ยืนยันใบกำกับภาษีแล้ว</div>
                         </div>
                     </div>
                     <div class="stat-card green-accent">
                         <div class="stat-icon green">✅</div>
                         <div class="stat-info">
-                            <div class="stat-num" id="statDone">0</div>
-                            <div class="stat-label">เสร็จสิ้นแล้ว</div>
-                        </div>
-                    </div>
-                    <div class="stat-card red-accent">
-                        <div class="stat-icon red">⏸️</div>
-                        <div class="stat-info">
-                            <div class="stat-num" id="statPending">0</div>
-                            <div class="stat-label">รอดำเนินการ</div>
+                            <div class="stat-num" id="stat-receipt">0</div>
+                            <div class="stat-label">เสร็จสมบูรณ์ (ใบเสร็จ)</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="section-card">
-                    <div class="section-header">
-                        <div class="section-title">โครงการล่าสุด</div>
-                        <button class="btn btn-outline btn-sm" onclick="navigateTo('projects')">ดูทั้งหมด →</button>
+                <!-- Charts & Visual Analytics Section -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 24px;">
+                    <!-- Circle Chart (Doughnut) -->
+                    <div class="section-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px;">
+                        <div style="font-size: 16px; font-weight: 700; color: var(--primary-dark); width: 100%; margin-bottom: 16px; text-align: left;">
+                            📊 สัดส่วนและจำนวนการยืนยันเอกสาร
+                        </div>
+                        <div style="position: relative; width: 240px; height: 240px;">
+                            <canvas id="salesCircleChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Summary Financial & Category Breakdown -->
+                    <div class="section-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div style="font-size: 16px; font-weight: 700; color: var(--primary-dark); margin-bottom: 16px;">
+                            💰 ยอดมูลค่ารวมเอกสารงานขาย
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #1A6FBF 0%, #0d4a7a 100%); color: #ffffff; padding: 20px; border-radius: 16px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 15px rgba(26,111,191,0.2);">
+                            <div style="font-size: 0.9rem; opacity: 0.9;">มูลค่าโครงการรวมทั้งหมด</div>
+                            <div style="font-size: 1.8rem; font-weight: 800; margin-top: 4px;" id="salesTotalValueDisplay">฿0.00</div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center;">
+                                <div style="font-size: 0.75rem; color: #475569; font-weight: 600;">🏛️ งานประมูล ราชการ</div>
+                                <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-top: 4px;" id="countGovProjects">0</div>
+                            </div>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center;">
+                                <div style="font-size: 0.75rem; color: #0284c7; font-weight: 600;">🏫 สถานศึกษา</div>
+                                <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-top: 4px;" id="countSchoolProjects">0</div>
+                            </div>
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center;">
+                                <div style="font-size: 0.75rem; color: #d97706; font-weight: 600;">🏢 บริษัทเอกชน</div>
+                                <div style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-top: 4px;" id="countCompanyProjects">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Section -->
+                <div class="section-card" style="margin-top: 24px;">
+                    <div class="section-header" style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+                        <div class="section-title" style="font-size: 18px;">📑 รายการเอกสารงานขายทั้งหมด</div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <select id="salesCategoryFilter" onchange="filterSalesTable()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-family: 'Kanit'; font-size: 0.9rem; background: #ffffff;">
+                                <option value="">ทุกหมวดหมู่</option>
+                                <option value="government">🏛️ โปรเจกต์งานประมูล ราชการ</option>
+                                <option value="school">🏫 โปรเจกต์สถานศึกษา</option>
+                                <option value="company">🏢 โปรเจกต์บริษัทเอกชน</option>
+                            </select>
+                            <select id="salesStageFilter" onchange="filterSalesTable()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-family: 'Kanit'; font-size: 0.9rem; background: #ffffff;">
+                                <option value="">ทุกสถานะ</option>
+                                <option value="q_draft">รอเสนอราคา</option>
+                                <option value="q_confirmed">ยืนยันใบเสนอราคาแล้ว</option>
+                                <option value="invoice">ยืนยันใบกำกับภาษีแล้ว</option>
+                                <option value="receipt">เสร็จสมบูรณ์ / ใบเสร็จ</option>
+                            </select>
+                            <div class="search-box">
+                                <i class='bx bx-search search-icon'></i>
+                                <input type="text" id="salesSearchInput" class="search-input" placeholder="ค้นหาโครงการ / ลูกค้า / เลขที่..." oninput="filterSalesTable()">
+                            </div>
+                        </div>
                     </div>
                     <div class="table-wrap">
-                        <table id="recentProjectTable">
+                        <table id="salesTable">
                             <thead>
                                 <tr>
-                                    <th>เลขที่โครงการ</th>
-                                    <th>ชื่อโครงการ</th>
-                                    <th>ปี</th>
-                                    <th>งบประมาณ</th>
-                                    <th>สถานะ</th>
-                                    <th></th>
+                                    <th style="width: 15%">เลขที่เอกสาร/อ้างอิง</th>
+                                    <th style="width: 25%">ชื่อโครงการ</th>
+                                    <th style="width: 20%">ลูกค้า / หน่วยงาน</th>
+                                    <th style="width: 15%">มูลค่ารวม (บาท)</th>
+                                    <th style="width: 15%">สถานะล่าสุด</th>
+                                    <th style="width: 10%; text-align: center;">จัดการ</th>
                                 </tr>
                             </thead>
-                            <tbody id="recentProjectBody">
-                                <tr>
-                                    <td colspan="6">
-                                        <div class="empty-state">
-                                            <div class="empty-icon">📭</div>
-                                            <h3>ยังไม่มีโครงการ</h3>
-                                            <p>เริ่มสร้างโครงการแรกของคุณ</p>
-                                        </div>
-                                    </td>
-                                </tr>
+                            <tbody id="salesTableBody">
+                                <tr><td colspan="6" style="text-align:center; padding: 30px; color: #94a3b8;">กำลังโหลดข้อมูลโครงการทั้งหมด...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -3060,12 +3113,11 @@
 
     <!-- Firebase -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
-            initializeFirestore, collection, doc, addDoc, updateDoc, getDocs,
-            getDoc, query, orderBy, where, setDoc, deleteDoc, Timestamp,
-            persistentLocalCache, persistentMultipleTabManager
+            getFirestore, collection, doc, addDoc, updateDoc, getDocs,
+            getDoc, query, orderBy, where, setDoc, deleteDoc, Timestamp, onSnapshot
         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         // ---- LOAD CONFIG ----
@@ -3097,12 +3149,9 @@
             DRIVE_ROOT_FOLDER_ID = '1a0B6l56PAVCZ4v8lzSeIRslq78XSJh8e';
         }
 
-        const app = initializeApp(FIREBASE_CONFIG);
+        const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
         const auth = getAuth(app);
-        const db = initializeFirestore(app, {
-            localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-            experimentalForceLongPolling: false
-        });
+        const db = getFirestore(app);
 
         // ---- STATE ----
         let currentUser = null;
@@ -3131,18 +3180,19 @@
                 return;
             }
             currentUser = user;
-            const snap = await getDoc(doc(db, 'users', user.uid));
-            if (snap.exists()) {
-                currentUserData = snap.data();
-            } else {
-                alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
-                await signOut(auth);
-                window.location.href = 'index.html?msg=deleted';
-                return;
+            try {
+                const snap = await getDoc(doc(db, 'users', user.uid));
+                if (snap && snap.exists()) {
+                    currentUserData = snap.data();
+                } else {
+                    currentUserData = { displayName: user.displayName || user.email || 'User', role: 'user' };
+                }
+            } catch (e) {
+                console.warn('User profile fetch issue:', e);
+                currentUserData = { displayName: user.displayName || user.email || 'User', role: 'user' };
             }
 
-            // Check approval status
-            const userStatus = currentUserData.status || 'approved'; // default old users to approved
+            const userStatus = currentUserData?.status || 'approved';
             if (userStatus === 'pending') {
                 alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
                 await signOut(auth);
@@ -3155,21 +3205,11 @@
                 return;
             }
 
-            if (window.checkPageAccess && !window.checkPageAccess(currentUserData)) return;
-
             setupUI();
-            
-            // Show body now that the user is fully verified
             document.body.style.display = 'flex';
-            
-            // URL Param Routing
-            const params = new URLSearchParams(window.location.search);
-            const viewParam = params.get('view') || params.get('tab');
-            if (viewParam && ['dashboard', 'projects', 'users', 'items'].includes(viewParam)) {
-                navigateTo(viewParam);
-            } else {
-                loadDashboard();
-            }
+
+            // Start authenticated Firestore Data Sync
+            startSalesDataSync();
         });
 
         function setupUI() {
@@ -3238,46 +3278,346 @@
             closeSidebar();
         };
 
-        // ---- LOAD DASHBOARD ----
-        async function loadDashboard() {
-            document.getElementById('recentProjectBody').innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 40px;"><div class="btn-spinner" style="display:inline-block; border-color:var(--blue); border-bottom-color:transparent; width:24px; height:24px; margin-bottom:12px;"></div><div style="color:var(--text-muted); font-size:14px;">กำลังโหลดโครงการ...</div></td></tr>`;
-            const snap = await getDocs(collection(db, 'projects'));
-            const projects = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            allProjects = projects;
+        // ---- LOAD DASHBOARD & SALES DATA ----
+        
+        // ---- SALES DASHBOARD MULTI-COLLECTION REALTIME SYNC ----
+        let allSalesProjects = [];
+        let circleChartInstance = null;
+        let salesProjectStoreMap = new Map();
+        let salesSyncStarted = false;
 
-            const dashYearFilter = document.getElementById('dashboardYearFilter');
-            let year = dashYearFilter.value;
+        window.loadDashboard = function() {
+            if (!salesSyncStarted) {
+                startSalesDataSync();
+            } else {
+                rebuildAndRenderProjects();
+            }
+        };
 
-            // Auto default to latest year on first load
-            if (!dashYearFilter.dataset.initialized && projects.length > 0) {
-                dashYearFilter.dataset.initialized = 'true';
-                const maxYear = Math.max(...projects.map(p => Number(p.year) || 0));
-                if (maxYear > 0) {
-                    year = String(maxYear);
-                    dashYearFilter.value = year;
-                }
+        function startSalesDataSync() {
+            salesSyncStarted = true;
+            const tbody = document.getElementById('salesTableBody');
+            if (tbody && salesProjectStoreMap.size === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color: #94a3b8;"><div class="btn-spinner" style="display:inline-block; border-color:var(--blue); border-bottom-color:transparent; width:24px; height:24px; margin-bottom:12px;"></div><div>กำลังโหลดข้อมูลทุกโครงการ...</div></td></tr>';
             }
 
-            const filteredProjects = year ? projects.filter(p => String(p.year) === String(year)) : projects;
+            const collectionsToSubscribe = [
+                { name: 'projects', type: 'government' },
+                { name: 'material_projects', type: 'school' },
+                { name: 'company_material_projects', type: 'company' },
+                { name: 'quotations', type: 'school' }
+            ];
 
-            const totalBudget = filteredProjects.reduce((sum, p) => sum + Number(p.budget || 0), 0);
+            collectionsToSubscribe.forEach(col => {
+                try {
+                    onSnapshot(collection(db, col.name), (snapshot) => {
+                        snapshot.docs.forEach(doc => {
+                            let data = doc.data();
+                            data.id = doc.id;
+                            data.projectType = data.projectType || col.type;
+                            if (col.name === 'projects') {
+                                data.name = data.projectName || data.name || 'โครงการทั่วไป / ประมูลราชการ';
+                            } else if (col.name === 'quotations') {
+                                data.name = data.title || data.projectName || 'ใบเสนอราคา';
+                            }
+                            data._sourceColl = col.name;
+                            salesProjectStoreMap.set(doc.id, data);
+                        });
 
-            // Show exact full budget number
-            let budgetText = '฿' + totalBudget.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-            const budgetEl = document.getElementById('statTotalBudget');
-            budgetEl.textContent = budgetText;
-            budgetEl.closest('.stat-card').title = '';
-            budgetEl.closest('.stat-card').style.cursor = 'default';
-
-            document.getElementById('statTotal').textContent = filteredProjects.length;
-            document.getElementById('statActive').textContent = filteredProjects.filter(p => p.status === 'กำลังดำเนินการ').length;
-            document.getElementById('statDone').textContent = filteredProjects.filter(p => p.status === 'เสร็จสิ้น').length;
-            document.getElementById('statPending').textContent = filteredProjects.filter(p => p.status === 'รอดำเนินการ').length;
-
-            const recent = [...filteredProjects].sort((a, b) => (b.createdAt || '') > (a.createdAt || '') ? 1 : -1).slice(0, 5);
-            renderProjectRows('recentProjectBody', recent, 6);
+                        rebuildAndRenderProjects();
+                    }, (err) => {
+                        console.error("onSnapshot error for " + col.name, err);
+                    });
+                } catch(e) {
+                    console.error("Error setting up subscription:", e);
+                }
+            });
         }
+
+        function getProjectTimestamp(p) {
+            const rawDate = p.createdAt || p.updatedAt || p.date || p.projectDate || p.docWorkflow?.quotation?.confirmedAt;
+            if (rawDate) {
+                if (typeof rawDate === 'object' && rawDate.seconds) {
+                    return rawDate.seconds * 1000;
+                }
+                if (typeof rawDate === 'object' && typeof rawDate.toDate === 'function') {
+                    return rawDate.toDate().getTime();
+                }
+                const parsed = new Date(rawDate).getTime();
+                if (!isNaN(parsed) && parsed > 0) return parsed;
+            }
+            if (p.id && !isNaN(Number(p.id)) && Number(p.id) > 1000000000) {
+                return Number(p.id);
+            }
+            return 0;
+        }
+
+        function rebuildAndRenderProjects() {
+            let projects = Array.from(salesProjectStoreMap.values());
+            // Sort by latest date first (Descending)
+            projects.sort((a, b) => getProjectTimestamp(b) - getProjectTimestamp(a));
+            allSalesProjects = projects;
+
+            renderSalesTable();
+            updateSalesStatsAndCharts();
+        }
+
+        function updateSalesStatsAndCharts() {
+            let total = allSalesProjects.length;
+            let qDraftCount = 0;
+            let qConfirmedCount = 0;
+            let iCount = 0;
+            let doneCount = 0;
+            
+            let govCount = 0;
+            let schoolCount = 0;
+            let companyCount = 0;
+            let grandTotalBudget = 0;
+            
+            allSalesProjects.forEach(p => {
+                const qStatus = p.docWorkflow?.quotation?.status || 'draft';
+                const iStatus = p.docWorkflow?.invoice?.status || 'draft';
+                const rStatus = p.docWorkflow?.receipt?.status || 'draft';
+
+                const pType = p.projectType || 'school';
+                if (pType === 'government') govCount++;
+                else if (pType === 'company') companyCount++;
+                else schoolCount++;
+
+                // Calculate budget
+                let pBudget = 0;
+                if (p.items && p.items.length) {
+                    p.items.forEach(i => {
+                        if (!i.isHeader) {
+                            let itemTotal = 0;
+                            if (i.foundTotalPrice !== undefined && i.foundTotalPrice !== null && i.foundTotalPrice !== '') {
+                                itemTotal = Number(i.foundTotalPrice) || 0;
+                            } else {
+                                const unitP = Number(i.unitPrice) || Number(i.targetPrice) || Number(i.foundPrice) || 0;
+                                const qty = Number(i.qty) || 1;
+                                itemTotal = unitP * qty;
+                            }
+                            pBudget += itemTotal;
+                        }
+                    });
+                } else if (p.budget) {
+                    pBudget = Number(p.budget) || 0;
+                } else if (p.totalAmount) {
+                    pBudget = Number(p.totalAmount) || 0;
+                }
+                grandTotalBudget += pBudget;
+
+                // ACCURATE STATUS CLASSIFICATION ORDER
+                if (rStatus === 'confirmed') {
+                    doneCount++;
+                } else if (iStatus === 'confirmed') {
+                    iCount++;
+                } else if (qStatus === 'confirmed') {
+                    qConfirmedCount++;
+                } else {
+                    qDraftCount++;
+                }
+            });
+            
+            const elTotal = document.getElementById('stat-total-projects');
+            const elQDraft = document.getElementById('stat-q-draft');
+            const elQConf = document.getElementById('stat-q-confirmed');
+            const elI = document.getElementById('stat-invoice');
+            const elR = document.getElementById('stat-receipt');
+            const elBudget = document.getElementById('salesTotalValueDisplay');
+            
+            const elGov = document.getElementById('countGovProjects');
+            const elSchool = document.getElementById('countSchoolProjects');
+            const elCompany = document.getElementById('countCompanyProjects');
+            
+            if(elTotal) elTotal.innerText = total;
+            if(elQDraft) elQDraft.innerText = qDraftCount;
+            if(elQConf) elQConf.innerText = qConfirmedCount;
+            if(elI) elI.innerText = iCount;
+            if(elR) elR.innerText = doneCount;
+            
+            if(elGov) elGov.innerText = govCount;
+            if(elSchool) elSchool.innerText = schoolCount;
+            if(elCompany) elCompany.innerText = companyCount;
+            if(elBudget) elBudget.innerText = '฿' + grandTotalBudget.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            // Render Circle Chart (Doughnut)
+            renderCircleChart(qDraftCount, qConfirmedCount, iCount, doneCount);
+        }
+
+        function renderCircleChart(qDraft, qConfirmed, iCount, doneCount) {
+            const ctx = document.getElementById('salesCircleChart');
+            if(!ctx) return;
+            
+            if(circleChartInstance) {
+                circleChartInstance.destroy();
+            }
+            
+            circleChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['รอเสนอราคา', 'ยืนยันใบเสนอราคาแล้ว', 'ใบกำกับภาษี', 'เสร็จสมบูรณ์'],
+                    datasets: [{
+                        data: [qDraft, qConfirmed, iCount, doneCount],
+                        backgroundColor: [
+                            '#f59e0b', // Amber for Draft Quotation
+                            '#0284c7', // Bright Sky Blue for Confirmed Quotation
+                            '#8b5cf6', // Purple for Invoice
+                            '#10b981'  // Emerald for Done
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { family: 'Kanit', size: 11 },
+                                padding: 10
+                            }
+                        }
+                    },
+                    cutout: '68%'
+                }
+            });
+        }
+
+        window.renderSalesTable = function(filterText = '') {
+            const tbody = document.getElementById('salesTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            const categoryFilter = document.getElementById('salesCategoryFilter')?.value || '';
+            const stageFilter = document.getElementById('salesStageFilter')?.value || '';
+            const searchTxt = (document.getElementById('salesSearchInput')?.value || filterText).toLowerCase();
+
+            const filtered = allSalesProjects.filter(p => {
+                const pType = p.projectType || 'school';
+                if(categoryFilter && pType !== categoryFilter) return false;
+
+                const qStatus = p.docWorkflow?.quotation?.status || 'draft';
+                const iStatus = p.docWorkflow?.invoice?.status || 'draft';
+                const rStatus = p.docWorkflow?.receipt?.status || 'draft';
+
+                let pStatusKey = 'q_draft';
+                if (rStatus === 'confirmed') pStatusKey = 'receipt';
+                else if (iStatus === 'confirmed') pStatusKey = 'invoice';
+                else if (qStatus === 'confirmed') pStatusKey = 'q_confirmed';
+
+                if(stageFilter && pStatusKey !== stageFilter) return false;
+
+                if(!searchTxt) return true;
+                const text = ((p.name || '') + ' ' + (p.code || '') + ' ' + (p.projectNo || '') + ' ' + (p.institution || '') + ' ' + (p.companyName || '') + ' ' + (p.docWorkflow?.quotation?.docNumber || '')).toLowerCase();
+                return text.includes(searchTxt);
+            });
+            
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color: #94a3b8;">ไม่พบข้อมูลเอกสารหรือโครงการที่ค้นหา</td></tr>';
+                return;
+            }
+            
+            filtered.forEach(p => {
+                const tr = document.createElement('tr');
+                
+                const pType = p.projectType || 'school';
+                let typeBadge = '';
+                let linkPage = 'materials_purchasing.html';
+                let clientName = p.institution || p.clientName || '-';
+
+                if (pType === 'government') {
+                    typeBadge = '<span style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;"><i class="fa-solid fa-building-columns"></i> งานประมูล ราชการ</span>';
+                    linkPage = 'materials_purchasing.html';
+                    clientName = p.institution || p.clientName || p.department || 'หน่วยงานราชการ';
+                } else if (pType === 'company') {
+                    typeBadge = '<span style="background: #fff7ed; color: #c2410c; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;"><i class="fa-solid fa-building"></i> บริษัทเอกชน</span>';
+                    linkPage = 'materials_purchasing_company.html';
+                    clientName = p.companyName || p.clientName || '-';
+                } else {
+                    typeBadge = '<span style="background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;"><i class="fa-solid fa-school"></i> สถานศึกษา</span>';
+                    linkPage = 'materials_purchasing.html';
+                    clientName = p.institution || p.clientName || '-';
+                }
+
+                const projRef = p.code || p.docWorkflow?.quotation?.docNumber || p.projectNo || p.quotationNo || (p.id ? 'PRJ-' + p.id.substring(0,6).toUpperCase() : '-');
+                
+                let totalVal = 0;
+                if(p.items && p.items.length) {
+                    p.items.forEach(i => {
+                        if(!i.isHeader) {
+                            let itemTotal = 0;
+                            if (i.foundTotalPrice !== undefined && i.foundTotalPrice !== null && i.foundTotalPrice !== '') {
+                                itemTotal = Number(i.foundTotalPrice) || 0;
+                            } else {
+                                const unitP = Number(i.unitPrice) || Number(i.targetPrice) || Number(i.foundPrice) || 0;
+                                const qty = Number(i.qty) || 1;
+                                itemTotal = unitP * qty;
+                            }
+                            totalVal += itemTotal;
+                        }
+                    });
+                } else if (p.budget) {
+                    totalVal = Number(p.budget) || 0;
+                } else if (p.totalAmount) {
+                    totalVal = Number(p.totalAmount) || 0;
+                }
+                
+                const amtFormatted = totalVal.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                
+                let statusHtml = '';
+                let actionHtml = '';
+                const qStatus = p.docWorkflow?.quotation?.status || 'draft';
+                const iStatus = p.docWorkflow?.invoice?.status || 'draft';
+                const rStatus = p.docWorkflow?.receipt?.status || 'draft';
+
+                if(rStatus === 'confirmed') {
+                    statusHtml = '<span style="background: #d1fae5; color: #059669; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">🎉 เสร็จสมบูรณ์ <i class="fa-solid fa-check"></i></span>';
+                    actionHtml = `<button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.85rem; border-color: #10b981; color: #10b981;" onclick="goToSalesPage('sales_receipt.html', '${p.id}')">ดูเอกสาร</button>`;
+                } else if (iStatus === 'confirmed') {
+                    statusHtml = '<span style="background: #ede9fe; color: #6d28d9; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">🧾 ยืนยันใบกำกับภาษีแล้ว</span>';
+                    actionHtml = `<button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.85rem; border-color: #8b5cf6; color: #8b5cf6;" onclick="goToSalesPage('sales_receipt.html', '${p.id}')">ออกใบเสร็จ</button>`;
+                } else if (qStatus === 'confirmed') {
+                    statusHtml = '<span style="background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">✓ ยืนยันเสนอราคาแล้ว</span>';
+                    actionHtml = `<button class="btn btn-primary btn-sm" style="padding: 4px 12px; font-size: 0.85rem;" onclick="goToSalesPage('sales_invoice.html', '${p.id}')">ออกใบกำกับ</button>`;
+                } else {
+                    statusHtml = '<span style="background: #fef3c7; color: #d97706; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">📝 รอเสนอราคา</span>';
+                    actionHtml = `<button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.85rem;" onclick="goToSalesPage('${linkPage}', '${p.id}')">ดำเนินการ</button>`;
+                }
+                
+                const pDateTs = getProjectTimestamp(p);
+                const dateStr = pDateTs > 0 ? new Date(pDateTs).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '-';
+
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight: 600; color: var(--primary-dark); font-family: monospace;">${projRef}</div>
+                        <div style="margin-top: 2px;">${typeBadge}</div>
+                        <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 500;"><i class="fa-regular fa-calendar" style="margin-right: 4px; color: #94a3b8;"></i>${dateStr}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">${p.name || 'ไม่มีชื่อโครงการ'}</div>
+                    </td>
+                    <td>${clientName}</td>
+                    <td style="font-weight: 600; color: #334155;">฿${amtFormatted}</td>
+                    <td>${statusHtml}</td>
+                    <td style="text-align: center;">${actionHtml}</td>
+                `;
+                
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.filterSalesTable = function() {
+            const input = document.getElementById('salesSearchInput');
+            renderSalesTable(input ? input.value : '');
+        }
+
+        window.goToSalesPage = function(page, id) {
+            window.location.href = page + '?projectId=' + encodeURIComponent(id);
+        }
+
 
         // ---- LOAD PROJECTS ----
         async function loadProjects() {

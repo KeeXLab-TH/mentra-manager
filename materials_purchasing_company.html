@@ -569,7 +569,152 @@
                 width: calc(100% + 32px);
             }
         }
-        
+
+        /* ================================================
+           WORKFLOW STEPPER
+           ================================================ */
+        .workflow-stepper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            padding: 20px 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%);
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+        .workflow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+            min-width: 140px;
+            position: relative;
+            z-index: 2;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .workflow-step:hover { transform: translateY(-2px); }
+        .workflow-step.disabled { opacity: 0.5; cursor: not-allowed; }
+        .workflow-step.disabled:hover { transform: none; }
+        .step-circle {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            border: 3px solid #cbd5e1;
+            background: white;
+            color: #94a3b8;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .workflow-step.active .step-circle {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 16px rgba(59,130,246,0.35);
+            animation: pulse-step 2s ease-in-out infinite;
+        }
+        .workflow-step.completed .step-circle {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        @keyframes pulse-step {
+            0%, 100% { box-shadow: 0 4px 16px rgba(59,130,246,0.35); }
+            50% { box-shadow: 0 4px 24px rgba(59,130,246,0.55); }
+        }
+        .step-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-align: center;
+            line-height: 1.3;
+            max-width: 130px;
+        }
+        .workflow-step.active .step-label { color: #2563eb; }
+        .workflow-step.completed .step-label { color: #059669; }
+        .step-status {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 99px;
+            background: #f1f5f9;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .workflow-step.active .step-status { background: #dbeafe; color: #2563eb; }
+        .workflow-step.completed .step-status { background: #d1fae5; color: #059669; }
+        .step-connector {
+            flex: 1;
+            height: 3px;
+            background: #e2e8f0;
+            min-width: 40px;
+            max-width: 120px;
+            border-radius: 2px;
+            position: relative;
+            z-index: 1;
+            margin: 0 -8px;
+            align-self: flex-start;
+            margin-top: 23px;
+        }
+        .step-connector.completed {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+        @media (max-width: 640px) {
+            .workflow-stepper { padding: 12px 8px; gap: 0; }
+            .workflow-step { min-width: 80px; }
+            .step-circle { width: 36px; height: 36px; font-size: 14px; }
+            .step-label { font-size: 10px; max-width: 80px; }
+            .step-status { font-size: 8px; padding: 1px 6px; }
+            .step-connector { min-width: 20px; margin-top: 17px; }
+        }
+
+        /* Activity Log */
+        .activity-log-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            border-left: 3px solid #e2e8f0;
+            margin-left: 8px;
+            transition: all 0.2s;
+        }
+        .activity-log-item:hover {
+            background: #f8fafc;
+            border-left-color: #3b82f6;
+        }
+        .activity-log-item .log-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+        .activity-log-item .log-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .activity-log-item .log-action {
+            font-weight: 600;
+            font-size: 13px;
+            color: #334155;
+        }
+        .activity-log-item .log-time {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .activity-log-item .log-user {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 1px;
+        }
+
 </style>
     <!-- SortableJS -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -631,6 +776,11 @@
             <button class="nav-item" onclick="window.location.href='crm.html'" id="nav-crm">
                 <div class="nav-icon">📊</div>
                 <span class="nav-label">ระบบ CRM</span>
+            </button>
+            </div>
+            <button class="nav-item" onclick="window.location.href='sales_dashboard.html'" id="nav-sales-dashboard">
+                <div class="nav-icon">📑</div>
+                <span class="nav-label">ระบบเอกสารงานขาย</span>
             </button>
             <div class="nav-item-group" id="nav-purchasing-group">
                 <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main">
@@ -798,19 +948,39 @@
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                        <button onclick="appData.openShareModal()" class="h-10 px-3.5 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="แชร์ลิงก์โครงการ">
+                            <i class="fa-solid fa-share-nodes"></i>
+                            <span>แชร์ลิงก์</span>
+                        </button>
                         <button onclick="appData.openQuotationForProject()" class="h-10 px-4 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ออกใบเสนอราคาสำหรับโครงการนี้">
                             <i class="fa-solid fa-file-invoice-dollar"></i>
                             <span class="hidden sm:inline">ออกใบเสนอราคา</span>
                         </button>
-                        <button onclick="appData.openEditProjectModal()" class="w-10 h-10 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-100 hover:text-brand-700 transition-colors flex items-center justify-center shadow-sm" title="แก้ไขรายละเอียดโครงการ">
+                        <button id="btn-confirm-quotation" onclick="appData.confirmQuotation()" class="h-10 px-4 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ยืนยันใบเสนอราคาและไปขั้นตอนถัดไป">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span class="hidden sm:inline">ยืนยันใบเสนอราคา</span>
+                        </button>
+                        <button id="btn-cancel-quotation" onclick="appData.cancelQuotationConfirmation()" class="h-10 px-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="ยกเลิกการยืนยันเพื่อกลับไปเสนอราคาใหม่">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span class="hidden sm:inline">ยกเลิกการยืนยัน</span>
+                        </button>
+                        <button id="btn-goto-invoice" onclick="appData.goToInvoice()" class="h-10 px-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="ไปหน้าใบกำกับภาษี">
+                            <i class="fa-solid fa-file-invoice"></i>
+                            <span class="hidden sm:inline">ไปหน้า Invoice</span>
+                        </button>
+                        <button id="btn-goto-receipt" onclick="appData.goToReceipt()" class="h-10 px-4 rounded-lg border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="ไปหน้าใบเสร็จรับเงิน">
+                            <i class="fa-solid fa-receipt"></i>
+                            <span class="hidden sm:inline">ไปหน้า Receipt</span>
+                        </button>
+                        <button id="btn-edit-project" onclick="appData.openEditProjectModal()" class="w-10 h-10 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-100 hover:text-brand-700 transition-colors flex items-center justify-center shadow-sm" title="แก้ไขรายละเอียดโครงการ">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
-                        <button onclick="appData.deleteProject()" class="w-10 h-10 rounded-lg border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors flex items-center justify-center shadow-sm" title="ลบโครงการ">
+                        <button id="btn-delete-project" onclick="appData.deleteProject()" class="w-10 h-10 rounded-lg border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors flex items-center justify-center shadow-sm" title="ลบโครงการ">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                         <!-- Status Dropdown -->
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2" id="project-status-container">
                             <span class="text-sm font-semibold text-slate-600">สถานะ:</span>
                             <select id="detail-project-status" onchange="appData.updateProjectStatus(this.value)" class="border-2 border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold outline-none focus:border-brand-500 transition-colors cursor-pointer bg-white">
                                 <option value="Processing">กำลังดำเนินงาน</option>
@@ -819,6 +989,27 @@
                                 <option value="Delivered">ส่งของแล้ว</option>
                             </select>
                         </div>
+                    </div>
+                </div>
+
+                <!-- WORKFLOW STEPPER BAR -->
+                <div id="workflow-stepper-container" class="workflow-stepper">
+                    <div class="workflow-step active" id="wf-step-1" onclick="appData.onWorkflowStepClick(1)">
+                        <div class="step-circle"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                        <div class="step-label">ใบเสนอราคา</div>
+                        <div class="step-status" id="wf-status-1">กำลังดำเนินการ</div>
+                    </div>
+                    <div class="step-connector" id="wf-connector-1"></div>
+                    <div class="workflow-step disabled" id="wf-step-2" onclick="appData.onWorkflowStepClick(2)">
+                        <div class="step-circle"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div class="step-label">ใบกำกับภาษี /<br>ใบแจ้งหนี้ / ใบส่งของ</div>
+                        <div class="step-status" id="wf-status-2">รอดำเนินการ</div>
+                    </div>
+                    <div class="step-connector" id="wf-connector-2"></div>
+                    <div class="workflow-step disabled" id="wf-step-3" onclick="appData.onWorkflowStepClick(3)">
+                        <div class="step-circle"><i class="fa-solid fa-receipt"></i></div>
+                        <div class="step-label">ใบเสร็จรับเงิน</div>
+                        <div class="step-status" id="wf-status-3">รอดำเนินการ</div>
                     </div>
                 </div>
 
@@ -833,6 +1024,10 @@
                     <button id="tab-btn-documents" onclick="appData.switchDetailTab('documents')" class="px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg whitespace-nowrap">
                         <i class="fa-solid fa-folder-open mr-1.5 text-amber-500"></i> ไฟล์เอกสาร
                         <span id="doc-count-badge" class="ml-1.5 px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600 font-semibold">0</span>
+                    </button>
+                    <button id="tab-btn-activity" onclick="appData.switchDetailTab('activity')" class="px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg whitespace-nowrap">
+                        <i class="fa-solid fa-clock-rotate-left mr-1.5 text-indigo-500"></i> บันทึกกิจกรรม
+                        <span id="activity-count-badge" class="ml-1.5 px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600 font-semibold">0</span>
                     </button>
                 </div>
 
@@ -964,6 +1159,26 @@
                         <div id="documents-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                             <!-- Injected by JS -->
                         </div>
+                    </div>
+                </div>
+
+                <!-- ACTIVITY LOG VIEW -->
+                <div id="detail-view-activity" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hidden">
+                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
+                        <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-indigo-500"></i> บันทึกกิจกรรม (Activity Log)
+                        </h3>
+                        <div class="text-xs text-slate-500 font-medium">
+                            บันทึกทุกการเปลี่ยนแปลงพร้อมวันที่เวลาอัตโนมัติ
+                        </div>
+                    </div>
+                    <div id="activity-log-list" class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
+                        <!-- Injected by JS -->
+                    </div>
+                    <div id="activity-log-empty" class="py-12 text-center text-slate-500 hidden">
+                        <i class="fa-regular fa-clock fa-2x mb-3 text-slate-300"></i>
+                        <p class="font-medium text-slate-600">ยังไม่มีกิจกรรมใดๆ ในโครงการนี้</p>
+                        <p class="text-sm mt-1">กิจกรรมทั้งหมดจะถูกบันทึกอัตโนมัติ</p>
                     </div>
                 </div>
             </div>
@@ -2365,6 +2580,7 @@
                 this.renderExcelTable();
                 this.updateAutoMarkupUI();
                 this.renderDocuments();
+                this.updateWorkflowUI(proj);
                 this.switchDetailTab('table'); // Reset to table view
             },
 
@@ -2415,15 +2631,17 @@
                 const tableBtn = document.getElementById('tab-btn-table');
                 const galleryBtn = document.getElementById('tab-btn-gallery');
                 const docBtn = document.getElementById('tab-btn-documents');
+                const activityBtn = document.getElementById('tab-btn-activity');
                 const tableCard = document.getElementById('detail-view-table');
                 const galleryCard = document.getElementById('detail-view-gallery');
                 const docCard = document.getElementById('detail-view-documents');
+                const activityCard = document.getElementById('detail-view-activity');
                 
                 // Reset active styles
-                [tableBtn, galleryBtn, docBtn].forEach(btn => {
+                [tableBtn, galleryBtn, docBtn, activityBtn].forEach(btn => {
                     if (btn) btn.className = "px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg whitespace-nowrap";
                 });
-                [tableCard, galleryCard, docCard].forEach(card => {
+                [tableCard, galleryCard, docCard, activityCard].forEach(card => {
                     if (card) card.classList.add('hidden');
                 });
                 
@@ -2438,6 +2656,10 @@
                     if (docBtn) docBtn.className = "px-5 py-3 border-b-2 font-bold transition-colors border-brand-500 text-brand-600 bg-brand-50/50 rounded-t-lg whitespace-nowrap";
                     if (docCard) docCard.classList.remove('hidden');
                     this.renderDocuments();
+                } else if (tab === 'activity') {
+                    if (activityBtn) activityBtn.className = "px-5 py-3 border-b-2 font-bold transition-colors border-indigo-500 text-indigo-600 bg-indigo-50/50 rounded-t-lg whitespace-nowrap";
+                    if (activityCard) activityCard.classList.remove('hidden');
+                    this.renderActivityLog();
                 }
             },
             
@@ -3406,6 +3628,250 @@
                 if (this.currentProjectId) {
                     window.location.href = `quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company`;
                 }
+            },
+
+            // =============================================
+            // WORKFLOW STEPPER & ACTIVITY LOG
+            // =============================================
+
+            _ensureDocWorkflow(proj) {
+                if (!proj.docWorkflow) {
+                    proj.docWorkflow = {
+                        currentStep: 1,
+                        quotation: { status: 'draft', confirmedAt: null, confirmedBy: null, docNumber: proj.code || '' },
+                        invoice: { status: 'pending', createdAt: null, confirmedAt: null, confirmedBy: null, docNumber: null },
+                        receipt: { status: 'pending', createdAt: null, confirmedAt: null, confirmedBy: null, docNumber: null }
+                    };
+                }
+                if (!proj.activityLog) proj.activityLog = [];
+                return proj;
+            },
+
+            addActivityLog(proj, action, details, icon) {
+                if (!proj.activityLog) proj.activityLog = [];
+                const userNameEl = document.getElementById('userName');
+                const userName = userNameEl ? userNameEl.innerText : 'ระบบ';
+                proj.activityLog.unshift({
+                    action: action,
+                    details: details,
+                    icon: icon || 'fa-solid fa-circle-info',
+                    timestamp: new Date().toISOString(),
+                    user: userName
+                });
+                if (proj.activityLog.length > 200) proj.activityLog = proj.activityLog.slice(0, 200);
+            },
+
+            updateWorkflowUI(proj) {
+                this._ensureDocWorkflow(proj);
+                const wf = proj.docWorkflow;
+                const step = wf.currentStep || 1;
+
+                for (let i = 1; i <= 3; i++) {
+                    const stepEl = document.getElementById(`wf-step-${i}`);
+                    const statusEl = document.getElementById(`wf-status-${i}`);
+                    if (!stepEl) continue;
+
+                    stepEl.classList.remove('active', 'completed', 'disabled');
+                    if (i < step) {
+                        stepEl.classList.add('completed');
+                        if (statusEl) statusEl.textContent = 'ยืนยันแล้ว ✓';
+                    } else if (i === step) {
+                        stepEl.classList.add('active');
+                        if (statusEl) statusEl.textContent = 'กำลังดำเนินการ';
+                    } else {
+                        stepEl.classList.add('disabled');
+                        if (statusEl) statusEl.textContent = 'รอดำเนินการ';
+                    }
+                }
+                const conn1 = document.getElementById('wf-connector-1');
+                const conn2 = document.getElementById('wf-connector-2');
+                if (conn1) conn1.classList.toggle('completed', step > 1);
+                if (conn2) conn2.classList.toggle('completed', step > 2);
+
+                const btnConfirmQ = document.getElementById('btn-confirm-quotation');
+                const btnCancelQ = document.getElementById('btn-cancel-quotation');
+                const btnGoInvoice = document.getElementById('btn-goto-invoice');
+                const btnGoReceipt = document.getElementById('btn-goto-receipt');
+
+                if (btnConfirmQ) btnConfirmQ.classList.toggle('hidden', wf.quotation.status === 'confirmed');
+                if (btnCancelQ) btnCancelQ.classList.toggle('hidden', wf.quotation.status !== 'confirmed');
+                if (btnGoInvoice) btnGoInvoice.classList.toggle('hidden', step < 2);
+                if (btnGoReceipt) btnGoReceipt.classList.toggle('hidden', step < 3);
+
+                const badge = document.getElementById('activity-count-badge');
+                if (badge) badge.textContent = (proj.activityLog || []).length;
+            },
+
+            cancelQuotationConfirmation() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                this._ensureDocWorkflow(proj);
+
+                if (proj.docWorkflow.quotation.status !== 'confirmed') {
+                    this.showToast('ใบเสนอราคายังไม่ได้ยืนยัน', 'info');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'ยกเลิกการยืนยันใบเสนอราคา?',
+                    html: '<p style="color:#64748b;">ระบบจะปรับสถานะกลับมาเป็น <b>"ร่างใบเสนอราคา / รอการยืนยัน"</b><br><br><small style="color:#f59e0b;">(คุณสามารถแก้ไขและกดยืนยันใหม่ได้ทุกเมื่อ)</small></p>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fa-solid fa-rotate-left"></i> ยืนยันยกเลิก',
+                    cancelButtonText: 'ปิดหน้าต่าง',
+                    confirmButtonColor: '#ef4444',
+                    customClass: { popup: 'mentra-swal-popup' }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        proj.docWorkflow.quotation.status = 'draft';
+                        proj.docWorkflow.currentStep = 1;
+
+                        this.addActivityLog(proj, 'quotation_uncancelled', `ยกเลิกการยืนยันใบเสนอราคา (${proj.docWorkflow.quotation.docNumber || ''})`, 'fa-solid fa-rotate-left');
+
+                        this.syncCurrentProject();
+                        this.updateWorkflowUI(proj);
+
+                        this.showToast('ยกเลิกการยืนยันแล้ว สามารถกดยืนยันใหม่ได้เลย', 'success');
+                    }
+                });
+            },
+
+            confirmQuotation() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                this._ensureDocWorkflow(proj);
+
+                if (proj.docWorkflow.quotation.status === 'confirmed') {
+                    this.showToast('ใบเสนอราคายืนยันแล้ว กดไปหน้า Invoice ได้เลย', 'info');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'ยืนยันใบเสนอราคา?',
+                    html: '<p style="color:#64748b;">เมื่อยืนยันแล้ว ระบบจะเปิดขั้นตอน<br><b>"ใบกำกับภาษี / ใบแจ้งหนี้ / ใบส่งของ"</b> ให้อัตโนมัติ<br><br><small style="color:#94a3b8;">คุณยังสามารถกลับมาแก้ไขใบเสนอราคาได้ภายหลัง</small></p>',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fa-solid fa-circle-check"></i> ยืนยัน',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#10b981',
+                    customClass: { popup: 'mentra-swal-popup' }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const now = new Date().toISOString();
+                        proj.docWorkflow.quotation.status = 'confirmed';
+                        proj.docWorkflow.quotation.confirmedAt = now;
+                        const userEl = document.getElementById('userName');
+                        proj.docWorkflow.quotation.confirmedBy = userEl ? userEl.innerText : 'ระบบ';
+                        if (!proj.docWorkflow.quotation.docNumber) {
+                            proj.docWorkflow.quotation.docNumber = `QT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+                        }
+                        proj.docWorkflow.currentStep = 2;
+                        proj.docWorkflow.invoice.status = 'draft';
+                        proj.docWorkflow.invoice.createdAt = now;
+                        if (!proj.docWorkflow.invoice.docNumber) {
+                            proj.docWorkflow.invoice.docNumber = `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+                        }
+
+                        this.addActivityLog(proj, 'quotation_confirmed', `ยืนยันใบเสนอราคา (${proj.docWorkflow.quotation.docNumber})`, 'fa-solid fa-circle-check');
+                        this.addActivityLog(proj, 'invoice_created', `เปิดใบกำกับภาษี/ใบแจ้งหนี้ (${proj.docWorkflow.invoice.docNumber})`, 'fa-solid fa-file-invoice');
+
+                        this.syncCurrentProject();
+                        this.updateWorkflowUI(proj);
+                        
+                        Swal.fire({
+                            title: 'ยืนยันเรียบร้อย!',
+                            text: 'ต้องการดำเนินการขั้นต่อไป (ออกใบกำกับภาษี) เลยหรือไม่?',
+                            icon: 'success',
+                            showCancelButton: true,
+                            confirmButtonText: '<i class="fa-solid fa-file-invoice"></i> ไปหน้าใบกำกับภาษี',
+                            cancelButtonText: 'ทำภายหลัง',
+                            confirmButtonColor: '#10b981',
+                            customClass: { popup: 'mentra-swal-popup' }
+                        }).then((nextResult) => {
+                            if (nextResult.isConfirmed) {
+                                this.goToInvoice();
+                            }
+                        });
+                    }
+                });
+            },
+
+            goToInvoice() {
+                if (this.currentProjectId) {
+                    window.location.href = `sales_invoice.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
+                }
+            },
+
+            goToReceipt() {
+                if (this.currentProjectId) {
+                    window.location.href = `sales_receipt.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
+                }
+            },
+
+            onWorkflowStepClick(stepNum) {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                this._ensureDocWorkflow(proj);
+                const currentStep = proj.docWorkflow.currentStep || 1;
+                
+                if (stepNum > currentStep) {
+                    this.showToast('กรุณายืนยันขั้นตอนก่อนหน้าก่อน', 'warning');
+                    return;
+                }
+                if (stepNum === 1) {
+                    this.showToast('คุณอยู่ในหน้าใบเสนอราคาแล้ว', 'info');
+                } else if (stepNum === 2) {
+                    this.goToInvoice();
+                } else if (stepNum === 3) {
+                    this.goToReceipt();
+                }
+            },
+
+            renderActivityLog() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                const list = document.getElementById('activity-log-list');
+                const empty = document.getElementById('activity-log-empty');
+                if (!list || !empty) return;
+
+                const logs = proj && proj.activityLog ? proj.activityLog : [];
+                const badge = document.getElementById('activity-count-badge');
+                if (badge) badge.textContent = logs.length;
+
+                if (logs.length === 0) {
+                    list.classList.add('hidden');
+                    empty.classList.remove('hidden');
+                    return;
+                }
+                list.classList.remove('hidden');
+                empty.classList.add('hidden');
+
+                const iconMap = {
+                    'project_created': { icon: 'fa-solid fa-folder-plus', bg: 'bg-blue-100', text: 'text-blue-600' },
+                    'quotation_confirmed': { icon: 'fa-solid fa-circle-check', bg: 'bg-emerald-100', text: 'text-emerald-600' },
+                    'invoice_created': { icon: 'fa-solid fa-file-invoice', bg: 'bg-amber-100', text: 'text-amber-600' },
+                    'invoice_confirmed': { icon: 'fa-solid fa-circle-check', bg: 'bg-emerald-100', text: 'text-emerald-600' },
+                    'receipt_created': { icon: 'fa-solid fa-receipt', bg: 'bg-teal-100', text: 'text-teal-600' },
+                    'receipt_confirmed': { icon: 'fa-solid fa-circle-check', bg: 'bg-emerald-100', text: 'text-emerald-600' },
+                    'item_updated': { icon: 'fa-solid fa-pen', bg: 'bg-slate-100', text: 'text-slate-600' },
+                    'status_changed': { icon: 'fa-solid fa-arrow-right-arrow-left', bg: 'bg-purple-100', text: 'text-purple-600' },
+                    'project_edited': { icon: 'fa-solid fa-pen-to-square', bg: 'bg-blue-100', text: 'text-blue-600' },
+                };
+
+                list.innerHTML = logs.map(log => {
+                    const mapping = iconMap[log.action] || { icon: log.icon || 'fa-solid fa-circle-info', bg: 'bg-slate-100', text: 'text-slate-600' };
+                    const dt = new Date(log.timestamp);
+                    const timeStr = dt.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <div class="activity-log-item">
+                            <div class="log-icon ${mapping.bg} ${mapping.text}"><i class="${mapping.icon}"></i></div>
+                            <div class="log-content">
+                                <div class="log-action">${log.details || log.action}</div>
+                                <div class="log-time"><i class="fa-regular fa-clock mr-1"></i>${timeStr}</div>
+                                <div class="log-user"><i class="fa-regular fa-user mr-1"></i>${log.user || 'ระบบ'}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             },
 
             deleteProject() {

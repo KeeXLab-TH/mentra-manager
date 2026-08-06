@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ใบกำกับภาษี / ใบแจ้งหนี้ / ใบส่งของ — Mentra Manager</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- html2pdf.js for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- SweetAlert2 for Popups -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Premium UI Overlay -->
+    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
+    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Kanit', 'Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#e8f1fb', 100: '#cce1f5', 500: '#1A6FBF', 600: '#145999', 700: '#0e4a85', 900: '#0b3d6e' },
+                        accent: { 50: '#fdf0e6', 500: '#E07B2F', 600: '#c4681f' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .excel-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+        .excel-table th { background: linear-gradient(135deg, #0b3d6e 0%, #1A6FBF 100%); color: #ffffff; font-weight: 600; padding: 12px 10px; text-align: center; white-space: nowrap; font-size: 0.85rem; border-bottom: 2px solid #0e4a85; }
+        .excel-table th:first-child { border-top-left-radius: 12px; }
+        .excel-table th:last-child { border-top-right-radius: 12px; }
+        .excel-table td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 10px 12px; vertical-align: middle; transition: background 0.15s; }
+        .excel-table td:first-child { border-left: 1px solid #f1f5f9; }
+        .excel-table tbody tr:hover td { background-color: #f0f7ff !important; }
+        .col-total { background-color: #f8fafc; font-weight: 700; text-align: right; color: #0f172a; }
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: #f0f4f9;
+            font-family: 'Kanit', sans-serif;
+            overflow: hidden;
+        }
+        :root {
+            --sidebar-w: 260px;
+            --sidebar-w-collapsed: 72px;
+            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
+            --header-h: 68px;
+            --primary: #1A6FBF;
+            --primary-light: #e8f1fb;
+            --secondary: #E07B2F;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --t-fast: 0.15s ease;
+            --t-normal: 0.25s ease;
+            --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===== SIDEBAR & LOGO LAYOUT ===== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: width var(--t-slow), transform var(--t-slow);
+            overflow: hidden;
+        }
+        .sidebar.collapsed {
+            width: var(--sidebar-w-collapsed);
+        }
+        .sidebar.collapsed .sidebar-logo-text,
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .nav-section-title,
+        .sidebar.collapsed .user-info,
+        .sidebar.collapsed .btn-logout-text,
+        .sidebar.collapsed .submenu-caret {
+            display: none !important;
+        }
+        .sidebar.collapsed .sidebar-logo {
+            justify-content: center;
+            padding-right: 0;
+        }
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+        }
+        .sidebar-logo {
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: var(--header-h);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .sidebar-logo img {
+            width: 40px !important;
+            height: 40px !important;
+            max-width: 40px !important;
+            max-height: 40px !important;
+            object-fit: contain;
+            background: white;
+            border-radius: 10px;
+            padding: 4px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .sidebar-logo-text .app-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+        .sidebar-logo-text .app-sub {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.50);
+            font-weight: 400;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+        .collapse-btn {
+            position: absolute; right: -12px; top: 50%; transform: translateY(-50%);
+            width: 24px; height: 24px; background: white; border: none; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            color: var(--primary); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); z-index: 10;
+        }
+        .sidebar-nav {
+            flex: 1; padding: 12px 10px; overflow-y: auto; overflow-x: hidden;
+        }
+        .nav-section-title {
+            font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+            color: rgba(255, 255, 255, 0.38); padding: 8px 12px 4px; margin-top: 10px; white-space: nowrap;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px; padding: 11px 13px;
+            border-radius: var(--radius-md); cursor: pointer; color: rgba(255, 255, 255, 0.70);
+            font-size: 13.5px; font-weight: 500; transition: background 0.15s, color 0.15s;
+            margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left;
+            font-family: 'Kanit', sans-serif; position: relative; white-space: nowrap; text-decoration: none;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(255, 255, 255, 0.14); color: white; }
+        .nav-icon {
+            width: 32px; height: 32px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.10);
+            display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
+        }
+        .sidebar-submenu { display: none; padding-left: 14px; margin-top: 2px; margin-bottom: 4px; flex-direction: column; gap: 2px; }
+        .sidebar-submenu.open { display: flex; }
+        .submenu-item {
+            display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px;
+            color: rgba(255, 255, 255, 0.65); font-size: 13px; font-weight: 500; text-decoration: none;
+        }
+        .submenu-item:hover, .submenu-item.active { background: rgba(255, 255, 255, 0.14); color: white; }
+        .submenu-caret { margin-left: auto; font-size: 11px; transition: transform 0.2s; opacity: 0.7; }
+        .nav-item.open .submenu-caret { transform: rotate(180deg); }
+
+        /* ===== MAIN WRAPPER & TOPBAR ===== */
+        .main-wrapper {
+            flex: 1;
+            margin-left: var(--sidebar-w);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            min-width: 0;
+            transition: margin-left var(--t-slow);
+        }
+        .sidebar.collapsed ~ .main-wrapper {
+            margin-left: var(--sidebar-w-collapsed);
+        }
+        .content-area {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background-color: #f0f4f9;
+            box-sizing: border-box;
+        }
+        .topbar {
+            height: var(--header-h); background: #ffffff; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; padding: 0 24px; justify-content: space-between;
+            flex-shrink: 0; z-index: 90; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+        .topbar-breadcrumb { display: flex; flex-direction: column; }
+        .breadcrumb-title { font-size: 16px; font-weight: 700; color: #1e293b; }
+        .breadcrumb-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+        .topbar-right-menu { display: flex; align-items: center; gap: 12px; }
+        .user-info-bar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--primary), #2563eb); display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; flex-shrink: 0; }
+        .user-details { display: flex; flex-direction: column; }
+        .user-name { font-size: 13px; font-weight: 600; color: #334155; line-height: 1.2; }
+        .role-badge { font-size: 10px; color: #64748b; }
+        .btn-logout { padding: 7px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #ef4444; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.15s; font-family: 'Kanit', sans-serif; }
+        .btn-logout:hover { background: #ef4444; color: white; border-color: #ef4444; }
+        .workflow-stepper { display: flex; align-items: center; justify-content: center; gap: 0; padding: 20px 16px; background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%); border-radius: 16px; border: 1px solid #e2e8f0; }
+        .workflow-step { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 0 0 auto; min-width: 140px; z-index: 2; cursor: pointer; transition: transform 0.2s; }
+        .workflow-step:hover { transform: translateY(-2px); }
+        .workflow-step.disabled { opacity: 0.5; cursor: not-allowed; }
+        .workflow-step.disabled:hover { transform: none; }
+        .step-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; border: 3px solid #cbd5e1; background: white; color: #94a3b8; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .workflow-step.active .step-circle { border-color: #3b82f6; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; box-shadow: 0 4px 16px rgba(59,130,246,0.35); animation: pulse-step 2s ease-in-out infinite; }
+        .workflow-step.completed .step-circle { border-color: #10b981; background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+        @keyframes pulse-step { 0%, 100% { box-shadow: 0 4px 16px rgba(59,130,246,0.35); } 50% { box-shadow: 0 4px 24px rgba(59,130,246,0.55); } }
+        .step-label { font-size: 12px; font-weight: 600; color: #94a3b8; text-align: center; line-height: 1.3; max-width: 130px; }
+        .workflow-step.active .step-label { color: #2563eb; }
+        .workflow-step.completed .step-label { color: #059669; }
+        .step-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: #f1f5f9; color: #94a3b8; }
+        .workflow-step.active .step-status { background: #dbeafe; color: #2563eb; }
+        .workflow-step.completed .step-status { background: #d1fae5; color: #059669; }
+        .step-connector { flex: 1; height: 3px; background: #e2e8f0; min-width: 40px; max-width: 120px; border-radius: 2px; z-index: 1; margin: 0 -8px; align-self: flex-start; margin-top: 23px; }
+        .step-connector.completed { background: linear-gradient(90deg, #10b981, #34d399); }
+        .activity-log-item { display: flex; gap: 12px; padding: 12px 16px; border-left: 3px solid #e2e8f0; margin-left: 8px; transition: all 0.2s; }
+        .activity-log-item:hover { background: #f8fafc; border-left-color: #3b82f6; }
+        .activity-log-item .log-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+        .activity-log-item .log-content { flex: 1; min-width: 0; }
+        .activity-log-item .log-action { font-weight: 600; font-size: 13px; color: #334155; }
+        .activity-log-item .log-time { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+        .activity-log-item .log-user { font-size: 11px; color: #64748b; margin-top: 1px; }
+        .invoice-field-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+        .invoice-field-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .invoice-field-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 8px 12px; font-size: 14px; outline: none; transition: border-color 0.2s; font-family: 'Kanit', sans-serif; }
+        .invoice-field-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        @media (max-width: 640px) {
+            .workflow-stepper { padding: 12px 8px; }
+            .workflow-step { min-width: 80px; }
+            .step-circle { width: 36px; height: 36px; font-size: 14px; }
+            .step-label { font-size: 10px; max-width: 80px; }
+            .step-connector { min-width: 20px; margin-top: 17px; }
+        }
+        @media (max-width: 768px) { body { padding-bottom: 70px !important; } }
+    </style>
+</head>
+
+<body class="text-slate-800 antialiased" style="display: none !important;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <div class="sidebar-logo-text"><div class="app-name">Mentra Manager</div><div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div></div>
+            <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6" /></svg></button>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-title">เมนูหลัก</div>
+            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard"><div class="nav-icon">🏠</div><span class="nav-label">Dashboard</span></button>
+            <button class="nav-item" onclick="window.location.href='sales_dashboard.html'" id="nav-sales-dashboard">
+                <div class="nav-icon">📑</div>
+                <span class="nav-label">ระบบเอกสารงานขาย</span>
+            </button>
+            <div class="nav-item-group" id="nav-purchasing-group">
+                <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main"><div class="nav-icon">🛒</div><span class="nav-label">จัดการจัดซื้อ / วัสดุ</span><i class="fa-solid fa-chevron-down submenu-caret"></i></button>
+                <div class="sidebar-submenu" id="purchasingSubmenu">
+                    <a href="materials_purchasing.html" class="submenu-item"><span class="submenu-icon">🏫</span><span class="nav-label">สถานศึกษา</span></a>
+                    <a href="materials_purchasing_company.html" class="submenu-item"><span class="submenu-icon">🏢</span><span class="nav-label">บริษัทเอกชน</span></a>
+                </div>
+            </div>
+            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products"><div class="nav-icon">📦</div><span class="nav-label">สินค้า</span></button>
+        </nav>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper flex-1 flex flex-col min-h-screen overflow-x-hidden">
+        <header class="topbar">
+            <div class="topbar-breadcrumb">
+                <span class="breadcrumb-title" id="pageTitle">ใบกำกับภาษี / ใบแจ้งหนี้ / ใบส่งของ</span>
+                <span class="breadcrumb-sub" id="pageSubtitle">ระบบออกเอกสารงานขาย — ขั้นตอนที่ 2</span>
+            </div>
+            <div class="topbar-actions" id="topbarActions"></div>
+            <div class="topbar-right-menu">
+                <div class="user-info-bar" id="userInfoBar"><div class="user-avatar" id="userAvatar">👤</div><div class="user-details"><span class="user-name" id="userName">ผู้ใช้งาน</span><span class="role-badge" id="userRoleBadge">User</span></div></div>
+                <button class="btn-logout" id="btnLogout" onclick="logoutUser()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg><span class="btn-logout-text">ออกจากระบบ</span></button>
+            </div>
+        </header>
+
+        <main class="content-area flex-1 p-5 md:p-8 space-y-6">
+            <!-- No Project Selected -->
+            <div id="no-project-msg" class="text-center py-20">
+                <div class="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-amber-100"><i class="fa-solid fa-file-invoice text-4xl text-amber-500"></i></div>
+                <h2 class="text-2xl font-bold text-slate-700 mb-3">ไม่พบโครงการ</h2>
+                <p class="text-slate-500 mb-6">กรุณาเลือกโครงการจากหน้าจัดการวัสดุเพื่อออกใบกำกับภาษี</p>
+                <button onclick="window.location.href='materials_purchasing.html'" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> กลับหน้าจัดการวัสดุ</button>
+            </div>
+
+            <!-- PROJECT INVOICE VIEW -->
+            <div id="invoice-view" class="hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-start gap-4">
+                        <button onclick="window.location.href='materials_purchasing.html?projectId=' + encodeURIComponent(invoiceApp.projectId)" class="w-10 h-10 shrink-0 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-brand-500 transition-colors mt-1"><i class="fa-solid fa-arrow-left"></i></button>
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800" id="inv-project-name">ชื่อโครงการ</h2>
+                            <div class="flex flex-wrap items-center gap-3 mt-2 text-sm text-slate-600">
+                                <span class="bg-amber-100 px-2.5 py-1 rounded-md font-mono text-amber-700 font-semibold text-xs border border-amber-200" id="inv-doc-number">INV-XXXX</span>
+                                <span class="bg-slate-100 px-2.5 py-1 rounded-md font-mono text-slate-700 font-semibold text-xs border border-slate-200" id="inv-project-code">รหัสงาน: ---</span>
+                                <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar text-slate-400"></i> <span id="inv-project-date">---</span></span>
+                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-building text-slate-400"></i> <span id="inv-project-inst">---</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                        <button onclick="window.location.href='materials_purchasing.html?projectId=' + encodeURIComponent(invoiceApp.projectId)" class="h-10 px-4 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap"><i class="fa-solid fa-arrow-left"></i> กลับใบเสนอราคา</button>
+                        <button onclick="invoiceApp.openPdfSettingsModal()" class="h-10 px-4 rounded-lg border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ตั้งค่าและปรับแต่งแบบฟอร์ม PDF"><i class="fa-solid fa-sliders"></i> ตั้งค่าแบบฟอร์ม PDF</button>
+                        <button onclick="invoiceApp.exportToPDF()" class="h-10 px-4 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ส่งออก/พิมพ์ PDF ใบกำกับภาษี"><i class="fa-solid fa-file-pdf"></i> พิมพ์ PDF / ใบกำกับภาษี</button>
+                        <button id="btn-confirm-invoice" onclick="invoiceApp.confirmInvoice()" class="h-10 px-4 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap"><i class="fa-solid fa-circle-check"></i><span class="hidden sm:inline">ยืนยันใบกำกับภาษี</span></button>
+                        <button id="btn-goto-receipt" onclick="invoiceApp.goToReceipt()" class="h-10 px-4 rounded-lg border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden"><i class="fa-solid fa-receipt"></i><span class="hidden sm:inline">ไปหน้า Receipt</span></button>
+                    </div>
+                </div>
+
+                <!-- WORKFLOW STEPPER -->
+                <div id="workflow-stepper-container" class="workflow-stepper">
+                    <div class="workflow-step completed" id="wf-step-1" onclick="invoiceApp.onWorkflowStepClick(1)"><div class="step-circle"><i class="fa-solid fa-file-invoice-dollar"></i></div><div class="step-label">ใบเสนอราคา</div><div class="step-status" id="wf-status-1">ยืนยันแล้ว ✓</div></div>
+                    <div class="step-connector completed" id="wf-connector-1"></div>
+                    <div class="workflow-step active" id="wf-step-2" onclick="invoiceApp.onWorkflowStepClick(2)"><div class="step-circle"><i class="fa-solid fa-file-invoice"></i></div><div class="step-label">ใบกำกับภาษี /<br>ใบแจ้งหนี้ / ใบส่งของ</div><div class="step-status" id="wf-status-2">กำลังดำเนินการ</div></div>
+                    <div class="step-connector" id="wf-connector-2"></div>
+                    <div class="workflow-step disabled" id="wf-step-3" onclick="invoiceApp.onWorkflowStepClick(3)"><div class="step-circle"><i class="fa-solid fa-receipt"></i></div><div class="step-label">ใบเสร็จรับเงิน</div><div class="step-status" id="wf-status-3">รอดำเนินการ</div></div>
+                </div>
+
+                <!-- INVOICE FIELDS -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-md overflow-hidden">
+                    <div class="p-4 bg-gradient-to-r from-slate-900 via-slate-800 to-brand-900 text-white flex items-center justify-between">
+                        <h3 class="font-bold flex items-center gap-2.5 text-base">
+                            <i class="fa-solid fa-file-invoice text-amber-400 text-lg"></i> 
+                            <span>ข้อมูลใบกำกับภาษี / ใบแจ้งหนี้</span>
+                        </h3>
+                        <span class="bg-white/10 backdrop-blur-md text-amber-300 text-xs px-3 py-1 rounded-full font-semibold border border-white/15 shadow-xs">
+                            <i class="fa-solid fa-sliders mr-1"></i> รายละเอียดเอกสาร
+                        </span>
+                    </div>
+                    
+                    <div class="p-5 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 transition-all hover:border-brand-400 hover:bg-white hover:shadow-sm">
+                                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-hashtag text-brand-500"></i> เลขที่เอกสาร
+                                </div>
+                                <input type="text" id="inv-field-docnum" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono font-bold text-brand-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all" placeholder="INV-2026-0001" onchange="invoiceApp.saveInvoiceField('docNumber', this.value)">
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 transition-all hover:border-brand-400 hover:bg-white hover:shadow-sm">
+                                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                                    <i class="fa-regular fa-calendar-check text-emerald-600"></i> วันครบกำหนดชำระ
+                                </div>
+                                <input type="date" id="inv-field-duedate" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all" onchange="invoiceApp.saveInvoiceField('dueDate', this.value)">
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 transition-all hover:border-brand-400 hover:bg-white hover:shadow-sm">
+                                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-truck-ramps text-amber-500"></i> วันส่งของ
+                                </div>
+                                <input type="date" id="inv-field-deliverydate" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all" onchange="invoiceApp.saveInvoiceField('deliveryDate', this.value)">
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 transition-all hover:border-brand-400 hover:bg-white hover:shadow-sm">
+                                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-credit-card text-purple-600"></i> เงื่อนไขการชำระเงิน
+                                </div>
+                                <select id="inv-field-terms" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all" onchange="invoiceApp.saveInvoiceField('paymentTerms', this.value)">
+                                    <option value="">เลือกเงื่อนไข...</option>
+                                    <option value="cash">💵 เงินสด</option>
+                                    <option value="transfer">🏦 โอนเงินผ่านธนาคาร</option>
+                                    <option value="cheque">📝 เช็คธนาคาร</option>
+                                    <option value="credit30">⏳ เครดิต 30 วัน</option>
+                                    <option value="credit60">⏳ เครดิต 60 วัน</option>
+                                    <option value="credit90">⏳ เครดิต 90 วัน</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+                            <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-regular fa-note-sticky text-amber-500"></i> หมายเหตุเพิ่มเติม
+                            </div>
+                            <textarea id="inv-field-notes" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all resize-none" rows="2" placeholder="ระบุหมายเหตุ เงื่อนไขการส่งของ หรือข้อมูลบัญชีธนาคารเพิ่มเติม..." onchange="invoiceApp.saveInvoiceField('notes', this.value)"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEMS TABLE -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-md overflow-hidden flex flex-col">
+                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-gradient-to-r from-slate-50 to-blue-50/30">
+                        <div>
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2 text-base">
+                                <i class="fa-solid fa-list-check text-brand-500"></i> รายการสินค้า / บริการ
+                            </h3>
+                            <div class="text-xs text-slate-500 mt-0.5">รายการอ้างอิงจากใบเสนอราคาเพื่อนำมาออกใบกำกับภาษี</div>
+                        </div>
+                        <span class="bg-brand-50 text-brand-700 text-xs px-3 py-1 rounded-full font-semibold border border-brand-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-lock text-brand-500"></i> ล็อกตามใบเสนอราคา
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto p-1">
+                        <table class="excel-table" id="invoice-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">#</th>
+                                    <th style="min-width: 250px; text-align: left;">รายการสินค้า / รายละเอียดงาน</th>
+                                    <th style="width: 90px;">จำนวน</th>
+                                    <th style="width: 80px;">หน่วย</th>
+                                    <th style="width: 120px; text-align: right;">ราคา/หน่วย (บาท)</th>
+                                    <th style="width: 140px;" class="col-total">จำนวนเงิน (บาท)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoice-table-body"></tbody>
+                        </table>
+                    </div>
+
+                    <!-- SUMMARY & BAHT TEXT CONTAINER -->
+                    <div class="p-5 bg-gradient-to-br from-slate-50 via-blue-50/20 to-white border-t border-slate-200/80 flex flex-col md:flex-row items-stretch justify-between gap-5">
+                        
+                        <!-- Left: Thai Baht Text Card -->
+                        <div class="flex-1 bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col justify-center">
+                            <div class="text-xs font-bold text-brand-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                <i class="fa-solid fa-spell-check text-brand-500"></i> จำนวนเงินตัวอักษร (THAI BAHT TEXT)
+                            </div>
+                            <div class="text-base font-bold text-brand-900 bg-brand-50/70 border border-brand-200/80 rounded-lg py-2.5 px-4 text-center shadow-inner" id="inv-baht-text">
+                                (ศูนย์บาทถ้วน)
+                            </div>
+                        </div>
+
+                        <!-- Right: Summary Totals Breakdown -->
+                        <div class="w-full md:w-96 space-y-2.5">
+                            <div class="flex justify-between items-center px-4 py-2 bg-white rounded-lg border border-slate-200/80 text-sm">
+                                <span class="text-slate-600 font-semibold">ยอดรวมก่อน VAT (Subtotal):</span>
+                                <span class="font-extrabold text-slate-800 text-base" id="inv-subtotal">฿0.00</span>
+                            </div>
+
+                            <div class="flex justify-between items-center px-4 py-2 bg-white rounded-lg border border-slate-200/80 text-sm">
+                                <span class="text-slate-600 font-semibold">ภาษีมูลค่าเพิ่ม VAT (<span id="inv-tax-rate-display">7</span>%):</span>
+                                <span class="font-extrabold text-slate-800 text-base" id="inv-tax-amount">฿0.00</span>
+                            </div>
+
+                            <div class="flex justify-between items-center px-5 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl shadow-lg shadow-emerald-600/20">
+                                <div>
+                                    <div class="text-xs opacity-90 font-medium">ยอดรวมสุทธิ (GRAND TOTAL)</div>
+                                    <div class="text-xs text-emerald-200 font-semibold">รวมภาษีมูลค่าเพิ่มแล้ว</div>
+                                </div>
+                                <div class="font-black text-2xl tracking-tight" id="inv-grand-total">฿0.00</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/50 cursor-pointer" onclick="document.getElementById('inv-activity-body').classList.toggle('hidden')">
+                        <h3 class="font-bold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-indigo-500"></i> บันทึกกิจกรรม <span id="inv-activity-count" class="ml-1.5 px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600 font-semibold">0</span></h3>
+                        <i class="fa-solid fa-chevron-down text-slate-400"></i>
+                    </div>
+                    <div id="inv-activity-body" class="divide-y divide-slate-100 max-h-[400px] overflow-y-auto hidden"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        window.invoiceApp = {
+            projectId: null, project: null,
+            showToast(msg, type = 'info') { Swal.fire({ toast: true, position: 'top-end', icon: type, title: msg, showConfirmButton: false, timer: 2500, timerProgressBar: true, customClass: { popup: 'mentra-swal-popup' } }); },
+            _ensureDocWorkflow(proj) {
+                if (!proj.docWorkflow) { proj.docWorkflow = { currentStep: 1, quotation: { status: 'draft', confirmedAt: null, confirmedBy: null, docNumber: proj.code || '' }, invoice: { status: 'pending', createdAt: null, confirmedAt: null, confirmedBy: null, docNumber: null }, receipt: { status: 'pending', createdAt: null, confirmedAt: null, confirmedBy: null, docNumber: null } }; }
+                if (!proj.invoiceData) { proj.invoiceData = { taxRate: 7, paymentTerms: '', dueDate: null, deliveryDate: null, notes: '' }; }
+                if (!proj.activityLog) proj.activityLog = [];
+            },
+            addActivityLog(proj, action, details, icon) {
+                if (!proj.activityLog) proj.activityLog = [];
+                const userNameEl = document.getElementById('userName');
+                proj.activityLog.unshift({ action, details, icon: icon || 'fa-solid fa-circle-info', timestamp: new Date().toISOString(), user: userNameEl ? userNameEl.innerText : 'ระบบ' });
+                if (proj.activityLog.length > 200) proj.activityLog = proj.activityLog.slice(0, 200);
+            },
+            loadProject(proj) {
+                this.project = proj;
+                this._ensureDocWorkflow(proj);
+                if (proj.docWorkflow.currentStep < 2) {
+                    document.getElementById('no-project-msg').innerHTML = '<div class="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-amber-100"><i class="fa-solid fa-lock text-4xl text-amber-500"></i></div><h2 class="text-2xl font-bold text-slate-700 mb-3">ยังไม่สามารถออก Invoice ได้</h2><p class="text-slate-500 mb-6">กรุณายืนยันใบเสนอราคาก่อน</p><button onclick="window.location.href=\'materials_purchasing.html?projectId=' + encodeURIComponent(this.projectId) + '\'" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> กลับใบเสนอราคา</button>';
+                    return;
+                }
+                document.getElementById('no-project-msg').classList.add('hidden');
+                document.getElementById('invoice-view').classList.remove('hidden');
+                document.getElementById('inv-project-name').innerText = proj.name || 'ไม่มีชื่อ';
+                document.getElementById('inv-project-code').innerText = 'รหัสงาน: ' + (proj.code || '-');
+                document.getElementById('inv-doc-number').innerText = proj.docWorkflow.invoice.docNumber || 'INV-XXXX';
+                let dd = '-'; if (proj.date) { const d = new Date(proj.date); if (!isNaN(d.getTime())) dd = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }); }
+                document.getElementById('inv-project-date').innerText = dd;
+                document.getElementById('inv-project-inst').innerText = proj.institution || '-';
+                const invData = proj.invoiceData || {};
+                document.getElementById('inv-field-docnum').value = proj.docWorkflow.invoice.docNumber || '';
+                document.getElementById('inv-field-duedate').value = invData.dueDate || '';
+                document.getElementById('inv-field-deliverydate').value = invData.deliveryDate || '';
+                document.getElementById('inv-field-terms').value = invData.paymentTerms || '';
+                document.getElementById('inv-field-notes').value = invData.notes || '';
+                this.renderTable(); this.updateWorkflowUI(); this.renderActivityLog();
+            },
+            renderTable() {
+                const proj = this.project; if (!proj) return;
+                const items = this._getItemsList(proj.items);
+                const tbody = document.getElementById('invoice-table-body'); if (!tbody) return;
+                let html = '', subtotal = 0, rowNum = 0;
+                items.forEach(item => {
+                    if (item.isHeader) return; rowNum++;
+                    const qty = parseFloat(item.qty) || 0;
+                    const price = parseFloat(item.unitPrice) || parseFloat(item.targetPrice) || parseFloat(item.foundPrice) || 0;
+                    const total = qty * price;
+                    subtotal += total;
+                    
+                    const bgClass = rowNum % 2 === 0 ? 'bg-slate-50/50' : 'bg-white';
+                    html += `<tr class="${bgClass}">
+                        <td class="text-center font-semibold text-slate-500">
+                            <span class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-xs inline-flex items-center justify-center">${rowNum}</span>
+                        </td>
+                        <td class="font-medium text-slate-800">${item.name || '-'}</td>
+                        <td class="text-center font-semibold text-slate-700">${qty || '-'}</td>
+                        <td class="text-center text-slate-500 text-xs font-semibold">${item.unit || 'รายการ'}</td>
+                        <td class="text-right font-semibold text-slate-700">${price ? price.toLocaleString('th-TH', {minimumFractionDigits: 2}) : '-'}</td>
+                        <td class="col-total font-extrabold text-slate-900">${total ? total.toLocaleString('th-TH', {minimumFractionDigits: 2}) : '-'}</td>
+                    </tr>`;
+                });
+                if (rowNum === 0) html = '<tr><td colspan="6" class="text-center text-slate-400 py-10">ไม่มีรายการสินค้า</td></tr>';
+                tbody.innerHTML = html;
+                const taxRate = (proj.invoiceData && proj.invoiceData.taxRate) || 7, tax = subtotal * (taxRate / 100), grand = subtotal + tax;
+                document.getElementById('inv-subtotal').innerText = '฿' + subtotal.toLocaleString('th-TH', {minimumFractionDigits: 2});
+                document.getElementById('inv-tax-rate-display').innerText = taxRate;
+                document.getElementById('inv-tax-amount').innerText = '฿' + tax.toLocaleString('th-TH', {minimumFractionDigits: 2});
+                document.getElementById('inv-grand-total').innerText = '฿' + grand.toLocaleString('th-TH', {minimumFractionDigits: 2});
+                
+                const bahtText = this.arabicNumberToText(grand.toFixed(2));
+                const bahtEl = document.getElementById('inv-baht-text');
+                if (bahtEl) bahtEl.innerText = `(${bahtText})`;
+            },
+            _getItemsList(items) { if (!items) return []; if (Array.isArray(items)) return items.filter(Boolean); return Object.keys(items).map(k => ({ id: k, ...items[k] })).filter(Boolean); },
+            saveInvoiceField(field, value) {
+                if (!this.project) return; this._ensureDocWorkflow(this.project);
+                if (!this.project.invoiceData) this.project.invoiceData = {};
+                if (field === 'docNumber') { this.project.docWorkflow.invoice.docNumber = value; } else { this.project.invoiceData[field] = value; }
+                this.syncProject();
+            },
+            syncProject() { if (this.project && window.saveProjectToFirestore) window.saveProjectToFirestore(this.project); },
+            updateWorkflowUI() {
+                const proj = this.project; if (!proj) return;
+                const wf = proj.docWorkflow, step = wf.currentStep || 1;
+                for (let i = 1; i <= 3; i++) { const s = document.getElementById('wf-step-' + i), st = document.getElementById('wf-status-' + i); if (!s) continue; s.classList.remove('active','completed','disabled'); if (i < step) { s.classList.add('completed'); if (st) st.textContent = 'ยืนยันแล้ว ✓'; } else if (i === step) { s.classList.add('active'); if (st) st.textContent = 'กำลังดำเนินการ'; } else { s.classList.add('disabled'); if (st) st.textContent = 'รอดำเนินการ'; } }
+                const c1 = document.getElementById('wf-connector-1'), c2 = document.getElementById('wf-connector-2');
+                if (c1) c1.classList.toggle('completed', step > 1); if (c2) c2.classList.toggle('completed', step > 2);
+                const bc = document.getElementById('btn-confirm-invoice'), br = document.getElementById('btn-goto-receipt');
+                if (bc) bc.classList.toggle('hidden', wf.invoice.status === 'confirmed');
+                if (br) br.classList.toggle('hidden', step < 3);
+            },
+            confirmInvoice() {
+                const proj = this.project; if (!proj) return; this._ensureDocWorkflow(proj);
+                if (proj.docWorkflow.invoice.status === 'confirmed') { this.showToast('ใบกำกับภาษียืนยันแล้ว', 'info'); return; }
+                Swal.fire({ title: 'ยืนยันใบกำกับภาษี?', html: '<p style="color:#64748b;">เมื่อยืนยันแล้ว ระบบจะเปิดขั้นตอน<br><b>"ใบเสร็จรับเงิน"</b> ให้อัตโนมัติ</p>', icon: 'question', showCancelButton: true, confirmButtonText: '<i class="fa-solid fa-circle-check"></i> ยืนยัน', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#10b981', customClass: { popup: 'mentra-swal-popup' } }).then(r => {
+                    if (r.isConfirmed) {
+                        const now = new Date().toISOString();
+                        proj.docWorkflow.invoice.status = 'confirmed'; proj.docWorkflow.invoice.confirmedAt = now;
+                        const ue = document.getElementById('userName'); proj.docWorkflow.invoice.confirmedBy = ue ? ue.innerText : 'ระบบ';
+                        proj.docWorkflow.currentStep = 3; proj.docWorkflow.receipt.status = 'draft'; proj.docWorkflow.receipt.createdAt = now;
+                        if (!proj.docWorkflow.receipt.docNumber) proj.docWorkflow.receipt.docNumber = 'RCP-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 9000) + 1000);
+                        this.addActivityLog(proj, 'invoice_confirmed', 'ยืนยันใบกำกับภาษี (' + proj.docWorkflow.invoice.docNumber + ')', 'fa-solid fa-circle-check');
+                        this.addActivityLog(proj, 'receipt_created', 'เปิดใบเสร็จรับเงิน (' + proj.docWorkflow.receipt.docNumber + ')', 'fa-solid fa-receipt');
+                        this.syncProject(); this.updateWorkflowUI(); this.renderActivityLog();
+                        
+                        Swal.fire({
+                            title: 'ยืนยันเรียบร้อย!',
+                            text: 'ต้องการดำเนินการขั้นต่อไป (ออกใบเสร็จรับเงิน) เลยหรือไม่?',
+                            icon: 'success',
+                            showCancelButton: true,
+                            confirmButtonText: '<i class="fa-solid fa-receipt"></i> ไปหน้าใบเสร็จรับเงิน',
+                            cancelButtonText: 'ทำภายหลัง',
+                            confirmButtonColor: '#10b981',
+                            customClass: { popup: 'mentra-swal-popup' }
+                        }).then((nextResult) => {
+                            if (nextResult.isConfirmed) {
+                                this.goToReceipt();
+                            }
+                        });
+                    }
+                });
+            },
+            goToReceipt() { if (this.projectId) window.location.href = 'sales_receipt.html?projectId=' + encodeURIComponent(this.projectId); },
+            onWorkflowStepClick(n) {
+                const proj = this.project; if (!proj) return; const cs = proj.docWorkflow.currentStep || 1;
+                if (n > cs) { this.showToast('กรุณายืนยันขั้นตอนก่อนหน้า', 'warning'); return; }
+                if (n === 1) window.location.href = 'materials_purchasing.html?projectId=' + encodeURIComponent(this.projectId);
+                else if (n === 2) this.showToast('คุณอยู่ในหน้านี้แล้ว', 'info');
+                else if (n === 3) this.goToReceipt();
+            },
+
+            arabicNumberToText(Number) {
+                let NumberStr = Number.toString();
+                let SplitNum = NumberStr.split('.');
+                let BahtNum = SplitNum[0];
+                let SatangNum = SplitNum.length > 1 ? SplitNum[1] : "00";
+                if (SatangNum.length == 1) SatangNum += "0";
+                if (BahtNum == "0" && SatangNum == "00") return "ศูนย์บาทถ้วน";
+
+                const TxtNumArr = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า", "สิบ"];
+                const TxtDigitArr = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+
+                function ConvertText(numStr) {
+                    let text = "";
+                    let len = numStr.length;
+                    for (let i = 0; i < len; i++) {
+                        let n = parseInt(numStr.charAt(i));
+                        let digit = len - i - 1;
+                        if (n !== 0) {
+                            if (digit === 1 && n === 1) text += "สิบ";
+                            else if (digit === 1 && n === 2) text += "ยี่สิบ";
+                            else if (digit === 0 && n === 1 && len > 1 && numStr.charAt(i - 1) != '0') text += "เอ็ด";
+                            else text += TxtNumArr[n] + TxtDigitArr[digit];
+                        }
+                    }
+                    return text;
+                }
+
+                let BahtText = "";
+                if (parseInt(BahtNum) > 0) {
+                    if (BahtNum.length > 6) {
+                        let millions = BahtNum.substring(0, BahtNum.length - 6);
+                        let rest = BahtNum.substring(BahtNum.length - 6);
+                        BahtText = ConvertText(millions) + "ล้าน" + ConvertText(rest) + "บาท";
+                    } else {
+                        BahtText = ConvertText(BahtNum) + "บาท";
+                    }
+                }
+
+                let SatangText = parseInt(SatangNum) > 0 ? (ConvertText(SatangNum) + "สตางค์") : "ถ้วน";
+                return BahtText + SatangText;
+            },
+
+
+            pdfSettings: {
+                themeColor: '#1A6FBF',
+                fontFamily: "'Kanit', sans-serif",
+                titleTh: 'ใบกำกับภาษี / ใบแจ้งหนี้',
+                titleEn: 'TAX INVOICE / INVOICE / DELIVERY ORDER',
+                showLogo: true,
+                showTaxId: true,
+                showBankInfo: true,
+                showSignatures: true,
+                bahtTextPos: 'left',
+                sellerTitle: 'ในนาม บริษัท เมนทร้า โซลูชั่น จำกัด',
+                bankDetails: 'ชำระเงินโดยโอนเข้าบัญชี บจก. เมนทร้า โซลูชั่น'
+            },
+
+            openPdfSettingsModal() {
+                const modal = document.getElementById('invoicePdfSettingsModal');
+                if (!modal) return;
+                
+                modal.style.display = 'flex';
+                modal.classList.remove('hidden');
+
+                // Render Live Preview into Right Container
+                this.syncPrintAreaContent();
+                const printEl = document.getElementById('invoicePrintArea');
+                const container = document.getElementById('liveInvoicePreviewContainer');
+                
+                if (printEl && container) {
+                    container.innerHTML = '';
+                    const clone = printEl.cloneNode(true);
+                    clone.id = 'liveInvoicePaperClone';
+                    clone.style.display = 'block';
+                    clone.style.boxShadow = '0 10px 30px rgba(0,0,0,0.15)';
+                    clone.style.borderRadius = '4px';
+                    clone.style.transform = 'scale(0.88)';
+                    clone.style.transformOrigin = 'top center';
+                    container.appendChild(clone);
+                }
+
+                this.applyLivePreview();
+            },
+
+            closePdfSettingsModal() {
+                const modal = document.getElementById('invoicePdfSettingsModal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    modal.classList.add('hidden');
+                }
+            },
+
+            setPdfThemeColor(color) {
+                this.pdfSettings.themeColor = color;
+                const input = document.getElementById('pdfCustomColorInput');
+                if (input) input.value = color;
+                this.applyLivePreview();
+            },
+
+            applyLivePreview() {
+                const color = this.pdfSettings.themeColor || '#1A6FBF';
+                const font = document.getElementById('settingFontFamily')?.value || this.pdfSettings.fontFamily;
+                const titleTh = document.getElementById('settingPdfTitleTh')?.value || 'ใบกำกับภาษี / ใบแจ้งหนี้';
+                const titleEn = document.getElementById('settingPdfTitleEn')?.value || 'TAX INVOICE / INVOICE / DELIVERY ORDER';
+                const showLogo = document.getElementById('settingPdfShowLogo')?.checked ?? true;
+                const showTaxId = document.getElementById('settingPdfShowTaxId')?.checked ?? true;
+                const showSignatures = document.getElementById('settingPdfShowSignatures')?.checked ?? true;
+
+                // Update settings object
+                this.pdfSettings.fontFamily = font;
+                this.pdfSettings.titleTh = titleTh;
+                this.pdfSettings.titleEn = titleEn;
+                this.pdfSettings.showLogo = showLogo;
+                this.pdfSettings.showTaxId = showTaxId;
+                this.pdfSettings.showSignatures = showSignatures;
+
+                // Apply to live preview clone if open
+                const liveClone = document.getElementById('liveInvoicePaperClone');
+                const targetArea = liveClone || document.getElementById('invoicePrintArea');
+                
+                if (targetArea) {
+                    targetArea.style.fontFamily = font;
+
+                    const titleThEl = targetArea.querySelector('.pInvTitleTh');
+                    const titleEnEl = targetArea.querySelector('.pInvTitleEn');
+                    if (titleThEl) { titleThEl.innerText = titleTh; titleThEl.style.color = color; }
+                    if (titleEnEl) titleEnEl.innerText = titleEn;
+
+                    const headerBorder = targetArea.querySelector('.pInvHeaderBorder');
+                    if (headerBorder) headerBorder.style.borderBottomColor = color;
+
+                    const thEls = targetArea.querySelectorAll('table thead tr th');
+                    thEls.forEach(th => th.style.background = color);
+
+                    const logoImg = targetArea.querySelector('.pInvLogoImg');
+                    if (logoImg) logoImg.style.display = showLogo ? 'block' : 'none';
+
+                    const sigBox = targetArea.querySelector('.pInvSigBox');
+                    if (sigBox) sigBox.style.display = showSignatures ? 'grid' : 'none';
+                }
+            },
+
+            savePdfSettingsAndExport() {
+                this.closePdfSettingsModal();
+                this.exportToPDF();
+            },
+
+            syncPrintAreaContent() {
+                const proj = this.project;
+                if (!proj) return;
+
+                const docNum = proj.docWorkflow?.invoice?.docNumber || document.getElementById('inv-field-docnum')?.value || 'INV-2026-0001';
+                const clientName = proj.companyName || proj.institution || proj.clientName || 'ลูกค้า';
+                const projName = proj.name || proj.projectName || '-';
+                
+                const dueDate = document.getElementById('inv-field-duedate')?.value || '-';
+                const termsSelect = document.getElementById('inv-field-terms');
+                const termsText = termsSelect && termsSelect.options[termsSelect.selectedIndex] ? termsSelect.options[termsSelect.selectedIndex].text : '-';
+                const notes = document.getElementById('inv-field-notes')?.value || '-';
+
+                document.getElementById('pInvDocNum').innerText = docNum;
+                document.getElementById('pInvDetailNo').innerText = docNum;
+                document.getElementById('pInvClientName').innerText = clientName;
+                document.getElementById('pInvProjectName').innerText = 'โครงการ: ' + projName;
+                document.getElementById('pInvDate').innerText = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                document.getElementById('pInvDueDate').innerText = dueDate;
+                document.getElementById('pInvTerms').innerText = termsText;
+                
+                const customBankNotes = this.pdfSettings.bankDetails ? (this.pdfSettings.bankDetails + (notes !== '-' ? (' (' + notes + ')') : '')) : notes;
+                document.getElementById('pInvNotesText').innerText = customBankNotes !== '-' ? customBankNotes : 'ชำระเงินโดยโอนเข้าบัญชี บจก. เมนทร้า โซลูชั่น';
+
+                // Render Table Items for Print
+                const items = this._getItemsList(proj.items);
+                const pTbody = document.getElementById('pInvTableBody');
+                let rowsHtml = '';
+                let subtotal = 0;
+                let rNum = 0;
+
+                items.forEach(item => {
+                    if (item.isHeader) return;
+                    rNum++;
+                    const qty = parseFloat(item.qty) || 1;
+                    const price = parseFloat(item.unitPrice) || parseFloat(item.targetPrice) || parseFloat(item.foundPrice) || 0;
+                    const total = qty * price;
+                    subtotal += total;
+
+                    const bg = rNum % 2 === 0 ? 'background: #f8fafc;' : 'background: #ffffff;';
+                    rowsHtml += `<tr style="${bg}">
+                        <td style="padding: 5px; border: 1px solid #e2e8f0; text-align: center;">${rNum}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #e2e8f0;">${item.name || '-'}</td>
+                        <td style="padding: 5px; border: 1px solid #e2e8f0; text-align: center;">${qty}</td>
+                        <td style="padding: 5px; border: 1px solid #e2e8f0; text-align: center;">${item.unit || 'รายการ'}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: right;">${price ? price.toLocaleString('th-TH', {minimumFractionDigits:2}) : '-'}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: right; font-weight: 600;">${total ? total.toLocaleString('th-TH', {minimumFractionDigits:2}) : '-'}</td>
+                    </tr>`;
+                });
+
+                if (rNum === 0) {
+                    rowsHtml = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #94a3b8;">ไม่มีรายการสินค้า</td></tr>';
+                }
+
+                pTbody.innerHTML = rowsHtml;
+
+                const taxRate = (proj.invoiceData && proj.invoiceData.taxRate) || 7;
+                const tax = subtotal * (taxRate / 100);
+                const grand = subtotal + tax;
+
+                document.getElementById('pInvSubtotal').innerText = '฿' + subtotal.toLocaleString('th-TH', {minimumFractionDigits: 2});
+                document.getElementById('pInvTax').innerText = '฿' + tax.toLocaleString('th-TH', {minimumFractionDigits: 2});
+                document.getElementById('pInvGrandTotal').innerText = '฿' + grand.toLocaleString('th-TH', {minimumFractionDigits: 2});
+                
+                const bahtText = this.arabicNumberToText(grand.toFixed(2));
+                document.getElementById('pInvBahtText').innerText = `(${bahtText})`;
+            },
+
+            exportToPDF() {
+                const proj = this.project;
+                if (!proj) {
+                    alert("ไม่พบข้อมูลโครงการสำหรับสร้าง PDF");
+                    return;
+                }
+
+                const docNum = proj.docWorkflow?.invoice?.docNumber || document.getElementById('inv-field-docnum')?.value || 'INV-2026-0001';
+                const clientName = proj.companyName || proj.institution || proj.clientName || 'ลูกค้า';
+                const projName = proj.name || proj.projectName || '-';
+                
+                const dueDate = document.getElementById('inv-field-duedate')?.value || '-';
+                const delivDate = document.getElementById('inv-field-deliverydate')?.value || '-';
+                const termsSelect = document.getElementById('inv-field-terms');
+                const termsText = termsSelect && termsSelect.options[termsSelect.selectedIndex] ? termsSelect.options[termsSelect.selectedIndex].text : '-';
+                const notes = document.getElementById('inv-field-notes')?.value || '-';
+
+                const themeColor = this.pdfSettings.themeColor || '#1A6FBF';
+                
+                // Apply Dynamic Title & Subtitle
+                const titleThEl = document.querySelector('#invoicePrintArea div[style*="font-size: 20px"]');
+                const titleEnEl = document.querySelector('#invoicePrintArea div[style*="font-size: 10px"]');
+                if (titleThEl) {
+                    titleThEl.innerText = this.pdfSettings.titleTh || 'ใบกำกับภาษี / ใบแจ้งหนี้';
+                    titleThEl.style.color = themeColor;
+                }
+                if (titleEnEl) titleEnEl.innerText = this.pdfSettings.titleEn || 'TAX INVOICE / INVOICE / DELIVERY ORDER';
+
+                // Apply Theme Color Borders & Accents
+                const headerBorder = document.querySelector('#invoicePrintArea div[style*="border-bottom: 2.5px solid"]');
+                if (headerBorder) headerBorder.style.borderBottomColor = themeColor;
+
+                const thEls = document.querySelectorAll('#invoicePrintArea table thead tr');
+                thEls.forEach(th => {
+                    th.style.background = themeColor;
+                });
+
+                const grandTotalBox = document.querySelector('#invoicePrintArea div[style*="border-top: 2px solid"]');
+                if (grandTotalBox) {
+                    grandTotalBox.style.borderTopColor = themeColor;
+                    grandTotalBox.style.color = themeColor;
+                }
+
+                // Show/Hide Logo
+                const logoImg = document.querySelector('#invoicePrintArea img[alt="Mentra Logo"]');
+                if (logoImg) logoImg.style.display = this.pdfSettings.showLogo ? 'block' : 'none';
+
+                // Show/Hide Signatures
+                const sigBox = document.querySelector('#invoicePrintArea div[style*="grid-template-columns: 1fr 1fr 1fr"]');
+                if (sigBox) sigBox.style.display = this.pdfSettings.showSignatures ? 'grid' : 'none';
+
+                document.getElementById('pInvDocNum').innerText = docNum;
+                document.getElementById('pInvDetailNo').innerText = docNum;
+                document.getElementById('pInvClientName').innerText = clientName;
+                document.getElementById('pInvProjectName').innerText = 'โครงการ: ' + projName;
+                document.getElementById('pInvDate').innerText = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                document.getElementById('pInvDueDate').innerText = dueDate;
+                document.getElementById('pInvTerms').innerText = termsText;
+                
+                const customBankNotes = this.pdfSettings.bankDetails ? (this.pdfSettings.bankDetails + (notes !== '-' ? (' (' + notes + ')') : '')) : notes;
+                document.getElementById('pInvNotesText').innerText = customBankNotes !== '-' ? customBankNotes : 'ชำระเงินโดยโอนเข้าบัญชี บจก. เมนทร้า โซลูชั่น';
+
+                // Render Table Items for Print
+                const items = this._getItemsList(proj.items);
+                const pTbody = document.getElementById('pInvTableBody');
+                let rowsHtml = '';
+                let subtotal = 0;
+                let rNum = 0;
+
+                items.forEach(item => {
+                    if (item.isHeader) return;
+                    rNum++;
+                    const qty = parseFloat(item.qty) || 1;
+                    const price = parseFloat(item.unitPrice) || parseFloat(item.targetPrice) || parseFloat(item.foundPrice) || 0;
+                    const total = qty * price;
+                    subtotal += total;
+
+                    const bg = rNum % 2 === 0 ? 'background: #f8fafc;' : 'background: #ffffff;';
+                    rowsHtml += `<tr style="${bg}">
+                        <td style="padding: 5px; border: 1px solid #e2e8f0; text-align: center;">${rNum}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #e2e8f0;">${item.name || '-'}</td>
+                        <td style="padding: 5px; border: 1px solid #e2e8f0; text-align: center;">${qty}</td>
+                        <td style="padding: 5px; border: 1px solid #e2e8f0; text-align: center;">${item.unit || 'รายการ'}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: right;">${price ? price.toLocaleString('th-TH', {minimumFractionDigits:2}) : '-'}</td>
+                        <td style="padding: 5px 8px; border: 1px solid #e2e8f0; text-align: right; font-weight: 600;">${total ? total.toLocaleString('th-TH', {minimumFractionDigits:2}) : '-'}</td>
+                    </tr>`;
+                });
+
+                if (rNum === 0) {
+                    rowsHtml = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #94a3b8;">ไม่มีรายการสินค้า</td></tr>';
+                }
+
+                pTbody.innerHTML = rowsHtml;
+
+                const taxRate = (proj.invoiceData && proj.invoiceData.taxRate) || 7;
+                const tax = subtotal * (taxRate / 100);
+                const grand = subtotal + tax;
+
+                document.getElementById('pInvSubtotal').innerText = '฿' + subtotal.toLocaleString('th-TH', {minimumFractionDigits: 2});
+                document.getElementById('pInvTax').innerText = '฿' + tax.toLocaleString('th-TH', {minimumFractionDigits: 2});
+                document.getElementById('pInvGrandTotal').innerText = '฿' + grand.toLocaleString('th-TH', {minimumFractionDigits: 2});
+                
+                const bahtText = this.arabicNumberToText(grand.toFixed(2));
+                document.getElementById('pInvBahtText').innerText = `(${bahtText})`;
+
+                // HTML2PDF Export Execution
+                const printElement = document.getElementById('invoicePrintArea');
+                printElement.style.display = 'block';
+
+                const opt = {
+                    margin: [10, 8, 10, 8],
+                    filename: `ใบกำกับภาษี_${docNum}_${clientName}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                const cloneWrapper = document.createElement('div');
+                cloneWrapper.style.position = 'absolute';
+                cloneWrapper.style.top = '0';
+                cloneWrapper.style.left = '0';
+                cloneWrapper.style.width = '715px';
+                cloneWrapper.style.zIndex = '-9999';
+                cloneWrapper.style.pointerEvents = 'none';
+
+                const clone = printElement.cloneNode(true);
+                clone.style.display = 'block';
+                cloneWrapper.appendChild(clone);
+                document.body.appendChild(cloneWrapper);
+
+                if (window.html2pdf) {
+                    window.html2pdf().set(opt).from(clone).save().then(() => {
+                        document.body.removeChild(cloneWrapper);
+                        printElement.style.display = 'none';
+                    }).catch(err => {
+                        console.error("PDF Export error:", err);
+                        document.body.removeChild(cloneWrapper);
+                        printElement.style.display = 'none';
+                        window.print();
+                    });
+                } else {
+                    document.body.removeChild(cloneWrapper);
+                    printElement.style.display = 'none';
+                    window.print();
+                }
+            },
+
+            renderActivityLog() {
+                const proj = this.project, body = document.getElementById('inv-activity-body'), badge = document.getElementById('inv-activity-count'); if (!body) return;
+                const logs = proj && proj.activityLog ? proj.activityLog : []; if (badge) badge.textContent = logs.length;
+                if (logs.length === 0) { body.innerHTML = '<div class="py-8 text-center text-slate-400">ยังไม่มีกิจกรรม</div>'; return; }
+                const iconMap = { 'project_created': { bg: 'bg-blue-100', text: 'text-blue-600' }, 'quotation_confirmed': { bg: 'bg-emerald-100', text: 'text-emerald-600' }, 'invoice_created': { bg: 'bg-amber-100', text: 'text-amber-600' }, 'invoice_confirmed': { bg: 'bg-emerald-100', text: 'text-emerald-600' }, 'receipt_created': { bg: 'bg-teal-100', text: 'text-teal-600' }, 'receipt_confirmed': { bg: 'bg-emerald-100', text: 'text-emerald-600' } };
+                body.innerHTML = logs.map(log => {
+                    const m = iconMap[log.action] || { bg: 'bg-slate-100', text: 'text-slate-600' };
+                    const dt = new Date(log.timestamp), ts = dt.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dt.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                    return '<div class="activity-log-item"><div class="log-icon ' + m.bg + ' ' + m.text + '"><i class="' + (log.icon || 'fa-solid fa-circle-info') + '"></i></div><div class="log-content"><div class="log-action">' + (log.details || log.action) + '</div><div class="log-time"><i class="fa-regular fa-clock mr-1"></i>' + ts + '</div><div class="log-user"><i class="fa-regular fa-user mr-1"></i>' + (log.user || 'ระบบ') + '</div></div></div>';
+                }).join('');
+            }
+        };
+
+        window.toggleSidebarCollapse = function() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.toggle('collapsed');
+        };
+        window.logoutUser = function() {
+            if (window.firebaseAuth) {
+                window.firebaseAuth.signOut().then(() => { window.location.href = 'index.html'; });
+            } else {
+                window.location.href = 'index.html';
+            }
+        };
+    </script>
+
+    <script type="module">
+        import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        let FIREBASE_CONFIG; window.GAS_URL = null;
+        try { const cfg = await import('./assets/js/firebase-config.js'); FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG; window.GAS_URL = cfg.GAS_URL || null; } catch (e) { console.warn('firebase-config.js not found'); }
+        if (!FIREBASE_CONFIG) { FIREBASE_CONFIG = { apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU", authDomain: "mentra-manager-e039f.firebaseapp.com", projectId: "mentra-manager-e039f", storageBucket: "mentra-manager-e039f.firebasestorage.app", messagingSenderId: "563604754745", appId: "1:563604754745:web:ea0892fafb48b74dcf58e8" }; }
+        if (!window.GAS_URL) window.GAS_URL = 'https://script.google.com/macros/s/AKfycbxJIaFnBOtQUjoxjkVYiK2OBbGvbMlgeR5FSsO0n0vfYNHHc6pfPIki7CCFTeEh63m5/exec';
+        const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+        const auth = getAuth(app), db = getFirestore(app);
+        window.firebaseAuth = auth;
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramProjId = urlParams.get('projectId');
+        invoiceApp.projectId = paramProjId;
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { window.location.href = 'index.html'; return; }
+            try {
+                const snap = await getDoc(doc(db, 'users', user.uid));
+                if (!snap.exists()) { await signOut(auth); window.location.href = 'index.html?msg=deleted'; return; }
+                const ud = snap.data();
+                if (ud.status === 'pending' || ud.status === 'rejected') { await signOut(auth); window.location.href = 'index.html?msg=' + ud.status; return; }
+                document.body.style.setProperty('display', 'flex', 'important');
+                const un = document.getElementById('userName'); if (un) un.innerText = ud.displayName || ud.name || user.email;
+            } catch (e) { document.body.style.setProperty('display', 'flex', 'important'); }
+            if (!paramProjId) return;
+            onSnapshot(doc(db, 'material_projects', paramProjId), (ds) => { if (ds.exists()) invoiceApp.loadProject({ id: ds.id, ...ds.data() }); });
+            window.saveProjectToFirestore = async function(projData) {
+                try { await setDoc(doc(db, 'material_projects', projData.id), JSON.parse(JSON.stringify(projData))); }
+                catch (e) { console.error("Save Error:", e); alert('บันทึกผิดพลาด: ' + e.message); }
+            };
+        });
+    </script>
+
+    
+    <!-- Full-Screen Live Form Designer Modal (Exact 1:1 Reference from quotation.html) -->
+    <div id="invoicePdfSettingsModal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[2000] flex-row font-sans" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;">
+        
+        <!-- Left Sidebar Controls (360px width matching quotation.html) -->
+        <div style="width: 360px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.08); display: flex; flex-direction: column; z-index: 20; height: 100vh;">
+            
+            <!-- Header -->
+            <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; background: linear-gradient(135deg, #0b3d6e 0%, #1A6FBF 100%); color: white; display: flex; justify-content: space-between; align-items: center;" class="shrink-0">
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: white;" class="flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-amber-400"></i> ออกแบบฟอร์ม (Invoice Customizer)
+                </h3>
+                <button onclick="invoiceApp.closePdfSettingsModal()" style="background: rgba(255,255,255,0.15); border: none; font-size: 1.2rem; cursor: pointer; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            
+            <!-- Controls Body (Scrollable) -->
+            <div style="flex: 1; overflow-y: auto; padding: 20px;" class="space-y-4 text-xs text-slate-700">
+                
+                <!-- 1. รูปแบบส่วนหัว -->
+                <h4 style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">รูปแบบส่วนหัว</h4>
+                <div class="space-y-2">
+                    <div>
+                        <label class="font-semibold block mb-1">การเรียงตัว (Layout Direction)</label>
+                        <select id="settingHeaderDirection" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="row">แนวนอน (Side-by-side)</option>
+                            <option value="column">แนวตั้ง (Stacked)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">จำนวนแถว Grid (Header Rows)</label>
+                        <select id="settingHeaderRows" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="1">1 แถว (1 Row)</option>
+                            <option value="2">2 แถว (2 Rows)</option>
+                            <option value="3" selected>3 แถว (3 Rows)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">การจัดวางข้อความ (Text Align)</label>
+                        <select id="settingHeaderTextAlign" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="auto">อัตโนมัติตามช่อง (Auto)</option>
+                            <option value="left">ชิดซ้าย (Left)</option>
+                            <option value="center">กึ่งกลาง (Center)</option>
+                            <option value="right">ชิดขวา (Right)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">การจัดวางแนวตั้ง (Vertical Align)</label>
+                        <select id="settingHeaderVAlign" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="flex-start">ชิดบน (Top)</option>
+                            <option value="center">กึ่งกลาง (Center)</option>
+                            <option value="flex-end">ชิดล่าง (Bottom)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+
+                <!-- 2. ส่วนข้อมูลผู้รับ / เอกสาร -->
+                <h4 style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">ส่วนข้อมูลผู้รับ / เอกสาร</h4>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="settingInfoDivider" checked class="w-4 h-4 rounded text-brand-600" onchange="invoiceApp.applyLivePreview()">
+                        <label class="font-semibold cursor-pointer">แสดงเส้นแบ่งกลาง (Divider)</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="settingShowHeaderLine" checked class="w-4 h-4 rounded text-brand-600" onchange="invoiceApp.applyLivePreview()">
+                        <label class="font-semibold cursor-pointer">แสดงเส้นคั่นใต้หัวกระดาษ (Header Line)</label>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">ชื่อหัวข้อฝั่งผู้รับ</label>
+                        <input type="text" id="settingRecipientTitle" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs font-semibold" value="RECIPIENT INFORMATION" oninput="invoiceApp.applyLivePreview()">
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">ชื่อหัวข้อฝั่งเอกสาร</label>
+                        <input type="text" id="settingDocDetailsTitle" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs font-semibold" value="DOCUMENT DETAILS" oninput="invoiceApp.applyLivePreview()">
+                    </div>
+                    
+                    <!-- Sub-Labels Collapsible -->
+                    <div style="margin-top: 10px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background-color: #f8fafc;">
+                        <div style="padding: 8px 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="const c = document.getElementById('customLabelsContainer'); c.style.display = c.style.display === 'none' ? 'block' : 'none';">
+                            <span style="font-weight: 600; font-size: 0.78rem; color: #475569;"><i class="fa-solid fa-pen-to-square"></i> แก้ไขข้อความหัวข้อย่อย (Labels)</span>
+                            <i class="fa-solid fa-chevron-down text-slate-400"></i>
+                        </div>
+                        <div id="customLabelsContainer" style="display: none; padding: 12px; background-color: #fff; border-top: 1px solid #e2e8f0;" class="space-y-2">
+                            <h5 style="font-size: 0.75rem; color: #1A6FBF; font-weight: 700;">ฝั่งข้อมูลผู้รับ</h5>
+                            <div><label class="text-[11px] block">ชื่อ / To:</label><input type="text" id="settingLabelTo" class="w-full border border-slate-300 rounded px-2 py-1 text-xs" value="ชื่อ / To:" oninput="invoiceApp.applyLivePreview()"></div>
+                            <div><label class="text-[11px] block">ที่อยู่ / Address:</label><input type="text" id="settingLabelAddress" class="w-full border border-slate-300 rounded px-2 py-1 text-xs" value="ที่อยู่:" oninput="invoiceApp.applyLivePreview()"></div>
+                            <div><label class="text-[11px] block">ติดต่อ / Attn:</label><input type="text" id="settingLabelAttn" class="w-full border border-slate-300 rounded px-2 py-1 text-xs" value="ติดต่อ / Attn:" oninput="invoiceApp.applyLivePreview()"></div>
+                            <div><label class="text-[11px] block">โทร / Tel:</label><input type="text" id="settingLabelTel" class="w-full border border-slate-300 rounded px-2 py-1 text-xs" value="โทร / Tel:" oninput="invoiceApp.applyLivePreview()"></div>
+                            
+                            <hr style="border: 0; border-top: 1px dashed #e2e8f0; margin: 10px 0;">
+                            
+                            <h5 style="font-size: 0.75rem; color: #1A6FBF; font-weight: 700;">ฝั่งข้อมูลเอกสาร</h5>
+                            <div><label class="text-[11px] block">เลขที่ / Ref. No:</label><input type="text" id="settingLabelRefNo" class="w-full border border-slate-300 rounded px-2 py-1 text-xs" value="เลขที่ / Ref. No:" oninput="invoiceApp.applyLivePreview()"></div>
+                            <div><label class="text-[11px] block">วันที่ / Date:</label><input type="text" id="settingLabelDate" class="w-full border border-slate-300 rounded px-2 py-1 text-xs" value="วันที่ / Date:" oninput="invoiceApp.applyLivePreview()"></div>
+                            <div><label class="text-[11px] block">วันครบกำหนด / Due Date:</label><input type="text" id="settingLabelValidity" class="w-full border border-slate-300 rounded px-2 py-1 text-xs" value="วันครบกำหนด / Due Date:" oninput="invoiceApp.applyLivePreview()"></div>
+                            <div><label class="text-[11px] block">วันส่งของ / Delivery:</label><input type="text" id="settingLabelDelivery" class="w-full border border-slate-300 rounded px-2 py-1 text-xs" value="วันส่งของ / Delivery:" oninput="invoiceApp.applyLivePreview()"></div>
+                            <div><label class="text-[11px] block">ชำระเงิน / Payment:</label><input type="text" id="settingLabelPayment" class="w-full border border-slate-300 rounded px-2 py-1 text-xs" value="ชำระเงิน / Payment:" oninput="invoiceApp.applyLivePreview()"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+
+                <!-- 3. สีหลัก & โลโก้ -->
+                <h4 style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">สีหลัก & โลโก้</h4>
+                <div class="space-y-2">
+                    <div>
+                        <label class="font-semibold block mb-1">สีหลัก (Primary Color)</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" id="settingPrimaryColor" class="w-10 h-8 border border-slate-300 rounded cursor-pointer p-0.5" value="#1A6FBF" oninput="invoiceApp.setPdfThemeColor(this.value)">
+                            <span class="text-xs font-mono font-semibold" id="primaryColorCodeDisplay">#1A6FBF</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="settingShowLogo" checked class="w-4 h-4 rounded text-brand-600" onchange="invoiceApp.applyLivePreview()">
+                        <label class="font-semibold cursor-pointer">แสดงโลโก้บริษัท</label>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">ขนาดโลโก้ (<span id="logoSizeLabel">52</span>px)</label>
+                        <input type="range" id="settingLogoSize" min="30" max="120" value="52" class="w-full cursor-pointer" oninput="document.getElementById('logoSizeLabel').innerText=this.value; invoiceApp.applyLivePreview()">
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+
+                <!-- 4. ขนาดตัวอักษร -->
+                <h4 style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">ขนาดตัวอักษร</h4>
+                <div class="space-y-2">
+                    <div>
+                        <label class="font-semibold block mb-1">ข้อความทั่วไป (<span id="fontSizeLabel">11</span>px)</label>
+                        <input type="range" id="settingFontSize" min="8" max="16" value="11" step="0.5" class="w-full cursor-pointer" oninput="document.getElementById('fontSizeLabel').innerText=this.value; invoiceApp.applyLivePreview()">
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">ขนาดหัวตาราง (<span id="hdrFontSizeLabel">11</span>px)</label>
+                        <input type="range" id="settingHeaderFontSize" min="8" max="16" value="11" step="0.5" class="w-full cursor-pointer" oninput="document.getElementById('hdrFontSizeLabel').innerText=this.value; invoiceApp.applyLivePreview()">
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+
+                <!-- 5. รูปแบบตัวอักษรและตาราง -->
+                <h4 style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">รูปแบบตัวอักษรและตาราง</h4>
+                <div class="space-y-2">
+                    <div>
+                        <label class="font-semibold block mb-1">แบบอักษร (Font)</label>
+                        <select id="settingFontFamily" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="'Kanit', sans-serif">Kanit (อ่านง่าย)</option>
+                            <option value="'Sarabun', sans-serif">Sarabun (ทางการ)</option>
+                            <option value="'Prompt', sans-serif">Prompt (ทันสมัย)</option>
+                            <option value="'Noto Sans Thai', sans-serif">Noto Sans Thai (สากล)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">น้ำหนักตัวอักษร (Font Weight)</label>
+                        <select id="settingFontWeight" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="300">บาง (Light - 300)</option>
+                            <option value="400" selected>ปกติ (Regular - 400)</option>
+                            <option value="500">กลาง (Medium - 500)</option>
+                            <option value="600">หนาปานกลาง (Semi-Bold - 600)</option>
+                            <option value="700">หนา (Bold - 700)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">เส้นขอบตาราง (Table Border)</label>
+                        <select id="settingTableBorder" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="rounded">ทรงมน (Rounded)</option>
+                            <option value="all">กรอบ 4 ด้าน (All Borders)</option>
+                            <option value="horizontal">เฉพาะแนวนอน (Horizontal)</option>
+                            <option value="none">ไม่มีเส้นขอบ (No Borders)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">พื้นหลังหัวตาราง (Header Style)</label>
+                        <select id="settingTableHeaderStyle" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="solid">สีทึบตามธีม (Solid)</option>
+                            <option value="light">สีอ่อนตามธีม (Light)</option>
+                            <option value="transparent">โปร่งใส (Transparent)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="settingZebraStripes" checked class="w-4 h-4 rounded text-brand-600" onchange="invoiceApp.applyLivePreview()">
+                        <label class="font-semibold cursor-pointer">แถบสีสลับ (Zebra Stripes)</label>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">ตำแหน่งตัวอักษรบอกจำนวนเงินรวม (ไทย)</label>
+                        <select id="settingBahtTextPosition" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="left">ชิดซ้าย (ใต้หมายเหตุ)</option>
+                            <option value="right">ชิดขวา (ใต้ตารางยอดรวม)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
+
+                <!-- 6. ผู้ลงนาม / ลายเซ็น -->
+                <h4 style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">ผู้ลงนาม / ลายเซ็น</h4>
+                <div class="space-y-2">
+                    <div>
+                        <label class="font-semibold block mb-1">รูปแบบช่องเซ็นผู้สั่งซื้อ (Buyer Signature)</label>
+                        <select id="settingSignatureFormat" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs" onchange="invoiceApp.applyLivePreview()">
+                            <option value="full">แสดงครบถ้วน (Full)</option>
+                            <option value="line_only">เฉพาะเส้นลงนาม (Line Only)</option>
+                            <option value="hidden">ซ่อนทั้งหมด (Hidden)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">หัวข้อฝ่ายผู้สั่งซื้อ (ซ้าย)</label>
+                        <input type="text" id="settingLeftSignerTitle" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs font-semibold" value="ผู้รับสินค้า / บริการ" oninput="invoiceApp.applyLivePreview()">
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">คำลงท้ายฝ่ายผู้ออกเอกสาร (ขวา)</label>
+                        <input type="text" id="settingSincerelyYours" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs font-semibold" value="ในนาม บริษัท เมนทร้า โซลูชั่น จำกัด" oninput="invoiceApp.applyLivePreview()">
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">ชื่อผู้ลงนามฝ่ายผู้ออกเอกสาร</label>
+                        <input type="text" id="settingSellerName" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs font-semibold" value="( นายวัฒนชัย เตียวแก )" oninput="invoiceApp.applyLivePreview()">
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">ตำแหน่ง</label>
+                        <input type="text" id="settingSellerRole" class="w-full border border-slate-300 rounded px-2.5 py-1.5 text-xs font-semibold" value="ผู้มีอำนาจลงนาม / ผู้ออกเอกสาร" oninput="invoiceApp.applyLivePreview()">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Buttons -->
+            <div style="padding: 16px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc;" class="flex gap-3 shrink-0">
+                <button onclick="invoiceApp.closePdfSettingsModal()" class="flex-1 py-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 font-semibold text-xs transition-all">
+                    ยกเลิก
+                </button>
+                <button onclick="invoiceApp.savePdfSettingsAndExport()" class="flex-1 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow transition-all flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-check"></i> บันทึก & พิมพ์ PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Side: Realtime Live Preview Canvas -->
+        <div class="flex-1 overflow-auto p-8 flex justify-center items-start bg-slate-200/90" id="liveInvoicePreviewContainer">
+            <!-- Scaled Live Paper Canvas insertion -->
+        </div>
+
+    </div>
+
+    <!-- Right Side: Realtime Live Preview Canvas -->
+        <div class="flex-1 overflow-auto p-8 flex justify-center items-start bg-slate-200/80" id="liveInvoicePreviewContainer">
+            <!-- Scaled Live Paper Canvas insertion -->
+        </div>
+
+    </div>
+
+    <!-- Hidden Print Area for Invoice PDF Export -->
+    <div id="invoicePrintArea" style="display: none; background: #ffffff;">
+        <div style="width: 715px; min-height: 1000px; padding: 24px 28px; background: white; color: #1e293b; font-family: 'Kanit', 'Sarabun', sans-serif; font-size: 11px; line-height: 1.5; box-sizing: border-box; display: flex; flex-direction: column;">
+            
+            <!-- HEADER -->
+            <div class="pInvHeaderBorder" style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 2.5px solid #1A6FBF; margin-bottom: 14px;">
+                <div style="display: flex; gap: 14px; align-items: flex-start;">
+                    <img class="pInvLogoImg" src="assets/img/logo.png" style="height: 52px; object-fit: contain;" alt="Mentra Logo" onerror="this.style.display='none'">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 700; color: #0f172a;">บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
+                        <div style="font-size: 11px; font-weight: 600; color: #E07B2F;">MENTRA SOLUTION CO., LTD. (Head Office)</div>
+                        <div style="font-size: 10.5px; color: #475569; margin-top: 2px;">115/123 ม.12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540</div>
+                        <div style="font-size: 10.5px; color: #475569;">
+                            <span style="color: #1A6FBF; font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;
+                            <span style="color: #1A6FBF; font-weight: 600;">EMAIL:</span> wattanachai966@gmail.com &nbsp;
+                            <span style="color: #1A6FBF; font-weight: 600;">TAX ID:</span> 0115568026644
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="pInvTitleTh" style="font-size: 20px; font-weight: 800; color: #1A6FBF;">ใบกำกับภาษี / ใบแจ้งหนี้</div>
+                    <div class="pInvTitleEn" style="font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 1.5px; margin-top: 2px;">TAX INVOICE / INVOICE / DELIVERY ORDER</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #0284c7; margin-top: 4px;" id="pInvDocNum">INV-XXXX</div>
+                </div>
+            </div>
+
+            <!-- RECIPIENT & DOC DETAILS -->
+            <div style="display: flex; gap: 16px; margin-bottom: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px;">
+                <div style="flex: 1.4;">
+                    <div style="font-size: 10px; font-weight: 700; color: #1A6FBF; text-transform: uppercase; margin-bottom: 4px;">ข้อมูลลูกค้า / ผู้ซื้อ (CUSTOMER)</div>
+                    <div style="font-weight: 700; font-size: 12px; color: #0f172a;" id="pInvClientName">-</div>
+                    <div style="color: #475569; font-size: 10.5px; margin-top: 2px;" id="pInvProjectName">โครงการ: -</div>
+                    <div style="color: #475569; font-size: 10.5px;" id="pInvClientAddress">ที่อยู่: -</div>
+                </div>
+                <div style="flex: 1; border-left: 1px dashed #cbd5e1; padding-left: 14px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                        <span style="color: #64748b;">เลขที่เอกสาร:</span>
+                        <span style="font-weight: 700; color: #0f172a;" id="pInvDetailNo">INV-XXXX</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                        <span style="color: #64748b;">วันที่ออกเอกสาร:</span>
+                        <span style="font-weight: 600; color: #0f172a;" id="pInvDate">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                        <span style="color: #64748b;">วันครบกำหนดชำระ:</span>
+                        <span style="font-weight: 600; color: #0f172a;" id="pInvDueDate">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #64748b;">เงื่อนไขชำระเงิน:</span>
+                        <span style="font-weight: 600; color: #0f172a;" id="pInvTerms">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 10.5px;">
+                <thead>
+                    <tr style="background: #1A6FBF; color: #ffffff; font-weight: 600;">
+                        <th style="padding: 6px 8px; border: 1px solid #1A6FBF; text-align: center; width: 35px;">#</th>
+                        <th style="padding: 6px 8px; border: 1px solid #1A6FBF; text-align: left;">รายการสินค้า / รายละเอียดงาน (DESCRIPTION)</th>
+                        <th style="padding: 6px 8px; border: 1px solid #1A6FBF; text-align: center; width: 55px;">จำนวน</th>
+                        <th style="padding: 6px 8px; border: 1px solid #1A6FBF; text-align: center; width: 50px;">หน่วย</th>
+                        <th style="padding: 6px 8px; border: 1px solid #1A6FBF; text-align: right; width: 85px;">ราคา/หน่วย</th>
+                        <th style="padding: 6px 8px; border: 1px solid #1A6FBF; text-align: right; width: 100px;">จำนวนเงิน (บาท)</th>
+                    </tr>
+                </thead>
+                <tbody id="pInvTableBody">
+                </tbody>
+            </table>
+
+            <!-- TOTALS & BAHT TEXT -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 14px;">
+                <div style="flex: 1.2; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px;">
+                    <div style="font-size: 10px; font-weight: 700; color: #475569; margin-bottom: 4px;">จำนวนเงินตัวอักษร (AMOUNT IN WORDS):</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #1A6FBF; text-align: center; background: #ffffff; border: 1px solid #cbd5e1; padding: 6px 8px; border-radius: 4px;" id="pInvBahtText">(ศูนย์บาทถ้วน)</div>
+                    <div style="margin-top: 8px; font-size: 9.5px; color: #64748b;" id="pInvNotes">
+                        <b>หมายเหตุ:</b> <span id="pInvNotesText">ชำระเงินโดยโอนเข้าบัญชี บจก. เมนทร้า โซลูชั่น</span>
+                    </div>
+                </div>
+
+                <div style="width: 240px; font-size: 10.5px;">
+                    <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f1f5f9;">
+                        <span style="color: #475569;">รวมเป็นเงิน (Subtotal):</span>
+                        <span style="font-weight: 600;" id="pInvSubtotal">฿0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f1f5f9;">
+                        <span style="color: #475569;">ภาษีมูลค่าเพิ่ม (VAT 7%):</span>
+                        <span style="font-weight: 600;" id="pInvTax">฿0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 6px 0; border-top: 2px solid #1A6FBF; margin-top: 4px; font-weight: 800; font-size: 12px; color: #1A6FBF;">
+                        <span>จำนวนเงินรวมทั้งสิ้น:</span>
+                        <span id="pInvGrandTotal">฿0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIGNATURES -->
+            <div class="pInvSigBox" style="margin-top: auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; text-align: center; font-size: 9.5px;">
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 6px;">
+                    <div style="margin-bottom: 35px; color: #64748b;">ได้รับสินค้า/บริการถูกต้องเรียบร้อยแล้ว</div>
+                    <div style="border-top: 1px dashed #94a3b8; width: 80%; margin: 0 auto 4px auto;"></div>
+                    <div style="font-weight: 600;">ผู้รับสินค้า / บริการ</div>
+                    <div style="color: #94a3b8; font-size: 9px; margin-top: 2px;">วันที่ ......../......../........</div>
+                </div>
+
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 6px;">
+                    <div style="margin-bottom: 35px; color: #64748b;">ผู้ส่งสินค้า / พนักงานส่งของ</div>
+                    <div style="border-top: 1px dashed #94a3b8; width: 80%; margin: 0 auto 4px auto;"></div>
+                    <div style="font-weight: 600;">ผู้ส่งสินค้า</div>
+                    <div style="color: #94a3b8; font-size: 9px; margin-top: 2px;">วันที่ ......../......../........</div>
+                </div>
+
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 6px; background: #f8fafc;">
+                    <div style="margin-bottom: 35px; color: #64748b;">ในนาม บริษัท เมนทร้า โซลูชั่น จำกัด</div>
+                    <div style="border-top: 1px dashed #94a3b8; width: 80%; margin: 0 auto 4px auto;"></div>
+                    <div style="font-weight: 700; color: #1A6FBF;">ผู้มีอำนาจลงนาม / ผู้ออกเอกสาร</div>
+                    <div style="color: #94a3b8; font-size: 9px; margin-top: 2px;">วันที่ ......../......../........</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Firebase Module -->
+    <script type="module">
+        import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        let FIREBASE_CONFIG;
+        window.GAS_URL = null;
+
+        try {
+            const cfg = await import('./assets/js/firebase-config.js');
+            FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
+            window.GAS_URL = cfg.GAS_URL || null;
+        } catch (e) {
+            console.warn('firebase-config.js not found');
+        }
+
+        if (!FIREBASE_CONFIG) {
+            FIREBASE_CONFIG = {
+                apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
+                authDomain: "mentra-manager-e039f.firebaseapp.com",
+                projectId: "mentra-manager-e039f",
+                storageBucket: "mentra-manager-e039f.firebasestorage.app",
+                messagingSenderId: "563604754745",
+                appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
+            };
+        }
+
+        const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        window.firebaseAuth = auth;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramProjId = urlParams.get('projectId');
+        invoiceApp.projectId = paramProjId;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            try {
+                const snap = await getDoc(doc(db, 'users', user.uid));
+                if (!snap.exists()) {
+                    await signOut(auth);
+                    window.location.href = 'index.html?msg=deleted';
+                    return;
+                }
+                const ud = snap.data();
+                if (ud.status === 'pending' || ud.status === 'rejected') {
+                    await signOut(auth);
+                    window.location.href = 'index.html?msg=' + ud.status;
+                    return;
+                }
+                document.body.style.setProperty('display', 'block', 'important');
+                document.body.style.width = '';
+                const un = document.getElementById('userName');
+                if (un) un.innerText = ud.displayName || ud.name || user.email;
+            } catch (e) {
+                document.body.style.setProperty('display', 'block', 'important');
+                document.body.style.width = '';
+            }
+
+            if (!paramProjId) return;
+
+            // Subscribe to project across all collections (school, company, general)
+            const collections = ['material_projects', 'company_material_projects', 'projects', 'quotations'];
+            collections.forEach(collName => {
+                onSnapshot(doc(db, collName, paramProjId), (ds) => {
+                    if (ds.exists()) {
+                        invoiceApp.loadProject({ id: ds.id, _sourceColl: collName, ...ds.data() });
+                    }
+                });
+            });
+
+            window.saveProjectToFirestore = async function(projData) {
+                try {
+                    const targetColl = projData._sourceColl || 'material_projects';
+                    await setDoc(doc(db, targetColl, projData.id), JSON.parse(JSON.stringify(projData)));
+                } catch (e) {
+                    console.error("Save Error:", e);
+                    alert('บันทึกผิดพลาด: ' + e.message);
+                }
+            };
+        });
+    </script>
+</body>
+</html>
