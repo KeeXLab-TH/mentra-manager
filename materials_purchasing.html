@@ -862,12 +862,16 @@
                 </div>
 
                 <!-- Tabs -->
-                <div class="flex items-center gap-1 border-b border-slate-200 mb-5">
-                    <button id="tab-btn-table" onclick="appData.switchDetailTab('table')" class="px-5 py-3 border-b-2 font-bold transition-colors border-brand-500 text-brand-600 bg-brand-50/50 rounded-t-lg">
+                <div class="flex items-center gap-1 border-b border-slate-200 mb-5 overflow-x-auto">
+                    <button id="tab-btn-table" onclick="appData.switchDetailTab('table')" class="px-5 py-3 border-b-2 font-bold transition-colors border-brand-500 text-brand-600 bg-brand-50/50 rounded-t-lg whitespace-nowrap">
                         <i class="fa-solid fa-table-list mr-1.5"></i> รายการวัสดุ
                     </button>
-                    <button id="tab-btn-gallery" onclick="appData.switchDetailTab('gallery')" class="px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg">
+                    <button id="tab-btn-gallery" onclick="appData.switchDetailTab('gallery')" class="px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg whitespace-nowrap">
                         <i class="fa-regular fa-images mr-1.5"></i> แกลลอรี่รูปภาพ
+                    </button>
+                    <button id="tab-btn-documents" onclick="appData.switchDetailTab('documents')" class="px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg whitespace-nowrap">
+                        <i class="fa-solid fa-folder-open mr-1.5 text-amber-500"></i> ไฟล์เอกสาร
+                        <span id="doc-count-badge" class="ml-1.5 px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600 font-semibold">0</span>
                     </button>
                 </div>
 
@@ -964,6 +968,40 @@
                     <div class="p-6 bg-slate-50 min-h-[400px]">
                         <div id="gallery-grid" class="flex flex-col gap-4">
                             <!-- Cards injected via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents View Card -->
+                <div id="detail-view-documents" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2">
+                                <i class="fa-solid fa-folder-open text-amber-500"></i> ไฟล์เอกสารประจำโครงการ
+                            </h3>
+                            <p class="text-xs text-slate-500 mt-0.5">อัปโหลดและจัดเก็บไฟล์เอกสาร เช่น สัญญา, ใบสั่งซื้อ, ใบเสนอราคา หรือไฟล์แนบอ้างอิง</p>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto" id="doc-upload-actions">
+                            <input type="file" id="doc-file-input" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip,.rar,.txt,.csv" onchange="appData.handleDocUpload(event)">
+                            <button onclick="document.getElementById('doc-file-input').click()" class="w-full sm:w-auto bg-gradient-to-r from-brand-500 to-brand-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> อัปโหลดเอกสาร
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 bg-slate-50/60 min-h-[400px]">
+                        <!-- Upload Drop Zone -->
+                        <div id="doc-drop-zone" onclick="document.getElementById('doc-file-input').click()" ondragover="appData.handleDocDragOver(event)" ondragleave="appData.handleDocDragLeave(event)" ondrop="appData.handleDocDrop(event)" class="mb-6 p-6 border-2 border-dashed border-slate-300 hover:border-brand-400 bg-white hover:bg-brand-50/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all text-center group shadow-sm">
+                            <div class="w-14 h-14 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-file-circle-plus text-2xl"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-700 text-base">คลิก หรือ ลากไฟล์มาวางที่นี่เพื่ออัปโหลด</h4>
+                            <p class="text-xs text-slate-400 mt-1">รองรับ PDF, Word, Excel, รูปภาพ, ZIP และไฟล์เอกสารอื่นๆ (สามารถเลือกได้หลายไฟล์)</p>
+                        </div>
+
+                        <!-- Documents Grid -->
+                        <div id="documents-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            <!-- Injected by JS -->
                         </div>
                     </div>
                 </div>
@@ -1504,6 +1542,34 @@
                         <button onclick="appData.closeShareModal()" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors text-sm">
                             ปิดหน้าต่าง
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DOCUMENT PREVIEW MODAL -->
+            <div id="doc-preview-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0 p-4">
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="doc-preview-modal-content">
+                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                        <div class="flex items-center gap-3 min-w-0 pr-4">
+                            <div id="doc-preview-icon" class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200">
+                                <i class="fa-solid fa-file text-lg"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="text-base font-bold text-slate-800 truncate" id="doc-preview-title">ชื่อเอกสาร.pdf</h3>
+                                <p class="text-xs text-slate-500 flex items-center gap-2" id="doc-preview-meta"><span>-- MB</span> • <span>--</span></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <a id="doc-preview-download-btn" href="#" target="_blank" download class="px-4 py-2 bg-brand-50 hover:bg-brand-100 text-brand-600 font-semibold rounded-xl text-sm transition-colors flex items-center gap-1.5 border border-brand-100">
+                                <i class="fa-solid fa-download"></i> ดาวน์โหลด
+                            </a>
+                            <button onclick="appData.closeDocPreviewModal()" class="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-1 bg-slate-100 p-2 sm:p-4 overflow-hidden flex items-center justify-center min-h-[400px]" id="doc-preview-body">
+                        <!-- Iframe, Image, or Fallback injected via JS -->
                     </div>
                 </div>
             </div>
@@ -2504,6 +2570,7 @@
                 this.updateProjectDetailsUI(proj);
                 this.renderExcelTable();
                 this.updateAutoMarkupUI();
+                this.renderDocuments();
                 this.switchDetailTab('table'); // Reset to table view
             },
 
@@ -2553,20 +2620,30 @@
                 this.currentDetailTab = tab;
                 const tableBtn = document.getElementById('tab-btn-table');
                 const galleryBtn = document.getElementById('tab-btn-gallery');
+                const docBtn = document.getElementById('tab-btn-documents');
                 const tableCard = document.getElementById('detail-view-table');
                 const galleryCard = document.getElementById('detail-view-gallery');
+                const docCard = document.getElementById('detail-view-documents');
+                
+                // Reset active styles
+                [tableBtn, galleryBtn, docBtn].forEach(btn => {
+                    if (btn) btn.className = "px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg whitespace-nowrap";
+                });
+                [tableCard, galleryCard, docCard].forEach(card => {
+                    if (card) card.classList.add('hidden');
+                });
                 
                 if (tab === 'table') {
-                    tableBtn.className = "px-5 py-3 border-b-2 font-bold transition-colors border-brand-500 text-brand-600 bg-brand-50/50 rounded-t-lg";
-                    galleryBtn.className = "px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg";
-                    tableCard.classList.remove('hidden');
-                    galleryCard.classList.add('hidden');
+                    if (tableBtn) tableBtn.className = "px-5 py-3 border-b-2 font-bold transition-colors border-brand-500 text-brand-600 bg-brand-50/50 rounded-t-lg whitespace-nowrap";
+                    if (tableCard) tableCard.classList.remove('hidden');
                 } else if (tab === 'gallery') {
-                    galleryBtn.className = "px-5 py-3 border-b-2 font-bold transition-colors border-brand-500 text-brand-600 bg-brand-50/50 rounded-t-lg";
-                    tableBtn.className = "px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg";
-                    galleryCard.classList.remove('hidden');
-                    tableCard.classList.add('hidden');
+                    if (galleryBtn) galleryBtn.className = "px-5 py-3 border-b-2 font-bold transition-colors border-brand-500 text-brand-600 bg-brand-50/50 rounded-t-lg whitespace-nowrap";
+                    if (galleryCard) galleryCard.classList.remove('hidden');
                     this.renderGallery();
+                } else if (tab === 'documents') {
+                    if (docBtn) docBtn.className = "px-5 py-3 border-b-2 font-bold transition-colors border-brand-500 text-brand-600 bg-brand-50/50 rounded-t-lg whitespace-nowrap";
+                    if (docCard) docCard.classList.remove('hidden');
+                    this.renderDocuments();
                 }
             },
             
@@ -2657,6 +2734,282 @@
                     
                     card.innerHTML = leftPanel + rightPanel;
                     grid.appendChild(card);
+                });
+            },
+            
+            // Document Management
+            getDocTypeInfo(fileName, mimeType = '') {
+                const ext = (fileName || '').split('.').pop().toLowerCase();
+                if (['pdf'].includes(ext) || mimeType.includes('pdf')) {
+                    return { icon: 'fa-file-pdf', color: 'text-rose-500', bg: 'bg-rose-50 border-rose-200', type: 'pdf' };
+                }
+                if (['doc', 'docx'].includes(ext) || mimeType.includes('word')) {
+                    return { icon: 'fa-file-word', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200', type: 'word' };
+                }
+                if (['xls', 'xlsx', 'csv'].includes(ext) || mimeType.includes('excel') || mimeType.includes('spreadsheet')) {
+                    return { icon: 'fa-file-excel', color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200', type: 'excel' };
+                }
+                if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext) || mimeType.includes('image')) {
+                    return { icon: 'fa-file-image', color: 'text-purple-600', bg: 'bg-purple-50 border-purple-200', type: 'image' };
+                }
+                if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) {
+                    return { icon: 'fa-file-zipper', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200', type: 'archive' };
+                }
+                return { icon: 'fa-file-lines', color: 'text-slate-600', bg: 'bg-slate-50 border-slate-200', type: 'other' };
+            },
+
+            renderDocuments() {
+                const grid = document.getElementById('documents-grid');
+                const badge = document.getElementById('doc-count-badge');
+                if (!grid) return;
+                
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                const docs = proj && proj.documents ? this._getItemsList(proj.documents) : [];
+                
+                if (badge) badge.innerText = docs.length;
+
+                if (!proj || docs.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-white">
+                            <i class="fa-solid fa-folder-open fa-3x mb-3 text-slate-300"></i>
+                            <p class="font-bold text-slate-700 text-base">ยังไม่มีไฟล์เอกสารแนบในโครงการนี้</p>
+                            <p class="text-xs text-slate-400 mt-1">กดปุ่ม "อัปโหลดเอกสาร" หรือลากไฟล์มาวางด้านบนเพื่อเริ่มแนบไฟล์</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                grid.innerHTML = '';
+                docs.forEach(docItem => {
+                    const info = this.getDocTypeInfo(docItem.name, docItem.type);
+                    const card = document.createElement('div');
+                    card.className = "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group";
+                    
+                    card.innerHTML = `
+                        <div class="flex items-start gap-3.5 mb-4">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${info.bg} ${info.color} shadow-sm group-hover:scale-105 transition-transform">
+                                <i class="fa-solid ${info.icon} text-xl"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-slate-800 text-sm truncate leading-tight group-hover:text-brand-600 transition-colors" title="${docItem.name}">${docItem.name}</h4>
+                                <div class="flex items-center gap-2 mt-1.5 text-xs text-slate-400">
+                                    <span class="font-semibold text-slate-500">${docItem.size || 'ไม่ทราบขนาด'}</span>
+                                    <span>•</span>
+                                    <span>${docItem.uploadedAt || ''}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
+                            <button onclick="appData.openDocPreview('${docItem.id}')" class="flex-1 py-2 bg-brand-50 hover:bg-brand-100 text-brand-600 font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 border border-brand-100 shadow-sm">
+                                <i class="fa-solid fa-eye text-xs"></i> ดูเอกสาร
+                            </button>
+                            <a href="${docItem.url}" target="_blank" download="${docItem.name}" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors shrink-0" title="ดาวน์โหลด">
+                                <i class="fa-solid fa-download text-xs"></i>
+                            </a>
+                            ${this.isReadOnly ? '' : `
+                            <button onclick="appData.deleteDocument('${docItem.id}')" class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors shrink-0" title="ลบเอกสาร">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                            `}
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            },
+
+            async handleDocUpload(e) {
+                const files = e.target.files;
+                if (!files || files.length === 0) return;
+                this.uploadFilesList(Array.from(files));
+                e.target.value = '';
+            },
+
+            handleDocDragOver(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropZone = document.getElementById('doc-drop-zone');
+                if (dropZone) dropZone.classList.add('border-brand-500', 'bg-brand-50/50');
+            },
+
+            handleDocDragLeave(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const dropZone = document.getElementById('doc-drop-zone');
+                if (dropZone) dropZone.classList.remove('border-brand-500', 'bg-brand-50/50');
+            },
+
+            handleDocDrop(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.handleDocDragLeave(e);
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    this.uploadFilesList(Array.from(files));
+                }
+            },
+
+            async uploadFilesList(files) {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                
+                if (!proj.documents) proj.documents = [];
+
+                this.showGlobalLoader('กำลังอัปโหลดเอกสาร...', `จำนวน ${files.length} ไฟล์`, 'fa-cloud-arrow-up');
+
+                try {
+                    for (const file of files) {
+                        let fileUrl = '';
+                        
+                        // Format File Size
+                        let sizeStr = '';
+                        if (file.size < 1024 * 1024) {
+                            sizeStr = (file.size / 1024).toFixed(1) + ' KB';
+                        } else {
+                            sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                        }
+                        
+                        // Upload to Drive or FileReader
+                        if (window.driveIntegration && window.GAS_URL) {
+                            try {
+                                const instName = proj.institution && proj.institution.trim() !== '' ? proj.institution.trim() : 'ไม่ระบุสถานศึกษา';
+                                const instFolderId = await window.driveIntegration.getOrCreateFolder(instName, window.DRIVE_ROOT_FOLDER_ID);
+                                const sysFolderId = await window.driveIntegration.getOrCreateFolder('เอกสารโครงการ', instFolderId);
+                                
+                                const filename = `doc_${Date.now()}_${file.name}`;
+                                fileUrl = await window.driveIntegration.uploadImageResumable(file, filename, sysFolderId);
+                            } catch (driveErr) {
+                                console.warn('Drive upload fallback to base64:', driveErr);
+                                fileUrl = await this._fileToBase64(file);
+                            }
+                        } else {
+                            fileUrl = await this._fileToBase64(file);
+                        }
+
+                        proj.documents.push({
+                            id: 'doc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            name: file.name,
+                            size: sizeStr,
+                            type: file.type || '',
+                            url: fileUrl,
+                            uploadedAt: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        });
+                    }
+
+                    this.syncCurrentProject();
+                    this.renderDocuments();
+                    this.hideGlobalLoader();
+                    this.showToast(`อัปโหลดเอกสารสำเร็จ ${files.length} รายการ`, 'success');
+                } catch (err) {
+                    console.error('Doc Upload Error:', err);
+                    this.hideGlobalLoader();
+                    this.showToast('เกิดข้อผิดพลาดในการอัปโหลด: ' + err.message, 'error');
+                }
+            },
+
+            _fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.onerror = err => reject(err);
+                    reader.readAsDataURL(file);
+                });
+            },
+
+            openDocPreview(docId) {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj || !proj.documents) return;
+                const docItem = this._getItemsList(proj.documents).find(d => String(d.id) === String(docId));
+                if (!docItem) return;
+
+                const modal = document.getElementById('doc-preview-modal');
+                const content = document.getElementById('doc-preview-modal-content');
+                const title = document.getElementById('doc-preview-title');
+                const meta = document.getElementById('doc-preview-meta');
+                const icon = document.getElementById('doc-preview-icon');
+                const body = document.getElementById('doc-preview-body');
+                const downloadBtn = document.getElementById('doc-preview-download-btn');
+
+                title.innerText = docItem.name || 'เอกสาร';
+                meta.innerHTML = `<span>${docItem.size || ''}</span> • <span>${docItem.uploadedAt || ''}</span>`;
+                downloadBtn.href = docItem.url;
+                downloadBtn.download = docItem.name || 'document';
+
+                const info = this.getDocTypeInfo(docItem.name, docItem.type);
+                icon.className = `w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${info.bg} ${info.color}`;
+                icon.innerHTML = `<i class="fa-solid ${info.icon} text-lg"></i>`;
+
+                // Preview Body logic
+                let previewHtml = '';
+                const url = docItem.url || '';
+                let embedUrl = url;
+                if (url.includes('drive.google.com/uc?id=')) {
+                    const fileId = new URLSearchParams(url.split('?')[1]).get('id');
+                    embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                }
+
+                if (info.type === 'image' || url.startsWith('data:image/')) {
+                    previewHtml = `<div class="w-full h-full flex items-center justify-center max-h-[75vh] p-2"><img src="${this.getSafeImageUrl(url)}" class="max-w-full max-h-full object-contain rounded-xl shadow-md"></div>`;
+                } else if (info.type === 'pdf' || url.includes('drive.google.com') || url.endsWith('.pdf')) {
+                    previewHtml = `<iframe src="${embedUrl}" class="w-full h-[75vh] rounded-xl border-0 bg-white shadow-inner" allow="autoplay"></iframe>`;
+                } else {
+                    previewHtml = `
+                        <div class="text-center p-8 bg-white rounded-2xl shadow-sm border border-slate-200 max-w-md w-full mx-auto my-auto">
+                            <div class="w-20 h-20 rounded-2xl ${info.bg} ${info.color} flex items-center justify-center mx-auto mb-4 border shadow-sm">
+                                <i class="fa-solid ${info.icon} text-3xl"></i>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-lg mb-1 truncate px-2" title="${docItem.name}">${docItem.name}</h4>
+                            <p class="text-xs text-slate-500 mb-6">ไฟล์ประเภทนี้ไม่สามารถแสดงตัวอย่างบนเว็บโดยตรงได้ สามารถกดปุ่มด้านล่างเพื่อดาวน์โหลดเปิดดู</p>
+                            <a href="${url}" target="_blank" download="${docItem.name}" class="inline-flex items-center gap-2 bg-brand-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-600 transition-all shadow-md">
+                                <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์เอกสาร
+                            </a>
+                        </div>
+                    `;
+                }
+
+                body.innerHTML = previewHtml;
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }, 10);
+            },
+
+            closeDocPreviewModal() {
+                const modal = document.getElementById('doc-preview-modal');
+                const content = document.getElementById('doc-preview-modal-content');
+                if (!modal || !content) return;
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                    const body = document.getElementById('doc-preview-body');
+                    if (body) body.innerHTML = '';
+                }, 300);
+            },
+
+            deleteDocument(docId) {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
+                this.openConfirmModal('ยืนยันลบเอกสาร', 'คุณแน่ใจหรือไม่ที่จะลบไฟล์เอกสารนี้ออกจากโครงการ?', () => {
+                    const proj = this.projects.find(p => p.id === this.currentProjectId);
+                    if (!proj || !proj.documents) return;
+                    
+                    proj.documents = this._getItemsList(proj.documents).filter(d => String(d.id) !== String(docId));
+                    this.syncCurrentProject();
+                    this.renderDocuments();
+                    this.showToast('ลบไฟล์เอกสารเรียบร้อยแล้ว', 'success');
                 });
             },
             
