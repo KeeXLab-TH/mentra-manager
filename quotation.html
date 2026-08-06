@@ -15,6 +15,9 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- pdfmake for Pure Vector Editable PDF with Thai fonts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <!-- SortableJS for drag-and-drop -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 
@@ -910,20 +913,74 @@
             }
         }
 
-        /* Prevent table rows from breaking across pages in PDF/Print */
-        @media print {
-            tr {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                -webkit-column-break-inside: avoid !important;
-            }
-        }
-        
-        /* Also apply globally for html2pdf which might not always trigger @media print */
+        /* Prevent table rows from breaking across pages */
         #printArea tr, .table-responsive tr {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
             -webkit-column-break-inside: avoid !important;
+        }
+
+        /* ===== NATIVE VECTOR PDF PRINT STYLES ===== */
+        @media print {
+            /* Hide EVERYTHING except the printArea */
+            body > *:not(#__printOnlyWrapper) {
+                display: none !important;
+            }
+            #__printOnlyWrapper {
+                display: block !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                z-index: 99999 !important;
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            #__printOnlyWrapper #printArea {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                background: white !important;
+            }
+            /* Force all text to be fully opaque - prevent faint text */
+            #printArea * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            /* Prevent text from being faint - explicitly set opacity */
+            #printArea,
+            #printArea div,
+            #printArea span,
+            #printArea p,
+            #printArea td,
+            #printArea th,
+            #printArea table {
+                opacity: 1 !important;
+                color: inherit !important;
+            }
+            /* Preserve background colors (table headers, zebra stripes) */
+            #printArea .pItemsTable th,
+            #printArea .pTableHeadRow,
+            #printArea .pTableHeadRow th {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            /* Page setup */
+            @page {
+                size: A4 portrait;
+                margin: 15mm 12mm 15mm 12mm;
+            }
+            /* Table break rules */
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
         }
 
         /* SortableJS drag and drop styling for template editor */
@@ -2312,9 +2369,14 @@
 
             for (let i = 0; i < rows.length; i++) {
                 const tr = rows[i];
-                const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
-                const price = parseFloat(tr.querySelector('.item-price').value) || 0;
-                grandTotal += (qty * price);
+                const customNo = tr.querySelector('.item-custom-no') ? tr.querySelector('.item-custom-no').value : '';
+                const isSubItem = Boolean(customNo && customNo.trim().includes('.'));
+                
+                if (!isSubItem) {
+                    const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
+                    const price = parseFloat(tr.querySelector('.item-price').value) || 0;
+                    grandTotal += (qty * price);
+                }
             }
 
             const vat = grandTotal * (7 / 107);
@@ -2600,73 +2662,61 @@
             if (pTablesContainer) pTablesContainer.innerHTML = currentTableHTML;
         }
 
-        // --- PDF Export using html2pdf.js ---
+        // --- Native Vector PDF Export via window.print() ---
+        // Produces 100% editable, selectable, copy-able Thai text PDF (Chrome Native Vector)
+        // Layout matches the live preview exactly - no conversion, no rasterization
         function exportToPDF() {
             syncFormToPrintArea();
-            applyLivePreview(); // Ensure template settings are perfectly applied before exporting
+            applyLivePreview();
 
-            // Temporarily show the print area for html2pdf to grab styling correctly, then hide
-            const printElement = document.getElementById('printArea');
-            printElement.style.display = 'block';
+            const printArea = document.getElementById('printArea');
 
-            // Wait for all Google Web Fonts to be 100% loaded and ready in the browser
+            // 1. Make printArea visible (required for layout calculation)
+            printArea.style.display = 'block';
+
+            // 2. Create a dedicated print-only wrapper that @media print rules target
+            let wrapper = document.getElementById('__printOnlyWrapper');
+            if (!wrapper) {
+                wrapper = document.createElement('div');
+                wrapper.id = '__printOnlyWrapper';
+                wrapper.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; z-index:99999; background:white;';
+                document.body.appendChild(wrapper);
+            }
+
+            // 3. Move printArea into wrapper temporarily
+            const originalParent = printArea.parentNode;
+            const originalNextSibling = printArea.nextSibling;
+            wrapper.style.display = 'block';
+            wrapper.appendChild(printArea);
+
+            // 4. Wait for fonts and layout to settle, then print
             document.fonts.ready.then(() => {
-                // Delay 150ms to ensure the browser has completed the text paint cycle
                 setTimeout(() => {
+                    // Set document title = filename so Chrome uses it when "Save as PDF"
                     const refNo = document.getElementById('refNo').value || 'Quotation';
                     const clientName = (document.getElementById('toCompany').value || '').trim();
-                    const filenameStr = clientName ? `${refNo} ${clientName}.pdf` : `${refNo}.pdf`;
+                    const filenameStr = clientName ? `${refNo} ${clientName}` : refNo;
+                    const originalTitle = document.title;
+                    document.title = filenameStr;
 
-                    const opt = {
-                        margin: [12, 10, 10, 10],
-                        filename: filenameStr,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { 
-                            scale: 2, 
-                            useCORS: true, 
-                            logging: false,
-                            scrollX: 0,
-                            scrollY: 0
-                        },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                        pagebreak: { mode: ['css', 'legacy'], avoid: 'tr' }
-                    };
+                    window.print();
 
-                    // Create a clone to safely render without affecting the UI
-                    const cloneWrapper = document.createElement('div');
-                    cloneWrapper.style.position = 'absolute';
-                    cloneWrapper.style.top = '0';
-                    cloneWrapper.style.left = '0';
-                    cloneWrapper.style.width = '715px'; // Exact width of document
-                    cloneWrapper.style.zIndex = '-9999';
-                    cloneWrapper.style.pointerEvents = 'none';
+                    // 5. After print dialog closes, restore everything
+                    setTimeout(() => {
+                        document.title = originalTitle;
+                        printArea.style.display = 'none';
+                        if (originalNextSibling) {
+                            originalParent.insertBefore(printArea, originalNextSibling);
+                        } else {
+                            originalParent.appendChild(printArea);
+                        }
+                        wrapper.style.display = 'none';
 
-                    const clone = printElement.cloneNode(true);
-                    clone.id = 'printAreaClone';
-                    clone.style.display = 'block';
-                    clone.style.background = '#ffffff';
-                    
-                    cloneWrapper.appendChild(clone);
-                    document.body.appendChild(cloneWrapper);
-                    
-                    const originalOverflow = document.body.style.overflow;
-                    document.body.style.overflow = 'visible';
-
-                    html2pdf().set(opt).from(clone).save().then(() => {
-                        document.body.removeChild(cloneWrapper);
-                        document.body.style.overflow = originalOverflow;
                         if (typeof saveQuotationToHistory === 'function') {
                             saveQuotationToHistory();
                         }
-                    }).catch(err => {
-                        console.error("PDF generation failed:", err);
-                        if (document.body.contains(cloneWrapper)) {
-                            document.body.removeChild(cloneWrapper);
-                        }
-                        document.body.style.overflow = originalOverflow;
-                        alert("เกิดข้อผิดพลาดในการสร้าง PDF");
-                    });
-                }, 150);
+                    }, 500);
+                }, 200);
             });
         }
 
