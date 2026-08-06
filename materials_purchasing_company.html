@@ -839,6 +839,10 @@
                             <i class="fa-solid fa-table-list text-brand-500"></i> รายการวัสดุและจัดซื้อ
                         </h3>
                         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <button id="btn-toggle-markup" onclick="appData.toggleAutoMarkup()" class="bg-amber-50 border-2 border-amber-300 text-amber-800 hover:bg-amber-100 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="เปิด/ปิดการคำนวณราคาขายอัตโนมัติ (+35% จากทุน)">
+                                <i class="fa-solid fa-calculator text-amber-500"></i>
+                                <span>+35% อัตโนมัติ: <strong id="status-auto-markup" class="text-emerald-600">เปิด</strong></span>
+                            </button>
                             <button onclick="appData.resetColumnWidths()" class="bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="คืนค่าความกว้างคอลัมน์">
                                 <i class="fa-solid fa-arrows-left-right-to-line"></i> รีเซ็ตความกว้าง
                             </button>
@@ -873,7 +877,8 @@
                                     <th class="w-20 relative group" data-col="unitPrice">ราคา/หน่วย<div class="col-resizer"></div></th>
                                     <th class="w-24 bg-yellow-100 text-yellow-800 relative group" data-col="totalSell">รวมเงิน<div class="col-resizer"></div></th>
                                     <th class="w-20 relative group" data-col="targetPrice">ควรซื้อ<div class="col-resizer"></div></th>
-                                    <th class="w-20 relative group" data-col="foundPrice">ราคาทุน<div class="col-resizer"></div></th>
+                                    <th class="w-20 relative group" data-col="foundPrice">ราคาทุน/ชิ้น<div class="col-resizer"></div></th>
+                                    <th class="w-24 relative group" data-col="foundTotalPrice">ราคาทุนรวม<div class="col-resizer"></div></th>
                                     <th class="w-16 text-blue-700 relative group" data-col="profitPct">กำไร(%)<div class="col-resizer"></div></th>
                                     <th class="w-20 relative group" data-col="storeInfo">ข้อมูลร้าน<div class="col-resizer"></div></th>
                                     <th class="w-20 relative group" data-col="link">ลิงก์ร้านค้า<div class="col-resizer"></div></th>
@@ -1425,6 +1430,28 @@
             currentcompany: null,
             uploadingLogoFor: null,
             selectedLogoBase64: null,
+            autoMarkup35: localStorage.getItem('materials_auto_markup_35') !== 'false',
+
+            toggleAutoMarkup() {
+                this.autoMarkup35 = !this.autoMarkup35;
+                localStorage.setItem('materials_auto_markup_35', this.autoMarkup35 ? 'true' : 'false');
+                this.updateAutoMarkupUI();
+                this.showToast(this.autoMarkup35 ? 'เปิดการคำนวณราคาขาย (+35% อัตโนมัติ) แล้ว' : 'ปิดการคำนวณราคาขาย (+35% อัตโนมัติ) แล้ว', this.autoMarkup35 ? 'success' : 'info');
+            },
+
+            updateAutoMarkupUI() {
+                const btn = document.getElementById('btn-toggle-markup');
+                const status = document.getElementById('status-auto-markup');
+                if (!btn || !status) return;
+                
+                if (this.autoMarkup35) {
+                    btn.className = "bg-amber-50 border-2 border-amber-300 text-amber-800 hover:bg-amber-100 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm";
+                    status.innerHTML = '<span class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-xs font-bold"><i class="fa-solid fa-circle-check"></i> เปิด</span>';
+                } else {
+                    btn.className = "bg-slate-100 border-2 border-slate-300 text-slate-500 hover:bg-slate-200 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm opacity-75";
+                    status.innerHTML = '<span class="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-xs font-bold"><i class="fa-solid fa-circle-xmark"></i> ปิด</span>';
+                }
+            },
 
             // Helpers for formatting
             formatCurrency(num) {
@@ -1570,8 +1597,11 @@
                 // Bind paste event for copying from Excel
                 document.addEventListener('paste', this.handleGlobalPaste.bind(this));
                 
-                // Init table resizers
-                setTimeout(() => this.initResizers(), 100);
+                // Init table resizers & UI
+                setTimeout(() => {
+                    this.initResizers();
+                    this.updateAutoMarkupUI();
+                }, 100);
             },
 
             // --- COLUMN RESIZING ---
@@ -2267,6 +2297,7 @@
 
                 this.updateProjectDetailsUI(proj);
                 this.renderExcelTable();
+                this.updateAutoMarkupUI();
                 this.switchDetailTab('table'); // Reset to table view
             },
 
@@ -3447,7 +3478,7 @@
                             <td>
                                 <input type="text" class="excel-input text-center text-slate-500 font-medium" data-id="${item.id}" data-field="customNo" value="${item.customNo || ''}" onchange="appData.updateItem('${item.id}', 'customNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="เช่น 1.">
                             </td>
-                            <td colspan="10" class="bg-slate-50">
+                            <td colspan="11" class="bg-slate-50">
                                 <input type="text" class="excel-input font-bold text-brand-600 bg-transparent w-full" data-id="${item.id}" data-field="name" value="${item.name || ''}" onchange="appData.updateItem('${item.id}', 'name', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="ชื่อหัวข้อ/หมวดหมู่">
                             </td>
                             <td class="text-center bg-slate-50">
@@ -3462,6 +3493,7 @@
                             </td>
                         `;
                     } else {
+                        const displayFoundTotal = item.foundTotalPrice !== undefined && item.foundTotalPrice !== null && item.foundTotalPrice !== '' ? item.foundTotalPrice : (item.foundPrice ? Math.round((item.qty || 0) * item.foundPrice * 100) / 100 : '');
                         tr.innerHTML = `
                             <td class="text-center text-slate-500 font-medium">${seqCellContent}</td>
                             <td>
@@ -3486,7 +3518,10 @@
                                 <input type="number" class="excel-input text-right text-blue-700" data-id="${item.id}" data-field="targetPrice" value="${item.targetPrice}" onchange="appData.updateItem('${item.id}', 'targetPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
                             </td>
                             <td>
-                                <input type="number" class="excel-input text-right text-emerald-700 font-semibold" data-id="${item.id}" data-field="foundPrice" value="${item.foundPrice}" onchange="appData.updateItem('${item.id}', 'foundPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
+                                <input type="number" class="excel-input text-right text-emerald-700 font-semibold" data-id="${item.id}" data-field="foundPrice" value="${item.foundPrice || ''}" onchange="appData.updateItem('${item.id}', 'foundPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0" step="any" placeholder="ทุน/ชิ้น">
+                            </td>
+                            <td>
+                                <input type="number" class="excel-input text-right text-emerald-700 font-semibold" data-id="${item.id}" data-field="foundTotalPrice" value="${displayFoundTotal}" onchange="appData.updateItem('${item.id}', 'foundTotalPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0" step="any" placeholder="ทุนรวม">
                             </td>
                             <td class="text-center font-bold ${profitClass}">
                                 ${profitPct !== 0 ? profitPct.toFixed(2) + '%' : '-'}
@@ -3519,7 +3554,7 @@
                 });
 
                 if(proj.items.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-slate-500 font-medium">ยังไม่มีรายการสิ่งของ กด "เพิ่มรายการสินค้า" หรือ "เพิ่มหัวข้อ" เพื่อเริ่มต้น</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="14" class="text-center p-8 text-slate-500 font-medium">ยังไม่มีรายการสิ่งของ กด "เพิ่มรายการสินค้า" หรือ "เพิ่มหัวข้อ" เพื่อเริ่มต้น</td></tr>`;
                 }
 
                 // Update Footers
@@ -3653,6 +3688,7 @@
                     unitPrice: 0,
                     targetPrice: 0,
                     foundPrice: 0,
+                    foundTotalPrice: 0,
                     storeInfo: '',
                     link: ''
                 });
@@ -3675,6 +3711,7 @@
                     unitPrice: 0,
                     targetPrice: 0,
                     foundPrice: 0,
+                    foundTotalPrice: 0,
                     storeInfo: '',
                     link: ''
                 });
@@ -3690,20 +3727,45 @@
                 const item = proj.items.find(i => i.id === itemId);
                 if (!item) return;
 
-                if (['qty', 'unitPrice', 'targetPrice', 'foundPrice'].includes(field)) {
-                    item[field] = Number(value) || 0;
+                if (['qty', 'unitPrice', 'targetPrice', 'foundPrice', 'foundTotalPrice'].includes(field)) {
+                    const numVal = Number(value) || 0;
                     
-                    // Auto-calculate unitPrice if foundPrice is changed
-                    if (field === 'foundPrice' && item.foundPrice > 0) {
-                        const calculatedPrice = item.foundPrice * 1.35;
-                        // Round up to nearest 5 (e.g. 4 -> 5, 6 -> 10)
-                        item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
-                        item.targetPrice = Math.round(item.unitPrice / 1.35);
-                    }
-
-                    // Auto-calculate targetPrice if unitPrice is changed
-                    if (field === 'unitPrice' && item.unitPrice > 0) {
-                        item.targetPrice = Math.round(item.unitPrice / 1.35);
+                    if (field === 'qty') {
+                        item.qty = numVal;
+                        if (item.foundPrice > 0) {
+                            item.foundTotalPrice = Math.round(item.foundPrice * item.qty * 100) / 100;
+                        } else if (item.foundTotalPrice > 0 && item.qty > 0) {
+                            item.foundPrice = Math.round((item.foundTotalPrice / item.qty) * 100) / 100;
+                        }
+                    } else if (field === 'foundPrice') {
+                        item.foundPrice = numVal;
+                        item.foundTotalPrice = Math.round(numVal * (item.qty || 0) * 100) / 100;
+                        
+                        // Auto-calculate unitPrice if foundPrice is changed
+                        if (item.foundPrice > 0) {
+                            const calculatedPrice = item.foundPrice * 1.35;
+                            // Round up to nearest 5 (e.g. 4 -> 5, 6 -> 10)
+                            item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
+                            item.targetPrice = Math.round(item.unitPrice / 1.35);
+                        }
+                    } else if (field === 'foundTotalPrice') {
+                        item.foundTotalPrice = numVal;
+                        const qty = item.qty && item.qty > 0 ? item.qty : 1;
+                        item.foundPrice = Math.round((numVal / qty) * 100) / 100;
+                        
+                        // Auto-calculate unitPrice if foundPrice is changed
+                        if (item.foundPrice > 0) {
+                            const calculatedPrice = item.foundPrice * 1.35;
+                            item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
+                            item.targetPrice = Math.round(item.unitPrice / 1.35);
+                        }
+                    } else if (field === 'unitPrice') {
+                        item.unitPrice = numVal;
+                        if (item.unitPrice > 0) {
+                            item.targetPrice = Math.round(item.unitPrice / 1.35);
+                        }
+                    } else if (field === 'targetPrice') {
+                        item.targetPrice = numVal;
                     }
                 } else {
                     item[field] = value;
@@ -3896,7 +3958,7 @@
                     if (!proj) return;
 
                     // Table column order that matches the UI
-                    const fields = ['name', 'qty', 'unit', 'unitPrice', 'targetPrice', 'foundPrice', 'storeInfo', 'link'];
+                    const fields = ['name', 'qty', 'unit', 'unitPrice', 'targetPrice', 'foundPrice', 'foundTotalPrice', 'storeInfo', 'link'];
                     const startField = activeEl.dataset.field;
                     const startItemId = activeEl.dataset.id;
                     
@@ -3917,7 +3979,7 @@
                                 if (currentRowIdx >= proj.items.length) {
                                     proj.items.push({
                                         id: 'item_' + Date.now() + '_' + currentRowIdx,
-                                        name: '', qty: 1, unit: 'ชิ้น', unitPrice: 0, targetPrice: 0, foundPrice: 0, storeInfo: '', link: ''
+                                        name: '', qty: 1, unit: 'ชิ้น', unitPrice: 0, targetPrice: 0, foundPrice: 0, foundTotalPrice: 0, storeInfo: '', link: ''
                                     });
                                 }
                                 
@@ -3931,13 +3993,22 @@
                                     let val = cols[c].trim();
                                     
                                     // Clean up numbers if the field expects numbers
-                                    if (['qty', 'unitPrice', 'targetPrice', 'foundPrice'].includes(fieldName)) {
+                                    if (['qty', 'unitPrice', 'targetPrice', 'foundPrice', 'foundTotalPrice'].includes(fieldName)) {
                                         val = Number(val.replace(/,/g, '')) || 0;
                                         item[fieldName] = val;
                                         
                                         // Auto-calculate logic (matching updateItem)
                                         if (fieldName === 'foundPrice' && val > 0) {
+                                            item.foundTotalPrice = Math.round(val * (item.qty || 0) * 100) / 100;
                                             const calculatedPrice = val * 1.35;
+                                            item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
+                                            item.targetPrice = Math.round(item.unitPrice / 1.35);
+                                        }
+                                        if (fieldName === 'foundTotalPrice' && val > 0) {
+                                            item.foundTotalPrice = val;
+                                            const qty = item.qty && item.qty > 0 ? item.qty : 1;
+                                            item.foundPrice = Math.round((val / qty) * 100) / 100;
+                                            const calculatedPrice = item.foundPrice * 1.35;
                                             item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
                                             item.targetPrice = Math.round(item.unitPrice / 1.35);
                                         }
