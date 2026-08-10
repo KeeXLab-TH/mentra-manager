@@ -3827,6 +3827,20 @@
             
             openQuotationForProject() {
                 if (this.currentProjectId) {
+                    const proj = this.projects.find(p => p.id === this.currentProjectId);
+                    if (proj) {
+                        localStorage.setItem('pending_quotation_project', JSON.stringify({
+                            source: 'school',
+                            projectId: this.currentProjectId,
+                            institution: proj.institution || '',
+                            items: proj.items || [],
+                            company: proj.institution || '',
+                            address: '',
+                            attn: '',
+                            tel: '',
+                            email: ''
+                        }));
+                    }
                     window.location.href = `quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
                 }
             },

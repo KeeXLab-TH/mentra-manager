@@ -704,34 +704,57 @@
 
         .table-input {
             width: 100%;
-            padding: 0.6rem;
-            border: 1px solid var(--border-color);
+            padding: 0.45rem 0.65rem;
+            min-height: 38px;
+            line-height: 1.5;
+            border: 1px solid transparent;
             border-radius: 6px;
             font-size: 0.9rem;
+            font-family: 'Sarabun', 'Prompt', sans-serif;
             transition: all 0.2s;
-            background-color: #fff;
+            background-color: transparent;
+            box-sizing: border-box;
+        }
+
+        .table-input:hover {
+            background-color: rgba(37, 99, 235, 0.03);
         }
 
         .table-input:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            border-color: transparent;
+            box-shadow: none;
+            background-color: #eff6ff;
+            border-radius: 4px;
+        }
+
+        /* Hide spinner controls on chrome, safari, edge, firefox for clean look */
+        input[type=number].table-input::-webkit-inner-spin-button, 
+        input[type=number].table-input::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number].table-input {
+            -moz-appearance: textfield;
         }
 
         .col-qty {
-            width: 65px;
+            width: 90px;
+            min-width: 85px;
         }
 
         .col-unit {
-            width: 80px;
+            width: 105px;
+            min-width: 95px;
         }
 
         .col-price {
-            width: 110px;
+            width: 140px;
+            min-width: 125px;
         }
 
         .col-action {
-            width: 85px;
+            width: 90px;
             text-align: center;
         }
 
@@ -928,15 +951,13 @@
             }
             #__printOnlyWrapper {
                 display: block !important;
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
+                position: static !important;
                 width: 100% !important;
                 height: auto !important;
-                z-index: 99999 !important;
                 background: white !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                overflow: visible !important;
             }
             #__printOnlyWrapper #printArea {
                 display: block !important;
@@ -952,6 +973,12 @@
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 color-adjust: exact !important;
+            }
+            /* Allow page breaks in the main wrapper */
+            #pPageWrapper {
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+                overflow: visible !important;
             }
             /* Prevent text from being faint - explicitly set opacity */
             #printArea,
@@ -976,8 +1003,20 @@
                 size: A4 portrait;
                 margin: 15mm 12mm 15mm 12mm;
             }
-            /* Table break rules */
-            tr {
+            /* Table/page break rules */
+            #pTablesContainer {
+                display: block !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+            .print-page {
+                display: block !important;
+            }
+            .print-page:not(:last-child) {
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+            #pTablesContainer tr {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -1276,130 +1315,192 @@
         <main class="content-area">
             <div class="container">
                 <div class="form-content">
-                    <!-- Top Section -->
                     <!-- Current Issuer Banner -->
-                    <div id="currentIssuerBanner" onclick="openIssuerSelectionModal()" style="position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px; padding: 20px 24px; background-color: var(--primary-color, #1A6FBF); border-radius: 12px; margin-bottom: 24px; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: all 0.3s ease; cursor: pointer;" onmouseover="this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'; this.style.transform='translateY(-2px)'" onmouseout="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'; this.style.transform='none'">
-                        <div style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class='bx bx-edit-alt' style="font-size: 1.2rem;"></i>
+                    <div id="currentIssuerBanner" onclick="openIssuerSelectionModal()"
+                        style="position: relative; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%); border-radius: 14px; margin-bottom: 1.5rem; color: white; box-shadow: 0 10px 25px -5px rgba(29, 78, 216, 0.35); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;"
+                        onmouseover="this.style.boxShadow='0 14px 32px -4px rgba(29, 78, 216, 0.45)'; this.style.transform='translateY(-2px)';"
+                        onmouseout="this.style.boxShadow='0 10px 25px -5px rgba(29, 78, 216, 0.35)'; this.style.transform='none';">
+                        
+                        <!-- Decorative subtle glowing circle -->
+                        <div style="position: absolute; right: -20px; bottom: -40px; width: 140px; height: 140px; background: rgba(255,255,255,0.08); border-radius: 50%; pointer-events: none;"></div>
+
+                        <!-- Left: icon + company name -->
+                        <div style="display: flex; align-items: center; gap: 16px; position: relative; z-index: 1;">
+                            <div style="background: #ffffff; border: 1px solid rgba(255,255,255,0.4); border-radius: 12px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.12); overflow: hidden; padding: 4px;">
+                                <img id="currentIssuerLogo" src="" style="max-height: 100%; max-width: 100%; object-fit: contain; display: none; border-radius: 6px;" alt="Logo">
+                                <i id="currentIssuerIcon" class='bx bx-buildings' style="font-size: 1.6rem; color: #2563eb;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; font-weight: 600; color: #93c5fd; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; display: flex; align-items: center; gap: 6px;">
+                                    <span style="display: inline-block; width: 6px; height: 6px; background: #34d399; border-radius: 50%;"></span>
+                                    ผู้ออกเอกสาร (Issuer)
+                                </div>
+                                <div id="currentIssuerDisplay" style="font-weight: 700; font-size: 1.2rem; letter-spacing: 0.3px; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.15);">บริษัท เมนทรา โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
+                            </div>
                         </div>
-                        <div style="font-size: 0.95rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">กำลังดำเนินการออกใบเสนอราคาในนาม (คลิกเพื่อแก้ไข)</div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <img id="currentIssuerLogo" src="" style="height: 40px; width: auto; object-fit: contain; display: none; background: white; padding: 4px; border-radius: 4px;" alt="Issuer Logo">
-                            <i id="currentIssuerIcon" class='bx bx-building-house' style="font-size: 2rem;"></i>
-                            <span id="currentIssuerDisplay" style="font-weight: 700; font-size: 1.5rem; letter-spacing: 0.5px;">บริษัท เมนทรา โซลูชั่น จำกัด (สำนักงานใหญ่)</span>
+
+                        <!-- Right: edit pill -->
+                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.18); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 30px; padding: 7px 16px; font-size: 0.85rem; font-weight: 600; white-space: nowrap; flex-shrink: 0; position: relative; z-index: 1; transition: all 0.2s;"
+                            onmouseover="this.style.background='rgba(255, 255, 255, 0.28)';" onmouseout="this.style.background='rgba(255, 255, 255, 0.18)';">
+                            <i class='bx bx-edit-alt' style="font-size: 1.1rem; color: #fde047;"></i>
+                            <span>เปลี่ยนบริษัท</span>
                         </div>
                     </div>
 
-                    <div class="grid-2">
-                        <!-- Info Left -->
-                        <div>
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-                                <h3 class="section-title" style="margin-bottom: 0;">ข้อมูลผู้รับ (To)</h3>
+                    <div class="grid-2" style="align-items: stretch; gap: 1.5rem;">
+                        <!-- Info Left Card (Customer Info) -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.4rem 1.5rem; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #2563eb, #3b82f6);"></div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.1rem; flex-wrap: wrap; gap: 0.6rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.85rem;">
+                                <h3 class="section-title" style="margin-bottom: 0; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; color: #0f172a;">
+                                    <span style="width: 32px; height: 32px; background: #eff6ff; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #2563eb;">
+                                        <i class='bx bx-user-pin' style="font-size: 1.3rem;"></i>
+                                    </span>
+                                    ข้อมูลผู้รับ (To)
+                                </h3>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <button class="btn btn-outline" onclick="openRecipientModal()"
-                                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border: 1px solid var(--primary-color, #1A6FBF); color: var(--primary-color, #1A6FBF); background: transparent; transition: all 0.2s; border-radius: 6px;"
-                                        onmouseover="this.style.background='var(--primary-color, #1A6FBF)'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='var(--primary-color, #1A6FBF)';">
-                                        <i class='bx bx-book-content'></i> เลือกผู้รับที่บันทึกไว้
+                                    <button class="btn" onclick="openRecipientModal()"
+                                        style="padding: 0.4rem 0.85rem; font-size: 0.82rem; border: 1px solid #bfdbfe; color: #1d4ed8; background: #eff6ff; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;"
+                                        onmouseover="this.style.background='#dbeafe'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe';">
+                                        <i class='bx bx-book-content' style="font-size: 1rem; color: #2563eb;"></i> สมุดผู้รับ
                                     </button>
-                                    <button class="btn btn-primary" onclick="saveCurrentRecipient()"
-                                        style="padding: 0.4rem 0.8rem; font-size: 0.85rem; background: var(--success-color); color: white;">
-                                        <i class='bx bx-save'></i> บันทึกผู้รับนี้
+                                    <button class="btn" onclick="saveCurrentRecipient()"
+                                        style="padding: 0.4rem 0.85rem; font-size: 0.82rem; border: 1px solid #bbf7d0; color: #15803d; background: #f0fdf4; border-radius: 8px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;"
+                                        onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#86efac';" onmouseout="this.style.background='#f0fdf4'; this.style.borderColor='#bbf7d0';">
+                                        <i class='bx bx-save' style="font-size: 1rem; color: #16a34a;"></i> บันทึก
                                     </button>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label>ชื่อบริษัท / ผู้รับ</label>
-                                <input type="text" class="form-control" id="toCompany"
-                                    placeholder="บริษัท เอบีซี จำกัด">
+                            <div class="form-group" style="margin-bottom: 0.9rem;">
+                                <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">ชื่อบริษัท / ผู้รับ <span style="color: #ef4444;">*</span></label>
+                                <input type="text" class="form-control" id="toCompany" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem; transition: all 0.2s;"
+                                    placeholder="ระบุชื่อบริษัท โรงเรียน หรือลูกค้า...">
                             </div>
-                            <div class="form-group">
-                                <label>ที่อยู่</label>
-                                <textarea class="form-control" id="toAddress"
-                                    placeholder="123 ถนนสุขุมวิท แขวงคลองเตย..."></textarea>
+                            <div class="form-group" style="margin-bottom: 0.9rem;">
+                                <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">ที่อยู่ผู้รับ</label>
+                                <textarea class="form-control" id="toAddress" rows="2" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem; transition: all 0.2s;"
+                                    placeholder="ระบุที่อยู่จัดส่ง / ที่อยู่บริษัท..."></textarea>
                             </div>
-                            <div class="form-group">
-                                <label>ผู้ติดต่อ (Attn)</label>
-                                <input type="text" class="form-control" id="toAttn" placeholder="คุณสมชาย">
-                            </div>
-                            <div class="grid-2" style="gap: 1rem; margin-bottom: 0;">
-                                <div class="form-group">
-                                    <label>เบอร์โทรศัพท์ (Tel)</label>
-                                    <input type="text" class="form-control" id="toTel" placeholder="02-XXX-XXXX">
+                            <div class="grid-2" style="gap: 0.9rem; margin-bottom: 0.9rem;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">ผู้ติดต่อ (Attn)</label>
+                                    <input type="text" class="form-control" id="toAttn" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem;" placeholder="ชื่อผู้ติดต่อ">
                                 </div>
-                                <div class="form-group">
-                                    <label>อีเมล (Email)</label>
-                                    <input type="email" class="form-control" id="toEmail"
-                                        placeholder="email@example.com">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">เลขผู้เสียภาษี (TAX ID)</label>
+                                    <input type="text" class="form-control" id="toTaxId" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem;" placeholder="0-0000-00000-00-0">
+                                </div>
+                            </div>
+                            <div class="grid-2" style="gap: 0.9rem; margin-bottom: 0;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">เบอร์โทรศัพท์ (Tel)</label>
+                                    <input type="text" class="form-control" id="toTel" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem;" placeholder="08X XXX XXXX">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">อีเมล (Email)</label>
+                                    <input type="email" class="form-control" id="toEmail" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem;"
+                                        placeholder="example@email.com">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Info Right -->
-                        <div>
-                            <h3 class="section-title">รายละเอียดเอกสาร</h3>
-                            <div class="grid-2" style="gap: 1rem; margin-bottom: 0;">
-                                <div class="form-group">
-                                    <label>เลขที่เอกสาร (Ref No.)</label>
-                                    <input type="text" class="form-control" id="refNo" style="font-weight: 600;"
-                                        placeholder="เช่น MTQ260528001">
-                                </div>
-                                <div class="form-group">
-                                    <label>วันที่ (Date)</label>
-                                    <input type="date" class="form-control" id="docDate">
+                        <!-- Info Right Column (2 Cards) -->
+                        <div style="display: flex; flex-direction: column; gap: 1.1rem; height: 100%;">
+                            <!-- Card 2: Document Details -->
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.3rem 1.5rem; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #0284c7, #38bdf8);"></div>
+                                <h3 class="section-title" style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.8rem; font-size: 1.1rem; font-weight: 700; color: #0f172a;">
+                                    <span style="width: 32px; height: 32px; background: #e0f2fe; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #0284c7;">
+                                        <i class='bx bx-detail' style="font-size: 1.3rem;"></i>
+                                    </span>
+                                    รายละเอียดเอกสาร
+                                </h3>
+                                <div class="grid-2" style="gap: 0.9rem; margin-bottom: 0; align-items: end;">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">เลขที่เอกสาร (Ref No.)</label>
+                                        <div style="display: flex; gap: 6px; align-items: center;">
+                                            <input type="text" class="form-control" id="refNo" style="font-weight: 700; color: #0284c7; flex: 1; border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem; background: #f8fafc;"
+                                                placeholder="เช่น MTQ260528001">
+                                            <button class="btn" onclick="generateRefNo(true)"
+                                                style="padding: 0.55rem 0.85rem; font-size: 0.82rem; white-space: nowrap; border: 1px solid #bae6fd; color: #0284c7; background: #f0f9ff; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;"
+                                                onmouseover="this.style.background='#e0f2fe';" onmouseout="this.style.background='#f0f9ff';">
+                                                <i class='bx bx-refresh' style="font-size: 1.1rem;"></i> รันเลข
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">วันที่ (Date)</label>
+                                        <input type="date" class="form-control" id="docDate" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem;">
+                                    </div>
                                 </div>
                             </div>
 
-                            <h3 class="section-title" style="margin-top: 1rem;">เงื่อนไข (Terms)</h3>
-                            <div class="form-group">
-                                <label>กำหนดยืนราคา (Validity)</label>
-                                <input type="text" class="form-control" id="termValidity" value="30 วัน">
-                            </div>
-                            <div class="form-group">
-                                <label>กำหนดส่งมอบ (Delivery)</label>
-                                <input type="text" class="form-control" id="termDelivery" value="15-30 วัน">
-                            </div>
-                            <div class="form-group">
-                                <label>เงื่อนไขชำระเงิน (Payment)</label>
-                                <input type="text" class="form-control" id="termPayment" value="เงินสด">
+                            <!-- Card 3: Terms & Conditions -->
+                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.3rem 1.5rem; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); flex: 1; position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #d97706, #f59e0b);"></div>
+                                <h3 class="section-title" style="margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.8rem; font-size: 1.1rem; font-weight: 700; color: #0f172a;">
+                                    <span style="width: 32px; height: 32px; background: #fef3c7; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #d97706;">
+                                        <i class='bx bx-file' style="font-size: 1.3rem;"></i>
+                                    </span>
+                                    เงื่อนไขสัญญา (Terms & Conditions)
+                                </h3>
+                                <div class="grid-2" style="gap: 0.9rem; margin-bottom: 0.9rem;">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">กำหนดยืนราคา</label>
+                                        <input type="text" class="form-control" id="termValidity" value="30 วัน" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">กำหนดส่งมอบ</label>
+                                        <input type="text" class="form-control" id="termDelivery" value="15-30 วัน" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem;">
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">เงื่อนไขชำระเงิน</label>
+                                    <input type="text" class="form-control" id="termPayment" value="เงินสด" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem;">
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Table Section -->
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 class="section-title" style="margin-bottom: 0;">รายการสินค้า</h3>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-outline" onclick="openImportProjectModal()"
-                                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: var(--primary-color); color: var(--primary-color);">
-                                <i class='bx bx-import'></i> ดึงข้อมูลจากโครงการจัดซื้อ
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <h3 class="section-title" style="margin-bottom: 0; display: flex; align-items: center; gap: 10px; font-size: 1.15rem; font-weight: 700; color: #0f172a;">
+                            <span style="width: 34px; height: 34px; background: #eff6ff; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #2563eb;">
+                                <i class='bx bx-shopping-bag' style="font-size: 1.35rem;"></i>
+                            </span>
+                            รายการสินค้า / บริการ
+                        </h3>
+                        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                            <button class="btn" onclick="openImportProjectModal()"
+                                style="padding: 0.5rem 0.95rem; font-size: 0.85rem; border: 1px solid #bfdbfe; color: #1d4ed8; background: #eff6ff; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;"
+                                onmouseover="this.style.background='#dbeafe'; this.style.borderColor='#93c5fd';" onmouseout="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe';">
+                                <i class='bx bx-import' style="font-size: 1.1rem; color: #2563eb;"></i> ดึงจากโครงการ
                             </button>
-                            <button class="btn btn-outline" onclick="addHeaderRow()"
-                                style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: #64748b; color: #475569;">
-                                <i class='bx bx-heading'></i> เพิ่มหัวข้อ
+                            <button class="btn" onclick="addHeaderRow()"
+                                style="padding: 0.5rem 0.95rem; font-size: 0.85rem; border: 1px solid #e2e8f0; color: #334155; background: #f8fafc; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;"
+                                onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='#f8fafc';">
+                                <i class='bx bx-heading' style="font-size: 1.1rem; color: #64748b;"></i> เพิ่มหัวข้อ
                             </button>
-                            <button class="btn btn-outline" onclick="addTableRow()"
-                                style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                                <i class='bx bx-plus'></i> เพิ่มรายการ
+                            <button class="btn" onclick="addTableRow()"
+                                style="padding: 0.5rem 1.1rem; font-size: 0.85rem; border: 1px solid #2563eb; color: #ffffff; background: linear-gradient(135deg, #2563eb, #1d4ed8); border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); transition: all 0.2s;"
+                                onmouseover="this.style.boxShadow='0 6px 16px rgba(37, 99, 235, 0.35)';" onmouseout="this.style.boxShadow='0 4px 12px rgba(37, 99, 235, 0.25)';">
+                                <i class='bx bx-plus' style="font-size: 1.1rem;"></i> เพิ่มรายการ
                             </button>
                         </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table id="itemsTable">
+                    <div class="table-responsive" style="border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); overflow-x: auto; background: #ffffff;">
+                        <table id="itemsTable" style="width: 100%; border-collapse: collapse;">
                             <thead>
-                                <tr>
-                                    <th style="width: 50px; text-align: center; letter-spacing: normal !important;">
-                                        ลำดับ</th>
-                                    <th style="width: 70px; text-align: center; letter-spacing: normal !important;"></th>
-                                    <th style="letter-spacing: normal !important;">รายการสินค้า / รายละเอียด
-                                        (Description)</th>
-                                    <th class="col-qty" style="letter-spacing: normal !important;">จำนวน</th>
-                                    <th class="col-unit" style="letter-spacing: normal !important;">หน่วย</th>
-                                    <th class="col-price" style="letter-spacing: normal !important;">ราคา/หน่วย</th>
-                                    <th class="col-price" style="letter-spacing: normal !important;">จำนวนเงิน</th>
-                                    <th class="col-action">ลบ</th>
+                                <tr style="background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); border-bottom: 2px solid #e2e8f0;">
+                                    <th style="width: 55px; min-width: 55px; text-align: center; font-weight: 700; color: #334155; padding: 12px 8px; font-size: 0.88rem;">ลำดับ</th>
+                                    <th style="width: 75px; min-width: 75px; text-align: center; font-weight: 700; color: #334155; padding: 12px 8px; font-size: 0.88rem;">ย่อย</th>
+                                    <th style="font-weight: 700; color: #334155; padding: 12px 12px; font-size: 0.88rem; min-width: 250px;">รายการสินค้า / รายละเอียด (Description)</th>
+                                    <th class="col-qty" style="font-weight: 700; color: #334155; padding: 12px 8px; font-size: 0.88rem; text-align: center;">จำนวน</th>
+                                    <th class="col-unit" style="font-weight: 700; color: #334155; padding: 12px 8px; font-size: 0.88rem; text-align: center;">หน่วย</th>
+                                    <th class="col-price" style="font-weight: 700; color: #334155; padding: 12px 12px; font-size: 0.88rem; text-align: right;">ราคา/หน่วย</th>
+                                    <th class="col-price" style="font-weight: 700; color: #334155; padding: 12px 12px; font-size: 0.88rem; text-align: right;">จำนวนเงิน</th>
+                                    <th class="col-action" style="font-weight: 700; color: #334155; padding: 12px 8px; font-size: 0.88rem;">จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody id="itemsBody">
@@ -1409,49 +1510,94 @@
                     </div>
 
                     <!-- Summary Section -->
-                    <div class="summary-section">
-                        <div class="remark-box">
-                            <label
-                                style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500; display: block; margin-bottom: 0.4rem;">หมายเหตุ
-                                (Remark)</label>
-                            <textarea class="form-control" id="remark" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+                    <div class="summary-section" style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; align-items: start;">
+                        <div class="remark-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.3rem 1.5rem; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #64748b, #94a3b8);"></div>
+                            <label style="font-size: 0.95rem; color: #0f172a; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem;">
+                                <span style="width: 28px; height: 28px; background: #f1f5f9; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #475569;">
+                                    <i class='bx bx-edit' style="font-size: 1.1rem;"></i>
+                                </span>
+                                หมายเหตุ (Remark)
+                            </label>
+                            <textarea class="form-control" id="remark" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.75rem 0.9rem; font-size: 0.95rem; min-height: 140px;" placeholder="ระบุรายละเอียดเพิ่มเติม หรือเงื่อนไขพิเศษ..."></textarea>
                         </div>
-                        <div class="summary-box">
-                            <div class="summary-row">
+                        
+                        <div class="summary-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.4rem 1.5rem; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #2563eb, #1d4ed8);"></div>
+                            
+                            <div class="summary-row" style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; font-size: 0.95rem; color: #475569; font-weight: 500;">
                                 <span>รวมเป็นเงิน (Sub Total)</span>
-                                <span id="subTotalDisplay">0.00</span>
+                                <span id="subTotalDisplay" style="font-weight: 700; color: #0f172a; font-size: 1.05rem;">0.00</span>
                             </div>
-                            <div class="summary-row" style="color: var(--text-muted); font-size: 0.85rem;">
-                                <span>*คำนวณแบบรวมภาษีมูลค่าเพิ่มแล้ว (VAT Inclusive)</span>
+                            
+                            <div class="summary-row" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-top: 1px dashed #e2e8f0; margin-top: 0.3rem;">
+                                <span style="color: #16a34a; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                    <i class='bx bx-purchase-tag-alt' style="font-size: 1.1rem;"></i> ส่วนลด (Discount)
+                                </span>
+                                <span style="display: flex; align-items: center; gap: 6px;">
+                                    <input type="number" id="discountInput" value="0" min="0" step="0.01"
+                                        onchange="calculateAll()" oninput="calculateAll()"
+                                        style="width: 90px; padding: 5px 10px; border: 1.5px solid #86efac; border-radius: 8px; text-align: right; font-size: 0.95rem; font-family: 'Sarabun', sans-serif; background: #f0fdf4; color: #16a34a; font-weight: 700; outline: none;">
+                                    <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">บาท</span>
+                                </span>
                             </div>
-                            <div class="summary-row">
+                            
+                            <div class="summary-row" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-top: 1px dashed #e2e8f0;">
+                                <span style="color: #475569; font-weight: 600;">รูปแบบภาษี</span>
+                                <span>
+                                    <select id="vatTypeSelect" onchange="calculateAll()"
+                                        style="padding: 5px 10px; border: 1.5px solid #bfdbfe; border-radius: 8px; font-size: 0.88rem; font-family: 'Sarabun', sans-serif; background: #eff6ff; color: #1d4ed8; font-weight: 600; cursor: pointer; outline: none;">
+                                        <option value="inclusive" selected>รวม VAT 7% แล้ว</option>
+                                        <option value="exclusive">แยก VAT 7%</option>
+                                        <option value="none">ไม่มี VAT</option>
+                                    </select>
+                                </span>
+                            </div>
+                            
+                            <div class="summary-row" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-top: 1px dashed #e2e8f0; font-size: 0.95rem; color: #475569;">
                                 <span>ภาษีมูลค่าเพิ่ม 7% (VAT)</span>
-                                <span id="vatDisplay">0.00</span>
+                                <span id="vatDisplay" style="font-weight: 600; color: #334155;">0.00</span>
                             </div>
-                            <div class="summary-row total">
-                                <span>จำนวนเงินรวมทั้งสิ้น</span>
-                                <span id="grandTotalDisplay">0.00</span>
+                            
+                            <div class="summary-row total" style="display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 12px; margin-top: 0.5rem; border: 1px solid #bfdbfe;">
+                                <span style="font-weight: 800; color: #1e3a8a; font-size: 1.05rem;">ยอดรวมทั้งสิ้น</span>
+                                <span id="grandTotalDisplay" style="font-weight: 800; color: #2563eb; font-size: 1.35rem;">0.00</span>
                             </div>
-                            <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; background: var(--bg-color); padding: 0.5rem; border-radius: 4px;"
+                            
+                            <div style="text-align: center; margin-top: 0.75rem; font-size: 0.88rem; font-weight: 600; background: #f8fafc; color: #475569; padding: 0.65rem 0.8rem; border-radius: 10px; border: 1px solid #e2e8f0;"
                                 id="thaiBahtText">
                                 (ศูนย์บาทถ้วน)
                             </div>
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; gap: 1rem;">
-                        <button class="btn btn-outline" onclick="openHistoryModal()"
-                            style="padding: 0.75rem 1.5rem; font-size: 1rem; border-color: var(--primary-color); color: var(--primary-color);">
-                            <i class='bx bx-history'></i> ประวัติใบเสนอราคา
-                        </button>
-                        <button class="btn btn-outline" onclick="openTemplateSettingsModal()"
-                            style="padding: 0.75rem 1.5rem; font-size: 1rem; border-color: var(--primary-color); color: var(--primary-color);">
-                            <i class='bx bx-customize'></i> ตั้งค่าฟอร์ม
-                        </button>
-                        <button class="btn btn-primary" onclick="exportToPDF()"
-                            style="padding: 0.75rem 2rem; font-size: 1rem; box-shadow: 0 4px 12px rgba(26,111,191,0.2);">
-                            <i class='bx bxs-file-pdf'></i> Export PDF
-                        </button>
+                    <!-- Floating Bottom Action Bar -->
+                    <div style="position: sticky; bottom: 1.5rem; z-index: 90; margin-top: 2.5rem; padding: 1rem 1.75rem; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px); border: 1px solid rgba(226, 232, 240, 0.8); border-radius: 20px; box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 10px; color: #64748b; font-size: 0.88rem; font-weight: 500;">
+                            <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block;"></span>
+                            พร้อมสำหรับออกเอกสาร
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+                            <button class="btn" onclick="openHistoryModal()"
+                                style="padding: 0.65rem 1.25rem; font-size: 0.9rem; border: 1px solid #e2e8f0; color: #475569; background: #f8fafc; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                                onmouseover="this.style.background='#eff6ff'; this.style.color='#2563eb'; this.style.borderColor='#bfdbfe';" onmouseout="this.style.background='#f8fafc'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';">
+                                <i class='bx bx-history' style="font-size: 1.15rem;"></i> ประวัติเอกสาร
+                            </button>
+                            
+                            <button class="btn" onclick="openTemplateSettingsModal()"
+                                style="padding: 0.65rem 1.25rem; font-size: 0.9rem; border: 1px solid #e2e8f0; color: #475569; background: #f8fafc; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                                onmouseover="this.style.background='#eff6ff'; this.style.color='#2563eb'; this.style.borderColor='#bfdbfe';" onmouseout="this.style.background='#f8fafc'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';">
+                                <i class='bx bx-slider-alt' style="font-size: 1.15rem;"></i> ตั้งค่าฟอร์ม
+                            </button>
+                            
+                            <button class="btn" onclick="exportToPDF()"
+                                style="padding: 0.65rem 1.8rem; font-size: 0.95rem; border: none; color: #ffffff; background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); transition: all 0.25s;"
+                                onmouseover="this.style.boxShadow='0 10px 25px rgba(37, 99, 235, 0.45)'; this.style.transform='translateY(-1px)';"
+                                onmouseout="this.style.boxShadow='0 6px 20px rgba(37, 99, 235, 0.35)'; this.style.transform='none';">
+                                <i class='bx bxs-file-pdf' style="font-size: 1.25rem; color: #fde047;"></i> Export PDF
+                            </button>
+                        </div>
                     </div>
 
                 </div>
@@ -1459,8 +1605,8 @@
 
             <!-- Hidden Print Template for html2pdf -->
             <div id="printArea" class="print-area" style="display: none; background: #ffffff;">
-                <div
-                    style="width: 715px; min-height: 1020px; padding: 14px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column;">
+                <div id="pPageWrapper"
+                    style="width: 715px; padding: 14px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: block; overflow: visible;">
 
                     <!-- ══ HEADER ══ -->
                     <div id="pHeaderSection"
@@ -1538,34 +1684,41 @@
                                 style="width: 100%; border-collapse: collapse; border: none !important; margin: 0; padding: 0;">
                                 <tr style="border: none !important;">
                                     <td id="labelTo"
-                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none;">
-                                        ชื่อ / To:</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; font-weight: 700; color: #1e1b4b; line-height: 1.4;"
+                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none; white-space: nowrap;">
+                                        ชื่อ :</td>
+                                    <td style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; font-weight: 700; color: #1e1b4b; line-height: 1.4;"
                                         id="pToCompany"></td>
                                 </tr>
                                 <tr style="border: none !important;">
                                     <td id="labelAddress"
-                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.5; outline: none;">
-                                        ที่อยู่:</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.5; word-break: break-word; white-space: normal;"
+                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.5; outline: none; white-space: nowrap;">
+                                        ที่อยู่ :</td>
+                                    <td style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; color: #374151; line-height: 1.5; word-break: break-word; white-space: normal;"
                                         id="pToAddress"></td>
+                                </tr>
+                                <tr id="pToTaxIdRow" style="border: none !important; display: none;">
+                                    <td id="labelTaxId"
+                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none; white-space: nowrap;">
+                                        เลขผู้เสียภาษี :</td>
+                                    <td style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; color: #374151; line-height: 1.4;"
+                                        id="pToTaxId"></td>
                                 </tr>
                                 <tr style="border: none !important;">
                                     <td id="labelAttn"
-                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none;">
-                                        ติดต่อ / Attn:</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4;"
+                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none; white-space: nowrap;">
+                                        ติดต่อ :</td>
+                                    <td style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; color: #374151; line-height: 1.4;"
                                         id="pToAttn"></td>
                                 </tr>
                                 <tr style="border: none !important;">
                                     <td id="labelTel"
-                                        style="width: 90px; min-width: 90px; vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none;">
-                                        โทร / Tel:</td>
+                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none; white-space: nowrap;">
+                                        โทร :</td>
                                     <td
-                                        style="vertical-align: top; border: none !important; padding: 3px 0; font-size: 11px; color: #374151; line-height: 1.4;">
+                                        style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; color: #374151; line-height: 1.4;">
                                         <span id="pToTel"></span>
                                         <span style="margin: 0 5px; color: #d1d5db;">|</span>
-                                        <span id="labelEmail" style="color: #6b7280; font-weight: 600; outline: none;">อีเมล: </span><span
+                                        <span id="labelEmail" style="color: #6b7280; font-weight: 600; outline: none;">อีเมล :</span><span
                                             id="pToEmail"></span>
                                     </td>
                                 </tr>
@@ -1855,6 +2008,18 @@
                 <div class="form-group">
                     <label>ขนาดหัวตาราง (<span id="hdrFontSizeLabel">11</span>px)</label>
                     <input type="range" id="settingHeaderFontSize" min="8" max="16" value="11" step="0.5" class="form-control" oninput="document.getElementById('hdrFontSizeLabel').innerText=this.value; applyLivePreview()">
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">จำนวนรายการต่อหน้า (PDF / พิมพ์)</h4>
+                <div class="form-group">
+                    <label>จำนวนรายการสูงสุด หน้าแรก (บรรทัด)</label>
+                    <input type="number" id="settingItemsPage1" class="form-control" value="14" min="1" max="50" oninput="applyLivePreview()">
+                </div>
+                <div class="form-group">
+                    <label>จำนวนรายการสูงสุด หน้าที่ 2 เป็นต้นไป (บรรทัด)</label>
+                    <input type="number" id="settingItemsPage2Plus" class="form-control" value="18" min="1" max="50" oninput="applyLivePreview()">
                 </div>
 
                 <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
@@ -2259,7 +2424,7 @@
                 <td><input type="text" class="table-input item-desc" placeholder="ชื่อสินค้า/บริการ"></td>
                 <td><input type="number" class="table-input item-qty" value="1" min="1" onchange="calculateRow(this)"></td>
                 <td>
-                    <select class="table-input item-unit" style="padding: 0.6rem 0.4rem; font-family: 'Sarabun', sans-serif;">
+                    <select class="table-input item-unit">
                         <option value="ชุด" selected>ชุด</option>
                         <option value="ตัว">ตัว</option>
                         <option value="ชิ้น">ชิ้น</option>
@@ -2365,24 +2530,40 @@
 
         function calculateAll() {
             const rows = document.getElementById('itemsBody').children;
-            let grandTotal = 0;
+            let itemsTotal = 0;
 
             for (let i = 0; i < rows.length; i++) {
                 const tr = rows[i];
-                const customNo = tr.querySelector('.item-custom-no') ? tr.querySelector('.item-custom-no').value : '';
-                const isSubItem = Boolean(customNo && customNo.trim().includes('.'));
+                const isHeader = tr.querySelector('.item-is-header') ? true : false;
+                if (isHeader) continue;
                 
-                if (!isSubItem) {
-                    const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
-                    const price = parseFloat(tr.querySelector('.item-price').value) || 0;
-                    grandTotal += (qty * price);
-                }
+                const qty = parseFloat(tr.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(tr.querySelector('.item-price').value) || 0;
+                itemsTotal += (qty * price);
             }
 
-            const vat = grandTotal * (7 / 107);
-            const subTotal = grandTotal - vat;
+            const discount = parseFloat(document.getElementById('discountInput')?.value) || 0;
+            const afterDiscount = itemsTotal - discount;
+            
+            const vatType = document.getElementById('vatTypeSelect')?.value || 'inclusive';
+            let vat = 0;
+            let grandTotal = afterDiscount;
+            let subTotal = afterDiscount;
+            
+            if (vatType === 'inclusive') {
+                vat = afterDiscount * (7 / 107);
+                subTotal = afterDiscount - vat;
+            } else if (vatType === 'exclusive') {
+                vat = afterDiscount * 0.07;
+                subTotal = afterDiscount;
+                grandTotal = afterDiscount + vat;
+            } else {
+                vat = 0;
+                subTotal = afterDiscount;
+                grandTotal = afterDiscount;
+            }
 
-            document.getElementById('subTotalDisplay').innerText = formatNumber(subTotal);
+            document.getElementById('subTotalDisplay').innerText = formatNumber(itemsTotal);
             document.getElementById('vatDisplay').innerText = formatNumber(vat);
             document.getElementById('grandTotalDisplay').innerText = formatNumber(grandTotal);
 
@@ -2454,6 +2635,19 @@
             document.getElementById('pToAttn').innerText = document.getElementById('toAttn').value || '-';
             document.getElementById('pToTel').innerText = document.getElementById('toTel').value || '-';
             document.getElementById('pToEmail').innerText = document.getElementById('toEmail').value || '-';
+
+            const taxIdVal = document.getElementById('toTaxId')?.value?.trim() || '';
+            const pToTaxIdRow = document.getElementById('pToTaxIdRow');
+            const pToTaxId = document.getElementById('pToTaxId');
+            if (pToTaxIdRow && pToTaxId) {
+                if (taxIdVal) {
+                    pToTaxId.innerText = taxIdVal;
+                    pToTaxIdRow.style.display = 'table-row';
+                } else {
+                    pToTaxId.innerText = '';
+                    pToTaxIdRow.style.display = 'none';
+                }
+            }
 
             document.getElementById('pRefNo').innerText = document.getElementById('refNo').value;
 
@@ -2558,7 +2752,7 @@
             const rows = document.getElementById('itemsBody').children;
             
             const createTableHTML = (isFirst = true) => `
-                <table class="pItemsTable" style="width: 100%; border-collapse: collapse; margin-top: ${isFirst ? '0' : '-25px'}; margin-bottom: 0; font-family: ${fontFamily}; letter-spacing: normal; ${tableOuterBorder} ${tableBorderRadius} page-break-inside: avoid;">
+                <table class="pItemsTable" style="width: 100%; border-collapse: collapse; margin-top: ${isFirst ? '0' : '15px'}; margin-bottom: 0; font-family: ${fontFamily}; letter-spacing: normal; ${tableOuterBorder} ${tableBorderRadius}">
                     <thead>
                         <tr class="pTableHeadRow" style="background-color: ${thBgColor}; border-bottom: ${thBorderBottom};">
                             <th style="padding: 9px 7px; text-align: ${thAlignSeq[0]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 38px;">ลำดับ</th>
@@ -2572,16 +2766,21 @@
                     <tbody style="letter-spacing: normal;">
             `;
 
+            let pages = []; // array of page HTML strings
             let currentTableHTML = createTableHTML(true);
             let itemsInCurrentTable = 0;
-            const itemsPerPage = 18;
+            const ITEMS_PAGE1 = parseInt(document.getElementById('settingItemsPage1')?.value || 14, 10);
+            const ITEMS_PAGE2_PLUS = parseInt(document.getElementById('settingItemsPage2Plus')?.value || 18, 10);
+            let currentPage = 1;
             let currentNo = 1;
 
             for (let i = 0; i < rows.length; i++) {
-                if (i > 0 && i % itemsPerPage === 0) {
+                const maxForCurrentPage = (currentPage === 1) ? ITEMS_PAGE1 : ITEMS_PAGE2_PLUS;
+                if (itemsInCurrentTable >= maxForCurrentPage) {
                     currentTableHTML += `</tbody></table>`;
-                    currentTableHTML += `<div class="html2pdf__page-break" style="page-break-before: always; height: 0; margin: 0;"></div>`;
-                    currentTableHTML += createTableHTML(false);
+                    pages.push(currentTableHTML);
+                    currentPage++;
+                    currentTableHTML = createTableHTML(false);
                     itemsInCurrentTable = 0;
                 }
 
@@ -2659,7 +2858,18 @@
             }
             
             currentTableHTML += `</tbody></table>`;
-            if (pTablesContainer) pTablesContainer.innerHTML = currentTableHTML;
+            pages.push(currentTableHTML);
+
+            // Build final HTML: wrap each page in its own page container
+            if (pTablesContainer) {
+                let finalHTML = '';
+                pages.forEach((pageHTML, idx) => {
+                    const isLast = idx === pages.length - 1;
+                    // Each page is a block div; all but last get page-break-after:always
+                    finalHTML += `<div class="print-page" style="display:block; page-break-after:${isLast ? 'auto' : 'always'}; break-after:${isLast ? 'auto' : 'page'};">${pageHTML}</div>`;
+                });
+                pTablesContainer.innerHTML = finalHTML;
+            }
         }
 
         // --- Native Vector PDF Export via window.print() ---
@@ -2679,7 +2889,7 @@
             if (!wrapper) {
                 wrapper = document.createElement('div');
                 wrapper.id = '__printOnlyWrapper';
-                wrapper.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; z-index:99999; background:white;';
+                wrapper.style.cssText = 'display:none; position:absolute; top:0; left:0; width:100%; z-index:99999; background:white; overflow:visible;';
                 document.body.appendChild(wrapper);
             }
 
@@ -2961,6 +3171,7 @@
             const toAttn = document.getElementById('toAttn').value.trim();
             const toTel = document.getElementById('toTel').value.trim();
             const toEmail = document.getElementById('toEmail').value.trim();
+            const toTaxId = document.getElementById('toTaxId')?.value?.trim() || '';
 
             if (!toCompany) {
                 alert("กรุณากรอกชื่อบริษัท / ผู้รับ เพื่อใช้บันทึกข้อมูล");
@@ -2968,7 +3179,7 @@
             }
 
             const recipients = getSavedRecipients();
-            const newRecipient = { toCompany, toAddress, toAttn, toTel, toEmail };
+            const newRecipient = { toCompany, toAddress, toAttn, toTel, toEmail, toTaxId };
 
             // Check if already exists, update it, otherwise add new
             const existingIndex = recipients.findIndex(r => r.toCompany.toLowerCase() === toCompany.toLowerCase());
@@ -2986,6 +3197,19 @@
                     await setDoc(doc(db, 'users', currentUser.uid), {
                         savedRecipients: recipients
                     }, { merge: true });
+                    // Also update company_details collection so it syncs back to materials_purchasing_company.html
+                    try {
+                        await setDoc(doc(db, 'company_material_settings', 'company_details'), {
+                            [toCompany]: {
+                                address: toAddress,
+                                contact: toAttn,
+                                phone: toTel,
+                                email: toEmail,
+                                taxId: toTaxId
+                            }
+                        }, { merge: true });
+                    } catch(e) {}
+
                     alert(`บันทึกและซิงค์ข้อมูลผู้รับ "${toCompany}" ไปยังคลาวด์สำเร็จ!`);
                 } catch (err) {
                     console.error("Firestore sync failed:", err);
@@ -3526,6 +3750,8 @@
         async function saveTemplateSettings(showAlert = true) {
             const currentIssuerDisplay = document.getElementById('currentIssuerDisplay').innerText;
             const templateSettings = { 
+                itemsPage1: document.getElementById('settingItemsPage1') ? document.getElementById('settingItemsPage1').value : '14',
+                itemsPage2Plus: document.getElementById('settingItemsPage2Plus') ? document.getElementById('settingItemsPage2Plus').value : '18',
                 primaryColor: document.getElementById('settingPrimaryColor').value,
                 showLogo: document.getElementById('settingShowLogo').checked,
                 logoSize: document.getElementById('settingLogoSize').value,
@@ -3939,6 +4165,11 @@
 
         function applyTemplateSettings(settings) {
             if (!settings) return;
+            const ip1 = document.getElementById('settingItemsPage1');
+            if (ip1) ip1.value = settings.itemsPage1 !== undefined ? settings.itemsPage1 : '14';
+            const ip2 = document.getElementById('settingItemsPage2Plus');
+            if (ip2) ip2.value = settings.itemsPage2Plus !== undefined ? settings.itemsPage2Plus : '18';
+
             if (settings.primaryColor) document.getElementById('settingPrimaryColor').value = settings.primaryColor;
             if (settings.showLogo !== undefined) document.getElementById('settingShowLogo').checked = settings.showLogo;
             if (settings.logoSize) document.getElementById('settingLogoSize').value = settings.logoSize;
@@ -4084,23 +4315,41 @@
                     registeredShopsCache = [];
                 }
 
-                // Fetch from material_projects collection
-                const projectsRef = collection(db, 'material_projects');
-                const q = query(projectsRef);
-                const snap = await getDocs(q);
-                
+                // Fetch from material_projects and company_material_projects
                 materialProjectsCache = [];
                 let instSet = new Set();
-                
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    materialProjectsCache.push({ id: doc.id, ...data });
-                    if (data.institution && data.institution.trim() !== '') {
-                        instSet.add(data.institution.trim());
-                    } else {
-                        instSet.add('ไม่ระบุสถานศึกษา');
-                    }
-                });
+
+                try {
+                    const snapSchool = await getDocs(collection(db, 'material_projects'));
+                    snapSchool.forEach(doc => {
+                        const data = doc.data();
+                        materialProjectsCache.push({ id: doc.id, _source: 'school', ...data });
+                        const inst = data.institution || data.company;
+                        if (inst && inst.trim() !== '') {
+                            instSet.add(inst.trim());
+                        } else {
+                            instSet.add('ไม่ระบุสถานศึกษา/หน่วยงาน');
+                        }
+                    });
+                } catch (e) {
+                    console.warn("Error fetching material_projects:", e);
+                }
+
+                try {
+                    const snapCompany = await getDocs(collection(db, 'company_material_projects'));
+                    snapCompany.forEach(doc => {
+                        const data = doc.data();
+                        materialProjectsCache.push({ id: doc.id, _source: 'company', ...data });
+                        const inst = data.company || data.institution;
+                        if (inst && inst.trim() !== '') {
+                            instSet.add(inst.trim());
+                        } else {
+                            instSet.add('ไม่ระบุสถานศึกษา/หน่วยงาน');
+                        }
+                    });
+                } catch (e) {
+                    console.warn("Error fetching company_material_projects:", e);
+                }
                 
                 materialProjectsCache.sort((a, b) => {
                     const dateA = a.updatedAt || a.createdAt || '';
@@ -4330,37 +4579,62 @@
                     tbody.appendChild(tr);
                 });
 
-                // Apply Issuer Theme if company/shop exists
+                // Apply Issuer Theme:
+                // - company source: proj.shop = the issuer (selling company)
+                // - materials source: proj.company = the CUSTOMER (not the issuer!)
+                //   So for materials source we keep the current issuer unchanged.
                 if (source === 'company') {
-                    // In company page: shop = quotation issuer, company = customer name
+                    // Set VAT type to 'exclusive' (แยก VAT 7%) for company projects
+                    const vatSelect = document.getElementById('vatTypeSelect');
+                    if (vatSelect) vatSelect.value = 'exclusive';
+
                     const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : null;
-                    applyIssuerTemplate(shopName);
-                } else {
-                    if (proj.company) {
-                        let compName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
-                        applyIssuerTemplate(compName);
+                    if (shopName) {
+                        applyIssuerTemplate(shopName);
                     } else {
-                        applyIssuerTemplate(null);
+                        // No shop name → re-apply current issuer to preserve font/color settings
+                        const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText || null;
+                        applyIssuerTemplate(currentIssuer);
                     }
+                } else {
+                    // materials source: proj.company is the CUSTOMER — do NOT override issuer.
+                    // Just re-apply the current issuer template to keep font/color intact.
+                    const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText || null;
+                    applyIssuerTemplate(currentIssuer);
                 }
 
                 // Populate Customer Info
                 if (source === 'company') {
                     // In company page: proj.company = company/customer name
                     if (proj.company && proj.company.trim() !== '' && proj.company.trim() !== 'ไม่ระบุบริษัท') {
-                        const instName = proj.company.trim();
-                        document.getElementById('toCompany').value = instName;
+                        let instName = proj.company.trim();
                         // Fetch company details from company_material_settings
                         try {
                             const compSnap = await getDoc(doc(db, 'company_material_settings', 'company_details'));
                             if (compSnap.exists()) {
                                 const compDetails = compSnap.data()[instName] || {};
+                                
+                                // Append Branch info to Company Name
+                                if (compDetails.branchType === 'branch') {
+                                    instName += ` (สาขา: ${compDetails.branchNo || '-'})`;
+                                } else if (compDetails.branchType === 'hq') {
+                                    instName += ` (สำนักงานใหญ่)`;
+                                }
+
+                                document.getElementById('toCompany').value = instName;
                                 document.getElementById('toAddress').value = compDetails.address || '';
                                 document.getElementById('toAttn').value = compDetails.contact || '';
                                 document.getElementById('toTel').value = compDetails.phone || '';
                                 document.getElementById('toEmail').value = compDetails.email || '';
+                                if (document.getElementById('toTaxId')) {
+                                    document.getElementById('toTaxId').value = compDetails.taxId || '';
+                                }
+                            } else {
+                                document.getElementById('toCompany').value = instName;
                             }
-                        } catch(e) {}
+                        } catch(e) {
+                            document.getElementById('toCompany').value = instName;
+                        }
                     }
                 } else if (proj.institution && proj.institution.trim() !== '' && proj.institution.trim() !== 'ไม่ระบุสถานศึกษา') {
                     const instName = proj.institution.trim();
@@ -4377,6 +4651,34 @@
                         document.getElementById('toTel').value = '';
                         document.getElementById('toEmail').value = '';
                     }
+                }
+
+                // Import Discount if project has discount
+                if (proj.discountValue && parseFloat(proj.discountValue) > 0) {
+                    const dVal = parseFloat(proj.discountValue);
+                    const dType = proj.discountType || 'percent';
+                    const discountInputEl = document.getElementById('discountInput');
+                    
+                    if (discountInputEl) {
+                        if (dType === 'percent') {
+                            // Calculate items total and get percent discount amount
+                            let itemsTotal = 0;
+                            const rows = document.getElementById('itemsBody').children;
+                            for (let i = 0; i < rows.length; i++) {
+                                const tr = rows[i];
+                                if (tr.querySelector('.item-is-header')) continue;
+                                const q = parseFloat(tr.querySelector('.item-qty')?.value) || 0;
+                                const p = parseFloat(tr.querySelector('.item-price')?.value) || 0;
+                                itemsTotal += (q * p);
+                            }
+                            discountInputEl.value = Math.round(((itemsTotal * dVal) / 100) * 100) / 100;
+                        } else {
+                            discountInputEl.value = dVal;
+                        }
+                    }
+                } else {
+                    const discountInputEl = document.getElementById('discountInput');
+                    if (discountInputEl) discountInputEl.value = '0';
                 }
 
                 updateRowNumbers();
@@ -4408,7 +4710,6 @@
                     const rowCount = tbody.children.length;
                     const tr = document.createElement('tr');
                     
-                    // Use unitPrice (selling price) as primary, if not available use targetPrice or foundPrice
                     const price = item.unitPrice || item.targetPrice || item.foundPrice || 0;
                     const qtyVal = item.qty || 1;
                     const totalVal = qtyVal * price;
@@ -4475,12 +4776,17 @@
                     tbody.appendChild(tr);
                 });
                 
-                if (proj.company) {
-                    let compName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
-                    applyIssuerTemplate(compName);
-                } else {
-                    applyIssuerTemplate(null); // Reset to default if no company
+                // If project is from company source, set VAT mode to 'exclusive' (แยก VAT 7%)
+                if (proj.source === 'company' || proj.company) {
+                    const vatSelect = document.getElementById('vatTypeSelect');
+                    if (vatSelect) vatSelect.value = 'exclusive';
                 }
+
+                // proj.company is the CUSTOMER/institution, NOT the issuer.
+                // Do NOT override the issuer template with the customer name.
+                // Re-apply the current issuer to keep font/color/settings intact.
+                const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText || null;
+                applyIssuerTemplate(currentIssuer);
                 
                 // Sync Customer Info from Institution Details
                 if (proj.institution && proj.institution.trim() !== '' && proj.institution.trim() !== 'ไม่ระบุสถานศึกษา') {
@@ -4493,15 +4799,44 @@
                         document.getElementById('toAttn').value = details.contact || '';
                         document.getElementById('toTel').value = details.phone || '';
                         document.getElementById('toEmail').value = details.email || '';
+                        if (document.getElementById('toTaxId')) document.getElementById('toTaxId').value = details.taxId || '';
                     } else {
                         // Clear fields if no details found for this institution
                         document.getElementById('toAddress').value = '';
                         document.getElementById('toAttn').value = '';
                         document.getElementById('toTel').value = '';
                         document.getElementById('toEmail').value = '';
+                        if (document.getElementById('toTaxId')) document.getElementById('toTaxId').value = '';
                     }
                 }
                 
+                // Import Discount if project has discount
+                if (proj.discountValue && parseFloat(proj.discountValue) > 0) {
+                    const dVal = parseFloat(proj.discountValue);
+                    const dType = proj.discountType || 'percent';
+                    const discountInputEl = document.getElementById('discountInput');
+                    
+                    if (discountInputEl) {
+                        if (dType === 'percent') {
+                            let itemsTotal = 0;
+                            const rows = document.getElementById('itemsBody').children;
+                            for (let i = 0; i < rows.length; i++) {
+                                const tr = rows[i];
+                                if (tr.querySelector('.item-is-header')) continue;
+                                const q = parseFloat(tr.querySelector('.item-qty')?.value) || 0;
+                                const p = parseFloat(tr.querySelector('.item-price')?.value) || 0;
+                                itemsTotal += (q * p);
+                            }
+                            discountInputEl.value = Math.round(((itemsTotal * dVal) / 100) * 100) / 100;
+                        } else {
+                            discountInputEl.value = dVal;
+                        }
+                    }
+                } else {
+                    const discountInputEl = document.getElementById('discountInput');
+                    if (discountInputEl) discountInputEl.value = '0';
+                }
+
                 updateRowNumbers();
                 applyLivePreview();
                 calculateAll();
@@ -4527,7 +4862,11 @@
                 const bannerLogo = document.getElementById('currentIssuerLogo');
                 const bannerIcon = document.getElementById('currentIssuerIcon');
                 
-                if (banner) banner.style.backgroundColor = shop.themeColor || '#1A6FBF';
+                const themeColor = shop.themeColor || '#1A6FBF';
+                if (banner) {
+                    banner.style.background = `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}dd 100%)`;
+                    banner.style.boxShadow = `0 10px 25px -5px ${themeColor}55`;
+                }
                 if (bannerName) bannerName.innerText = shop.name || '';
                 if (bannerLogo && shop.logo) {
                     bannerLogo.src = shop.logo;
@@ -4535,7 +4874,10 @@
                     if (bannerIcon) bannerIcon.style.display = 'none';
                 } else {
                     if (bannerLogo) bannerLogo.style.display = 'none';
-                    if (bannerIcon) bannerIcon.style.display = 'block';
+                    if (bannerIcon) {
+                        bannerIcon.style.display = 'block';
+                        bannerIcon.style.color = themeColor;
+                    }
                 }
                 if (shop.themeColor) {
                     printArea.style.setProperty('--pdf-primary', shop.themeColor);

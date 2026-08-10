@@ -1106,6 +1106,16 @@
                             <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">กำไรเฉลี่ย</span>
                             <span class="text-sm font-bold text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded" id="total-profit-sum">0.00%</span>
                         </div>
+                        <div class="hidden sm:block w-px h-5 bg-slate-200"></div>
+                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                            <span class="text-xs font-bold text-slate-600">ส่วนลด:</span>
+                            <div class="inline-flex border border-slate-300 rounded-lg overflow-hidden bg-slate-100 p-0.5">
+                                <button type="button" id="discount-type-btn-percent" onclick="appData.updateProjectDiscountType('percent')" class="px-2 py-0.5 text-xs font-bold rounded transition-all bg-brand-500 text-white shadow-sm">%</button>
+                                <button type="button" id="discount-type-btn-amount" onclick="appData.updateProjectDiscountType('amount')" class="px-2 py-0.5 text-xs font-bold rounded transition-all text-slate-600 hover:bg-slate-200">บาท</button>
+                            </div>
+                            <input type="number" id="project-discount-val" oninput="appData.updateProjectDiscountValue(this.value)" class="w-20 px-2 py-1 text-xs text-right border border-slate-300 rounded-lg outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 font-bold text-slate-800" placeholder="0" min="0" step="any">
+                            <span class="text-xs font-extrabold text-red-500 min-w-[55px] text-right" id="total-discount-sum">-0.00</span>
+                        </div>
                         <div class="hidden sm:block w-px h-8 bg-slate-300 mx-1"></div>
                         <div class="flex items-center gap-3 bg-amber-50/60 px-4 py-2 rounded-xl border border-amber-100/50">
                             <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">ราคาขายรวมสุทธิ</span>
@@ -1437,6 +1447,30 @@
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-slate-700 mb-1">ที่อยู่</label>
                             <textarea id="modal-inst-details-address" rows="3" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ที่อยู่บริษัทเอกชน"></textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">เลขที่ผู้เสียภาษี</label>
+                            <input type="text" id="modal-inst-details-taxid" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น 0105563123456" maxlength="13">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">สถานะสาขา</label>
+                            <div class="flex items-center gap-6 mt-1.5">
+                                <label class="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-700">
+                                    <input type="radio" name="modal-inst-branch-type" value="hq" checked onchange="document.getElementById('branch-no-container').classList.add('hidden')" class="w-4 h-4 text-brand-600 focus:ring-brand-500">
+                                    <span>สำนักงานใหญ่</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-700">
+                                    <input type="radio" name="modal-inst-branch-type" value="branch" onchange="document.getElementById('branch-no-container').classList.remove('hidden')" class="w-4 h-4 text-brand-600 focus:ring-brand-500">
+                                    <span>สาขา</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="branch-no-container" class="mb-4 hidden">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">เลขที่สาขา / ชื่อสาขา</label>
+                            <input type="text" id="modal-inst-details-branchno" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น 00001 หรือ สาขาพระราม 9">
                         </div>
                         
                         <div class="mb-4">
@@ -2355,6 +2389,20 @@
                 document.getElementById('modal-inst-details-old-name').value = instName;
                 document.getElementById('modal-inst-details-name').value = instName;
                 document.getElementById('modal-inst-details-address').value = details.address || '';
+                document.getElementById('modal-inst-details-taxid').value = details.taxId || '';
+                
+                const bType = details.branchType || 'hq';
+                const bNoContainer = document.getElementById('branch-no-container');
+                const radios = document.getElementsByName('modal-inst-branch-type');
+                radios.forEach(r => { r.checked = (r.value === bType); });
+                if (bType === 'branch') {
+                    bNoContainer.classList.remove('hidden');
+                    document.getElementById('modal-inst-details-branchno').value = details.branchNo || '';
+                } else {
+                    bNoContainer.classList.add('hidden');
+                    document.getElementById('modal-inst-details-branchno').value = '';
+                }
+
                 document.getElementById('modal-inst-details-contact').value = details.contact || '';
                 document.getElementById('modal-inst-details-phone').value = details.phone || '';
                 document.getElementById('modal-inst-details-email').value = details.email || '';
@@ -2384,10 +2432,16 @@
                 const oldName = document.getElementById('modal-inst-details-old-name').value;
                 const newName = document.getElementById('modal-inst-details-name').value.trim();
                 const address = document.getElementById('modal-inst-details-address').value.trim();
+                const taxId = document.getElementById('modal-inst-details-taxid').value.trim();
                 const contact = document.getElementById('modal-inst-details-contact').value.trim();
                 const phone = document.getElementById('modal-inst-details-phone').value.trim();
                 const email = document.getElementById('modal-inst-details-email').value.trim();
                 
+                const radios = document.getElementsByName('modal-inst-branch-type');
+                let branchType = 'hq';
+                radios.forEach(r => { if(r.checked) branchType = r.value; });
+                const branchNo = branchType === 'branch' ? document.getElementById('modal-inst-details-branchno').value.trim() : '';
+
                 if (!newName) {
                     Swal.fire({ icon: 'error', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกชื่อบริษัทเอกชน', timer: 2000 });
                     return;
@@ -2395,7 +2449,7 @@
                 
                 if (!this.companyDetails) this.companyDetails = {};
                 
-                const newDetails = { address, contact, phone, email };
+                const newDetails = { address, taxId, branchType, branchNo, contact, phone, email };
                 
                 if (oldName !== newName) {
                     // Rename logic
@@ -3626,6 +3680,22 @@
             
             openQuotationForProject() {
                 if (this.currentProjectId) {
+                    const proj = this.projects.find(p => p.id === this.currentProjectId);
+                    if (proj) {
+                        localStorage.setItem('pending_quotation_project', JSON.stringify({
+                            source: 'company',
+                            projectId: this.currentProjectId,
+                            institution: proj.company || '',
+                            items: proj.items || [],
+                            company: proj.company || '',
+                            address: proj.address || '',
+                            attn: proj.contactPerson || '',
+                            tel: proj.tel || '',
+                            email: proj.email || '',
+                            discountType: proj.discountType || 'percent',
+                            discountValue: proj.discountValue || 0
+                        }));
+                    }
                     window.location.href = `quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company`;
                 }
             },
@@ -4376,10 +4446,47 @@
                     tbody.innerHTML = `<tr><td colspan="14" class="text-center p-8 text-slate-500 font-medium">ยังไม่มีรายการสิ่งของ กด "เพิ่มรายการสินค้า" หรือ "เพิ่มหัวข้อ" เพื่อเริ่มต้น</td></tr>`;
                 }
 
+                // Calculate Discount
+                const discountType = proj.discountType || 'percent'; // 'percent' or 'amount'
+                const discountVal = parseFloat(proj.discountValue) || 0;
+                let discountAmount = 0;
+
+                if (discountType === 'percent') {
+                    discountAmount = (sumTotal * discountVal) / 100;
+                } else {
+                    discountAmount = discountVal;
+                }
+                if (discountAmount < 0) discountAmount = 0;
+
+                const netTotal = Math.max(0, sumTotal - discountAmount);
+
+                // Update UI Controls for Discount
+                const discountValInput = document.getElementById('project-discount-val');
+                if (discountValInput && document.activeElement !== discountValInput) {
+                    discountValInput.value = proj.discountValue !== undefined ? proj.discountValue : '';
+                }
+
+                const btnPercent = document.getElementById('discount-type-btn-percent');
+                const btnAmount = document.getElementById('discount-type-btn-amount');
+                if (btnPercent && btnAmount) {
+                    if (discountType === 'percent') {
+                        btnPercent.className = 'px-2 py-0.5 text-xs font-bold transition-colors bg-brand-500 text-white';
+                        btnAmount.className = 'px-2 py-0.5 text-xs font-bold transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200';
+                    } else {
+                        btnAmount.className = 'px-2 py-0.5 text-xs font-bold transition-colors bg-brand-500 text-white';
+                        btnPercent.className = 'px-2 py-0.5 text-xs font-bold transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200';
+                    }
+                }
+
+                const discountSumEl = document.getElementById('total-discount-sum');
+                if (discountSumEl) {
+                    discountSumEl.innerText = discountAmount > 0 ? `-${this.formatCurrency(discountAmount)}` : '-0.00';
+                }
+
                 // Update Footers
                 const totalAmtEl = document.getElementById('total-amount-sum');
-                totalAmtEl.innerText = this.formatCurrency(sumTotal);
-                totalAmtEl.title = this.formatCurrency(sumTotal);
+                totalAmtEl.innerText = this.formatCurrency(netTotal);
+                totalAmtEl.title = this.formatCurrency(netTotal);
                 
                 const totalTargetEl = document.getElementById('total-target-sum');
                 totalTargetEl.innerText = this.formatCurrency(sumTarget);
@@ -4392,7 +4499,7 @@
                 // Format profit percentage to exactly 2 decimal places
                 let profitDisplay = '-';
                 if (sumFound > 0) {
-                    const totalProfitPct = ((sumTotal - sumFound) / sumFound) * 100;
+                    const totalProfitPct = ((netTotal - sumFound) / sumFound) * 100;
                     profitDisplay = totalProfitPct.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
                 }
                 const profitSumEl = document.getElementById('total-profit-sum');
@@ -4414,6 +4521,22 @@
                         }
                     }, 0);
                 }
+            },
+
+            updateProjectDiscountType(type) {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                proj.discountType = type;
+                this.syncCurrentProject();
+                this.renderExcelTable();
+            },
+
+            updateProjectDiscountValue(val) {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                proj.discountValue = val;
+                this.syncCurrentProject();
+                this.renderExcelTable();
             },
 
             // Item Logic
