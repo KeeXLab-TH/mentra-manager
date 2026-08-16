@@ -959,7 +959,8 @@
                 padding: 0 !important;
                 overflow: visible !important;
             }
-            #__printOnlyWrapper #printArea {
+            #__printOnlyWrapper #printArea,
+            #__printOnlyWrapper #invoicePrintArea {
                 display: block !important;
                 width: 100% !important;
                 margin: 0 !important;
@@ -968,35 +969,18 @@
                 border: none !important;
                 background: white !important;
             }
-            /* Force all text to be fully opaque - prevent faint text */
-            #printArea * {
+            /* Force exact background colors and graphic colors when printing */
+            #printArea *, #invoicePrintArea * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 color-adjust: exact !important;
+                opacity: 1 !important;
+                filter: none !important;
             }
-            /* Allow page breaks in the main wrapper */
-            #pPageWrapper {
+            #pPageWrapper, #pInvPageWrapper {
                 page-break-inside: auto !important;
                 break-inside: auto !important;
                 overflow: visible !important;
-            }
-            /* Prevent text from being faint - explicitly set opacity */
-            #printArea,
-            #printArea div,
-            #printArea span,
-            #printArea p,
-            #printArea td,
-            #printArea th,
-            #printArea table {
-                opacity: 1 !important;
-                color: inherit !important;
-            }
-            /* Preserve background colors (table headers, zebra stripes) */
-            #printArea .pItemsTable th,
-            #printArea .pTableHeadRow,
-            #printArea .pTableHeadRow th {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
             }
             /* Page setup */
             @page {
@@ -1004,7 +988,7 @@
                 margin: 15mm 12mm 15mm 12mm;
             }
             /* Table/page break rules */
-            #pTablesContainer {
+            #pTablesContainer, #pInvTablesContainer {
                 display: block !important;
                 page-break-inside: auto !important;
                 break-inside: auto !important;
@@ -1016,7 +1000,7 @@
                 page-break-after: always !important;
                 break-after: page !important;
             }
-            #pTablesContainer tr {
+            #pTablesContainer tr, #pInvTablesContainer tr {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -1335,7 +1319,7 @@
                                     <span style="display: inline-block; width: 6px; height: 6px; background: #34d399; border-radius: 50%;"></span>
                                     ผู้ออกเอกสาร (Issuer)
                                 </div>
-                                <div id="currentIssuerDisplay" style="font-weight: 700; font-size: 1.2rem; letter-spacing: 0.3px; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.15);">บริษัท เมนทรา โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
+                                <div id="currentIssuerDisplay" style="font-weight: 700; font-size: 1.2rem; letter-spacing: 0.3px; line-height: 1.2; text-shadow: 0 1px 2px rgba(0,0,0,0.15); color: #ffffff;">กรุณาเลือกบริษัท หรือ ร้านก่อน</div>
                             </div>
                         </div>
 
@@ -1430,7 +1414,14 @@
                                     </div>
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <label style="font-weight: 600; color: #334155; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">วันที่ (Date)</label>
-                                        <input type="date" class="form-control" id="docDate" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem;">
+                                        <div style="display: flex; gap: 6px; align-items: center;">
+                                            <input type="date" class="form-control" id="docDate" style="border-radius: 10px; border: 1px solid #cbd5e1; padding: 0.55rem 0.85rem; font-size: 0.95rem; flex: 1;">
+                                            <button class="btn" onclick="setCurrentDate()" type="button"
+                                                style="padding: 0.55rem 0.85rem; font-size: 0.82rem; white-space: nowrap; border: 1px solid #bae6fd; color: #0284c7; background: #f0f9ff; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;"
+                                                onmouseover="this.style.background='#e0f2fe';" onmouseout="this.style.background='#f0f9ff';">
+                                                <i class='bx bx-calendar-event' style="font-size: 1.1rem;"></i> วันนี้
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2220,8 +2211,6 @@
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('docDate').valueAsDate = new Date();
-            generateRefNo();
             addTableRow(); // Add 1 empty row by default
             loadSavedRecipientsDropdown(); // Load saved recipient profiles
 
@@ -2340,10 +2329,12 @@
                             console.error("Error loading registered shops:", err);
                         }
 
-                        // Apply template for the current displayed issuer
-                        const currentIssuerDisplay = document.getElementById('currentIssuerDisplay').innerText;
-                        applyIssuerTemplate(currentIssuerDisplay);
-                        
+                        // Apply template for the current displayed issuer if selected
+                        const currentIssuerDisplay = document.getElementById('currentIssuerDisplay').innerText.trim();
+                        if (currentIssuerDisplay && !currentIssuerDisplay.includes('กรุณาเลือกบริษัท')) {
+                            applyIssuerTemplate(currentIssuerDisplay);
+                        }
+
                         // Show body now that the user is fully verified
                         document.body.style.display = 'flex';
 
@@ -2399,13 +2390,45 @@
         window.toggleSidebarCollapse = toggleSidebarCollapse;
 
         // --- Core Functions ---
-        function generateRefNo() {
-            const date = new Date();
+        async function generateRefNo() {
+            const docDateInput = document.getElementById('docDate');
+            const docDateVal = docDateInput?.value;
+            if (!docDateVal) {
+                alert('กรุณาเลือกวันที่ก่อนรันเลขที่เอกสาร');
+                if (docDateInput) docDateInput.focus();
+                return;
+            }
+            const parts = docDateVal.split('-');
+            const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
             const year = date.getFullYear().toString().slice(-2);
             const month = String(date.getMonth() + 1).padStart(2, '0');
-            const randomRun = Math.floor(Math.random() * 99) + 1;
-            const runStr = String(randomRun).padStart(2, '0');
-            document.getElementById('refNo').value = `MTQ${year}${month}${runStr}`;
+            const day = String(date.getDate()).padStart(2, '0');
+            const prefix = `MTQ${year}${month}${day}`;
+
+            let nextSeq = 1;
+            if (currentUser && db) {
+                try {
+                    const historyRef = collection(db, 'users', currentUser.uid, 'quotations_history');
+                    const querySnapshot = await getDocs(historyRef);
+                    let maxSeq = 0;
+                    querySnapshot.forEach(docSnap => {
+                        const ref = docSnap.data().refNo;
+                        if (ref && ref.startsWith(prefix)) {
+                            const seqPart = ref.replace(prefix, '');
+                            const seqNum = parseInt(seqPart, 10);
+                            if (!isNaN(seqNum) && seqNum > maxSeq) {
+                                maxSeq = seqNum;
+                            }
+                        }
+                    });
+                    nextSeq = maxSeq + 1;
+                } catch (err) {
+                    console.warn('Could not query quotations_history for sequence, fallback to 1:', err);
+                }
+            }
+
+            const runStr = String(nextSeq).padStart(3, '0');
+            document.getElementById('refNo').value = `${prefix}${runStr}`;
         }
 
         function formatNumber(num) {
@@ -3266,6 +3289,8 @@
         }
 
         function selectIssuerFromModal(companyName) {
+            const displayEl = document.getElementById('currentIssuerDisplay');
+            if (displayEl) displayEl.style.color = '#ffffff';
             applyIssuerTemplate(companyName);
             closeIssuerSelectionModal();
         }
@@ -3548,10 +3573,10 @@
 
             styleEl.textContent = `
                 /* ===== DYNAMIC PRINT STYLES ===== */
-                body, input, select, textarea, button, * {
-                    font-family: '${fontFamily}', 'Tahoma', sans-serif !important;
+                body, input, select, textarea, button, #pPageWrapper, #pPageWrapper *, .table-input {
+                    font-family: '${fontFamily}', 'Sarabun', 'Tahoma', sans-serif !important;
                 }
-                .print-area > div {
+                .print-area > div, #pPageWrapper {
                     font-size: ${fontSize}px !important;
                     font-weight: ${fontWeight} !important;
                 }
@@ -4551,10 +4576,10 @@
                         tr.innerHTML = `
                             <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
                             <td><input type="text" class="table-input item-custom-no" value="${item.customNo || ''}" placeholder="เช่น 1.1" oninput="updateRowNumbers(); applyLivePreview()"></td>
-                            <td><input type="text" class="table-input item-desc" value="${displayName}" placeholder="ชื่อสินค้า/บริการ"></td>
-                            <td><input type="number" class="table-input item-qty" value="${qtyVal}" min="1" onchange="calculateRow(this)"></td>
+                            <td><input type="text" class="table-input item-desc" value="${displayName}" placeholder="ชื่อสินค้า/บริการ" oninput="applyLivePreview()"></td>
+                            <td><input type="number" class="table-input item-qty" value="${qtyVal}" min="1" onchange="calculateRow(this); applyLivePreview()"></td>
                             <td>
-                                <select class="table-input item-unit" style="padding: 0.6rem 0.4rem; font-family: 'Sarabun', sans-serif;">
+                                <select class="table-input item-unit" onchange="applyLivePreview()">
                                     <option value="ชุด" ${item.unit === 'ชุด' ? 'selected' : ''}>ชุด</option>
                                     <option value="ตัว" ${item.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
                                     <option value="ชิ้น" ${item.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
@@ -4566,7 +4591,7 @@
                                     ${customUnitHtml}
                                 </select>
                             </td>
-                            <td><input type="number" class="table-input item-price" value="${price}" min="0" step="0.01" onchange="calculateRow(this)"></td>
+                            <td><input type="number" class="table-input item-price" value="${price}" min="0" step="0.01" onchange="calculateRow(this); applyLivePreview()"></td>
                             <td style="vertical-align: middle; text-align: right;" class="item-total-text">${formatNumber(totalVal)}</td>
                             <td class="col-action" style="vertical-align: middle;">
                                 <div style="display: flex; gap: 4px; justify-content: center;">
@@ -4580,27 +4605,37 @@
                 });
 
                 // Apply Issuer Theme:
-                // - company source: proj.shop = the issuer (selling company)
-                // - materials source: proj.company = the CUSTOMER (not the issuer!)
-                //   So for materials source we keep the current issuer unchanged.
+                const urlParams = new URLSearchParams(window.location.search);
+                const paramShop = urlParams.get('shop');
+                let targetIssuer = paramShop;
+                
+                if (!targetIssuer && proj.company && source !== 'company') {
+                    const shopName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
+                    if (shopName && shopName.trim() !== '') {
+                        targetIssuer = shopName.trim();
+                    }
+                }
+                
+                if (!targetIssuer && proj.shop && source === 'company') {
+                    targetIssuer = Array.isArray(proj.shop) ? proj.shop[0] : proj.shop;
+                }
+                
+                if (!targetIssuer) {
+                    const currentIssuerText = document.getElementById('currentIssuerDisplay')?.innerText?.trim();
+                    if (currentIssuerText && !currentIssuerText.includes('กรุณาเลือกบริษัท')) {
+                        targetIssuer = currentIssuerText;
+                    }
+                }
+
+                if (targetIssuer) {
+                    applyIssuerTemplate(targetIssuer);
+                } else {
+                    applyLivePreview();
+                }
+
                 if (source === 'company') {
-                    // Set VAT type to 'exclusive' (แยก VAT 7%) for company projects
                     const vatSelect = document.getElementById('vatTypeSelect');
                     if (vatSelect) vatSelect.value = 'exclusive';
-
-                    const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : null;
-                    if (shopName) {
-                        applyIssuerTemplate(shopName);
-                    } else {
-                        // No shop name → re-apply current issuer to preserve font/color settings
-                        const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText || null;
-                        applyIssuerTemplate(currentIssuer);
-                    }
-                } else {
-                    // materials source: proj.company is the CUSTOMER — do NOT override issuer.
-                    // Just re-apply the current issuer template to keep font/color intact.
-                    const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText || null;
-                    applyIssuerTemplate(currentIssuer);
                 }
 
                 // Populate Customer Info
@@ -4685,9 +4720,10 @@
                 applyLivePreview();
                 calculateAll();
                 
-                // Remove projectId from URL after importing
+                // Remove projectId & shop from URL after importing
                 const url = new URL(window.location);
                 url.searchParams.delete('projectId');
+                url.searchParams.delete('shop');
                 window.history.replaceState({}, '', url);
 
             } catch (err) {
@@ -5163,7 +5199,13 @@
             if (overlay) overlay.classList.remove('show');
         }
 
+        function setCurrentDate() {
+            document.getElementById('docDate').valueAsDate = new Date();
+        }
+
         // --- Expose functions to global window scope for inline HTML events ---
+        window.setCurrentDate = setCurrentDate;
+        window.generateRefNo = generateRefNo;
         window.addTableRow = addTableRow;
         window.removeTableRow = removeTableRow;
         window.calculateRow = calculateRow;

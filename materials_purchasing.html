@@ -963,7 +963,7 @@
                 <!-- Back & Header -->
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
                     <div class="flex items-start gap-4">
-                        <button onclick="appData.showProjectsView()" class="w-10 h-10 shrink-0 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-brand-500 transition-colors mt-1">
+                        <button onclick="appData.showProjectsView(appData.currentInstitution)" class="w-10 h-10 shrink-0 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-brand-500 transition-colors mt-1">
                             <i class="fa-solid fa-arrow-left"></i>
                         </button>
                         <div>
@@ -1434,9 +1434,35 @@
                         </button>
                     </div>
                     
-                    <div class="p-6">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">ชื่อสถานศึกษา <span class="text-red-500">*</span></label>
-                        <input type="text" id="modal-inst-name" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-base" placeholder="เช่น วิทยาลัยเทคนิค..." onkeydown="if(event.key === 'Enter') appData.saveNewInstitution()">
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">ชื่อสถานศึกษา <span class="text-red-500">*</span></label>
+                            <input type="text" id="modal-inst-name" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-base" placeholder="เช่น วิทยาลัยเทคนิค..." onkeydown="if(event.key === 'Enter') appData.saveNewInstitution()">
+                        </div>
+
+                        <!-- Admin Visibility Setting for New Institution -->
+                        <div id="add-inst-admin-settings" class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <label class="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-shield text-brand-500"></i> กำหนดสิทธิ์การมองเห็น ( Admin )
+                            </label>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                    <label class="block text-slate-500 mb-1">สถานะ</label>
+                                    <select id="modal-add-inst-visible" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 outline-none focus:border-brand-500 bg-white">
+                                        <option value="true">🟢 เปิด</option>
+                                        <option value="false">🔴 ปิด (ซ่อน)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-slate-500 mb-1">ผู้เห็นข้อมูล</label>
+                                    <select id="modal-add-inst-adminonly" class="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 outline-none focus:border-brand-500 bg-white">
+                                        <option value="false">👥 ทุกคน</option>
+                                        <option value="true">🔒 เฉพาะ Admin ทั้งหมด</option>
+                                        <option value="private">👤 เฉพาะฉันคนเดียว (Private)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
@@ -1488,6 +1514,32 @@
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">อีเมล</label>
                                 <input type="email" id="modal-inst-details-email" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="อีเมล">
+                            </div>
+                        </div>
+
+                        <!-- Admin Visibility Settings -->
+                        <div id="modal-inst-admin-settings" class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                    <i class="fa-solid fa-user-shield text-brand-500"></i> สิทธิ์การมองเห็น (สิทธิ์ Admin)
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">สถานะเปิด/ปิด</label>
+                                    <select id="modal-inst-details-visible" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-500 bg-white">
+                                        <option value="true">🟢 เปิดการมองเห็น</option>
+                                        <option value="false">🔴 ปิดการมองเห็น (ซ่อน)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">ขอบเขตผู้เข้าถึง</label>
+                                    <select id="modal-inst-details-adminonly" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-500 bg-white">
+                                        <option value="false">👥 ทุกคนมองเห็นได้</option>
+                                        <option value="true">🔒 เฉพาะ Admin ทั้งหมด</option>
+                                        <option value="private">👤 เฉพาะผู้สร้าง (เห็นคนเดียว)</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2158,6 +2210,9 @@
             syncCurrentProject() {
                 if (!this.currentProjectId) return;
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
+                try {
+                    localStorage.setItem('material_projects', JSON.stringify(this.projects));
+                } catch(e) {}
                 if (proj && window.saveProjectToFirestore) {
                     window.saveProjectToFirestore(proj).catch(e => console.error('Error syncing:', e));
                 }
@@ -2207,14 +2262,31 @@
                     return;
                 }
                 
+                const isVisible = document.getElementById('modal-add-inst-visible')?.value !== 'false';
+                const adminOnlyVal = document.getElementById('modal-add-inst-adminonly')?.value || 'false';
+
+                if (!this.institutionDetails) this.institutionDetails = {};
+                if (!this.institutionDetails[name]) {
+                    this.institutionDetails[name] = {};
+                }
+                this.institutionDetails[name].visible = isVisible;
+                this.institutionDetails[name].adminOnly = adminOnlyVal === 'private' ? 'private' : (adminOnlyVal === 'true');
+                if (this.currentUserId) {
+                    this.institutionDetails[name].createdBy = this.currentUserId;
+                }
+
+                if (window.saveInstitutionDetailsToFirestore) {
+                    window.saveInstitutionDetailsToFirestore(this.institutionDetails);
+                }
+
                 if (this.institutionLogos[name] === undefined) {
                     this.institutionLogos[name] = '';
-                    this.renderInstitutions();
                     if (window.saveInstitutionLogoToFirestore) {
                         window.saveInstitutionLogoToFirestore(name, '');
                     }
                 }
-                
+
+                this.renderInstitutions();
                 this.closeAddInstitutionModal();
             },
 
@@ -2525,6 +2597,19 @@
                 document.getElementById('modal-inst-details-phone').value = details.phone || '';
                 document.getElementById('modal-inst-details-email').value = details.email || '';
                 
+                if (document.getElementById('modal-inst-details-visible')) {
+                    document.getElementById('modal-inst-details-visible').value = details.visible !== false ? 'true' : 'false';
+                }
+                if (document.getElementById('modal-inst-details-adminonly')) {
+                    if (details.adminOnly === 'private') {
+                        document.getElementById('modal-inst-details-adminonly').value = 'private';
+                    } else if (details.adminOnly === true) {
+                        document.getElementById('modal-inst-details-adminonly').value = 'true';
+                    } else {
+                        document.getElementById('modal-inst-details-adminonly').value = 'false';
+                    }
+                }
+                
                 const modal = document.getElementById('inst-details-modal');
                 const content = document.getElementById('inst-details-modal-content');
                 modal.classList.remove('hidden');
@@ -2553,15 +2638,20 @@
                 const contact = document.getElementById('modal-inst-details-contact').value.trim();
                 const phone = document.getElementById('modal-inst-details-phone').value.trim();
                 const email = document.getElementById('modal-inst-details-email').value.trim();
-                
+                const isVisible = document.getElementById('modal-inst-details-visible')?.value !== 'false';
+                const adminOnlyVal = document.getElementById('modal-inst-details-adminonly')?.value || 'false';
+                const adminOnly = adminOnlyVal === 'private' ? 'private' : (adminOnlyVal === 'true');
+
                 if (!newName) {
                     Swal.fire({ icon: 'error', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกชื่อสถานศึกษา', timer: 2000 });
                     return;
                 }
                 
                 if (!this.institutionDetails) this.institutionDetails = {};
+                const oldDetails = this.institutionDetails[oldName] || {};
+                const createdBy = oldDetails.createdBy || this.currentUserId || null;
                 
-                const newDetails = { address, contact, phone, email };
+                const newDetails = { address, contact, phone, email, visible: isVisible, adminOnly: adminOnly, createdBy: createdBy };
                 
                 if (oldName !== newName) {
                     // Rename logic
@@ -2718,8 +2808,11 @@
             },
 
             showProjectsView(instName) {
-                if (instName) {
+                if (instName !== undefined && instName !== null && instName !== '') {
                     this.currentInstitution = instName;
+                }
+                if (!this.currentInstitution) {
+                    this.currentInstitution = 'ไม่ระบุสถานศึกษา';
                 }
                 
                 this.currentProjectId = null;
@@ -2728,18 +2821,22 @@
                 document.getElementById('view-project-details').classList.add('hidden');
                 
                 // Update subtitle to show selected institution
-                document.getElementById('projects-view-subtitle').innerText = this.currentInstitution || 'ไม่ระบุสถานศึกษา';
+                document.getElementById('projects-view-subtitle').innerText = this.currentInstitution;
                 
                 this.renderProjects();
             },
 
             showProjectDetails(projectId) {
                 this.currentProjectId = projectId;
+                const proj = this.projects.find(p => p.id === projectId);
+                if (proj) {
+                    this.currentInstitution = (proj.institution && proj.institution.trim()) ? proj.institution.trim() : 'ไม่ระบุสถานศึกษา';
+                }
+
                 document.getElementById('view-institutions').classList.add('hidden');
                 document.getElementById('view-projects').classList.add('hidden');
                 document.getElementById('view-project-details').classList.remove('hidden');
 
-                const proj = this.projects.find(p => p.id === projectId);
                 if (!proj) return;
 
                 // Handle Read-Only UI controls
@@ -3828,20 +3925,26 @@
             openQuotationForProject() {
                 if (this.currentProjectId) {
                     const proj = this.projects.find(p => p.id === this.currentProjectId);
+                    let shopParam = '';
                     if (proj) {
+                        const shopName = proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '';
+                        if (shopName) {
+                            shopParam = `&shop=${encodeURIComponent(shopName)}`;
+                        }
                         localStorage.setItem('pending_quotation_project', JSON.stringify({
                             source: 'school',
                             projectId: this.currentProjectId,
                             institution: proj.institution || '',
                             items: proj.items || [],
                             company: proj.institution || '',
+                            shop: shopName,
                             address: '',
                             attn: '',
                             tel: '',
                             email: ''
                         }));
                     }
-                    window.location.href = `quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
+                    window.location.href = `quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}${shopParam}`;
                 }
             },
 
@@ -4016,8 +4119,17 @@
                 });
             },
 
-            goToInvoice() {
+            async goToInvoice() {
                 if (this.currentProjectId) {
+                    const proj = this.projects.find(p => p.id === this.currentProjectId);
+                    if (proj) {
+                        try {
+                            localStorage.setItem('material_projects', JSON.stringify(this.projects));
+                            if (window.saveProjectToFirestore) {
+                                await window.saveProjectToFirestore(proj);
+                            }
+                        } catch(e) {}
+                    }
                     window.location.href = `sales_invoice.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
                 }
             },
@@ -4153,7 +4265,30 @@
                     return;
                 }
                 
+                const isAdmin = this.currentUserRole === 'admin';
+                const currentUid = this.currentUserId;
+
                 Array.from(instMap.entries()).forEach(([instName, stats]) => {
+                    const details = (this.institutionDetails && this.institutionDetails[instName]) ? this.institutionDetails[instName] : {};
+                    const isVisible = details.visible !== false;
+                    const adminOnlySetting = details.adminOnly;
+                    const createdBy = details.createdBy;
+
+                    // Filter logic:
+                    // 1. If adminOnlySetting === 'private' or adminOnlySetting === 'true' / boolean:
+                    // - 'private': Only creator (createdBy === currentUid) can see it! Even Admins cannot see other people's private institutions unless they created it.
+                    // - true: All Admins can see
+                    // - false: Everyone can see
+                    if (adminOnlySetting === 'private') {
+                        if (createdBy && createdBy !== currentUid) {
+                            return; // Hide from everyone except the creator
+                        }
+                    } else if (!isAdmin) {
+                        if (!isVisible || adminOnlySetting === true) {
+                            return; // Skip rendering for regular users
+                        }
+                    }
+
                     const el = document.createElement('div');
                     el.className = "bg-white p-6 rounded-2xl border border-slate-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_24px_rgba(26,111,191,0.08)] hover:border-brand-200 transition-all cursor-pointer group";
                     el.onclick = () => this.showProjectsView(instName);
@@ -4173,6 +4308,20 @@
                         </button>
                     `;
                     
+                    // Admin & Owner status badges
+                    let statusBadgeHtml = '';
+                    if (adminOnlySetting === 'private') {
+                        statusBadgeHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-solid fa-user-lock mr-1"></i>ส่วนตัว (เห็นคนเดียว)</span> `;
+                    }
+                    if (isAdmin) {
+                        if (!isVisible) {
+                            statusBadgeHtml += `<span class="bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-solid fa-eye-slash mr-1"></i>ปิดการมองเห็น</span> `;
+                        }
+                        if (adminOnlySetting === true) {
+                            statusBadgeHtml += `<span class="bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-solid fa-lock mr-1"></i>เฉพาะ Admin ทั้งหมด</span> `;
+                        }
+                    }
+
                     el.className = "bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_24px_rgba(26,111,191,0.08)] hover:border-brand-200 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-4";
                     
                     el.innerHTML = `
@@ -4182,7 +4331,10 @@
                                 ${editLogoBtn}
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold transition-colors line-clamp-1 ${titleClass}">${instName}</h3>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-xl font-bold transition-colors line-clamp-1 ${titleClass}">${instName}</h3>
+                                    ${statusBadgeHtml}
+                                </div>
                                 <div class="flex items-center gap-3 mt-1.5 text-sm text-slate-500 font-medium">
                                     <div class="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded text-[11px] font-bold tracking-wide">
                                         ${stats.count} โครงการ
@@ -4207,6 +4359,15 @@
                     `;
                     grid.appendChild(el);
                 });
+
+                if (grid.children.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                            <i class="fa-solid fa-school fa-2x mb-3 text-slate-300"></i>
+                            <p class="font-medium text-slate-600">ไม่มีสถานศึกษาที่เปิดใช้งาน หรือที่คุณมีสิทธิ์เข้าถึง</p>
+                        </div>
+                    `;
+                }
             },
 
             shopSet: new Set(),
@@ -4343,13 +4504,11 @@
                 grid.innerHTML = '';
 
                 // Filter by current institution
-                let filteredProjects = this.projects;
-                if (this.currentInstitution) {
-                    filteredProjects = this.projects.filter(p => {
-                        const inst = p.institution ? p.institution.trim() : 'ไม่ระบุสถานศึกษา';
-                        return inst === this.currentInstitution;
-                    });
-                }
+                const targetInst = (this.currentInstitution && this.currentInstitution.trim()) ? this.currentInstitution.trim() : 'ไม่ระบุสถานศึกษา';
+                let filteredProjects = this.projects.filter(p => {
+                    const inst = p.institution ? p.institution.trim() : 'ไม่ระบุสถานศึกษา';
+                    return inst === targetInst;
+                });
                 
                 // Sort descending (latest on top) assuming ID or Date logic. ID includes timestamp (e.g. proj_17... or proj_2026...)
                 // We'll sort by ID as string, which usually puts larger timestamps first
@@ -5544,6 +5703,13 @@
 
                     if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
 
+                    appData.currentUserId = user.uid;
+                    appData.currentUserRole = userData.role || 'user';
+
+                    if (!document.getElementById('view-institutions').classList.contains('hidden')) {
+                        appData.renderInstitutions();
+                    }
+
                     // Show body now that the user is fully verified
                     document.body.style.setProperty('display', 'flex', 'important');
                 } catch (e) {
@@ -5614,6 +5780,9 @@
             onSnapshot(doc(db, 'material_settings', 'institution_details'), (docSnap) => {
                 if (docSnap.exists()) {
                     appData.institutionDetails = docSnap.data();
+                    if (!document.getElementById('view-institutions').classList.contains('hidden')) {
+                        appData.renderInstitutions();
+                    }
                 }
             });
             
