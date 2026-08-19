@@ -14,6 +14,50 @@
    ✦ Keyboard shortcuts (Ctrl+D = Dark Mode)
    ================================================================ */
 
+window.PAGE_DEPT_MAP = {
+    'dashboard.html': 'admin/dashboard.html',
+    'console_admin.html': 'admin/console_admin.html',
+    'crm.html': 'admin/crm.html',
+    'business_card.html': 'admin/business_card.html',
+    'materials_purchasing.html': 'purchasing/materials_purchasing.html',
+    'materials_purchasing_company.html': 'purchasing/materials_purchasing_company.html',
+    'products.html': 'purchasing/products.html',
+    'equipments.html': 'purchasing/equipments.html',
+    'quotation.html': 'accounting/quotation.html',
+    'sales_dashboard.html': 'accounting/sales_dashboard.html',
+    'sales_invoice.html': 'accounting/sales_invoice.html',
+    'sales_receipt.html': 'accounting/sales_receipt.html',
+    'ocr_table.html': 'accounting/ocr_table.html',
+    'calendar.html': 'schedule/calendar.html',
+    'tasks.html': 'schedule/tasks.html',
+    'external_training.html': 'schedule/external_training.html',
+    'register_training.html': 'schedule/register_training.html',
+    'certificate_template.html': 'schedule/certificate_template.html',
+    'internship_journal.html': 'schedule/internship_journal.html'
+};
+
+window.getDeptUrl = function(page) {
+    if (!page) return page;
+    if (page.startsWith('http') || page.startsWith('blob:') || page.startsWith('data:')) return page;
+    
+    const parts = page.split('?');
+    const fileName = parts[0].split('#')[0].split('/').pop();
+    const query = parts[1] ? '?' + parts[1] : '';
+    const hash = parts[0].includes('#') ? '#' + parts[0].split('#')[1] : '';
+    
+    const subpath = window.PAGE_DEPT_MAP[fileName] || fileName;
+    const path = location.pathname;
+
+    if (path.includes('/pages/admin/') || path.includes('/pages/purchasing/') ||
+        path.includes('/pages/accounting/') || path.includes('/pages/schedule/')) {
+        return '../' + subpath + query + hash;
+    } else if (path.includes('/pages/')) {
+        return subpath + query + hash;
+    } else {
+        return 'pages/' + subpath + query + hash;
+    }
+};
+
 (function MentraUI() {
     'use strict';
 
@@ -350,10 +394,10 @@
         if (!isMobile()) return;
         if (document.getElementById('mnavBar')) return;
 
-        const page   = location.pathname.split('/').pop() || 'index.html';
+        const page   = location.pathname.split('/').pop() || '../../index.html';
         const search = location.search;
 
-        if (page === 'index.html' || page === '') return;
+        if (page === '../../index.html' || page === '') return;
 
         // Removed to allow mobile nav to appear on dynamically loaded pages
 
@@ -378,7 +422,7 @@
             btn.innerHTML = `<span class="mnav-icon-wrap"><span class="mnav-icon">${cfg.icon}</span><span class="mnav-dot"></span></span><span class="mnav-label">${cfg.label}</span>`;
             btn.addEventListener('click', (e) => {
                 addMnavRipple(e, btn);
-                setTimeout(() => { window.location.href = cfg.href; }, 160);
+                setTimeout(() => { window.location.href = window.getDeptUrl(cfg.href); }, 160);
             });
             return btn;
         }
@@ -434,7 +478,7 @@
             card.style.animationDelay = `${0.13 + i * 0.045}s`;
             card.dataset.page = cfg.href.split('?')[0]; // Tag page for permission hide
             card.innerHTML = `<div class="mnav-sheet-card-icon">${cfg.icon}</div><div class="mnav-sheet-card-label">${cfg.label}</div>`;
-            card.addEventListener('click', () => { closeSheet(); setTimeout(() => { window.location.href = cfg.href; }, 220); });
+            card.addEventListener('click', () => { closeSheet(); setTimeout(() => { window.location.href = window.getDeptUrl(cfg.href); }, 220); });
             grid.appendChild(card);
         });
         sheet.appendChild(grid);
@@ -449,7 +493,7 @@
                 const orig = document.querySelector('.btn-logout');
                 if (orig) orig.click();
                 else if (typeof handleLogout === 'function') handleLogout();
-                else window.location.href = 'index.html';
+                else window.location.href = location.pathname.includes('/pages/') ? '../../index.html' : 'index.html';
             }, 200);
         });
         sheet.appendChild(logoutRow);
@@ -747,7 +791,7 @@ function initAccountDropdown(userData) {
             </svg>
             <span>จัดการผู้ใช้งาน</span>
         `;
-        itemUsers.onclick = () => window.location.href = 'dashboard.html?view=users';
+        itemUsers.onclick = () => window.location.href = window.getDeptUrl('dashboard.html?view=users');
         dropdown.appendChild(itemUsers);
 
         // 2. Add New Project
@@ -761,7 +805,7 @@ function initAccountDropdown(userData) {
             </svg>
             <span>เพิ่มโครงการใหม่</span>
         `;
-        itemAdd.onclick = () => window.location.href = 'dashboard.html';
+        itemAdd.onclick = () => window.location.href = window.getDeptUrl('dashboard.html');
         dropdown.appendChild(itemAdd);
 
         // 3. Admin Console
@@ -777,7 +821,7 @@ function initAccountDropdown(userData) {
             </svg>
             <span>Admin Console (สิทธิ์ด่วน)</span>
         `;
-        itemConsole.onclick = () => window.location.href = 'console_admin.html';
+        itemConsole.onclick = () => window.location.href = window.getDeptUrl('console_admin.html');
         dropdown.appendChild(itemConsole);
 
         // Divider
@@ -805,7 +849,7 @@ function initAccountDropdown(userData) {
         } else if (window.handleLogout) {
             window.handleLogout();
         } else {
-            window.location.href = 'index.html';
+            window.location.href = location.pathname.includes('/pages/') ? '../../index.html' : 'index.html';
         }
     };
     dropdown.appendChild(itemLogout);
@@ -938,27 +982,96 @@ window.applySidebarPermissions = function(userData) {
         }
     }
 
-    // 3. Highlight current active sidebar item based on current page URL
+    // 3. Highlight current active sidebar item strictly based on URL + query params
     try {
-        let currentFile = window.location.pathname.split('/').pop() || 'dashboard.html';
-        currentFile = currentFile.split('?')[0].split('#')[0];
-        if (currentFile === '' || currentFile === '/') currentFile = 'dashboard.html';
-
-        const navItems = document.querySelectorAll('.nav-item');
-        navItems.forEach(el => {
-            const href = el.getAttribute('href') || '';
-            const onclick = el.getAttribute('onclick') || '';
-            if ((href && href.includes(currentFile)) || (onclick && onclick.includes(currentFile))) {
-                el.classList.add('active');
-            }
-        });
+        window.highlightActiveSidebar();
     } catch(e) {}
+};
+
+window.highlightActiveSidebar = function() {
+    let currentPath = window.location.pathname.split('/').pop() || 'dashboard.html';
+    currentPath = currentPath.split('?')[0].split('#')[0];
+    if (currentPath === '' || currentPath === '/') currentPath = 'dashboard.html';
+    
+    const search = window.location.search;
+
+    // 1. Remove active class from ALL sidebar buttons and submenu links first
+    document.querySelectorAll('.sidebar .nav-item, .sidebar .submenu-item').forEach(el => {
+        el.classList.remove('active');
+    });
+
+    let bestMatch = null;
+    let bestScore = -1;
+
+    // 2. Evaluate all sidebar links and find the best match
+    const navItems = document.querySelectorAll('.sidebar .nav-item, .sidebar .submenu-item');
+    navItems.forEach(el => {
+        const href = el.getAttribute('href') || '';
+        const onclick = el.getAttribute('onclick') || '';
+        const rawTarget = href || onclick;
+
+        if (!rawTarget) return;
+
+        // Extract target URL string inside quotes if available
+        const urlMatch = rawTarget.match(/['"]([^'"]+)['"]/);
+        const targetUrl = urlMatch ? urlMatch[1] : rawTarget;
+
+        const parts = targetUrl.split('?');
+        const targetFile = parts[0].split('#')[0].split('/').pop();
+
+        if (targetFile === currentPath) {
+            let score = 1;
+            if (parts[1]) {
+                const queryParam = parts[1]; // e.g. "view=projects"
+                if (search.includes(queryParam)) {
+                    score = 10; // Exact match with query params (e.g. view=projects vs view=items)
+                } else {
+                    score = 0; // Target requires query param, but current search doesn't have it
+                }
+            } else {
+                if (search.includes('view=')) {
+                    score = 0; // Current URL has view= parameter, but target is clean file
+                } else {
+                    score = 5; // Clean file match without query params
+                }
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = el;
+            }
+        }
+    });
+
+    if (bestMatch && bestScore > 0) {
+        bestMatch.classList.add('active');
+
+        // Auto-expand parent nav-group
+        const parentNavGroupBody = bestMatch.closest('.nav-group-body');
+        if (parentNavGroupBody) {
+            parentNavGroupBody.classList.add('open');
+            const headerBtn = parentNavGroupBody.previousElementSibling;
+            if (headerBtn && headerBtn.classList.contains('nav-group-header')) {
+                headerBtn.classList.add('open');
+            }
+        }
+
+        // Auto-expand parent submenu if active item is inside a submenu
+        const parentSubmenu = bestMatch.closest('.sidebar-submenu');
+        if (parentSubmenu) {
+            parentSubmenu.classList.add('open');
+            const mainBtn = parentSubmenu.previousElementSibling;
+            if (mainBtn && mainBtn.classList.contains('nav-item-has-submenu')) {
+                mainBtn.classList.add('open');
+            }
+        }
+    }
 };
 
 window.checkPageAccess = function(userData) {
     if (!userData) return true;
 
-    let currentFile = window.location.pathname.split('/').pop() || 'index.html';
+    let currentFile = window.location.pathname.split('/').pop() || '../../index.html';
     if (!currentFile || currentFile === '' || currentFile === '/') currentFile = 'dashboard.html';
     currentFile = currentFile.split('?')[0].split('#')[0];
 
@@ -976,8 +1089,22 @@ window.checkPageAccess = function(userData) {
 };
 
 /* ================================================================
-   SIDEBAR SUB-MENU TOGGLE & AUTO-EXPAND LOGIC
+   SIDEBAR ACCORDION GROUP & SUB-MENU TOGGLE LOGIC
    ================================================================ */
+window.toggleNavGroup = function(groupId, headerBtn) {
+    const groupBody = document.getElementById(groupId);
+    if (!groupBody) return;
+
+    const isOpen = groupBody.classList.contains('open');
+    if (isOpen) {
+        groupBody.classList.remove('open');
+        if (headerBtn) headerBtn.classList.remove('open');
+    } else {
+        groupBody.classList.add('open');
+        if (headerBtn) headerBtn.classList.add('open');
+    }
+};
+
 window.toggleSubmenu = function(submenuId, btn) {
     const submenu = document.getElementById(submenuId);
     if (!submenu) return;
@@ -992,22 +1119,97 @@ window.toggleSubmenu = function(submenuId, btn) {
     }
 };
 
+window.initExecutiveFooterWidgets = function() {
+    const footer = document.querySelector('.static-footer');
+    if (!footer) return;
+
+    const currentSavedTime = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+    // Structure minimalist status widget HTML with Cloud Sync Widget
+    footer.innerHTML = `
+        <div class="footer-widget-group">
+            <div class="footer-pill-widget" id="footerNetworkWidget">
+                <span class="widget-dot"></span>
+                <span id="footerPingText">12 ms (เสถียร)</span>
+            </div>
+            <div class="footer-pill-widget" id="footerSyncWidget" title="สถานะการบันทึกข้อมูลบนคลาวด์">
+                <span class="widget-icon">☁️</span>
+                <span id="footerSyncText">บันทึกข้อมูลล่าสุดเมื่อ ${currentSavedTime} น.</span>
+            </div>
+        </div>
+        <div class="footer-widget-group">
+            <div class="footer-pill-widget">
+                <span class="widget-icon">🕒</span>
+                <span id="footerLiveClock">--:--:--</span>
+            </div>
+        </div>
+    `;
+
+    // Live Clock Update Function
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('th-TH', { hour12: false });
+        const dateStr = now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+        const clockEl = document.getElementById('footerLiveClock');
+        if (clockEl) {
+            clockEl.textContent = `${timeStr} | ${dateStr}`;
+        }
+    }
+
+    // Ping / Network Status Measurement Function
+    function measurePing() {
+        const pingEl = document.getElementById('footerPingText');
+        if (!pingEl) return;
+
+        if (!navigator.onLine) {
+            pingEl.textContent = 'Offline (ไม่อยู่ในระบบ)';
+            pingEl.style.color = '#ef4444';
+            return;
+        }
+
+        const startTime = performance.now();
+        fetch('https://www.google.com/favicon.ico', { mode: 'no-cors', cache: 'no-store' })
+            .then(() => {
+                const latency = Math.round(performance.now() - startTime);
+                pingEl.textContent = `${latency} ms (เสถียร)`;
+                pingEl.style.color = '#10b981';
+            })
+            .catch(() => {
+                pingEl.textContent = 'ออนไลน์ (ปกติ)';
+                pingEl.style.color = '#10b981';
+            });
+    }
+
+    updateClock();
+    measurePing();
+    setInterval(updateClock, 1000);
+    setInterval(measurePing, 15000);
+};
+
+// Global Cloud Sync Notification Helper
+window.notifyCloudSync = function(message) {
+    const syncText = document.getElementById('footerSyncText');
+    const syncWidget = document.getElementById('footerSyncWidget');
+    const nowStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    
+    if (syncText) {
+        syncText.textContent = message || `บันทึกข้อมูลล่าสุดเมื่อ ${nowStr} น.`;
+    }
+    if (syncWidget) {
+        syncWidget.style.borderColor = '#10b981';
+        syncWidget.style.backgroundColor = 'rgba(16, 185, 129, 0.08)';
+        setTimeout(() => {
+            syncWidget.style.borderColor = '#e2e8f0';
+            syncWidget.style.backgroundColor = '#f8fafc';
+        }, 3000);
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     try {
-        let path = window.location.pathname.split('/').pop() || '';
-        if (path.includes('materials_purchasing')) {
-            const submenu = document.getElementById('purchasingSubmenu');
-            const mainBtn = document.getElementById('nav-purchasing-main');
-            if (submenu) submenu.classList.add('open');
-            if (mainBtn) mainBtn.classList.add('open');
-
-            if (path.includes('materials_purchasing_company.html')) {
-                const companyItem = document.getElementById('nav-purchasing-company');
-                if (companyItem) companyItem.classList.add('active');
-            } else if (path.includes('materials_purchasing.html')) {
-                const schoolItem = document.getElementById('nav-purchasing-school');
-                if (schoolItem) schoolItem.classList.add('active');
-            }
-        }
+        window.highlightActiveSidebar();
+    } catch(e) {}
+    try {
+        window.initExecutiveFooterWidgets();
     } catch(e) {}
 });

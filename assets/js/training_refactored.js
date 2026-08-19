@@ -1083,7 +1083,7 @@ import { doc, getDoc, setDoc, deleteDoc, updateDoc, collection, getDocs, onSnaps
                 ? window.location.origin
                 : "https://mentra-manager.vercel.app";
 
-            const registrationUrl = `${origin}/register_training.html?id=${req.id}`;
+            const registrationUrl = `${origin}/pages/schedule/register_training.html?id=${req.id}`;
             generatedLinkGlobal = registrationUrl;
 
             document.getElementById("registrationLinkInput").value = registrationUrl;
@@ -1152,7 +1152,7 @@ import { doc, getDoc, setDoc, deleteDoc, updateDoc, collection, getDocs, onSnaps
         let user = window.currentUser;
         
             if (!user) {
-                window.location.href = 'index.html';
+                window.location.href = '../../index.html';
                 return;
             }
 
@@ -1165,7 +1165,7 @@ import { doc, getDoc, setDoc, deleteDoc, updateDoc, collection, getDocs, onSnaps
                 } else {
                     alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
                     await signOut(auth);
-                    window.location.href = 'index.html?msg=deleted';
+                    window.location.href = '../../index.html?msg=deleted';
                     return;
                 }
             } catch (e) {
@@ -1185,12 +1185,12 @@ import { doc, getDoc, setDoc, deleteDoc, updateDoc, collection, getDocs, onSnaps
                 if (userStatus === 'pending') {
                     alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
                     await signOut(auth);
-                    window.location.href = 'index.html?msg=pending';
+                    window.location.href = '../../index.html?msg=pending';
                     return;
                 } else if (userStatus === 'rejected') {
                     alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ');
                     await signOut(auth);
-                    window.location.href = 'index.html?msg=rejected';
+                    window.location.href = '../../index.html?msg=rejected';
                     return;
                 }
 
@@ -1308,7 +1308,7 @@ import { doc, getDoc, setDoc, deleteDoc, updateDoc, collection, getDocs, onSnaps
         // Logout ผ่าน Firebase Auth
         window.handleLogout = async function () {
             await signOut(auth);
-            window.location.href = 'index.html';
+            window.location.href = '../../index.html';
         };
     
 

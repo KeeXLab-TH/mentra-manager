@@ -1078,7 +1078,7 @@
                 ? window.location.origin
                 : "https://mentra-manager.vercel.app";
 
-            const registrationUrl = `${origin}/register_training.html?id=${req.id}`;
+            const registrationUrl = `${origin}/pages/schedule/register_training.html?id=${req.id}`;
             generatedLinkGlobal = registrationUrl;
 
             document.getElementById("registrationLinkInput").value = registrationUrl;

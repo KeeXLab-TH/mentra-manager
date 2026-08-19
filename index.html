@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 
 <head>
@@ -1376,7 +1376,7 @@
 
                 await signInWithEmailAndPassword(auth, email, password);
                 showAlert('เข้าสู่ระบบสำเร็จ กำลังโหลด...', 'success');
-                setTimeout(() => { window.location.href = 'quotation.html'; }, 800);
+                setTimeout(() => { window.location.href = 'pages/accounting/quotation.html'; }, 800);
 
             } catch (err) {
                 const msgs = {
@@ -1465,7 +1465,7 @@
                     ? ' (คุณได้รับสิทธิ์ Admin เนื่องจากเป็นผู้ลงทะเบียนคนแรก)'
                     : ' (อยู่ระหว่างรอผู้ดูแลระบบอนุมัติบัญชี)';
                 showAlert(`สมัครสมาชิกสำเร็จ!${roleMsg} กำลังเข้าสู่ระบบ...`, 'success');
-                setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+                setTimeout(() => { window.location.href = 'pages/admin/dashboard.html'; }, 1500);
 
             } catch (err) {
                 window.isSigningUp = false;
@@ -1533,7 +1533,7 @@
                         await signOut(auth);
                         showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ', 'error');
                     } else {
-                        window.location.href = 'dashboard.html';
+                        window.location.href = 'pages/admin/dashboard.html';
                     }
                 } catch (e) {
                     console.error("Auth redirect validation failed:", e);

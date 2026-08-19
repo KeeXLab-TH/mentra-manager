@@ -63,12 +63,12 @@
                         if (userStatus === 'pending') {
                             alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
                             await signOut(auth);
-                            window.location.href = 'index.html?msg=pending';
+                            window.location.href = '../../index.html?msg=pending';
                             return;
                         } else if (userStatus === 'rejected') {
                             alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ');
                             await signOut(auth);
-                            window.location.href = 'index.html?msg=rejected';
+                            window.location.href = '../../index.html?msg=rejected';
                             return;
                         }
 
@@ -128,13 +128,13 @@
                         // User document deleted!
                         alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
                         await signOut(auth);
-                        window.location.href = 'index.html?msg=deleted';
+                        window.location.href = '../../index.html?msg=deleted';
                     }
                 } catch (err) {
                     console.error("Error loading user profile:", err);
                 }
             } else {
-                window.location.href = 'index.html'; // Auth Guard
+                window.location.href = '../../index.html'; // Auth Guard
             }
         });
 
@@ -143,7 +143,7 @@
             if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
                 try {
                     await signOut(auth);
-                    window.location.href = 'index.html';
+                    window.location.href = '../../index.html';
                 } catch (e) {
                     console.error('Logout failed:', e);
                 }

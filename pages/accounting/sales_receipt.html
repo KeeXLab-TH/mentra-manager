@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
-    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+    <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780690277137">
+    <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
 
     <script>
         tailwind.config = {
@@ -223,25 +223,135 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
-            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <img src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
             <div class="sidebar-logo-text"><div class="app-name">Mentra Manager</div><div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div></div>
             <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebarCollapse()" title="ย่อ/ขยาย Sidebar"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6" /></svg></button>
         </div>
         <nav class="sidebar-nav">
-            <div class="nav-section-title">เมนูหลัก</div>
-            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard"><div class="nav-icon">🏠</div><span class="nav-label">Dashboard</span></button>
-            <button class="nav-item" onclick="window.location.href='sales_dashboard.html'" id="nav-sales-dashboard">
-                <div class="nav-icon">📑</div>
-                <span class="nav-label">ระบบเอกสารงานขาย</span>
-            </button>
-            <div class="nav-item-group" id="nav-purchasing-group">
-                <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main"><div class="nav-icon">🛒</div><span class="nav-label">จัดการจัดซื้อ / วัสดุ</span><i class="fa-solid fa-chevron-down submenu-caret"></i></button>
-                <div class="sidebar-submenu" id="purchasingSubmenu">
-                    <a href="materials_purchasing.html" class="submenu-item"><span class="submenu-icon">🏫</span><span class="nav-label">สถานศึกษา</span></a>
-                    <a href="materials_purchasing_company.html" class="submenu-item"><span class="submenu-icon">🏢</span><span class="nav-label">บริษัทเอกชน</span></a>
+            <!-- Group 1: ฝ่ายบริหาร -->
+            <div class="nav-group">
+                <button class="nav-group-header" onclick="toggleNavGroup('grp-admin', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">👑</span>
+                        <span>ฝ่ายบริหาร</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body" id="grp-admin">
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html'" id="nav-dashboard">
+                        <div class="nav-icon">🏠</div>
+                        <span class="nav-label">Dashboard / ภาพรวม</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
+                        <div class="nav-icon">📁</div>
+                        <span class="nav-label">โครงการทั้งหมด</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/crm.html'" id="nav-crm">
+                        <div class="nav-icon">📊</div>
+                        <span class="nav-label">ระบบ CRM</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
+                        <div class="nav-icon">🪪</div>
+                        <span class="nav-label">นามบัตรดิจิทัล</span>
+                    </button>
                 </div>
             </div>
-            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products"><div class="nav-icon">📦</div><span class="nav-label">สินค้า</span></button>
+
+            <!-- Group 2: ฝ่ายจัดซื้อ & สินค้า -->
+            <div class="nav-group">
+                <button class="nav-group-header" onclick="toggleNavGroup('grp-purchasing', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">🛒</span>
+                        <span>ฝ่ายจัดซื้อ & สินค้า</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body" id="grp-purchasing">
+                    <div class="nav-item-group" id="nav-purchasing-group">
+                        <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main" type="button">
+                            <div class="nav-icon">🛒</div>
+                            <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
+                            <i class="fa-solid fa-chevron-down submenu-caret"></i>
+                        </button>
+                        <div class="sidebar-submenu" id="purchasingSubmenu">
+                            <a href="../purchasing/materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
+                                <span class="submenu-icon">🏫</span>
+                                <span class="nav-label">สถานศึกษา</span>
+                            </a>
+                            <a href="../purchasing/materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
+                                <span class="submenu-icon">🏢</span>
+                                <span class="nav-label">บริษัทเอกชน</span>
+                            </a>
+                        </div>
+                    </div>
+                    <button class="nav-item" onclick="window.location.href='../purchasing/products.html'" id="nav-products">
+                        <div class="nav-icon">📦</div>
+                        <span class="nav-label">สินค้า</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../purchasing/equipments.html'" id="nav-equipments">
+                        <div class="nav-icon">💻</div>
+                        <span class="nav-label">ข้อมูลร้านสำหรับสั่งวัสดุ</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
+                        <div class="nav-icon">📦</div>
+                        <span class="nav-label">ราคาทุน / สิ่งของ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Group 3: งานบัญชี & การเงิน -->
+            <div class="nav-group">
+                <button class="nav-group-header open" onclick="toggleNavGroup('grp-accounting', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">💰</span>
+                        <span>งานบัญชี & การเงิน</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body open" id="grp-accounting">
+                    <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
+                        <div class="nav-icon">📄</div>
+                        <span class="nav-label">ใบเสนอราคา</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='sales_dashboard.html'" id="nav-sales-dashboard">
+                        <div class="nav-icon">📑</div>
+                        <span class="nav-label">ระบบเอกสารงานขาย</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
+                        <div class="nav-icon">📷</div>
+                        <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Group 4: ตารางงาน & การอบรม -->
+            <div class="nav-group">
+                <button class="nav-group-header" onclick="toggleNavGroup('grp-schedule', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">📅</span>
+                        <span>ตารางงาน & การอบรม</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body" id="grp-schedule">
+                    <button class="nav-item" onclick="window.location.href='../schedule/tasks.html'" id="nav-tasks">
+                        <div class="nav-icon">📋</div>
+                        <span class="nav-label">งานที่ได้รับมอบหมาย</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../schedule/calendar.html'" id="nav-calendar">
+                        <div class="nav-icon">📅</div>
+                        <span class="nav-label">ปฏิทินตารางงาน</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../schedule/external_training.html'" id="nav-training">
+                        <div class="nav-icon">🎓</div>
+                        <span class="nav-label">ระบบตารางจัดอบรม</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../schedule/internship_journal.html'" id="nav-internship">
+                        <div class="nav-icon">📓</div>
+                        <span class="nav-label">บันทึกการฝึกงาน</span>
+                    </button>
+                </div>
+            </div>
         </nav>
     </aside>
 
@@ -265,7 +375,7 @@
                 <div class="w-24 h-24 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-teal-100"><i class="fa-solid fa-receipt text-4xl text-teal-500"></i></div>
                 <h2 class="text-2xl font-bold text-slate-700 mb-3">ไม่พบโครงการ</h2>
                 <p class="text-slate-500 mb-6">กรุณาเลือกโครงการจากหน้าจัดการวัสดุ</p>
-                <button onclick="window.location.href='materials_purchasing.html'" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> กลับหน้าจัดการวัสดุ</button>
+                <button onclick="window.location.href='../purchasing/materials_purchasing.html'" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> กลับหน้าจัดการวัสดุ</button>
             </div>
 
             <!-- RECEIPT VIEW -->
@@ -445,7 +555,7 @@
                             customClass: { popup: 'mentra-swal-popup' }
                         }).then((nextResult) => {
                             if (nextResult.isConfirmed) {
-                                window.location.href = 'dashboard.html';
+                                window.location.href='../admin/dashboard.html';
                             }
                         });
                     }
@@ -453,8 +563,8 @@
             },
             onWorkflowStepClick(n) {
                 const proj = this.project; if (!proj) return;
-                if (n === 1) window.location.href = 'materials_purchasing.html?projectId=' + encodeURIComponent(this.projectId);
-                else if (n === 2) window.location.href = 'sales_invoice.html?projectId=' + encodeURIComponent(this.projectId);
+                if (n === 1) window.location.href='../purchasing/materials_purchasing.html?projectId=' + encodeURIComponent(this.projectId);
+                else if (n === 2) window.location.href='sales_invoice.html?projectId=' + encodeURIComponent(this.projectId);
                 else if (n === 3) this.showToast('คุณอยู่ในหน้านี้แล้ว', 'info');
             },
             renderActivityLog() {
@@ -476,9 +586,9 @@
         };
         window.logoutUser = function() {
             if (window.firebaseAuth) {
-                window.firebaseAuth.signOut().then(() => { window.location.href = 'index.html'; });
+                window.firebaseAuth.signOut().then(() => { window.location.href = '../../index.html'; });
             } else {
-                window.location.href = 'index.html';
+                window.location.href = '../../index.html';
             }
         };
     </script>
@@ -488,7 +598,7 @@
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
         let FIREBASE_CONFIG; window.GAS_URL = null;
-        try { const cfg = await import('./assets/js/firebase-config.js'); FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG; window.GAS_URL = cfg.GAS_URL || null; } catch (e) { console.warn('firebase-config.js not found'); }
+        try { const cfg = await import('../../assets/js/firebase-config.js'); FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG; window.GAS_URL = cfg.GAS_URL || null; } catch (e) { console.warn('firebase-config.js not found'); }
         if (!FIREBASE_CONFIG) { FIREBASE_CONFIG = { apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU", authDomain: "mentra-manager-e039f.firebaseapp.com", projectId: "mentra-manager-e039f", storageBucket: "mentra-manager-e039f.firebasestorage.app", messagingSenderId: "563604754745", appId: "1:563604754745:web:ea0892fafb48b74dcf58e8" }; }
         if (!window.GAS_URL) window.GAS_URL = 'https://script.google.com/macros/s/AKfycbxJIaFnBOtQUjoxjkVYiK2OBbGvbMlgeR5FSsO0n0vfYNHHc6pfPIki7CCFTeEh63m5/exec';
         const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
@@ -498,12 +608,12 @@
         const paramProjId = urlParams.get('projectId');
         receiptApp.projectId = paramProjId;
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.href = 'index.html'; return; }
+            if (!user) { window.location.href = '../../index.html'; return; }
             try {
                 const snap = await getDoc(doc(db, 'users', user.uid));
-                if (!snap.exists()) { await signOut(auth); window.location.href = 'index.html?msg=deleted'; return; }
+                if (!snap.exists()) { await signOut(auth); window.location.href = '../../index.html?msg=deleted'; return; }
                 const ud = snap.data();
-                if (ud.status === 'pending' || ud.status === 'rejected') { await signOut(auth); window.location.href = 'index.html?msg=' + ud.status; return; }
+                if (ud.status === 'pending' || ud.status === 'rejected') { await signOut(auth); window.location.href = '../../index.html?msg=' + ud.status; return; }
                 document.body.style.setProperty('display', 'flex', 'important');
                 const un = document.getElementById('userName'); if (un) un.innerText = ud.displayName || ud.name || user.email;
             } catch (e) { document.body.style.setProperty('display', 'flex', 'important'); }

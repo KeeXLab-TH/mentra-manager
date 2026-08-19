@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>สินค้า (Products) — Mentra Manager</title>
+    <title>วัสดุอุปกรณ์ (Equipments) — Mentra Manager</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2361,8 +2361,8 @@
     </style>
 
     <!-- Premium UI Overlay -->
-    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
-    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+    <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780690277137">
+    <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
 
 </head>
 
@@ -2374,7 +2374,7 @@
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
-            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <img src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
             <div class="sidebar-logo-text">
                 <div class="app-name">Mentra Manager</div>
                 <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
@@ -2388,81 +2388,131 @@
         </div>
 
         <nav class="sidebar-nav">
-            <div class="nav-section-title">เมนูหลัก</div>
-            <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-dashboard">
-                <div class="nav-icon">🏠</div>
-                <span class="nav-label">Dashboard</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='tasks.html'" id="nav-tasks">
-                <div class="nav-icon">📋</div>
-                <span class="nav-label">งานที่ได้รับมอบหมาย</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='dashboard.html?view=projects'" id="nav-projects">
-                <div class="nav-icon">📁</div>
-                <span class="nav-label">โครงการทั้งหมด</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='dashboard.html?view=items'" id="nav-items">
-                <div class="nav-icon">📦</div>
-                <span class="nav-label">ราคาทุน / สิ่งของ</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
-                <div class="nav-icon">📄</div>
-                <span class="nav-label">ใบเสนอราคา</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
-                <div class="nav-icon">🎓</div>
-                <span class="nav-label">ระบบตารางจัดอบรม</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='calendar.html'" id="nav-calendar">
-                <div class="nav-icon">📅</div>
-                <span class="nav-label">ปฏิทินตารางงาน</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='crm.html'" id="nav-crm">
-                <div class="nav-icon">📊</div>
-                <span class="nav-label">ระบบ CRM</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='sales_dashboard.html'" id="nav-sales-dashboard">
-                <div class="nav-icon">📑</div>
-                <span class="nav-label">ระบบเอกสารงานขาย</span>
-            </button>
-            <div class="nav-item-group" id="nav-purchasing-group">
-                <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main">
-                    <div class="nav-icon">🛒</div>
-                    <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
-                    <i class="fa-solid fa-chevron-down submenu-caret"></i>
+            <!-- Group 1: ฝ่ายบริหาร -->
+            <div class="nav-group">
+                <button class="nav-group-header" onclick="toggleNavGroup('grp-admin', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">👑</span>
+                        <span>ฝ่ายบริหาร</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
                 </button>
-                <div class="sidebar-submenu" id="purchasingSubmenu">
-                    <a href="materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
-                        <span class="submenu-icon">🏫</span>
-                        <span class="nav-label">สถานศึกษา</span>
-                    </a>
-                    <a href="materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
-                        <span class="submenu-icon">🏢</span>
-                        <span class="nav-label">บริษัทเอกชน</span>
-                    </a>
+                <div class="nav-group-body" id="grp-admin">
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html'" id="nav-dashboard">
+                        <div class="nav-icon">🏠</div>
+                        <span class="nav-label">Dashboard / ภาพรวม</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
+                        <div class="nav-icon">📁</div>
+                        <span class="nav-label">โครงการทั้งหมด</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/crm.html'" id="nav-crm">
+                        <div class="nav-icon">📊</div>
+                        <span class="nav-label">ระบบ CRM</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
+                        <div class="nav-icon">🪪</div>
+                        <span class="nav-label">นามบัตรดิจิทัล</span>
+                    </button>
                 </div>
             </div>
-            <button class="nav-item active" onclick="window.location.href='products.html'" id="nav-products">
-                <div class="nav-icon">📦</div>
-                <span class="nav-label">สินค้า</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
-                <div class="nav-icon">💻</div>
-                <span class="nav-label">ข้อมูลร้านสำหรับสั่งวัสดุ</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='internship_journal.html'" id="nav-internship">
-                <div class="nav-icon">📓</div>
-                <span class="nav-label">บันทึกการฝึกงาน</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='business_card.html'" id="nav-business-card">
-                <div class="nav-icon">🪪</div>
-                <span class="nav-label">นามบัตรดิจิทัล</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
-                <div class="nav-icon">📷</div>
-                <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
-            </button>
-            </nav>
+
+            <!-- Group 2: ฝ่ายจัดซื้อ & สินค้า -->
+            <div class="nav-group">
+                <button class="nav-group-header open" onclick="toggleNavGroup('grp-purchasing', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">🛒</span>
+                        <span>ฝ่ายจัดซื้อ & สินค้า</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body open" id="grp-purchasing">
+                    <div class="nav-item-group" id="nav-purchasing-group">
+                        <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main" type="button">
+                            <div class="nav-icon">🛒</div>
+                            <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
+                            <i class="fa-solid fa-chevron-down submenu-caret"></i>
+                        </button>
+                        <div class="sidebar-submenu" id="purchasingSubmenu">
+                            <a href="materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
+                                <span class="submenu-icon">🏫</span>
+                                <span class="nav-label">สถานศึกษา</span>
+                            </a>
+                            <a href="materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
+                                <span class="submenu-icon">🏢</span>
+                                <span class="nav-label">บริษัทเอกชน</span>
+                            </a>
+                        </div>
+                    </div>
+                    <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
+                        <div class="nav-icon">📦</div>
+                        <span class="nav-label">สินค้า</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
+                        <div class="nav-icon">💻</div>
+                        <span class="nav-label">ข้อมูลร้านสำหรับสั่งวัสดุ</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
+                        <div class="nav-icon">📦</div>
+                        <span class="nav-label">ราคาทุน / สิ่งของ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Group 3: งานบัญชี & การเงิน -->
+            <div class="nav-group">
+                <button class="nav-group-header" onclick="toggleNavGroup('grp-accounting', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">💰</span>
+                        <span>งานบัญชี & การเงิน</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body" id="grp-accounting">
+                    <button class="nav-item" onclick="window.location.href='../accounting/quotation.html'" id="nav-quotation">
+                        <div class="nav-icon">📄</div>
+                        <span class="nav-label">ใบเสนอราคา</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../accounting/sales_dashboard.html'" id="nav-sales-dashboard">
+                        <div class="nav-icon">📑</div>
+                        <span class="nav-label">ระบบเอกสารงานขาย</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../accounting/ocr_table.html'" id="nav-ocr">
+                        <div class="nav-icon">📷</div>
+                        <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Group 4: ตารางงาน & การอบรม -->
+            <div class="nav-group">
+                <button class="nav-group-header" onclick="toggleNavGroup('grp-schedule', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">📅</span>
+                        <span>ตารางงาน & การอบรม</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body" id="grp-schedule">
+                    <button class="nav-item" onclick="window.location.href='../schedule/tasks.html'" id="nav-tasks">
+                        <div class="nav-icon">📋</div>
+                        <span class="nav-label">งานที่ได้รับมอบหมาย</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../schedule/calendar.html'" id="nav-calendar">
+                        <div class="nav-icon">📅</div>
+                        <span class="nav-label">ปฏิทินตารางงาน</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../schedule/external_training.html'" id="nav-training">
+                        <div class="nav-icon">🎓</div>
+                        <span class="nav-label">ระบบตารางจัดอบรม</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../schedule/internship_journal.html'" id="nav-internship">
+                        <div class="nav-icon">📓</div>
+                        <span class="nav-label">บันทึกการฝึกงาน</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
 
         </aside>
 
@@ -2479,23 +2529,23 @@
                 </svg>
             </button>
             <div class="topbar-breadcrumb">
-                <div class="breadcrumb-title">สินค้า <span style="white-space: nowrap;">(Products)</span></div>
-                <div class="breadcrumb-sub">จัดการข้อมูลและรายการสินค้าขององค์กร</div>
+                <div class="breadcrumb-title">วัสดุอุปกรณ์ <span style="white-space: nowrap;">(Equipments)</span></div>
+                <div class="breadcrumb-sub">จัดการข้อมูลวัสดุและอุปกรณ์ต่างๆ</div>
             </div>
         
             <div class="topbar-actions" id="topbarActions"></div>
             <div class="topbar-right-menu">
                 
                 <div id="adminMenu" style="display:none;">
-                    <button class="nav-item" onclick="window.location.href='dashboard.html?view=users'" id="nav-users">
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html?view=users'" id="nav-users">
                         <div class="nav-icon">👥</div>
                         <span class="nav-label">จัดการผู้ใช้งาน</span>
                     </button>
-                    <button class="nav-item" onclick="window.location.href='dashboard.html'" id="nav-add-project">
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html'" id="nav-add-project">
                         <div class="nav-icon">➕</div>
                         <span class="nav-label">เพิ่มโครงการใหม่</span>
                     </button>
-                    <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                    <a href="../admin/console_admin.html" class="nav-item" style="text-decoration: none;">
                         <div class="nav-icon">🛠️</div>
                         <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
                     </a>
@@ -2527,13 +2577,26 @@
     <div class="dashboard-content" style="padding: 24px;">
         <div id="paneListView" style="display: block;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h2>สินค้า (Products)</h2>
+            <h2>วัสดุอุปกรณ์ (Equipments)</h2>
             <button class="btn-add-product" onclick="openProductModal()">
-                <i class="fa-solid fa-plus"></i> เพิ่มสินค้าใหม่
+                <i class="fa-solid fa-plus"></i> เพิ่มวัสดุอุปกรณ์ใหม่
             </button>
         </div>
-        <div id="productsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
-            <!-- Render products here -->
+        <div class="table-responsive" style="background: white; border-radius: 12px; border: 1px solid var(--border); overflow: hidden;">
+            <table class="mentra-table" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8fafc; text-align: left; border-bottom: 2px solid var(--border);">
+                        <th style="padding: 16px; font-weight: 700; color: #475569; width: 80px; text-align: center;">รูปภาพ</th>
+                        <th style="padding: 16px; font-weight: 700; color: #475569;">ชื่อวัสดุอุปกรณ์</th>
+                        <th style="padding: 16px; font-weight: 700; color: #475569;">ร้านค้า / ช่องทางติดต่อ</th>
+                        <th style="padding: 16px; font-weight: 700; color: #475569;">ราคา (บาท)</th>
+                        <th style="padding: 16px; font-weight: 700; color: #475569; width: 140px; text-align: center;">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="productsGrid">
+                    <!-- Render rows here -->
+                </tbody>
+            </table>
         </div>
         </div> <!-- end paneListView -->
 
@@ -2543,7 +2606,7 @@
                         <button class="btn-cancel" onclick="closeProductDetail()" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px; background: white; border: 1px solid var(--border); cursor: pointer;"><i class="fa-solid fa-arrow-left"></i> กลับหน้ารวม</button>
                         <div style="display: flex; gap: 12px;">
                             <button class="btn-edit" id="btnPaneEdit" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px; background: #e0f2fe; color: #0284c7; border: none; cursor: pointer;"><i class="fa-solid fa-pen-to-square"></i> แก้ไขข้อมูล</button>
-                            <button class="btn-delete" id="btnPaneDelete" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px; background: white; color: #ef4444; border: 1px solid #fca5a5; cursor: pointer;"><i class="fa-solid fa-trash-can"></i> ลบสินค้า</button>
+                            <button class="btn-delete" id="btnPaneDelete" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px; background: white; color: #ef4444; border: 1px solid #fca5a5; cursor: pointer;"><i class="fa-solid fa-trash-can"></i> ลบวัสดุอุปกรณ์</button>
                         </div>
                     </div>
                     
@@ -2556,7 +2619,8 @@
                                 </div>
                                 <h2 id="paneDetailName" style="font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 16px; line-height: 1.3;"></h2>
                                 <div style="display: flex; flex-wrap: wrap; gap: 12px;">
-                                    <span class="badge" style="background: #f1f5f9; color: #475569; padding: 12px 20px; border-radius: 24px; font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-building"></i> <span id="paneDetailMfg"></span></span>
+                                    <span class="badge" style="background: #f1f5f9; color: #475569; padding: 12px 20px; border-radius: 24px; font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-store"></i> <span id="paneDetailMfg"></span></span>
+                                    <a id="paneDetailShopLink" href="#" target="_blank" class="badge" style="display:none; background: #e0f2fe; color: #0284c7; padding: 12px 20px; border-radius: 24px; font-weight: 600; font-size: 15px; align-items: center; gap: 8px; text-decoration: none; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.15); transition: 0.2s;"><i class="fa-solid fa-arrow-up-right-from-square"></i> สั่งซื้อ / เปิดลิงก์ร้านค้า</a>
                                     <span class="badge" style="background: #ecfdf5; color: #059669; padding: 12px 20px; border-radius: 24px; font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);"><i class="fa-solid fa-tag"></i> <span id="paneDetailPrice"></span> ฿</span>
                                 </div>
                             </div>
@@ -2611,7 +2675,7 @@
 <div class="modal-overlay" id="productModal">
     <div class="modal-container" style="max-width: 600px;">
         <header class="modal-header">
-            <h3 id="productModalTitle"><i class="fa-solid fa-box"></i> เพิ่มสินค้าใหม่</h3>
+            <h3 id="productModalTitle"><i class="fa-solid fa-box"></i> เพิ่มวัสดุอุปกรณ์ใหม่</h3>
             <button class="btn-close-modal" onclick="closeModal('productModal')">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -2621,13 +2685,18 @@
                 <input type="hidden" id="prodId">
                 
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label>ชื่อสินค้า <span class="required">*</span></label>
+                    <label>ชื่อวัสดุอุปกรณ์ <span class="required">*</span></label>
                     <input type="text" id="prodName" class="form-input" required placeholder="เช่น PLC Trainer Board">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label>บริษัทที่ผลิต / แบรนด์ <span class="required">*</span></label>
-                    <input type="text" id="prodMfg" class="form-input" required placeholder="เช่น Mentra Solution">
+                    <label>ร้านค้า / ช่องทางติดต่อ <span class="required">*</span></label>
+                    <input type="text" id="prodMfg" class="form-input" required placeholder="เช่น Shopee, ร้าน กขค">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>ลิงก์ร้านค้า (URL) <span style="color:var(--text-secondary); font-size:12px; font-weight:normal;">(ตัวเลือก)</span></label>
+                    <input type="url" id="prodShopLink" class="form-input" placeholder="เช่น https://shopee.co.th/...">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 16px;">
@@ -2636,7 +2705,7 @@
                 </div>
 
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label>อัปโหลดรูปภาพสินค้า <span class="required">*</span></label>
+                    <label>อัปโหลดรูปภาพวัสดุอุปกรณ์ <span class="required">*</span></label>
                     <label for="prodImage" class="file-drop-zone">
                         <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
                         <span class="drop-text">คลิกเพื่อเลือกรูปภาพ หรือลากไฟล์มาวางที่นี่</span>
@@ -2680,7 +2749,7 @@ let currentProducts = [];
 
 async function init() {
     try {
-        const cfg = await import('./assets/js/firebase-config.js');
+        const cfg = await import('../../assets/js/firebase-config.js');
         FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
         GAS_URL = cfg.GAS_URL || cfg.default?.GAS_URL;
         DRIVE_ROOT_FOLDER_ID = cfg.DRIVE_ROOT_FOLDER_ID || cfg.default?.DRIVE_ROOT_FOLDER_ID;
@@ -2703,13 +2772,13 @@ async function init() {
 
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            window.location.href = 'index.html';
+            window.location.href = '../../index.html';
             return;
         }
         
         try {
             const snap = await getDoc(doc(db, 'users', user.uid));
-            if (snap.exists()) {
+                if (snap.exists()) {
                 const userData = snap.data();
                 document.getElementById("userAvatar").textContent = (userData.firstName || user.displayName || user.email).charAt(0).toUpperCase();
                 document.getElementById("userName").textContent = userData.displayName || userData.firstName || user.displayName || user.email;
@@ -2722,6 +2791,7 @@ async function init() {
                 }
 
                 if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
+
             } else {
                 document.getElementById("userAvatar").textContent = user.email.charAt(0).toUpperCase();
                 document.getElementById("userName").textContent = user.displayName || user.email;
@@ -2738,12 +2808,12 @@ async function init() {
 init();
 
 window.handleLogout = () => {
-    signOut(auth).then(() => { window.location.href = 'index.html'; });
+    signOut(auth).then(() => { window.location.href = '../../index.html'; });
 };
 
 async function fetchProducts() {
     try {
-        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+        const q = query(collection(db, 'equipments'), orderBy('createdAt', 'desc'));
         const snap = await getDocs(q);
         currentProducts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderProducts();
@@ -2755,7 +2825,7 @@ async function fetchProducts() {
 
 
 function getDriveImageUrl(url, fileId) {
-    if (!url) return 'assets/img/placeholder.png';
+    if (!url) return '../../assets/img/placeholder.png';
     let id = fileId || null;
     
     if (!id) {
@@ -2779,38 +2849,48 @@ function renderProducts() {
     grid.innerHTML = "";
 
     if (currentProducts.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
+        grid.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 60px; color: var(--text-secondary);">
             <i class="fa-solid fa-box-open" style="font-size: 48px; margin-bottom: 16px; color: var(--border);"></i>
-            <h3>ยังไม่มีสินค้าในระบบ</h3>
-            <p>คลิก "เพิ่มสินค้าใหม่" เพื่อเริ่มต้น</p>
-        </div>`;
+            <h3 style="margin-bottom: 8px;">ยังไม่มีวัสดุอุปกรณ์ในระบบ</h3>
+            <p>คลิก "เพิ่มวัสดุอุปกรณ์ใหม่" เพื่อเริ่มต้น</p>
+        </td></tr>`;
         return;
     }
 
     currentProducts.forEach(p => {
-        const pName = p.name || p.title || p.productName || 'ไม่ระบุชื่อสินค้า';
-        const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || 'ไม่ระบุผู้ผลิต';
+        const pName = p.name || p.title || p.productName || 'ไม่ระบุชื่อวัสดุอุปกรณ์';
+        const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || 'ไม่ระบุร้านค้า';
         const pPrice = p.price || p.cost || 0;
         let pImgUrl = getDriveImageUrl(p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl, p.fileId);
         const priceFmt = pPrice.toLocaleString();
         
-        const card = document.createElement("div");
-        card.className = "product-card";
-        card.innerHTML = `
-            <div class="product-card-img-container">
-                <img src="${pImgUrl}" alt="${pName}" class="product-card-img" referrerpolicy="no-referrer" onerror="this.src=\'assets/img/logo.png\'">
-            </div>
-            <div class="product-card-body">
-                <div class="product-card-title">${pName}</div>
-                <div class="product-card-mfg"><i class="fa-solid fa-industry"></i> ${pMfg}</div>
-                <div class="product-card-price">${priceFmt} ฿</div>
-                <div class="product-card-actions">
-                    <button type="button" class="btn-edit" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i> แก้ไข</button>
-                    <button type="button" class="btn-details" onclick="viewProductDetails('${p.id}')"><i class="fa-solid fa-circle-info"></i> รายละเอียด</button>
-                </div>
-            </div>
+        const shopLinkHtml = p.shopLink ? `<a href="${p.shopLink}" target="_blank" onclick="event.stopPropagation()" style="color: var(--primary); text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; padding: 4px 8px; background: #eff6ff; border-radius: 6px;"><i class="fa-solid fa-link"></i> ลิงก์ร้านค้า</a>` : '';
+
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid var(--border)";
+        tr.style.transition = "0.2s";
+        tr.onmouseover = () => tr.style.background = "#f8fafc";
+        tr.onmouseout = () => tr.style.background = "transparent";
+        tr.innerHTML = `
+            <td style="padding: 16px; text-align: center; cursor: pointer;" onclick="viewProductDetail('${p.id}')">
+                <img src="${pImgUrl}" style="width: 56px; height: 56px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); background: white;" onerror="this.src='../../assets/img/logo.png'" referrerpolicy="no-referrer" onclick="event.stopPropagation(); Swal.fire({ imageUrl: '${pImgUrl}', imageAlt: '${pName}', width: 'auto', padding: 10, showConfirmButton: false, customClass: { popup: 'swal-image-popup' } })" title="คลิกเพื่อดูรูปภาพขนาดเต็ม">
+            </td>
+            <td style="padding: 16px; font-weight: 700; color: var(--text); cursor: pointer;" onclick="viewProductDetail('${p.id}')">
+                ${pName}
+            </td>
+            <td style="padding: 16px; cursor: pointer;" onclick="viewProductDetail('${p.id}')">
+                <div style="font-weight: 600; color: #475569;">${pMfg}</div>
+                ${shopLinkHtml}
+            </td>
+            <td style="padding: 16px; font-weight: 700; color: #059669; font-size: 16px; cursor: pointer;" onclick="viewProductDetail('${p.id}')">
+                ${priceFmt} ฿
+            </td>
+            <td style="padding: 16px; text-align: center;">
+                <button class="btn-action" onclick="viewProductDetail('${p.id}')" style="padding: 8px 12px; background: #f1f5f9; color: #475569; border: none; border-radius: 8px; cursor: pointer; margin-right: 4px; transition: 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'"><i class="fa-solid fa-eye"></i></button>
+                <button class="btn-action" onclick="editProduct('${p.id}')" style="padding: 8px 12px; background: #e0f2fe; color: #0284c7; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'"><i class="fa-solid fa-pen"></i></button>
+            </td>
         `;
-        grid.appendChild(card);
+        grid.appendChild(tr);
     });
 }
 
@@ -2818,7 +2898,7 @@ window.openProductModal = () => {
     try {
         const form = document.getElementById("productForm"); if(form) form.reset();
         const prodId = document.getElementById("prodId"); if(prodId) prodId.value = "";
-        const title = document.getElementById("productModalTitle"); if(title) title.innerHTML = '<i class="fa-solid fa-box"></i> เพิ่มสินค้าใหม่';
+        const title = document.getElementById("productModalTitle"); if(title) title.innerHTML = '<i class="fa-solid fa-box"></i> เพิ่มวัสดุอุปกรณ์ใหม่';
         const imgPreview = document.getElementById("imagePreview"); if(imgPreview) imgPreview.style.display = "none";
         const prog = document.getElementById("uploadProgressContainer"); if(prog) prog.style.display = "none";
         
@@ -2842,7 +2922,7 @@ window.closeModal = (id) => {
 
 window.deleteProduct = (id) => {
     Swal.fire({
-        title: 'ยืนยันการลบสินค้า?',
+        title: 'ยืนยันการลบวัสดุอุปกรณ์?',
         text: "หากลบแล้วจะไม่สามารถกู้คืนได้!",
         icon: 'warning',
         showCancelButton: true,
@@ -2854,7 +2934,7 @@ window.deleteProduct = (id) => {
         if (result.isConfirmed) {
             try {
                 Swal.fire({ title: 'กำลังลบข้อมูล...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                await deleteDoc(doc(db, 'products', id));
+                await deleteDoc(doc(db, 'equipments', id));
                 Swal.fire('ลบสำเร็จ!', 'ข้อมูลสินค้าถูกลบออกจากระบบแล้ว.', 'success');
                 fetchProducts();
             } catch (e) {
@@ -3008,7 +3088,7 @@ document.getElementById('btnPaneUploadDocs').addEventListener('click', async () 
 
         progText.innerHTML = '<i class="fa-solid fa-check"></i> อัปโหลดเสร็จสมบูรณ์!';
         
-        await updateDoc(doc(db, 'products', id), {
+        await updateDoc(doc(db, 'equipments', id), {
             documentDriveUrls: documentDriveUrls,
             updatedAt: Timestamp.now()
         });
@@ -3109,7 +3189,7 @@ window.editProduct = (id) => {
         const prodName = document.getElementById("prodName"); if(prodName) prodName.value = pName;
         const prodMfg = document.getElementById("prodMfg"); if(prodMfg) prodMfg.value = pMfg;
         const prodPrice = document.getElementById("prodPrice"); if(prodPrice) prodPrice.value = pPrice;
-        const title = document.getElementById("productModalTitle"); if(title) title.innerHTML = '<i class="fa-solid fa-pen"></i> แก้ไขสินค้า';
+        const title = document.getElementById("productModalTitle"); if(title) title.innerHTML = '<i class="fa-solid fa-pen"></i> แก้ไขวัสดุอุปกรณ์';
         
         const previewContainer = document.getElementById("imagePreview");
         const previewImg = document.getElementById("imagePreviewImg");
@@ -3295,10 +3375,10 @@ window.saveProduct = async () => {
         }
 
         if (imgFile) {
-            Swal.update({ text: 'กำลังอัปโหลดรูปภาพสินค้า...' });
+            Swal.update({ text: 'กำลังอัปโหลดรูปภาพวัสดุอุปกรณ์...' });
             imageDriveUrl = await uploadToDrive(imgFile, targetFolderId);
         } else if (!id) {
-            Swal.fire('ข้อมูลไม่ครบ', 'กรุณาอัปโหลดรูปภาพสินค้า', 'warning');
+            Swal.fire('ข้อมูลไม่ครบ', 'กรุณาอัปโหลดรูปภาพวัสดุอุปกรณ์', 'warning');
             return;
         }
 
@@ -3306,21 +3386,22 @@ window.saveProduct = async () => {
         // Overwrite standard fields
         productData.name = name;
         productData.manufacturer = mfg;
+        productData.shopLink = document.getElementById("prodShopLink") ? document.getElementById("prodShopLink").value.trim() : '';
         productData.price = price;
         productData.imageDriveUrl = imageDriveUrl;
         productData.documentDriveUrls = documentDriveUrls;
         productData.updatedAt = Timestamp.now();
 
         if (id) {
-            await updateDoc(doc(db, 'products', id), productData);
+            await updateDoc(doc(db, 'equipments', id), productData);
         } else {
             productData.createdAt = Timestamp.now();
-            await addDoc(collection(db, 'products'), productData);
+            await addDoc(collection(db, 'equipments'), productData);
         }
 
         closeModal('productModal');
         document.getElementById('uploadProgressContainer').style.display = 'none';
-        Swal.fire('สำเร็จ', 'บันทึกข้อมูลสินค้าเรียบร้อยแล้ว', 'success');
+        Swal.fire('สำเร็จ', 'บันทึกข้อมูลวัสดุอุปกรณ์เรียบร้อยแล้ว', 'success');
         fetchProducts();
 
     } catch (e) {

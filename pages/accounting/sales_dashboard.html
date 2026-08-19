@@ -2206,8 +2206,8 @@
     </style>
 
     <!-- Premium UI Overlay -->
-    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
-    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+    <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780690277137">
+    <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -2228,7 +2228,7 @@
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
-            <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+            <img src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
             <div class="sidebar-logo-text">
                 <div class="app-name">Mentra Manager</div>
                 <div class="app-sub">เมนทร้า โซลูชั่น จำกัด</div>
@@ -2242,81 +2242,131 @@
         </div>
 
         <nav class="sidebar-nav">
-            <div class="nav-section-title">เมนูหลัก</div>
-            <button class="nav-item active" onclick="navigateTo('dashboard')" id="nav-dashboard">
-                <div class="nav-icon">🏠</div>
-                <span class="nav-label">Dashboard</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='tasks.html'" id="nav-tasks">
-                <div class="nav-icon">📋</div>
-                <span class="nav-label">งานที่ได้รับมอบหมาย</span>
-            </button>
-            <button class="nav-item" onclick="navigateTo('projects')" id="nav-projects">
-                <div class="nav-icon">📁</div>
-                <span class="nav-label">โครงการทั้งหมด</span>
-            </button>
-            <button class="nav-item" onclick="navigateTo('items')" id="nav-items">
-                <div class="nav-icon">📦</div>
-                <span class="nav-label">ราคาทุน / สิ่งของ</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
-                <div class="nav-icon">📄</div>
-                <span class="nav-label">ใบเสนอราคา</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='external_training.html'" id="nav-training">
-                <div class="nav-icon">🎓</div>
-                <span class="nav-label">ระบบตารางจัดอบรม</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='calendar.html'" id="nav-calendar">
-                <div class="nav-icon">📅</div>
-                <span class="nav-label">ปฏิทินตารางงาน</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='crm.html'" id="nav-crm">
-                <div class="nav-icon">📊</div>
-                <span class="nav-label">ระบบ CRM</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='sales_dashboard.html'" id="nav-sales-dashboard">
-                <div class="nav-icon">📑</div>
-                <span class="nav-label">ระบบเอกสารงานขาย</span>
-            </button>
-            <div class="nav-item-group" id="nav-purchasing-group">
-                <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main">
-                    <div class="nav-icon">🛒</div>
-                    <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
-                    <i class="fa-solid fa-chevron-down submenu-caret"></i>
+            <!-- Group 1: ฝ่ายบริหาร -->
+            <div class="nav-group">
+                <button class="nav-group-header" onclick="toggleNavGroup('grp-admin', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">👑</span>
+                        <span>ฝ่ายบริหาร</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
                 </button>
-                <div class="sidebar-submenu" id="purchasingSubmenu">
-                    <a href="materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
-                        <span class="submenu-icon">🏫</span>
-                        <span class="nav-label">สถานศึกษา</span>
-                    </a>
-                    <a href="materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
-                        <span class="submenu-icon">🏢</span>
-                        <span class="nav-label">บริษัทเอกชน</span>
-                    </a>
+                <div class="nav-group-body" id="grp-admin">
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html'" id="nav-dashboard">
+                        <div class="nav-icon">🏠</div>
+                        <span class="nav-label">Dashboard / ภาพรวม</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
+                        <div class="nav-icon">📁</div>
+                        <span class="nav-label">โครงการทั้งหมด</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/crm.html'" id="nav-crm">
+                        <div class="nav-icon">📊</div>
+                        <span class="nav-label">ระบบ CRM</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
+                        <div class="nav-icon">🪪</div>
+                        <span class="nav-label">นามบัตรดิจิทัล</span>
+                    </button>
                 </div>
             </div>
-            <button class="nav-item" onclick="window.location.href='products.html'" id="nav-products">
-                <div class="nav-icon">📦</div>
-                <span class="nav-label">สินค้า</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='equipments.html'" id="nav-equipments">
-                <div class="nav-icon">💻</div>
-                <span class="nav-label">ข้อมูลร้านสำหรับสั่งวัสดุ</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='internship_journal.html'" id="nav-internship">
-                <div class="nav-icon">📓</div>
-                <span class="nav-label">บันทึกการฝึกงาน</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='business_card.html'" id="nav-business-card">
-                <div class="nav-icon">🪪</div>
-                <span class="nav-label">นามบัตรดิจิทัล</span>
-            </button>
-            <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
-                <div class="nav-icon">📷</div>
-                <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
-            </button>
-</nav>
+
+            <!-- Group 2: ฝ่ายจัดซื้อ & สินค้า -->
+            <div class="nav-group">
+                <button class="nav-group-header" onclick="toggleNavGroup('grp-purchasing', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">🛒</span>
+                        <span>ฝ่ายจัดซื้อ & สินค้า</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body" id="grp-purchasing">
+                    <div class="nav-item-group" id="nav-purchasing-group">
+                        <button class="nav-item nav-item-has-submenu" onclick="toggleSubmenu('purchasingSubmenu', this)" id="nav-purchasing-main" type="button">
+                            <div class="nav-icon">🛒</div>
+                            <span class="nav-label">จัดการจัดซื้อ / วัสดุ</span>
+                            <i class="fa-solid fa-chevron-down submenu-caret"></i>
+                        </button>
+                        <div class="sidebar-submenu" id="purchasingSubmenu">
+                            <a href="../purchasing/materials_purchasing.html" class="submenu-item" id="nav-purchasing-school">
+                                <span class="submenu-icon">🏫</span>
+                                <span class="nav-label">สถานศึกษา</span>
+                            </a>
+                            <a href="../purchasing/materials_purchasing_company.html" class="submenu-item" id="nav-purchasing-company">
+                                <span class="submenu-icon">🏢</span>
+                                <span class="nav-label">บริษัทเอกชน</span>
+                            </a>
+                        </div>
+                    </div>
+                    <button class="nav-item" onclick="window.location.href='../purchasing/products.html'" id="nav-products">
+                        <div class="nav-icon">📦</div>
+                        <span class="nav-label">สินค้า</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../purchasing/equipments.html'" id="nav-equipments">
+                        <div class="nav-icon">💻</div>
+                        <span class="nav-label">ข้อมูลร้านสำหรับสั่งวัสดุ</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
+                        <div class="nav-icon">📦</div>
+                        <span class="nav-label">ราคาทุน / สิ่งของ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Group 3: งานบัญชี & การเงิน -->
+            <div class="nav-group">
+                <button class="nav-group-header open" onclick="toggleNavGroup('grp-accounting', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">💰</span>
+                        <span>งานบัญชี & การเงิน</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body open" id="grp-accounting">
+                    <button class="nav-item" onclick="window.location.href='quotation.html'" id="nav-quotation">
+                        <div class="nav-icon">📄</div>
+                        <span class="nav-label">ใบเสนอราคา</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='sales_dashboard.html'" id="nav-sales-dashboard">
+                        <div class="nav-icon">📑</div>
+                        <span class="nav-label">ระบบเอกสารงานขาย</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='ocr_table.html'" id="nav-ocr">
+                        <div class="nav-icon">📷</div>
+                        <span class="nav-label">OCR อ่านเอกสารลงตาราง</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Group 4: ตารางงาน & การอบรม -->
+            <div class="nav-group">
+                <button class="nav-group-header" onclick="toggleNavGroup('grp-schedule', this)" type="button">
+                    <div class="nav-group-title">
+                        <span class="nav-group-icon">📅</span>
+                        <span>ตารางงาน & การอบรม</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-group-caret"></i>
+                </button>
+                <div class="nav-group-body" id="grp-schedule">
+                    <button class="nav-item" onclick="window.location.href='../schedule/tasks.html'" id="nav-tasks">
+                        <div class="nav-icon">📋</div>
+                        <span class="nav-label">งานที่ได้รับมอบหมาย</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../schedule/calendar.html'" id="nav-calendar">
+                        <div class="nav-icon">📅</div>
+                        <span class="nav-label">ปฏิทินตารางงาน</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../schedule/external_training.html'" id="nav-training">
+                        <div class="nav-icon">🎓</div>
+                        <span class="nav-label">ระบบตารางจัดอบรม</span>
+                    </button>
+                    <button class="nav-item" onclick="window.location.href='../schedule/internship_journal.html'" id="nav-internship">
+                        <div class="nav-icon">📓</div>
+                        <span class="nav-label">บันทึกการฝึกงาน</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
 
         </aside>
 
@@ -2347,7 +2397,7 @@
                     <div class="nav-icon">➕</div>
                     <span class="nav-label">เพิ่มโครงการใหม่</span>
                 </button>
-                <a href="console_admin.html" class="nav-item" style="text-decoration: none;">
+                <a href="../admin/console_admin.html" class="nav-item" style="text-decoration: none;">
                     <div class="nav-icon">🛠️</div>
                     <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
                 </a>
@@ -3123,7 +3173,7 @@
         // ---- LOAD CONFIG ----
         let FIREBASE_CONFIG, GAS_URL, DRIVE_ROOT_FOLDER_ID;
         try {
-            const cfg = await import('./assets/js/firebase-config.js');
+            const cfg = await import('../../assets/js/firebase-config.js');
             FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
             GAS_URL = cfg.GAS_URL || cfg.default?.GAS_URL;
             DRIVE_ROOT_FOLDER_ID = cfg.DRIVE_ROOT_FOLDER_ID || cfg.default?.DRIVE_ROOT_FOLDER_ID;
@@ -3176,7 +3226,7 @@
         // ---- AUTH GUARD ----
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                window.location.href = 'index.html';
+                window.location.href = '../../index.html';
                 return;
             }
             currentUser = user;
@@ -3196,12 +3246,12 @@
             if (userStatus === 'pending') {
                 alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
                 await signOut(auth);
-                window.location.href = 'index.html?msg=pending';
+                window.location.href = '../../index.html?msg=pending';
                 return;
             } else if (userStatus === 'rejected') {
                 alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ');
                 await signOut(auth);
-                window.location.href = 'index.html?msg=rejected';
+                window.location.href = '../../index.html?msg=rejected';
                 return;
             }
 
@@ -3249,7 +3299,7 @@
         // ---- LOGOUT ----
         window.handleLogout = async function () {
             await signOut(auth);
-            window.location.href = 'index.html';
+            window.location.href = '../../index.html';
         };
 
         // ---- NAVIGATION ----

@@ -1042,7 +1042,7 @@
             border-color: rgba(255, 255, 255, 0.2);
         }
     </style>
-    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780249796404">
+    <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780249796404">
 </head>
 
 <body>
@@ -1058,7 +1058,7 @@
         <header>
             <div class="header-left">
                 <div class="logo-box">
-                    <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+                    <img src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
                 </div>
                 <div class="header-title">
                     <h1>Mentra <span>Admin Console</span></h1>
@@ -1232,7 +1232,7 @@
         import { initializeFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         // Load config from firebase-config.js
-        const configScript = await import('./assets/js/firebase-config.js').catch(() => null);
+        const configScript = await import('../../assets/js/firebase-config.js').catch(() => null);
         let firebaseConfig = null;
         if (configScript) {
             firebaseConfig = configScript.FIREBASE_CONFIG || configScript.default?.FIREBASE_CONFIG;
@@ -1267,7 +1267,7 @@
         // ===== STRICT ADMIN AUTH GUARD =====
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                window.location.href = 'index.html';
+                window.location.href = '../../index.html';
                 return;
             }
             try {
@@ -1275,13 +1275,13 @@
                 if (!snap.exists()) {
                     alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
                     await auth.signOut();
-                    window.location.href = 'index.html?msg=deleted';
+                    window.location.href = '../../index.html?msg=deleted';
                     return;
                 }
                 const userData = snap.data();
                 if (userData.role !== 'admin') {
                     alert('ขออภัย หน้าเว็บนี้จำกัดสิทธิ์เฉพาะผู้ดูแลระบบ (Admin) เท่านั้น');
-                    window.location.href = 'dashboard.html';
+                    window.location.href='dashboard.html';
                     return;
                 }
 
@@ -1290,12 +1290,12 @@
                 if (userStatus === 'pending') {
                     alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
                     await auth.signOut();
-                    window.location.href = 'index.html?msg=pending';
+                    window.location.href = '../../index.html?msg=pending';
                     return;
                 } else if (userStatus === 'rejected') {
                     alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ');
                     await auth.signOut();
-                    window.location.href = 'index.html?msg=rejected';
+                    window.location.href = '../../index.html?msg=rejected';
                     return;
                 }
                 
@@ -1308,7 +1308,7 @@
                 document.body.style.display = 'flex';
             } catch (err) {
                 console.error("Auth Guard Error:", err);
-                window.location.href = 'dashboard.html';
+                window.location.href='dashboard.html';
             }
         });
 
@@ -1863,7 +1863,7 @@
         </div>
     </div>
 
-    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
+    <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
 </body>
 
 </html>
