@@ -1212,4 +1212,46 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         window.initExecutiveFooterWidgets();
     } catch(e) {}
+
+    // ── Seamless Page Transition System ──
+    // Overlay is already injected inline in <head> of every page.
+    // This handler intercepts link clicks for smooth fade-out before navigation.
+
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        // Skip: external links, anchors, javascript:, blob:, mailto:, tel:, new-tab links
+        if (!href || href.startsWith('#') || href.startsWith('javascript:') ||
+            href.startsWith('blob:') || href.startsWith('data:') ||
+            href.startsWith('mailto:') || href.startsWith('tel:') ||
+            link.target === '_blank' || e.ctrlKey || e.metaKey || e.shiftKey) {
+            return;
+        }
+
+        e.preventDefault();
+        const overlay = document.getElementById('mentra-page-transition-overlay');
+        if (overlay) {
+            overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'all';
+            setTimeout(() => { window.location.href = href; }, 100);
+        } else {
+            window.location.href = href;
+        }
+    });
+
+    // Prefetch visible sidebar links for faster loads
+    try {
+        const sidebarLinks = document.querySelectorAll('.sidebar a[href]');
+        sidebarLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                const prefetchLink = document.createElement('link');
+                prefetchLink.rel = 'prefetch';
+                prefetchLink.href = href;
+                document.head.appendChild(prefetchLink);
+            }
+        });
+    } catch(e) {}
 });

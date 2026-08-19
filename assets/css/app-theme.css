@@ -55,7 +55,42 @@
     --scrollbar-track: transparent;
 }
 
+/* ================================================================
+   SEAMLESS PAGE TRANSITION SYSTEM — ลบหน้าจอขาวระหว่างสลับหน้า
+   ================================================================ */
 
+/* Instant background color — prevents white flash on bare HTML load */
+html {
+    background-color: #f8fafc !important;
+}
+
+/* Fade-in animation when page content loads */
+@keyframes mentraPageFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.app-container {
+    animation: mentraPageFadeIn 0.28s ease-out both !important;
+}
+
+/* Transition overlay — blur glassmorphism during navigation */
+#mentra-page-transition-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 99999 !important;
+    background: rgba(248, 250, 252, 0.6) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.22s ease-out !important;
+}
+
+#mentra-page-transition-overlay.active {
+    opacity: 1 !important;
+    pointer-events: all !important;
+}
 
 /* ================================================================
    II. DARK MODE DESIGN TOKENS
