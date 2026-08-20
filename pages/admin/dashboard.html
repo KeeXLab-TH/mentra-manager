@@ -1,25 +1,9 @@
 <!DOCTYPE html>
-<html lang="th" style="background-color:#f8fafc">
+<html lang="th" style="background-color:#f0f4f9">
 
 <head>
-    <!-- Anti-Flash Instant Background -->
-    <style>html,body{background:#f8fafc!important;}</style>
-    <script>
-    (function(){
-        var d=document,o=d.createElement('div');
-        o.id='mentra-page-transition-overlay';
-        o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(248,250,252,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:1;transition:opacity .22s ease-out;pointer-events:none;';
-        d.documentElement.appendChild(o);
-        function fadeOut(){if(o){o.style.opacity='0';setTimeout(function(){o.style.pointerEvents='none';},280);}}
-        if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',fadeOut);}else{fadeOut();}
-        window.addEventListener('pageshow',function(){if(o){o.style.opacity='0';o.style.pointerEvents='none';}});
-    })();
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Mentra Manager — Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,18 +22,6 @@
             margin: 0;
             padding: 0;
         }
-
-        .swal2-popup.mentra-swal-popup {
-            font-family: 'Kanit', sans-serif;
-            border-radius: 16px;
-        }
-        .swal2-title { font-weight: 600 !important; }
-
-        .swal2-popup.mentra-swal-popup {
-            font-family: 'Kanit', sans-serif;
-            border-radius: 16px;
-        }
-        .swal2-title { font-weight: 600 !important; }
 
         :root {
             /* Brand */
@@ -129,35 +101,10 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            display: none; /* Hidden by default until authenticated */
+            display: flex;
+            flex-direction: row;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
-        }
-
-        /* ===========================
-           CUSTOM SCROLLBAR
-           =========================== */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.13);
-            border-radius: 100px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.25);
-        }
-
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0, 0, 0, 0.13) transparent;
         }
 
         /* ===========================
@@ -236,11 +183,6 @@
             padding: 4px;
             flex-shrink: 0;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .sidebar-logo-text {
-            transition: opacity var(--t-normal), width var(--t-normal);
-            overflow: hidden;
         }
 
         .sidebar-logo-text .app-name {

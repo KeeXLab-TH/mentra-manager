@@ -1,20 +1,9 @@
 <!DOCTYPE html>
-<html lang="th" style="background-color:#f8fafc">
+<html lang="th" style="background-color:#f0f4f9">
 
 <head>
     <!-- Anti-Flash Instant Background -->
-    <style>html,body{background:#f8fafc!important;}</style>
-    <script>
-    (function(){
-        var d=document,o=d.createElement('div');
-        o.id='mentra-page-transition-overlay';
-        o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(248,250,252,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:1;transition:opacity .22s ease-out;pointer-events:none;';
-        d.documentElement.appendChild(o);
-        function fadeOut(){if(o){o.style.opacity='0';setTimeout(function(){o.style.pointerEvents='none';},280);}}
-        if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',fadeOut);}else{fadeOut();}
-        window.addEventListener('pageshow',function(){if(o){o.style.opacity='0';o.style.pointerEvents='none';}});
-    })();
-    </script>
+    <style>html,body{background:#f0f4f9!important;}</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>นามบัตรดิจิทัล (Business Card) — Mentra Manager</title>
@@ -89,7 +78,8 @@
             color: var(--text);
             background-color: var(--bg);
             min-height: 100vh;
-            display: none;
+            display: flex;
+            flex-direction: row;
             overflow-x: hidden;
         }
 
@@ -329,13 +319,16 @@
         .main-wrapper {
             margin-left: var(--sidebar-w);
             min-height: 100vh;
+            flex: 1;
+            width: calc(100% - var(--sidebar-w));
             display: flex;
             flex-direction: column;
-            transition: margin-left var(--t-slow);
+            transition: margin-left var(--t-slow), width var(--t-slow);
         }
 
         .sidebar.collapsed + .main-wrapper {
             margin-left: var(--sidebar-w-collapsed);
+            width: calc(100% - var(--sidebar-w-collapsed));
         }
 
         /* TOPBAR */
@@ -429,9 +422,9 @@
         .content-container {
             padding: 2rem;
             flex: 1;
-            max-width: 1400px;
-            margin: 0 auto;
+            max-width: 100%;
             width: 100%;
+            box-sizing: border-box;
         }
 
         /* CARD DISPLAY SECTION */
@@ -1193,7 +1186,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-        import { initializeFirestore, doc, getDoc, setDoc, persistentLocalCache, persistentMultipleTabManager } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { initializeFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         let app, auth, db;
         let currentUser = null;
@@ -1206,7 +1199,7 @@
                 app = initializeApp(FIREBASE_CONFIG);
                 auth = getAuth(app);
                 db = initializeFirestore(app, {
-                    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+                    experimentalAutoDetectLongPolling: true
                 });
 
                 onAuthStateChanged(auth, async (user) => {
@@ -1226,8 +1219,9 @@
 
                     await loadCardData(user.uid);
 
-                    document.body.style.display = 'block';
-                    document.getElementById('loadingOverlay').style.display = 'none';
+                    document.body.style.display = 'flex';
+                    const loader = document.getElementById('loadingOverlay');
+                    if (loader) loader.style.display = 'none';
                 });
             } catch (err) {
                 console.error("Init Error:", err);
@@ -1409,6 +1403,9 @@
             try {
                 document.getElementById('loadingOverlay').style.display = 'flex';
                 await setDoc(doc(db, 'business_cards', currentUser.uid), cardData, { merge: true });
+                if (window.logUserActivity) {
+                    window.logUserActivity('edit', 'อัปเดตข้อมูลนามบัตรดิจิทัล').catch(() => null);
+                }
                 document.getElementById('loadingOverlay').style.display = 'none';
 
                 Swal.fire({

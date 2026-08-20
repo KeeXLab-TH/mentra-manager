@@ -1262,7 +1262,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-        import { initializeFirestore, doc, setDoc, getDoc, collection, query, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { initializeFirestore, doc, setDoc, getDoc, updateDoc, collection, query, limit, getDocs, where, addDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         // Load config from firebase-config.js (ใช้ globalThis เพราะ module scope)
         const configScript = await import('./assets/js/firebase-config.js').catch(() => null);
@@ -1387,9 +1387,27 @@
                     email = usernameDoc.data().email;
                 }
 
-                await signInWithEmailAndPassword(auth, email, password);
-                showAlert('เข้าสู่ระบบสำเร็จ กำลังโหลด...', 'success');
-                setTimeout(() => { window.location.href = 'pages/accounting/quotation.html'; }, 800);
+                const cred = await signInWithEmailAndPassword(auth, email, password);
+                if (cred.user) {
+                    const userSnap = await getDoc(doc(db, 'users', cred.user.uid)).catch(() => null);
+                    const uData = userSnap && userSnap.exists() ? userSnap.data() : {};
+                    const uname = uData.username || cred.user.displayName || cred.user.email.split('@')[0];
+
+                    await addDoc(collection(db, 'activity_logs'), {
+                        uname: uname,
+                        tag: 'login',
+                        msg: 'ล็อกอิน',
+                        ts: new Date().toISOString()
+                    }).catch(() => null);
+
+                    await updateDoc(doc(db, 'users', cred.user.uid), {
+                        lastActiveAt: new Date().toISOString(),
+                        isOnline: true,
+                        lastPageVisited: 'index.html (login)'
+                    }).catch(() => null);
+                }
+                showAlert('เข้าสู่ระบบสำเร็จ กำลังส่งหน้า...', 'success');
+                setTimeout(() => { window.location.href = 'pages/accounting/quotation.html'; }, 150);
 
             } catch (err) {
                 const msgs = {

@@ -25,9 +25,14 @@ function testAuth() {
 // ==============================================================================
 function doGet(e) {
   try {
+    var ownerEmail = Session.getEffectiveUser().getEmail() || Session.getActiveUser().getEmail() || "";
     var folderId = e.parameter.folderId;
-    if (!folderId) return jsonResponse({ error: 'folderId required' });
-    return jsonResponse(listFilesInFolder(folderId));
+    if (!folderId) return jsonResponse({ ownerEmail: ownerEmail, status: 'ok' });
+    var result = listFilesInFolder(folderId);
+    if (typeof result === 'object' && result !== null) {
+      result.ownerEmail = ownerEmail;
+    }
+    return jsonResponse(result);
   } catch (err) {
     return jsonResponse({ error: err.message });
   }

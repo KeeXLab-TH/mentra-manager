@@ -1,5 +1,5 @@
 // ==============================================================================
-// Mentra Manager — Firebase Configuration
+// Mentra Manager — Firebase & Cloud Storage Configuration
 // บริษัท เมนทร้า โซลูชั่น จำกัด
 // ==============================================================================
 // วิธีใช้: เปลี่ยนค่าด้านล่างด้วยค่าจาก Firebase Console ของคุณ
@@ -15,11 +15,17 @@ export const FIREBASE_CONFIG = {
     appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
 };
 
+// บัญชีอีเมลผูกการใช้งาน Firebase Platform Project
+export const FIREBASE_ACCOUNT_EMAIL = 'mentra.manager@gmail.com';
+
 // ==============================================================================
 // Google Apps Script — สำหรับอัพโหลดไฟล์ไปยัง Google Drive
 // วาง URL จาก Google Apps Script Web App Deployment ที่นี่
 // ==============================================================================
 export const GAS_URL = 'https://script.google.com/macros/s/AKfycbxJIaFnBOtQUjoxjkVYiK2OBbGvbMlgeR5FSsO0n0vfYNHHc6pfPIki7CCFTeEh63m5/exec';
+
+// บัญชีอีเมล Google Drive ที่ใช้เก็บข้อมูลและสร้างโฟลเดอร์โครงการ
+export const DRIVE_ACCOUNT_EMAIL = 'mentra.manager@gmail.com';
 
 // ==============================================================================
 // Google Drive Root Folder ID — โฟลเดอร์หลักที่จะสร้าง sub-folder แยกตามโครงการ

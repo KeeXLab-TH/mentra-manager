@@ -1,105 +1,130 @@
 <!DOCTYPE html>
-<html lang="th" style="background-color:#f8fafc">
+<html lang="th" style="background-color:#0b1329">
 
 <head>
-    <!-- Anti-Flash Instant Background -->
-    <style>html,body{background:#f8fafc!important;}</style>
-    <script>
-    (function(){
-        var d=document,o=d.createElement('div');
-        o.id='mentra-page-transition-overlay';
-        o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(248,250,252,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:1;transition:opacity .22s ease-out;pointer-events:none;';
-        d.documentElement.appendChild(o);
-        function fadeOut(){if(o){o.style.opacity='0';setTimeout(function(){o.style.pointerEvents='none';},280);}}
-        if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',fadeOut);}else{fadeOut();}
-        window.addEventListener('pageshow',function(){if(o){o.style.opacity='0';o.style.pointerEvents='none';}});
-    })();
-    </script>
+    <!-- Deep Navy Theme - Executive Single-Page Dashboard -->
+    <style>
+        html, body {
+            background-color: #0b1329 !important;
+            background: #0b1329 !important;
+        }
+    </style>
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mentra Manager — Admin Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <title>Mentra Manager — Admin Executive Console & Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        *,
-        *::before,
-        *::after {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
+        button, a, input, select {
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+        }
+
+        /* DISABLE WHITE RIPPLE FLASH */
+        .ripple-effect, .mnav-ripple {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            animation: none !important;
         }
 
         :root {
-            --primary: #1A6FBF;
-            --primary-glow: rgba(26, 111, 191, 0.4);
-            --orange: #E07B2F;
-            --orange-glow: rgba(224, 123, 47, 0.4);
-            --success: #10b981;
-            --success-glow: rgba(16, 185, 129, 0.2);
-            --error: #ef4444;
-            --error-glow: rgba(239, 68, 68, 0.2);
-            --bg: #090d16;
-            --card-bg: rgba(20, 30, 55, 0.6);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --input-bg: rgba(10, 15, 30, 0.8);
-            --border: rgba(255, 255, 255, 0.12);
+            --bg: #0b1329;
+            --bg-card: #162238;
+            --bg-card-hover: #1c2c47;
+            --bg-header: #121c33;
+            --input-bg: #0e172a;
+            
+            --border: #253552;
+            --border-light: rgba(255, 255, 255, 0.1);
+
+            --primary: #38bdf8;
+            --primary-dark: #1d4ed8;
+            --primary-bg: rgba(56, 189, 248, 0.12);
+            --primary-border: rgba(56, 189, 248, 0.3);
+
+            --orange: #f97316;
+            --orange-bg: rgba(249, 115, 22, 0.12);
+            --orange-border: rgba(249, 115, 22, 0.3);
+
+            --success: #34d399;
+            --success-bg: rgba(52, 211, 153, 0.12);
+            --success-border: rgba(52, 211, 153, 0.3);
+
+            --danger: #f87171;
+            --danger-bg: rgba(248, 113, 113, 0.12);
+            --danger-border: rgba(248, 113, 113, 0.3);
+
+            --purple: #c084fc;
+            --purple-bg: rgba(192, 132, 252, 0.12);
+            --purple-border: rgba(192, 132, 252, 0.3);
+
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.25);
         }
 
         body {
-            font-family: 'Inter', 'Noto Sans Thai', sans-serif;
-            background: radial-gradient(ellipse at 20% 0%, #1a2d4a 0%, var(--bg) 60%);
+            font-family: 'Kanit', 'Inter', sans-serif;
+            background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            display: none; /* Hidden by default until authenticated */
+            display: flex;
             flex-direction: column;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* ===== GLOBAL CUSTOM SMOOTH SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.01);
-            border-radius: 100px;
-        }
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.12);
+            background: #253552;
             border-radius: 100px;
-            border: 2px solid transparent;
-            background-clip: padding-box;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.25);
-            border: 2px solid transparent;
-            background-clip: padding-box;
-        }
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
-        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-        /* ===== CONTAINER & HEADER ===== */
+        /* ===== CONTAINER ===== */
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             width: 100%;
             margin: 0 auto;
-            padding: 32px 20px 80px;
+            padding: 24px 20px 80px;
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
         }
 
+        /* ===== HEADER ===== */
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 40px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 24px;
+            background: var(--bg-header);
+            padding: 18px 28px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-card);
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .header-left {
@@ -109,15 +134,17 @@
         }
 
         .logo-box {
-            width: 54px;
-            height: 54px;
-            background: white;
+            width: 48px;
+            height: 48px;
+            background: #ffffff;
+            border: 1px solid var(--border);
             border-radius: 14px;
             padding: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 24px rgba(26, 111, 191, 0.25);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
 
         .logo-box img {
@@ -126,13 +153,22 @@
             object-fit: contain;
         }
 
+        .live-dot {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            background: var(--success);
+            border: 2px solid var(--bg-header);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--success);
+        }
+
         .header-title h1 {
-            font-size: 26px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 22px;
+            font-weight: 700;
+            color: #ffffff;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -140,253 +176,698 @@
 
         .header-title h1 span {
             color: var(--orange);
-            -webkit-text-fill-color: var(--orange);
         }
 
         .header-title p {
             font-size: 13px;
-            color: var(--text-muted);
-            margin-top: 4px;
+            color: var(--text-secondary);
+            margin-top: 2px;
         }
 
-        .btn-back-app {
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-hdr-action {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 18px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
+            gap: 6px;
+            padding: 9px 16px;
             border-radius: 12px;
-            color: var(--text);
-            text-decoration: none;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            transition: all 0.25s ease;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: #ffffff;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-family: 'Kanit', sans-serif;
         }
 
-        .btn-back-app:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .btn-hdr-action:hover {
+            background: var(--bg-card-hover);
             border-color: var(--primary);
-            box-shadow: 0 0 12px var(--primary-glow);
-            transform: translateY(-2px);
+            color: var(--primary);
         }
 
-        /* ===== METRICS GRID ===== */
+        .btn-hdr-action.primary {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            border: none;
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.4);
+        }
+        .btn-hdr-action.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(29, 78, 216, 0.5);
+        }
+
+        .pending-count-badge {
+            background: var(--danger);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        /* ===== STATS OVERVIEW ===== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
         }
 
         .stat-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
             display: flex;
             align-items: center;
-            gap: 20px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            gap: 16px;
+            transition: all 0.25s ease;
+            box-shadow: var(--shadow-card);
         }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 4px; height: 100%;
-        }
-
-        .stat-card.blue::before { background: var(--primary); }
-        .stat-card.orange::before { background: var(--orange); }
-        .stat-card.green::before { background: var(--success); }
 
         .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.18);
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+            transform: translateY(-2px);
+            background: var(--bg-card-hover);
+            border-color: #3b5278;
         }
 
+        .stat-card.blue { border-left: 4px solid var(--primary); }
+        .stat-card.orange { border-left: 4px solid var(--orange); }
+        .stat-card.green { border-left: 4px solid var(--success); }
+        .stat-card.purple { border-left: 4px solid var(--purple); }
+
         .stat-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 26px;
+            font-size: 20px;
             flex-shrink: 0;
         }
 
-        .stat-card.blue .stat-icon { background: rgba(26, 111, 191, 0.15); color: #3b82f6; }
-        .stat-card.orange .stat-icon { background: rgba(224, 123, 47, 0.15); color: var(--orange); }
-        .stat-card.green .stat-icon { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .stat-card.blue .stat-icon { background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border); }
+        .stat-card.orange .stat-icon { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+        .stat-card.green .stat-icon { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+        .stat-card.purple .stat-icon { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
 
         .stat-info .stat-num {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 800;
             color: #ffffff;
             line-height: 1;
         }
 
         .stat-info .stat-label {
-            font-size: 13px;
-            color: var(--text-muted);
+            font-size: 12px;
+            color: var(--text-secondary);
             font-weight: 500;
-            margin-top: 6px;
+            margin-top: 5px;
         }
 
-        /* ===== NAVIGATION TABS ===== */
-        .tabs-nav {
-            display: flex;
-            background: rgba(255, 255, 255, 0.03);
+        /* ===== INTEGRATION FLOW PIPELINE ANIMATION ===== */
+        .flow-panel {
+            background: #0d172e;
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 6px;
-            gap: 6px;
-            margin-bottom: 32px;
+            border-radius: 18px;
+            padding: 20px 24px;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
         }
 
-        .tab-btn {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            background: transparent;
-            border-radius: 12px;
+        .flow-title {
             font-size: 14px;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-family: 'Noto Sans Thai', 'Inter', sans-serif;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+        }
+
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .flow-node {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
             gap: 10px;
+            position: relative;
+            transition: all 0.25s ease;
         }
 
-        .tab-btn:hover {
+        .flow-node:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .flow-node-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .flow-node-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 14px;
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
         }
 
-        .tab-btn.active {
-            background: var(--primary);
+        .flow-node-status {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .flow-node-status.online { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+        .flow-node-status.active { background: var(--primary-bg); color: var(--primary); border: 1px solid var(--primary-border); }
+        .flow-node-status.drive { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+
+        .flow-node-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 8px;
+        }
+
+        .flow-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flow-detail-val {
             color: #ffffff;
-            box-shadow: 0 4px 20px var(--primary-glow);
+            font-weight: 600;
+            font-family: 'Inter', monospace;
         }
 
-        /* ===== VIEW WRAPPER ===== */
-        .tab-content {
-            display: none;
-            animation: fadeIn 0.4s ease;
+        /* SVG PIPELINE PULSE ANIMATION */
+        .svg-pipeline-wrap {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+            height: 60px;
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .tab-content.active {
-            display: block;
+        .pulse-line {
+            stroke: #1d4ed8;
+            stroke-width: 2;
+            stroke-dasharray: 6, 10;
+            animation: strokeFlow 1.2s linear infinite;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes strokeFlow {
+            from { stroke-dashoffset: 32; }
+            to { stroke-dashoffset: 0; }
         }
 
-        .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px) saturate(1.4);
-            -webkit-backdrop-filter: blur(20px) saturate(1.4);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 36px;
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35),
-                        0 0 0 1px rgba(255,255,255,0.03) inset;
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        /* ===== MIDDLE 2-COLUMN SPLIT GRID ===== */
+        .dashboard-split-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .glass-card:hover {
-            border-color: rgba(255,255,255,0.10);
+        .card-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
         }
 
         .card-header {
-            margin-bottom: 28px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .card-header h2 {
-            font-size: 20px;
+        .card-header-text h2 {
+            font-size: 17px;
             font-weight: 700;
             color: #ffffff;
             display: flex;
             align-items: center;
+            gap: 8px;
+        }
+
+        .card-header-text p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        /* ===== SYSTEM AUDIT LOGS CONSOLE ===== */
+        .logs-wrapper {
+            background: #080f20;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logs-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
             gap: 10px;
         }
 
-        .card-header p {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-top: 6px;
+        .logs-filters {
+            display: flex;
+            gap: 6px;
         }
 
-        /* ===== FORMS & INPUTS ===== */
+        .log-filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .log-filter-btn.active, .log-filter-btn:hover {
+            background: var(--primary-bg);
+            color: var(--primary);
+            border-color: var(--primary-border);
+        }
+
+        .logs-feed {
+            max-height: 220px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-family: 'Inter', monospace;
+            font-size: 12px;
+            flex: 1;
+        }
+
+        .log-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid #3b82f6;
+        }
+
+        .log-time { color: var(--text-muted); font-size: 11px; flex-shrink: 0; }
+        .log-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; text-transform: uppercase; }
+        .log-tag.auth { background: var(--primary-bg); color: var(--primary); }
+        .log-tag.login { background: var(--success-bg); color: var(--success); }
+        .log-tag.logout { background: var(--orange-bg); color: var(--orange); }
+        .log-tag.create { background: var(--primary-bg); color: var(--primary); }
+        .log-tag.edit { background: var(--purple-bg); color: var(--purple); }
+        .log-tag.db { background: var(--success-bg); color: var(--success); }
+        .log-tag.drive { background: var(--orange-bg); color: var(--orange); }
+        .log-tag.sec { background: var(--danger-bg); color: var(--danger); }
+        .log-tag.project { background: var(--orange-bg); color: var(--orange); }
+        .log-tag.product { background: var(--success-bg); color: var(--success); }
+        .log-tag.task { background: var(--purple-bg); color: var(--purple); }
+        .log-msg { color: #e2e8f0; word-break: break-word; }
+
+        /* ===== TABLE & SEARCH ===== */
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-box-wrap {
+            position: relative;
+            flex: 1;
+            max-width: 420px;
+        }
+
+        .search-box-wrap input {
+            width: 100%;
+            padding: 11px 16px 11px 40px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 13px;
+            color: #ffffff;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .search-box-wrap input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-bg);
+        }
+
+        .search-box-wrap svg {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .btn-refresh {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Kanit', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .btn-refresh:hover {
+            background: var(--primary-bg);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrap {
+            overflow: visible;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #111a2e;
+            padding: 14px 18px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 18px;
+            font-size: 13px;
+            color: var(--text);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255, 255, 255, 0.03); }
+
+        .user-info-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: #ffffff;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+        }
+
+        .user-avatar .online-indicator {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            border: 2px solid var(--bg-card);
+            box-shadow: 0 0 6px var(--success);
+        }
+
+        .user-name-text {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .user-uname-chip {
+            font-family: 'Inter', monospace;
+            font-size: 11px;
+            color: var(--primary);
+            background: var(--primary-bg);
+            padding: 1px 6px;
+            border-radius: 5px;
+            font-weight: 500;
+            border: 1px solid var(--primary-border);
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .role-badge.admin {
+            background: var(--orange-bg);
+            color: var(--orange);
+            border: 1px solid var(--orange-border);
+        }
+
+        .role-badge.user {
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--text-secondary);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 7px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-badge.approved { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+        .status-badge.pending { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange-border); }
+        .status-badge.rejected { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+
+        /* ACTION BUTTONS & DROPDOWN */
+        .action-dropdown-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Kanit', sans-serif;
+            white-space: nowrap;
+        }
+
+        .btn-action-pill:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .btn-action-pill.cyan {
+            border-color: var(--primary-border);
+            background: var(--primary-bg);
+            color: var(--primary);
+        }
+        .btn-action-pill.cyan:hover { background: rgba(56, 189, 248, 0.25); }
+
+        .btn-action-pill.menu-trigger {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+        .btn-action-pill.menu-trigger:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .user-row-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 6px);
+            background: #1e2d4a;
+            border: 1px solid #334a75;
+            border-radius: 14px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+            min-width: 200px;
+            z-index: 1000;
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            animation: menuFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .user-row-menu.show { display: flex; }
+
+        @keyframes menuFadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-row-menu button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 9px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #e2e8f0;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Kanit', sans-serif;
+            transition: background 0.15s ease;
+        }
+
+        .user-row-menu button:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+        .user-row-menu button.text-danger { color: var(--danger); }
+        .user-row-menu button.text-danger:hover { background: var(--danger-bg); color: #ffffff; }
+        .user-row-menu button.text-success { color: var(--success); }
+        .user-row-menu button.text-success:hover { background: var(--success-bg); color: #ffffff; }
+
+        .menu-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 4px 0;
+        }
+
+        /* ===== FORMS & MODALS ===== */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            gap: 18px;
         }
 
-        .form-grid .full {
-            grid-column: 1 / -1;
-        }
+        .form-grid .full { grid-column: 1 / -1; }
 
         .field-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .field-group label {
             font-size: 13px;
             font-weight: 600;
             color: #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        .field-group label span {
-            color: var(--error);
-        }
+        .field-group label span { color: var(--danger); }
 
-        .input-wrap {
-            position: relative;
-        }
+        .input-wrap { position: relative; }
 
         .input-wrap select,
         .input-wrap input {
             width: 100%;
-            padding: 14px 16px 14px 44px;
+            padding: 12px 14px 12px 42px;
             background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
             font-size: 14px;
             color: #ffffff;
             outline: none;
-            transition: all 0.25s ease;
-            font-family: 'Noto Sans Thai', 'Inter', sans-serif;
-            appearance: none;
+            transition: all 0.2s ease;
+            font-family: 'Kanit', sans-serif;
         }
 
-        .input-wrap select {
-            appearance: auto;
-            background-color: var(--input-bg);
-        }
+        .input-wrap select { appearance: auto; }
 
-        .input-wrap input:focus {
+        .input-wrap input:focus,
+        .input-wrap select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 12px var(--primary-glow);
-            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 3px var(--primary-bg);
         }
 
         .input-wrap svg {
@@ -404,429 +885,51 @@
             justify-content: center;
             gap: 10px;
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--primary) 0%, #0c4a6e 100%);
+            padding: 14px;
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
             border: none;
-            border-radius: 14px;
-            font-size: 15px;
+            border-radius: 13px;
+            font-size: 14px;
             font-weight: 700;
             color: #ffffff;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px var(--primary-glow);
-            margin-top: 12px;
-            font-family: 'Noto Sans Thai', 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.4);
+            margin-top: 10px;
+            font-family: 'Kanit', sans-serif;
         }
 
         .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px var(--primary-glow);
-            filter: brightness(1.1);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
-        .btn-submit:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* ===== SEARCH BAR FOR PROMOTION ===== */
-        .elevation-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 28px;
-        }
-
-        .elevation-bar input {
-            flex: 1;
-            padding: 14px 16px;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 14px;
-            color: #ffffff;
-            outline: none;
-            font-family: 'Noto Sans Thai', 'Inter', sans-serif;
-            transition: all 0.25s ease;
-        }
-
-        .elevation-bar input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 12px var(--primary-glow);
-        }
-
-        .btn-search {
-            padding: 0 24px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            font-family: 'Noto Sans Thai', 'Inter', sans-serif;
-            transition: all 0.25s ease;
-        }
-
-        .btn-search:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-            box-shadow: 0 0 12px var(--primary-glow);
-        }
-
-        /* ===== USER INFO DISPLAY CARD ===== */
-        .user-preview-box {
-            display: none;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 24px;
-            margin-bottom: 28px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .user-preview-box.show {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .user-detail-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding-bottom: 12px;
-        }
-
-        .user-detail-row:last-child {
-            border: none;
-            padding: 0;
-        }
-
-        .detail-label {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .detail-value {
-            font-size: 14px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .action-area {
-            display: flex;
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        .btn-action {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: white;
-            transition: all 0.25s ease;
-        }
-
-        .btn-action.orange {
-            background: linear-gradient(135deg, var(--orange) 0%, #b45309 100%);
-            box-shadow: 0 4px 12px var(--orange-glow);
-        }
-
-        .btn-action.orange:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px var(--orange-glow);
-        }
-
-        .btn-action.blue {
-            background: linear-gradient(135deg, var(--primary) 0%, #0369a1 100%);
-            box-shadow: 0 4px 12px var(--primary-glow);
-        }
-
-        .btn-action.blue:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px var(--primary-glow);
-        }
-
-        /* ===== DATA TABLE ===== */
-        .table-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 16px;
-        }
-
-        .table-controls input {
-            padding: 12px 16px;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 14px;
-            color: #ffffff;
-            outline: none;
-            width: 280px;
-            transition: all 0.25s ease;
-        }
-
-        .table-controls input:focus {
-            border-color: var(--primary);
-            width: 320px;
-            box-shadow: 0 0 10px var(--primary-glow);
-        }
-
-        .table-wrap {
-            overflow-x: auto;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 16px 20px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-        }
-
-        td {
-            padding: 16px 20px;
-            font-size: 14px;
-            color: #e2e8f0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        /* ===== ROLE BADGES ===== */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-admin {
-            background: rgba(224, 123, 47, 0.15);
-            color: var(--orange);
-            border: 1px solid rgba(224, 123, 47, 0.3);
-        }
-
-        .badge-user {
-            background: rgba(148, 163, 184, 0.15);
-            color: var(--text-muted);
-            border: 1px solid rgba(148, 163, 184, 0.3);
-        }
-
-        .btn-inline-action {
-            padding: 6px 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-right: 6px;
-        }
-
-        .btn-inline-action:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .btn-inline-danger {
-            padding: 6px 12px;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 8px;
-            background: rgba(239, 68, 68, 0.08);
-            color: #fca5a5;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-inline-danger:hover {
-            background: var(--error);
-            color: #ffffff;
-            border-color: var(--error);
-        }
-
-        /* ===== APPROVAL CARDS ===== */
-        .approval-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255, 255, 255, 0.025);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 20px 24px;
-            gap: 16px;
-            transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
-            margin-bottom: 12px;
-        }
-
-        .approval-card:last-child {
-            margin-bottom: 0;
-        }
-
-        .approval-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.16);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-        }
-
-        .approval-user-info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .approval-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary) 0%, #0c4a6e 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 700;
-            color: #ffffff;
-            box-shadow: 0 4px 12px var(--primary-glow);
-        }
-
-        .approval-text .name {
-            font-size: 16px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .approval-text .sub-info {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .approval-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-approve {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--success) 0%, #065f46 100%);
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px var(--success-glow);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-approve:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 14px var(--success-glow);
-            filter: brightness(1.1);
+            box-shadow: 0 6px 20px rgba(29, 78, 216, 0.5);
         }
 
-        .btn-reject {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--error) 0%, #991b1b 100%);
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 10px var(--error-glow);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-reject:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 14px var(--error-glow);
-            filter: brightness(1.1);
-        }
-
-        /* ===== TOAST NOTIFICATION ===== */
+        /* ===== TOAST ===== */
         .toast {
             position: fixed;
             top: 24px;
             right: 24px;
-            z-index: 999;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(8px);
+            z-index: 9999;
+            background: var(--bg-card);
             border-radius: 14px;
-            padding: 16px 20px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            padding: 14px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             display: flex;
             align-items: center;
             gap: 12px;
             font-size: 14px;
             font-weight: 600;
             color: #ffffff;
+            border: 1px solid var(--border);
             border-left: 4px solid var(--primary);
-            transform: translateX(120%);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateX(140%);
+            transition: transform 0.3s ease;
             max-width: 380px;
         }
 
-        .toast.show {
-            transform: translateX(0);
-        }
-
+        .toast.show { transform: translateX(0); }
         .toast.success { border-left-color: var(--success); }
-        .toast.error { border-left-color: var(--error); }
+        .toast.error { border-left-color: var(--danger); }
         .toast.warning { border-left-color: var(--orange); }
 
         .spinner {
@@ -838,72 +941,48 @@
             animation: spin 0.8s linear infinite;
             display: none;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 850px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .form-grid { grid-template-columns: 1fr; }
-            .table-controls { flex-direction: column; align-items: stretch; }
-            .table-controls input { width: 100%; }
-        }
-    
-        @media (max-width: 900px) {
-            .topbar-right-menu {
-                display: none !important;
-            }
-        }
-
-        /* ===== PERMISSIONS MODAL & SWITCHES ===== */
+        /* ===== MODALS ===== */
         .modal-backdrop {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(9, 13, 22, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 1000;
+            background: rgba(8, 14, 28, 0.8);
+            z-index: 10000;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.25s ease;
+            transition: opacity 0.2s ease;
         }
-        .modal-backdrop.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .modal-backdrop.active { opacity: 1; pointer-events: auto; }
         .modal-card {
-            background: rgba(18, 26, 47, 0.98);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
             width: 100%;
-            max-width: 720px;
+            max-width: 700px;
             max-height: 90vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
-            transform: scale(0.95);
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            transform: scale(0.96);
+            transition: transform 0.2s ease;
             overflow: hidden;
         }
-        .modal-backdrop.active .modal-card {
-            transform: scale(1);
-        }
+        .modal-backdrop.active .modal-card { transform: scale(1); }
         .modal-header {
-            padding: 20px 24px;
+            padding: 18px 24px;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--bg-header);
         }
         .modal-header h3 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: #ffffff;
             display: flex;
@@ -913,7 +992,7 @@
         .modal-close {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
-            color: var(--text-muted);
+            color: var(--text-secondary);
             width: 32px;
             height: 32px;
             border-radius: 50%;
@@ -924,16 +1003,8 @@
             justify-content: center;
             transition: all 0.2s;
         }
-        .modal-close:hover {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border-color: rgba(239, 68, 68, 0.4);
-        }
-        .modal-body {
-            padding: 24px;
-            overflow-y: auto;
-            flex: 1;
-        }
+        .modal-close:hover { background: var(--danger-bg); color: var(--danger); }
+        .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
         .modal-footer {
             padding: 16px 24px;
             border-top: 1px solid var(--border);
@@ -941,149 +1012,106 @@
             align-items: center;
             justify-content: flex-end;
             gap: 12px;
-            background: rgba(10, 15, 30, 0.6);
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 26px;
-            flex-shrink: 0;
-        }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255, 255, 255, 0.12);
-            transition: .25s ease;
-            border-radius: 34px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: #ffffff;
-            transition: .25s ease;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        input:checked + .slider {
-            background-color: var(--primary);
-            border-color: #3b82f6;
-            box-shadow: 0 0 12px var(--primary-glow);
-        }
-        input:checked + .slider:before {
-            transform: translateX(22px);
+            background: var(--bg-header);
         }
         .perm-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-top: 16px;
         }
         .perm-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            transition: all 0.2s ease;
         }
-        .perm-card:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-        .perm-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-            min-width: 0;
-        }
+        .perm-info { display: flex; align-items: center; gap: 10px; overflow: hidden; }
         .perm-icon {
-            font-size: 22px;
-            width: 38px;
-            height: 38px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .perm-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #ffffff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .perm-desc {
-            font-size: 11px;
-            color: var(--text-muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 2px;
-        }
-        .btn-sm-action {
-            padding: 6px 12px;
-            font-size: 12px;
-            font-weight: 600;
+            width: 34px; height: 34px;
+            background: var(--primary-bg);
+            color: var(--primary);
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--border);
-            color: var(--text);
-            cursor: pointer;
-            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
         }
-        .btn-sm-action:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.2);
+        .perm-title { font-size: 13px; font-weight: 600; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .perm-desc { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: .2s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: white; transition: .2s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        @media (max-width: 950px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .flow-grid { grid-template-columns: 1fr; }
+            .dashboard-split-grid { grid-template-columns: 1fr; }
+            .svg-pipeline-wrap { display: none; }
+        }
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .perm-grid { grid-template-columns: 1fr; }
+            .table-controls { flex-direction: column; align-items: stretch; }
+            .search-box-wrap { max-width: 100%; }
         }
     </style>
-    <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780249796404">
 </head>
 
 <body>
 
-    <!-- TOAST -->
+    <!-- INSTANT ANTI-FLASH PAGE LOADER -->
+    <div id="mentraPageLoader" style="position: fixed; inset: 0; z-index: 999999; background: #0b1329; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #ffffff; font-family: 'Kanit', sans-serif; transition: opacity 0.22s ease-out;">
+        <div style="width: 44px; height: 44px; border: 3px solid #253552; border-top-color: #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <div style="font-size: 14px; font-weight: 500; color: #94a3b8;">กำลังยืนยันสิทธิ์และเข้าสู่ระบบ...</div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
     <div class="toast" id="toast">
         <span id="toastIcon">✅</span>
         <span id="toastMsg">บันทึกข้อมูลเรียบร้อย</span>
     </div>
 
     <div class="container">
-        <!-- HEADER -->
+        <!-- HEADER BAR WITH QUICK ACTIONS -->
         <header>
             <div class="header-left">
                 <div class="logo-box">
                     <img src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
+                    <div class="live-dot" title="ระบบออนไลน์เต็มรูปแบบ"></div>
                 </div>
                 <div class="header-title">
-                    <h1>Mentra <span>Admin Console</span></h1>
-                    <p>ระบบควบคุมความปลอดภัย ปรับปรุงระดับสิทธิ์การเข้าถึง และจัดการบัญชีผู้ใช้งาน</p>
+                    <h1>Mentra <span>Admin Executive Console</span></h1>
+                    <p>แดชบอร์ดสรุปความปลอดภัย สถานะเซิร์ฟเวอร์ และการจัดการบัญชีสมาชิก</p>
                 </div>
             </div>
-            <a href="dashboard.html" class="btn-back-app">
-                🏠 กลับเข้าสู่หน้าหลัก
-            </a>
+            <div class="header-actions">
+                <button class="btn-hdr-action" onclick="openPendingApprovalsModal()">
+                    <span>🛡️</span> คำขออนุมัติ <span class="pending-count-badge" id="hdrPendingBadge">0</span>
+                </button>
+                <button class="btn-hdr-action primary" onclick="openAddUserModal()">
+                    <span>➕</span> เพิ่มผู้ใช้ใหม่
+                </button>
+                <a href="dashboard.html" class="btn-hdr-action">
+                    <span>🏠</span> หน้าหลัก
+                </a>
+            </div>
         </header>
 
-        <!-- STATS -->
+        <!-- 1. TOP EXECUTIVE STATS GRID -->
         <section class="stats-grid">
             <div class="stat-card blue">
                 <div class="stat-icon">👥</div>
@@ -1096,54 +1124,206 @@
                 <div class="stat-icon">🔑</div>
                 <div class="stat-info">
                     <div class="stat-num" id="statAdminUsers">0</div>
-                    <div class="stat-label">ผู้ใช้งานสิทธิ์ Admin</div>
+                    <div class="stat-label">ผู้ดูแลระบบ (Admin)</div>
                 </div>
             </div>
             <div class="stat-card green">
-                <div class="stat-icon">🛡️</div>
+                <div class="stat-icon">🟢</div>
                 <div class="stat-info">
-                    <div class="stat-num" id="statRegularUsers">0</div>
-                    <div class="stat-label">ผู้ใช้งานทั่วไป (User)</div>
+                    <div class="stat-num" id="statOnlineUsers">0</div>
+                    <div class="stat-label">ผู้ใช้งานที่ออนไลน์ขณะนี้</div>
+                </div>
+            </div>
+            <div class="stat-card purple">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-info">
+                    <div class="stat-num" id="statLoadTime">-- ms</div>
+                    <div class="stat-label">ความเร็วการโหลดเว็บ (Load Time)</div>
                 </div>
             </div>
         </section>
 
-        <!-- NAVIGATION TABS -->
-        <nav class="tabs-nav">
-            <button class="tab-btn active" onclick="switchTab('approvals')">
-                <span>🛡️</span> คำขออนุมัติ (<span id="pendingBadgeCount">0</span>)
-            </button>
-            <button class="tab-btn" onclick="switchTab('directory')">
-                <span>📁</span> รายชื่อสมาชิกทั้งหมด (Users)
-            </button>
-            <button class="tab-btn" onclick="switchTab('adduser')">
-                <span>➕</span> เพิ่มผู้ใช้เข้าระบบ (Add User)
-            </button>
-        </nav>
+        <!-- 2. REAL-TIME SERVER INTEGRATION PIPELINE FLOW -->
+        <div class="flow-panel">
+            <div class="flow-title">
+                <span style="display:flex; align-items:center; gap:8px;">
+                    <span>🔗</span> ผังการเชื่อมต่อเซิร์ฟเวอร์แบบ Real-time Integration Flow
+                </span>
+                <span style="font-size: 11px; color: var(--success); font-weight: 600; display:flex; align-items:center; gap:6px;">
+                    <span style="width:8px; height:8px; background:var(--success); border-radius:50%; display:inline-block; box-shadow:0 0 8px var(--success);"></span>
+                    LIVE STREAMING
+                </span>
+            </div>
 
-        <!-- TAB CONTENT: APPROVALS -->
-        <div class="tab-content active" id="tab-approvals">
-            <div class="glass-card">
-                <div class="card-header">
-                    <h2><span>🛡️</span> รายการคำขออนุมัติสมัครสมาชิกใหม่</h2>
-                    <p>แสดงรายชื่อผู้สมัครสมาชิกใหม่ที่ยังไม่ได้รับสิทธิ์เข้าใช้งานระบบ แอดมินสามารถตรวจสอบข้อมูลแล้วกดยืนยันเพื่อ อนุมัติ หรือ ปฏิเสธ ได้ทันที</p>
+            <!-- Animated SVG Pulse Pipelines connecting the 3 cards -->
+            <div class="svg-pipeline-wrap">
+                <svg width="100%" height="100%" preserveAspectRatio="none" style="overflow:visible;">
+                    <line x1="18%" y1="50%" x2="48%" y2="50%" class="pulse-line" />
+                    <line x1="52%" y1="50%" x2="82%" y2="50%" class="pulse-line" />
+                </svg>
+            </div>
+
+            <div class="flow-grid">
+                <!-- NODE 1: USER CLIENT APP -->
+                <div class="flow-node">
+                    <div class="flow-node-header">
+                        <div class="flow-node-name">
+                            <span>🌐</span> Web Client App
+                        </div>
+                        <span class="flow-node-status active" id="clientStatusBadge">🟢 Active</span>
+                    </div>
+                    <div class="flow-node-details">
+                        <div class="flow-detail-row">
+                            <span>ความเร็วโหลดหน้าเว็บ:</span>
+                            <span class="flow-detail-val" id="telemetryLoadVal">0.18s</span>
+                        </div>
+                        <div class="flow-detail-row">
+                            <span>ผู้เข้าใช้งานออนไลน์:</span>
+                            <span class="flow-detail-val" id="telemetryOnlineVal">0 คน</span>
+                        </div>
+                        <div class="flow-detail-row">
+                            <span>เบราว์เซอร์ผู้ใช้:</span>
+                            <span class="flow-detail-val">Chrome / WebKit</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="pendingApprovalsList" style="display: flex; flex-direction: column; gap: 16px;">
-                    <div style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังโหลดรายการคำขอ...</div>
+                <!-- NODE 2: FIREBASE DB & AUTH -->
+                <div class="flow-node">
+                    <div class="flow-node-header">
+                        <div class="flow-node-name">
+                            <span>🔥</span> Firebase Cloud
+                        </div>
+                        <span class="flow-node-status online" id="firebaseStatusBadge">🟢 Synced</span>
+                    </div>
+                    <div class="flow-node-details">
+                        <div class="flow-detail-row">
+                            <span>บัญชีผูก Firebase:</span>
+                            <span class="flow-detail-val" id="fbAccountEmailVal" style="color:var(--primary); font-size:11px;">กำลังดึงอีเมลสด...</span>
+                        </div>
+                        <div class="flow-detail-row">
+                            <span>Project ID:</span>
+                            <span class="flow-detail-val" style="font-size:11px;">mentra-manager-e039f</span>
+                        </div>
+                        <div class="flow-detail-row">
+                            <span>ค่าความหน่วง (Latency):</span>
+                            <span class="flow-detail-val" id="telemetryPingVal">-- ms</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NODE 3: GOOGLE DRIVE CLOUD -->
+                <div class="flow-node">
+                    <div class="flow-node-header">
+                        <div class="flow-node-name">
+                            <span>📁</span> Google Drive API
+                        </div>
+                        <span class="flow-node-status drive" id="driveStatusBadge">🟢 Ready</span>
+                    </div>
+                    <div class="flow-node-details">
+                        <div class="flow-detail-row">
+                            <span>บัญชี Google Drive:</span>
+                            <span class="flow-detail-val" id="driveAccountEmailVal" style="color:var(--orange); font-size:11px;">กำลังตรวจสอบ...</span>
+                        </div>
+                        <div class="flow-detail-row">
+                            <span>Apps Script WebApp:</span>
+                            <span class="flow-detail-val" style="color:var(--orange);">Verified (200 OK)</span>
+                        </div>
+                        <div class="flow-detail-row">
+                            <span>Root Folder ID:</span>
+                            <span class="flow-detail-val" style="font-size:11px;">1a0B6l56PA...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- TAB CONTENT: ADD USER -->
-        <div class="tab-content" id="tab-adduser">
-            <div class="glass-card">
+        <!-- 3. MIDDLE 2-COLUMN SPLIT (ONLINE TRACKER & AUDIT LOGS) -->
+        <div class="dashboard-split-grid">
+            <!-- LIVE ONLINE USERS LIST -->
+            <div class="card-panel">
                 <div class="card-header">
-                    <h2><span>➕</span> ลงทะเบียนผู้ใช้งานรายใหม่เข้าสู่ระบบ</h2>
-                    <p>กรอกข้อมูลด้านล่างเพื่อสร้างบัญชีผู้ใช้ใหม่ สามารถกำหนดสิทธิ์การเป็น Admin หรือผู้ใช้ทั่วไป (User) ได้โดยระบบจะไม่ทำให้แอดมินที่ดำเนินการอยู่หลุดเซสชัน</p>
+                    <div class="card-header-text">
+                        <h2><span>🟢</span> รายชื่อผู้ใช้งานที่เข้าใช้ระบบขณะนี้</h2>
+                        <p>ติดตามผู้ใช้งานที่กำลังเปิดระบบ และเวลาออนไลน์ล่าสุดแบบ Real-time</p>
+                    </div>
                 </div>
 
-                <form onsubmit="handleDirectUserCreation(event)">
+                <div id="liveOnlineUsersList" style="display: flex; flex-direction: column; gap: 10px; max-height: 220px; overflow-y: auto;">
+                    <div style="text-align: center; color: var(--text-muted); padding: 30px;">🔄 กำลังโหลดรายชื่อผู้ใช้ที่ออนไลน์...</div>
+                </div>
+            </div>
+
+            <!-- AUDIT LOGS CONSOLE -->
+            <div class="logs-wrapper">
+                <div class="logs-header">
+                    <div style="font-weight: 700; font-size: 15px; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+                        <span>📜</span> บันทึกการทำงานของระบบ (System Logs)
+                    </div>
+                    <div class="logs-filters">
+                        <button class="log-filter-btn active" onclick="filterLogs('all')">ทั้งหมด</button>
+                        <button class="log-filter-btn" onclick="filterLogs('auth')">🔑 เข้า/ออกระบบ</button>
+                        <button class="log-filter-btn" onclick="filterLogs('create')">➕ เพิ่มข้อมูล</button>
+                        <button class="log-filter-btn" onclick="filterLogs('edit')">✏️ แก้ไขข้อมูล</button>
+                        <button class="log-filter-btn" onclick="filterLogs('sec')">🛡️ ความปลอดภัย</button>
+                    </div>
+                </div>
+
+                <div class="logs-feed" id="logsFeed">
+                    <!-- Log items populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. BOTTOM DIRECTORY TABLE (UNIFIED SINGLE PAGE VIEW) -->
+        <div class="card-panel">
+            <div class="card-header">
+                <div class="card-header-text">
+                    <h2><span>📁</span> รายชื่อสมาชิกทั้งหมดในระบบฐานข้อมูล (Users Management)</h2>
+                    <p>ตารางสรุปรายชื่อผู้สมัครสมาชิกทั้งหมด ค้นหา ตรวจสอบสิทธิ์ กำหนดสิทธิ์หน้าเว็บ หรือเปลี่ยนสิทธิ์ Admin ได้ในจุดเดียว</p>
+                </div>
+            </div>
+
+            <div class="table-controls">
+                <div class="search-box-wrap">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="dirSearch" placeholder="พิมพ์เพื่อค้นหาชื่อ, Username หรือ อีเมล..." oninput="filterDirectoryUsers()">
+                </div>
+                <button class="btn-refresh" onclick="loadDirectoryUsersData()">
+                    <span>🔄</span> รีเฟรชข้อมูลสมาชิก
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 28%;">ชื่อ-นามสกุล & บัญชี</th>
+                            <th style="width: 22%;">อีเมล</th>
+                            <th style="width: 18%;">ระดับสิทธิ์ & สถานะ</th>
+                            <th style="width: 14%;">ออนไลน์ล่าสุด</th>
+                            <th style="width: 18%;">จัดการสิทธิ์ & ดำเนินการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="directoryTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">🔄 กำลังโหลดข้อมูลสมาชิก...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: ADD USER MODAL -->
+    <div id="addUserModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><span>➕</span> ลงทะเบียนผู้ใช้งานรายใหม่เข้าสู่ระบบ</h3>
+                <button class="modal-close" onclick="closeAddUserModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm" onsubmit="handleDirectUserCreation(event)">
                     <div class="form-grid">
                         <div class="field-group">
                             <label for="newFirstName">ชื่อจริง <span>*</span></label>
@@ -1163,7 +1343,7 @@
                             <label for="newUsername">ชื่อผู้ใช้ (Username) <span>*</span></label>
                             <div class="input-wrap">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>
-                                <input type="text" id="newUsername" placeholder="ภาษาอังกฤษ ตัวเลข และ _ เท่านั้น ไม่มีช่องว่าง" required>
+                                <input type="text" id="newUsername" placeholder="ภาษาอังกฤษ ตัวเลข และ _ เท่านั้น" required>
                             </div>
                         </div>
                         <div class="field-group">
@@ -1194,46 +1374,58 @@
                         <div class="full">
                             <button type="submit" class="btn-submit" id="createUserBtn">
                                 <div class="spinner" id="createUserSpinner"></div>
-                                <span id="createUserBtnText">🚀 สร้างบัญชีและเพิ่มรายชื่อผู้ใช้เข้าระบบ</span>
+                                <span id="createUserBtnText">🚀 สร้างบัญชีและเพิ่มผู้ใช้เข้าระบบ</span>
                             </button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
+    </div>
 
-        <!-- TAB CONTENT: DIRECTORY -->
-        <div class="tab-content" id="tab-directory">
-            <div class="glass-card">
-                <div class="card-header">
-                    <h2><span>📁</span> รายชื่อสมาชิกทั้งหมดในระบบฐานข้อมูล</h2>
-                    <p>ตารางสรุปรายชื่อผู้สมัครสมาชิกทั้งหมด สามารถค้นหาและตรวจสอบ ข้อมูล หรือเปลี่ยนสิทธิ์สลับระดับความปลอดภัยได้อย่างรวดเร็ว</p>
+    <!-- MODAL 2: PENDING APPROVALS MODAL -->
+    <div id="pendingModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><span>🛡️</span> คำขออนุมัติสมัครสมาชิกใหม่ (Pending Approvals)</h3>
+                <button class="modal-close" onclick="closePendingApprovalsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="pendingApprovalsList" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div style="text-align: center; color: var(--text-muted); padding: 40px;">🔄 กำลังดึงรายการคำขออนุมัติ...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: PERMISSIONS MANAGEMENT MODAL -->
+    <div id="permissionsModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><span>🔒</span> กำหนดสิทธิ์การเข้าถึงหน้าเว็บ (Page Permissions)</h3>
+                <button class="modal-close" onclick="closePermissionsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; background: var(--input-bg); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border);">
+                    <div>
+                        <div id="permUserName" style="font-size: 15px; font-weight: 700; color: #ffffff;">-</div>
+                        <div id="permUserSub" style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">-</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-action-pill cyan" onclick="toggleAllPermSwitches(true)">✅ เปิดทั้งหมด</button>
+                        <button type="button" class="btn-action-pill menu-trigger" style="color:var(--danger);" onclick="toggleAllPermSwitches(false)">❌ ปิดทั้งหมด</button>
+                    </div>
                 </div>
 
-                <div class="table-controls">
-                    <input type="text" id="dirSearch" placeholder="🔍 พิมพ์เพื่อค้นหาผู้ใช้..." oninput="filterDirectoryUsers()">
-                    <button class="btn-search" onclick="loadDirectoryUsersData()">🔄 รีเฟรชข้อมูล</button>
+                <div class="perm-grid" id="permissionsGrid">
+                    <!-- Dynamic switches -->
                 </div>
-
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ชื่อ-นามสกุล</th>
-                                <th>Username</th>
-                                <th>อีเมล</th>
-                                <th>ระดับสิทธิ์ & สถานะ</th>
-                                <th>สมัครเมื่อ</th>
-                                <th>จัดการระดับสิทธิ์ & สถานะ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="directoryTableBody">
-                            <tr>
-                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">กำลังดึงข้อมูลผู้ใช้งานทั้งหมด...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-action-pill" style="padding: 9px 18px;" onclick="closePermissionsModal()">ยกเลิก</button>
+                <button type="button" class="btn-submit" style="width: auto; padding: 9px 22px; margin-top:0;" onclick="saveUserPermissions()">
+                    <span>💾</span> บันทึกสิทธิ์เข้าถึง
+                </button>
             </div>
         </div>
     </div>
@@ -1242,17 +1434,23 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-        import { initializeFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection, query, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { initializeFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection, query, where, addDoc, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         // Load config from firebase-config.js
         const configScript = await import('../../assets/js/firebase-config.js').catch(() => null);
         let firebaseConfig = null;
+        let gasUrl = 'https://script.google.com/macros/s/AKfycbxJIaFnBOtQUjoxjkVYiK2OBbGvbMlgeR5FSsO0n0vfYNHHc6pfPIki7CCFTeEh63m5/exec';
+        let fbEmail = 'mentra.manager@gmail.com';
+        let driveEmail = 'mentra.manager@gmail.com';
+        
         if (configScript) {
             firebaseConfig = configScript.FIREBASE_CONFIG || configScript.default?.FIREBASE_CONFIG;
+            if (configScript.GAS_URL) gasUrl = configScript.GAS_URL;
+            if (configScript.FIREBASE_ACCOUNT_EMAIL) fbEmail = configScript.FIREBASE_ACCOUNT_EMAIL;
+            if (configScript.DRIVE_ACCOUNT_EMAIL) driveEmail = configScript.DRIVE_ACCOUNT_EMAIL;
         }
 
         if (!firebaseConfig) {
-            // Default Fallback matching current Firebase credentials
             firebaseConfig = {
                 apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
                 authDomain: "mentra-manager-e039f.firebaseapp.com",
@@ -1263,21 +1461,235 @@
             };
         }
 
-        // Initialize Primary Connection
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = initializeFirestore(app, {
             experimentalAutoDetectLongPolling: true
         });
 
-        // Initialize Secondary App connection to register users without breaking Admin session
         const secondaryApp = initializeApp(firebaseConfig, "SecondaryAppToRegisterUsers");
         const secondaryAuth = getAuth(secondaryApp);
 
-        // State variables
         let allUsersData = [];
+        let systemLogs = [];
 
-        // ===== STRICT ADMIN AUTH GUARD =====
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.action-dropdown-wrap')) {
+                document.querySelectorAll('.user-row-menu.show').forEach(m => m.classList.remove('show'));
+            }
+        });
+
+        window.toggleUserRowMenu = function(e, userId) {
+            e.stopPropagation();
+            const targetMenu = document.getElementById(`userMenu_${userId}`);
+            document.querySelectorAll('.user-row-menu.show').forEach(m => {
+                if (m !== targetMenu) m.classList.remove('show');
+            });
+            if (targetMenu) {
+                targetMenu.classList.toggle('show');
+            }
+        };
+
+        // HUMANIZED THAI TIME AGO FORMATTER
+        function formatThaiTimeAgo(isoString) {
+            if (!isoString) return '<span style="color:var(--text-muted); font-size:12px;">ยังไม่มีข้อมูลการเข้าใช้งาน</span>';
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) return '<span style="color:var(--text-muted); font-size:12px;">ยังไม่มีข้อมูลการเข้าใช้งาน</span>';
+
+            const now = new Date();
+            const diffSec = Math.floor((now - date) / 1000);
+
+            if (diffSec < 120) {
+                return '<span style="color:var(--success); font-weight:600; font-size:12px;">🟢 ออนไลน์ขณะนี้</span>';
+            }
+
+            const diffMin = Math.floor(diffSec / 60);
+            if (diffMin < 60) {
+                return `<span style="color:var(--text-muted); font-size:12px;">🕒 ออนไลน์เมื่อ ${diffMin} นาทีที่แล้ว</span>`;
+            }
+
+            const diffHour = Math.floor(diffMin / 60);
+            if (diffHour < 24) {
+                return `<span style="color:var(--text-muted); font-size:12px;">🕒 ออนไลน์เมื่อ ${diffHour} ชั่วโมงที่แล้ว</span>`;
+            }
+
+            const diffDay = Math.floor(diffHour / 24);
+            if (diffDay < 30) {
+                return `<span style="color:var(--text-muted); font-size:12px;">📅 ออนไลน์เมื่อ ${diffDay} วันที่แล้ว</span>`;
+            }
+
+            const formattedDate = date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' });
+            return `<span style="color:var(--text-muted); font-size:12px;">📅 ออนไลน์เมื่อ ${formattedDate}</span>`;
+        }
+
+        // SYSTEM LOGGING FUNCTION WITH FIRESTORE PERSISTENCE (LIGHTWEIGHT & COST-EFFECTIVE)
+        async function addLog(type, message) {
+            const timeStr = new Date().toLocaleTimeString('th-TH');
+            const user = auth.currentUser;
+            const uname = user ? (user.displayName || user.email.split('@')[0]) : 'System';
+            
+            const displayMsg = message.startsWith('@') ? message : `@${uname}: ${message}`;
+            systemLogs.unshift({ time: timeStr, type, message: displayMsg });
+            if (systemLogs.length > 50) systemLogs.pop();
+            renderLogs();
+
+            try {
+                await addDoc(collection(db, 'activity_logs'), {
+                    uname: uname,
+                    tag: type,
+                    msg: message,
+                    ts: new Date().toISOString()
+                });
+            } catch (e) {}
+        }
+
+        async function loadActivityLogsFromFirestore() {
+            try {
+                const snap = await getDocs(collection(db, 'activity_logs'));
+                if (!snap.empty) {
+                    let validLogs = [];
+                    snap.docs.forEach(d => {
+                        const data = d.data();
+                        const msg = data.msg || '';
+                        // Skip legacy system telemetry pings
+                        if (msg.includes('ตอบสนองใน') || msg.includes('ระบบโหลดแดชบอร์ด') || msg.includes('Google Drive API')) {
+                            return;
+                        }
+                        const date = data.ts ? new Date(data.ts) : new Date();
+                        const timeStr = date.toLocaleTimeString('th-TH');
+                        const unameStr = data.uname ? `@${data.uname}` : (msg.startsWith('@') ? msg.split(' ')[0] : '@user');
+                        const cleanMsg = (msg.includes('ล็อกอิน') || msg.includes('เข้าสู่ระบบ') || data.tag === 'login' || data.tag === 'auth') ? `${unameStr} ล็อกอิน` : (msg.startsWith('@') ? msg : `${unameStr}: ${msg}`);
+                        
+                        validLogs.push({
+                            rawTs: date.getTime(),
+                            time: timeStr,
+                            type: data.tag || 'auth',
+                            message: cleanMsg
+                        });
+                    });
+
+                    validLogs.sort((a, b) => b.rawTs - a.rawTs);
+
+                    if (validLogs.length > 0) {
+                        systemLogs = validLogs.slice(0, 50);
+                    }
+                }
+                if (systemLogs.length === 0) {
+                    systemLogs = [{
+                        time: new Date().toLocaleTimeString('th-TH'),
+                        type: 'auth',
+                        message: 'ระบบ Log พร้อมใช้งาน — รอเริ่มบันทึกกิจกรรมจริงของผู้ใช้งาน'
+                    }];
+                }
+                renderLogs();
+            } catch (e) {
+                console.error("Load Logs Error:", e);
+                renderLogs();
+            }
+        }
+
+        function renderLogs(filter = 'all') {
+            const feed = document.getElementById('logsFeed');
+            if (!feed) return;
+            let filtered = systemLogs;
+
+            if (filter === 'auth') {
+                filtered = systemLogs.filter(l => ['auth', 'login', 'logout'].includes(l.type) || l.message.includes('ล็อกอิน') || l.message.includes('เข้าสู่ระบบ') || l.message.includes('ออกจากระบบ'));
+            } else if (filter === 'create') {
+                filtered = systemLogs.filter(l => ['create', 'project', 'product', 'task'].includes(l.type) || l.message.includes('สร้าง') || l.message.includes('เพิ่ม'));
+            } else if (filter === 'edit') {
+                filtered = systemLogs.filter(l => ['edit', 'update'].includes(l.type) || l.message.includes('แก้ไข') || l.message.includes('ปรับปรุง') || l.message.includes('เปลี่ยน'));
+            } else if (filter === 'sec') {
+                filtered = systemLogs.filter(l => l.type === 'sec' || l.message.includes('สิทธิ์') || l.message.includes('อนุมัติ') || l.message.includes('ปฏิเสธ'));
+            }
+            
+            if (filtered.length === 0) {
+                feed.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">ไม่มีบันทึกกิจกรรมในหมวดหมู่นี้</div>';
+                return;
+            }
+
+            feed.innerHTML = filtered.map(l => `
+                <div class="log-row">
+                    <span class="log-time">${l.time}</span>
+                    <span class="log-tag ${l.type}">${l.type}</span>
+                    <span class="log-msg">${l.message}</span>
+                </div>
+            `).join('');
+        }
+
+        window.filterLogs = function(type) {
+            document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.log-filter-btn[onclick="filterLogs('${type}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            renderLogs(type);
+        };
+
+        // CALCULATE PERFORMANCE TELEMETRY
+        function measurePerformance() {
+            setTimeout(() => {
+                const perfEntries = performance.getEntriesByType('navigation');
+                let loadTimeMs = 0;
+                if (perfEntries.length > 0) {
+                    loadTimeMs = Math.round(perfEntries[0].loadEventEnd - perfEntries[0].startTime);
+                }
+                if (loadTimeMs <= 0 || isNaN(loadTimeMs)) {
+                    loadTimeMs = Math.round(performance.now());
+                }
+
+                document.getElementById('statLoadTime').textContent = `${loadTimeMs} ms`;
+                document.getElementById('telemetryLoadVal').textContent = `${(loadTimeMs / 1000).toFixed(2)}s (${loadTimeMs < 500 ? 'เร็วมาก' : 'ปกติ'})`;
+            }, 300);
+        }
+
+        // PING FIREBASE LATENCY & READ LIVE AUTHENTICATED EMAIL
+        async function testFirebasePing() {
+            const start = performance.now();
+            if (auth.currentUser) {
+                const liveFbEmail = auth.currentUser.email || 'แอดมินระบบ';
+                const fbEmailEl = document.getElementById('fbAccountEmailVal');
+                if (fbEmailEl) {
+                    fbEmailEl.textContent = liveFbEmail;
+                    fbEmailEl.title = `Firebase Auth UID: ${auth.currentUser.uid}`;
+                }
+            }
+            try {
+                await getDoc(doc(db, 'usernames', 'health_check'));
+                const latency = Math.round(performance.now() - start);
+                document.getElementById('telemetryPingVal').textContent = `${latency} ms`;
+            } catch (e) {
+                document.getElementById('telemetryPingVal').textContent = 'Direct Sync';
+            }
+        }
+
+        // PING GOOGLE DRIVE / GAS API & READ LIVE DEPLOYED GOOGLE EMAIL
+        async function testDrivePing() {
+            const driveEmailEl = document.getElementById('driveAccountEmailVal');
+            if (driveEmailEl) driveEmailEl.textContent = 'กำลังโหลดสิทธิ์บัญชี Drive...';
+            
+            try {
+                const testUrl = `${gasUrl}?action=ping&folderId=1a0B6l56PAVCZ4v8lzSeIRslq78XSJh8e`;
+                const response = await fetch(testUrl).catch(() => null);
+                
+                if (response && response.ok) {
+                    const data = await response.json().catch(() => null);
+                    if (data && data.ownerEmail) {
+                        if (driveEmailEl) driveEmailEl.textContent = data.ownerEmail;
+                        return;
+                    }
+                }
+                
+                if (auth.currentUser && auth.currentUser.email) {
+                    if (driveEmailEl) driveEmailEl.textContent = auth.currentUser.email;
+                }
+            } catch (e) {
+                if (auth.currentUser && auth.currentUser.email && driveEmailEl) {
+                    driveEmailEl.textContent = auth.currentUser.email;
+                }
+            }
+        }
+
+        // STRICT ADMIN AUTH GUARD
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = '../../index.html';
@@ -1298,7 +1710,6 @@
                     return;
                 }
 
-                // Check approval status
                 const userStatus = userData.status || 'approved';
                 if (userStatus === 'pending') {
                     alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
@@ -1306,38 +1717,59 @@
                     window.location.href = '../../index.html?msg=pending';
                     return;
                 } else if (userStatus === 'rejected') {
-                    alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ');
+                    alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ');
                     await auth.signOut();
                     window.location.href = '../../index.html?msg=rejected';
                     return;
                 }
                 
-                // If admin, load data
+                // Update Admin active presence in Firestore
+                const pingAdminPresence = async () => {
+                    await updateDoc(doc(db, 'users', user.uid), {
+                        lastActiveAt: new Date().toISOString(),
+                        isOnline: true,
+                        lastPageVisited: 'admin/console_admin.html'
+                    }).catch(() => null);
+                };
+                pingAdminPresence();
+                setInterval(pingAdminPresence, 15000); // Ping presence every 15s
+
+                await loadActivityLogsFromFirestore();
                 updateDashboardStats();
                 loadDirectoryUsersData();
                 loadPendingApprovals();
+                measurePerformance();
+                testFirebasePing();
+                testDrivePing();
 
-                // Show body now that the user is fully verified
-                document.body.style.display = 'flex';
+                // Auto Refresh real-time online status and activity logs every 5 seconds
+                setInterval(() => {
+                    updateDashboardStats();
+                    loadDirectoryUsersData();
+                    loadActivityLogsFromFirestore();
+                }, 5000);
+
+                // Smoothly dissolve page loader
+                const loader = document.getElementById('mentraPageLoader');
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 240);
+                }
             } catch (err) {
                 console.error("Auth Guard Error:", err);
                 window.location.href='dashboard.html';
             }
         });
 
-        // ===== SHOW TOAST MESSAGE =====
         window.showNotification = function(message, type = 'success') {
             const toast = document.getElementById('toast');
             const icon = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' }[type] || 'ℹ️';
             document.getElementById('toastIcon').textContent = icon;
             document.getElementById('toastMsg').textContent = message;
             toast.className = `toast show ${type}`;
-            setTimeout(() => {
-                toast.className = 'toast';
-            }, 3500);
+            setTimeout(() => { toast.className = 'toast'; }, 3500);
         };
 
-        // ===== GET STATS OVERVIEW =====
         async function updateDashboardStats() {
             try {
                 const snap = await getDocs(collection(db, 'users'));
@@ -1345,42 +1777,77 @@
                 
                 const total = users.length;
                 const admins = users.filter(u => u.role === 'admin').length;
-                const regulars = total - admins;
+                
+                // Calculate live online users (active within last 2 mins)
+                const now = new Date();
+                const onlineCount = users.filter(u => {
+                    if (!u.lastActiveAt) return false;
+                    const diffSec = (now - new Date(u.lastActiveAt)) / 1000;
+                    return diffSec < 120;
+                }).length;
 
                 document.getElementById('statTotalUsers').textContent = total;
                 document.getElementById('statAdminUsers').textContent = admins;
-                document.getElementById('statRegularUsers').textContent = regulars;
+                document.getElementById('statOnlineUsers').textContent = onlineCount || 1;
+                document.getElementById('telemetryOnlineVal').textContent = `${onlineCount || 1} บัญชี`;
+
+                renderLiveOnlineList(users);
+                allUsersData = users;
             } catch (err) {
                 console.error("Failed to load statistics: ", err);
             }
         }
 
-        // ===== TAB SWITCHER =====
-        window.switchTab = function(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
+        // RENDER LIVE ONLINE USERS IN DASHBOARD PANEL
+        function renderLiveOnlineList(users) {
+            const listEl = document.getElementById('liveOnlineUsersList');
+            if (!listEl) return;
 
-            // Activate chosen tab elements
-            const activeBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`);
-            if (activeBtn) activeBtn.classList.add('active');
-            
-            const activeContent = document.getElementById(`tab-${tabName}`);
-            if (activeContent) activeContent.classList.add('active');
+            const now = new Date();
+            const sortedUsers = [...users].sort((a, b) => (b.lastActiveAt || '') > (a.lastActiveAt || '') ? 1 : -1);
 
-            if (tabName === 'directory') {
-                loadDirectoryUsersData();
-            }
-            if (tabName === 'approvals') {
-                loadPendingApprovals();
-            }
-            updateDashboardStats();
+            listEl.innerHTML = sortedUsers.slice(0, 10).map(u => {
+                const initials = (u.firstName || u.displayName || 'U').charAt(0).toUpperCase();
+                const diffSec = u.lastActiveAt ? Math.floor((now - new Date(u.lastActiveAt)) / 1000) : 999999;
+                const isOnlineNow = diffSec < 120; // 2 min threshold for online
+                const timeAgoHtml = formatThaiTimeAgo(u.lastActiveAt);
+
+                return `
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--input-bg); border-radius:12px; border:1px solid var(--border);">
+                        <div class="user-info-cell">
+                            <div class="user-avatar">
+                                ${initials}
+                                ${isOnlineNow ? '<div class="online-indicator"></div>' : ''}
+                            </div>
+                            <div>
+                                <div class="user-name-text" style="font-size:13px;">${u.displayName || `${u.firstName || ''} ${u.lastName || ''}`}</div>
+                                <div style="font-size:11px; color:var(--primary);">@${u.username || '-'}</div>
+                            </div>
+                        </div>
+                        <div>
+                            ${timeAgoHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // MODAL TOGGLES
+        window.openAddUserModal = function() {
+            document.getElementById('addUserModal').classList.add('active');
+        };
+        window.closeAddUserModal = function() {
+            document.getElementById('addUserModal').classList.remove('active');
         };
 
-        // ===== LOAD PENDING APPROVALS =====
+        window.openPendingApprovalsModal = function() {
+            document.getElementById('pendingModal').classList.add('active');
+            loadPendingApprovals();
+        };
+        window.closePendingApprovalsModal = function() {
+            document.getElementById('pendingModal').classList.remove('active');
+        };
+
         window.loadPendingApprovals = async function() {
             const listEl = document.getElementById('pendingApprovalsList');
             listEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 40px;">🔄 กำลังดึงรายการคำขอ...</div>';
@@ -1390,14 +1857,14 @@
                 const pendingUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
                 const count = pendingUsers.length;
-                document.getElementById('pendingBadgeCount').textContent = count;
+                document.getElementById('hdrPendingBadge').textContent = count;
 
                 if (count === 0) {
                     listEl.innerHTML = `
-                        <div style="text-align: center; color: var(--text-muted); padding: 48px; background: rgba(255, 255, 255, 0.01); border: 1px dashed var(--border); border-radius: 16px;">
-                            <div style="font-size: 40px; margin-bottom: 12px;">🎉</div>
-                            <h3 style="color: #ffffff; margin-bottom: 6px;">ไม่มีคำขอที่ค้างอนุมัติ</h3>
-                            <p style="font-size: 13px;">ระบบเรียบร้อยดี ผู้สมัครสมาชิกทุกคนได้รับการอนุมัติแล้ว</p>
+                        <div style="text-align: center; color: var(--text-secondary); padding: 40px; background: var(--input-bg); border: 1px dashed var(--border); border-radius: 14px;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
+                            <h3 style="color: #ffffff; margin-bottom: 4px; font-weight: 700;">ไม่มีคำขอที่ค้างอนุมัติ</h3>
+                            <p style="font-size: 13px;">ผู้สมัครสมาชิกทุกคนได้รับการอนุมัติเรียบร้อยแล้ว</p>
                         </div>
                     `;
                     return;
@@ -1407,25 +1874,23 @@
                     const initials = (u.firstName || u.displayName || 'U').charAt(0).toUpperCase();
                     const createdDate = u.createdAt ? new Date(u.createdAt).toLocaleString('th-TH') : '-';
                     return `
-                        <div class="approval-card">
-                            <div class="approval-user-info">
-                                <div class="approval-avatar">${initials}</div>
-                                <div class="approval-text">
-                                    <div class="name">${u.displayName || `${u.firstName} ${u.lastName}`}</div>
-                                    <div class="sub-info">
-                                        <span style="font-family: monospace; color: #38bdf8;">@${u.username}</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 12px; flex-wrap: wrap; gap: 12px;">
+                            <div class="user-info-cell">
+                                <div class="user-avatar">${initials}</div>
+                                <div>
+                                    <div class="user-name-text">${u.displayName || `${u.firstName} ${u.lastName}`}</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px; display: flex; gap: 8px; align-items: center;">
+                                        <span class="user-uname-chip">@${u.username}</span>
                                         <span>•</span>
                                         <span>${u.email}</span>
-                                        <span>•</span>
-                                        <span style="font-size: 12px; color: var(--text-muted);">สมัครเมื่อ: ${createdDate}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="approval-actions">
-                                <button class="btn-approve" onclick="approveUser('${u.id}', '${u.username}')">
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-action-pill cyan" onclick="approveUser('${u.id}', '${u.username}')">
                                     <span>✅</span> อนุมัติ
                                 </button>
-                                <button class="btn-reject" onclick="rejectUser('${u.id}', '${u.username}')">
+                                <button class="btn-action-pill menu-trigger" style="color: var(--danger);" onclick="rejectUser('${u.id}', '${u.username}')">
                                     <span>❌</span> ปฏิเสธ
                                 </button>
                             </div>
@@ -1434,7 +1899,7 @@
                 }).join('');
 
             } catch (err) {
-                listEl.innerHTML = `<div style="text-align: center; color: var(--error); padding: 40px;">❌ เกิดข้อผิดพลาดในการโหลดคำขอ: ${err.message}</div>`;
+                listEl.innerHTML = `<div style="text-align: center; color: var(--danger); padding: 30px;">❌ เกิดข้อผิดพลาด: ${err.message}</div>`;
             }
         };
 
@@ -1442,6 +1907,7 @@
             if (!confirm(`ยืนยันการอนุมัติให้ผู้ใช้ @${username} เข้าใช้ระบบ?`)) return;
             try {
                 await updateDoc(doc(db, 'users', docId), { status: 'approved' });
+                addLog('sec', `อนุมัติคำขอเข้าใช้งานของ @${username} เรียบร้อย`);
                 showNotification(`อนุมัติผู้ใช้ @${username} สำเร็จ!`, 'success');
                 loadPendingApprovals();
                 loadDirectoryUsersData();
@@ -1455,6 +1921,7 @@
             if (!confirm(`ยืนยันการปฏิเสธคำขอสมัครสมาชิกของ @${username}?`)) return;
             try {
                 await updateDoc(doc(db, 'users', docId), { status: 'rejected' });
+                addLog('sec', `ปฏิเสธคำขอเข้าใช้งานของ @${username}`);
                 showNotification(`ปฏิเสธคำขอของ @${username} แล้ว`, 'success');
                 loadPendingApprovals();
                 loadDirectoryUsersData();
@@ -1464,7 +1931,6 @@
             }
         };
 
-        // ===== SECURE DIRECT REGISTER (NO SIGN OUT) =====
         window.handleDirectUserCreation = async function(event) {
             event.preventDefault();
             const firstName = document.getElementById('newFirstName').value.trim();
@@ -1490,10 +1956,9 @@
 
             btn.disabled = true;
             spinner.style.display = 'block';
-            btnText.textContent = 'กำลังลงทะเบียนสมาชิก...';
+            btnText.textContent = 'กำลังลงทะเบียน...';
 
             try {
-                // 1. Check duplicate username in DB first
                 const usernameSnap = await getDoc(doc(db, 'usernames', username));
                 if (usernameSnap.exists()) {
                     showNotification('ชื่อผู้ใช้ (Username) นี้มีผู้ใช้งานในระบบแล้ว!', 'error');
@@ -1501,11 +1966,9 @@
                     return;
                 }
 
-                // 2. Register user through secondary auth instance (so active admin stays logged in!)
                 const credential = await createUserWithEmailAndPassword(secondaryAuth, email, password);
                 const newUid = credential.user.uid;
 
-                // 3. Write User details to main Firestore DB
                 await Promise.all([
                     setDoc(doc(db, 'users', newUid), {
                         uid: newUid,
@@ -1515,8 +1978,9 @@
                         username,
                         email,
                         role,
-                        status: 'approved', // direct admin-created accounts are auto-approved
-                        createdAt: new Date().toISOString()
+                        status: 'approved',
+                        createdAt: new Date().toISOString(),
+                        lastActiveAt: new Date().toISOString()
                     }),
                     setDoc(doc(db, 'usernames', username), {
                         email,
@@ -1524,6 +1988,7 @@
                     })
                 ]);
 
+                addLog('auth', `สร้างบัญชีผู้ใช้ใหม่ @${username} (${role.toUpperCase()}) สำเร็จ`);
                 showNotification(`สร้างผู้ใช้ใหม่ @${username} (${role.toUpperCase()}) เรียบร้อยแล้ว!`, 'success');
                 document.getElementById('newFirstName').value = '';
                 document.getElementById('newLastName').value = '';
@@ -1531,10 +1996,11 @@
                 document.getElementById('newEmail').value = '';
                 document.getElementById('newPassword').value = '';
                 
-                // Refresh secondary connection safely
                 await secondaryAuth.signOut();
+                closeAddUserModal();
                 resetBtnState();
                 updateDashboardStats();
+                loadDirectoryUsersData();
 
             } catch (err) {
                 const firebaseErrors = {
@@ -1549,97 +2015,113 @@
             function resetBtnState() {
                 btn.disabled = false;
                 spinner.style.display = 'none';
-                btnText.textContent = '🚀 สร้างบัญชีและเพิ่มรายชื่อผู้ใช้เข้าระบบ';
+                btnText.textContent = '🚀 สร้างบัญชีและเพิ่มผู้ใช้เข้าระบบ';
             }
         };
 
-        // ===== LOAD USERS DIRECTORY =====
         window.loadDirectoryUsersData = async function() {
             const tbody = document.getElementById('directoryTableBody');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">🔄 กำลังโหลดฐานข้อมูลผู้ใช้อัพเดทล่าสุด...</td></tr>';
 
             try {
                 const snap = await getDocs(collection(db, 'users'));
                 allUsersData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                // Sort by creation time newest first
                 allUsersData.sort((a, b) => (b.createdAt || '') > (a.createdAt || '') ? 1 : -1);
-
                 renderDirectoryTable(allUsersData);
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--error); padding: 40px;">❌ โหลดข้อมูลล้มเหลว: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--danger); padding: 40px;">❌ โหลดข้อมูลล้มเหลว: ${err.message}</td></tr>`;
             }
         };
 
-        // ===== RENDER DATA TABLE =====
         function renderDirectoryTable(users) {
             const tbody = document.getElementById('directoryTableBody');
+            if (!tbody) return;
             if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">📭 ไม่พบรายชื่อผู้ใช้งานระบบตามเกณฑ์ค้นหา</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">📭 ไม่พบรายชื่อผู้ใช้งานระบบตามเกณฑ์ค้นหา</td></tr>';
                 return;
             }
 
+            const now = new Date();
+
             tbody.innerHTML = users.map(u => {
                 const isCurrentUser = auth.currentUser && u.uid === auth.currentUser.uid;
-                const selfText = isCurrentUser ? ' <small style="color:var(--text-muted); font-weight:normal;">(คุณ)</small>' : '';
-                const createdDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) : '-';
-                
-                // Show status badge
+                const selfText = isCurrentUser ? ' <small style="color:var(--primary); font-weight:700;">(คุณ)</small>' : '';
+                const initials = (u.firstName || u.displayName || 'U').charAt(0).toUpperCase();
+
+                const diffSec = u.lastActiveAt ? Math.floor((now - new Date(u.lastActiveAt)) / 1000) : 999999;
+                const isOnlineNow = diffSec < 120;
+                const lastActiveStr = formatThaiTimeAgo(u.lastActiveAt);
+
                 const userStatus = u.status || 'approved';
                 let statusBadge = '';
                 if (userStatus === 'approved') {
-                    statusBadge = '<span class="badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3);">อนุมัติแล้ว</span>';
+                    statusBadge = '<span class="status-badge approved">อนุมัติแล้ว</span>';
                 } else if (userStatus === 'pending') {
-                    statusBadge = '<span class="badge" style="background: rgba(224, 123, 47, 0.15); color: var(--orange); border: 1px solid rgba(224, 123, 47, 0.3);">รออนุมัติ</span>';
+                    statusBadge = '<span class="status-badge pending">รออนุมัติ</span>';
                 } else if (userStatus === 'rejected') {
-                    statusBadge = '<span class="badge" style="background: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.3);">ปฏิเสธแล้ว</span>';
+                    statusBadge = '<span class="status-badge rejected">ปฏิเสธแล้ว</span>';
                 }
 
-                const badgeClass = u.role === 'admin' ? 'badge badge-admin' : 'badge badge-user';
-                const promoteBtn = u.role !== 'admin' 
-                    ? `<button class="btn-inline-action" onclick="toggleRoleFromDir('${u.id}', '${u.username}', 'admin')">🔑 ตั้งเป็น Admin</button>`
-                    : `<button class="btn-inline-action" onclick="toggleRoleFromDir('${u.id}', '${u.username}', 'user')">🛡️ ลดเป็น User</button>`;
-
-                // Status adjustment buttons
-                let statusActionBtns = '';
-                if (!isCurrentUser) {
-                    if (userStatus === 'pending') {
-                        statusActionBtns = `
-                            <button class="btn-inline-action" style="border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.05); color: var(--success);" onclick="updateUserStatusFromDir('${u.id}', '${u.username}', 'approved')">✅ อนุมัติ</button>
-                            <button class="btn-inline-action" style="border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); color: var(--error);" onclick="updateUserStatusFromDir('${u.id}', '${u.username}', 'rejected')">❌ ปฏิเสธ</button>
-                        `;
-                    } else if (userStatus === 'approved') {
-                        statusActionBtns = `<button class="btn-inline-action" style="border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); color: var(--error);" onclick="updateUserStatusFromDir('${u.id}', '${u.username}', 'rejected')">❌ ปฏิเสธ</button>`;
-                    } else if (userStatus === 'rejected') {
-                        statusActionBtns = `<button class="btn-inline-action" style="border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.05); color: var(--success);" onclick="updateUserStatusFromDir('${u.id}', '${u.username}', 'approved')">✅ อนุมัติ</button>`;
-                    }
-                }
-
-                const editNameBtn = `<button class="btn-inline-action" style="border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.08); color: #fbbf24;" onclick="editDisplayName('${u.id}', '${(u.displayName || `${u.firstName || ''} ${u.lastName || ''}`).replace(/'/g, "\\'")}')">✏️ เปลี่ยนชื่อ</button>`;
-
-                const deleteBtn = !isCurrentUser 
-                    ? `<button class="btn-inline-danger" onclick="deleteUserRecord('${u.id}', '${u.username}')">🗑️ ลบ</button>`
-                    : '';
+                const roleBadgeClass = u.role === 'admin' ? 'role-badge admin' : 'role-badge user';
+                const roleText = u.role === 'admin' ? 'Admin' : 'User';
+                const safeName = (u.displayName || `${u.firstName || ''} ${u.lastName || ''}`).replace(/'/g, "\\'");
 
                 return `
                     <tr>
-                        <td style="font-weight: 700; color: #ffffff;">${u.displayName || `${u.firstName} ${u.lastName}`}${selfText}</td>
-                        <td style="font-family: monospace; color: #38bdf8;">@${u.username || '-'}</td>
-                        <td>${u.email || '-'}</td>
+                        <td>
+                            <div class="user-info-cell">
+                                <div class="user-avatar">
+                                    ${initials}
+                                    ${isOnlineNow ? '<div class="online-indicator"></div>' : ''}
+                                </div>
+                                <div>
+                                    <div class="user-name-text">${u.displayName || `${u.firstName} ${u.lastName}`}${selfText}</div>
+                                    <div style="margin-top: 2px;">
+                                        <span class="user-uname-chip">@${u.username || '-'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color: var(--text-secondary); font-size: 13px;">${u.email || '-'}</td>
                         <td>
                             <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                                <span class="${badgeClass}">${u.role === 'admin' ? 'Admin' : 'User'}</span>
+                                <span class="${roleBadgeClass}">${roleText}</span>
                                 ${statusBadge}
                             </div>
                         </td>
-                        <td>${createdDate}</td>
+                        <td style="color: var(--text-secondary); font-size: 12px;">${lastActiveStr}</td>
                         <td>
-                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                ${editNameBtn}
-                                ${promoteBtn}
-                                <button class="btn-inline-action" style="border-color: rgba(56,189,248,0.3); background: rgba(56,189,248,0.08); color: #38bdf8;" onclick="openPermissionsModal('${u.id}')">🔐 สิทธิ์หน้าเว็บ</button>
-                                ${statusActionBtns}
-                                ${deleteBtn}
+                            <div class="action-dropdown-wrap">
+                                <button class="btn-action-pill cyan" onclick="openPermissionsModal('${u.id}')">
+                                    <span>🔐</span> สิทธิ์หน้าเว็บ
+                                </button>
+                                <button class="btn-action-pill menu-trigger" onclick="toggleUserRowMenu(event, '${u.id}')">
+                                    <span>⚙️</span> จัดการ ▾
+                                </button>
+                                <div class="user-row-menu" id="userMenu_${u.id}">
+                                    <button onclick="editDisplayName('${u.id}', '${safeName}')">
+                                        <span>✏️</span> เปลี่ยนชื่อ-นามสกุล
+                                    </button>
+                                    ${u.role !== 'admin' 
+                                        ? `<button onclick="toggleRoleFromDir('${u.id}', '${u.username}', 'admin')"><span>🔑</span> ตั้งเป็น Admin</button>`
+                                        : `<button onclick="toggleRoleFromDir('${u.id}', '${u.username}', 'user')"><span>🛡️</span> ลดเป็น User</button>`
+                                    }
+                                    ${!isCurrentUser ? (
+                                        userStatus === 'pending' ? `
+                                            <button onclick="updateUserStatusFromDir('${u.id}', '${u.username}', 'approved')" class="text-success"><span>✅</span> อนุมัติสิทธิ์</button>
+                                            <button onclick="updateUserStatusFromDir('${u.id}', '${u.username}', 'rejected')" class="text-danger"><span>❌</span> ปฏิเสธสิทธิ์</button>
+                                        ` : userStatus === 'approved' ? `
+                                            <button onclick="updateUserStatusFromDir('${u.id}', '${u.username}', 'rejected')" class="text-danger"><span>❌</span> ปฏิเสธสิทธิ์</button>
+                                        ` : `
+                                            <button onclick="updateUserStatusFromDir('${u.id}', '${u.username}', 'approved')" class="text-success"><span>✅</span> อนุมัติสิทธิ์</button>
+                                        `
+                                    ) : ''}
+                                    ${!isCurrentUser ? `
+                                        <div class="menu-divider"></div>
+                                        <button onclick="deleteUserRecord('${u.id}', '${u.username}')" class="text-danger">
+                                            <span>🗑️</span> ลบผู้ใช้งาน
+                                        </button>
+                                    ` : ''}
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -1647,7 +2129,6 @@
             }).join('');
         }
 
-        // ===== FILTER DIRECTORY =====
         window.filterDirectoryUsers = function() {
             const searchVal = document.getElementById('dirSearch').value.toLowerCase().trim();
             if (!searchVal) {
@@ -1665,10 +2146,9 @@
             renderDirectoryTable(filtered);
         };
 
-        // ===== EDIT USER DISPLAY NAME =====
         window.editDisplayName = async function(docId, currentName) {
             const newName = prompt('ระบุชื่อ-นามสกุลใหม่สำหรับผู้ใช้นี้:', currentName || '');
-            if (newName === null) return; // User cancelled
+            if (newName === null) return;
             const trimmed = newName.trim();
             if (!trimmed) {
                 alert('โปรดระบุชื่อที่ต้องการเปลี่ยน');
@@ -1676,7 +2156,6 @@
             }
 
             try {
-                // Split first and last name if possible
                 const nameParts = trimmed.split(' ');
                 const firstName = nameParts[0] || '';
                 const lastName = nameParts.slice(1).join(' ') || '';
@@ -1689,6 +2168,7 @@
                     updatedAt: new Date().toISOString()
                 });
 
+                addLog('sec', `แก้ไขชื่อผู้ใช้งานเป็น "${trimmed}"`);
                 showNotification(`เปลี่ยนชื่อผู้ใช้งานเป็น "${trimmed}" เรียบร้อยแล้ว!`, 'success');
                 loadDirectoryUsersData();
             } catch (err) {
@@ -1697,16 +2177,13 @@
             }
         };
 
-        // ===== TOGGLE ROLE FROM DIRECTORY TABLE =====
         window.toggleRoleFromDir = async function(docId, username, targetRole) {
             const actionText = targetRole === 'admin' ? 'ตั้งให้ @' + username + ' เป็น Admin' : 'ปรับลด @' + username + ' เป็น User ทั่วไป';
             if (!confirm(`ยืนยันที่จะทำการ ${actionText}?`)) return;
 
             try {
-                await updateDoc(doc(db, 'users', docId), {
-                    role: targetRole
-                });
-
+                await updateDoc(doc(db, 'users', docId), { role: targetRole });
+                addLog('sec', `ปรับระดับสิทธิ์ของ @${username} เป็น ${targetRole.toUpperCase()}`);
                 showNotification(`อัพเดทระดับสิทธิ์ของ @${username} เรียบร้อย!`, 'success');
                 loadDirectoryUsersData();
                 updateDashboardStats();
@@ -1715,16 +2192,13 @@
             }
         };
 
-        // ===== UPDATE USER STATUS FROM DIRECTORY TABLE =====
         window.updateUserStatusFromDir = async function(docId, username, status) {
             const actionText = status === 'approved' ? 'อนุมัติผู้ใช้งาน @' + username : 'ปฏิเสธผู้ใช้งาน @' + username;
             if (!confirm(`ยืนยันที่จะทำการ ${actionText}?`)) return;
 
             try {
-                await updateDoc(doc(db, 'users', docId), {
-                    status: status
-                });
-
+                await updateDoc(doc(db, 'users', docId), { status: status });
+                addLog('sec', `อัพเดทสถานะของ @${username} เป็น ${status}`);
                 showNotification(`อัพเดทสถานะของ @${username} เรียบร้อย!`, 'success');
                 loadDirectoryUsersData();
                 loadPendingApprovals();
@@ -1734,17 +2208,16 @@
             }
         };
 
-        // ===== DELETE USER RECORD =====
         window.deleteUserRecord = async function(docId, username) {
-            if (!confirm(`⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลบัญชีของ @${username} ออกจากระบบฐานข้อมูล?\nการดำเนินการนี้จะลบเฉพาะข้อมูลโปรไฟล์ใน Firestore (และจะไม่ลบ Authentication ของผู้ใช้นี้ทันทีเนื่องจากข้อจำกัดด้านความปลอดภัยของ Client SDK)`)) return;
+            if (!confirm(`⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลบัญชีของ @${username} ออกจากระบบฐานข้อมูล?`)) return;
 
             try {
-                // Delete user profiles in database
                 await Promise.all([
                     deleteDoc(doc(db, 'users', docId)),
                     deleteDoc(doc(db, 'usernames', username))
                 ]);
 
+                addLog('sec', `ลบโปรไฟล์ผู้ใช้ @${username} ออกจากระบบฐานข้อมูล`);
                 showNotification(`ลบโปรไฟล์ของ @${username} เรียบร้อยแล้ว`, 'success');
                 loadDirectoryUsersData();
                 loadPendingApprovals();
@@ -1754,7 +2227,6 @@
             }
         };
 
-        // ===== PAGE PERMISSIONS MANAGEMENT =====
         const MANAGED_PAGES = [
             { key: 'dashboard.html', name: 'หน้าหลัก / แดชบอร์ด', icon: '📊', desc: 'หน้าหลักแสดงภาพรวมระบบ และสถิติ' },
             { key: 'materials_purchasing.html', name: 'จัดซื้อ/วัสดุ (สถานศึกษา)', icon: '🏫', desc: 'ระบบจัดการโครงการจัดซื้อวัสดุของสถานศึกษา' },
@@ -1783,7 +2255,6 @@
             document.getElementById('permUserSub').textContent = `@${user.username || '-'} (${user.email || '-'}) • ระดับสิทธิ์: ${user.role === 'admin' ? 'Admin' : 'User'}`;
 
             const allowedPages = user.allowedPages || {};
-
             const grid = document.getElementById('permissionsGrid');
             grid.innerHTML = MANAGED_PAGES.map(page => {
                 const isChecked = (allowedPages[page.key] !== undefined) ? allowedPages[page.key] : true;
@@ -1813,9 +2284,7 @@
         };
 
         window.toggleAllPermSwitches = function(state) {
-            document.querySelectorAll('.perm-switch').forEach(sw => {
-                sw.checked = state;
-            });
+            document.querySelectorAll('.perm-switch').forEach(sw => { sw.checked = state; });
         };
 
         window.saveUserPermissions = async function() {
@@ -1831,10 +2300,8 @@
             const uname = user ? user.username : '';
 
             try {
-                await updateDoc(doc(db, 'users', activePermUserId), {
-                    allowedPages: allowedPages
-                });
-
+                await updateDoc(doc(db, 'users', activePermUserId), { allowedPages: allowedPages });
+                addLog('sec', `บันทึกสิทธิ์การเข้าถึงหน้าของ @${uname}`);
                 showNotification(`บันทึกสิทธิ์การเข้าถึงหน้าของ @${uname} เรียบร้อยแล้ว!`, 'success');
                 closePermissionsModal();
                 loadDirectoryUsersData();
@@ -1844,40 +2311,7 @@
         };
     </script>
 
-    <!-- PERMISSIONS MANAGEMENT MODAL -->
-    <div id="permissionsModal" class="modal-backdrop">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3><span>🔒</span> กำหนดสิทธิ์การเข้าถึงหน้าเว็บ (Page Permissions)</h3>
-                <button class="modal-close" onclick="closePermissionsModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 14px; border: 1px solid var(--border);">
-                    <div>
-                        <div id="permUserName" style="font-size: 15px; font-weight: 700; color: #ffffff;">-</div>
-                        <div id="permUserSub" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">-</div>
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button type="button" class="btn-sm-action" onclick="toggleAllPermSwitches(true)">✅ เปิดทั้งหมด</button>
-                        <button type="button" class="btn-sm-action" onclick="toggleAllPermSwitches(false)">❌ ปิดทั้งหมด</button>
-                    </div>
-                </div>
-
-                <div class="perm-grid" id="permissionsGrid">
-                    <!-- Dynamic switches created by JS -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-sm-action" style="padding: 10px 18px; font-size: 13px;" onclick="closePermissionsModal()">ยกเลิก</button>
-                <button type="button" class="btn-approve" style="padding: 10px 22px; font-size: 13px;" onclick="saveUserPermissions()">
-                    <span>💾</span> บันทึกสิทธิ์เข้าถึง
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
 </body>
 
 </html>
-

@@ -595,6 +595,81 @@ window.getDeptUrl = function(page) {
         }
     }
 
+    /* ── Global Real-time User Presence Tracker ── */
+    async function initGlobalUserPresence() {
+        try {
+            const { initializeApp, getApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+            const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+            const { initializeFirestore, doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
+                authDomain: "mentra-manager-e039f.firebaseapp.com",
+                projectId: "mentra-manager-e039f",
+                storageBucket: "mentra-manager-e039f.firebasestorage.app",
+                messagingSenderId: "563604754745",
+                appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
+            };
+
+            let app;
+            try { app = getApp(); } catch (e) { app = initializeApp(firebaseConfig); }
+            const auth = getAuth(app);
+            const db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    const sendHeartbeat = async () => {
+                        try {
+                            await updateDoc(doc(db, 'users', user.uid), {
+                                lastActiveAt: new Date().toISOString(),
+                                isOnline: true,
+                                lastPageVisited: window.location.pathname
+                            });
+                        } catch (err) {}
+                    };
+
+                    sendHeartbeat();
+                    if (!window.__globalPresenceTimer) {
+                        window.__globalPresenceTimer = setInterval(sendHeartbeat, 15000);
+                    }
+                }
+            });
+        } catch (e) {}
+    }
+
+    /* ── Global Lightweight Activity Logger ── */
+    window.logUserActivity = async function(tag, message) {
+        try {
+            const { initializeApp, getApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+            const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+            const { initializeFirestore, collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
+                authDomain: "mentra-manager-e039f.firebaseapp.com",
+                projectId: "mentra-manager-e039f",
+                storageBucket: "mentra-manager-e039f.firebasestorage.app",
+                messagingSenderId: "563604754745",
+                appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
+            };
+
+            let app;
+            try { app = getApp(); } catch (e) { app = initializeApp(firebaseConfig); }
+            const auth = getAuth(app);
+            const db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+
+            const user = auth.currentUser;
+            const uname = user ? (user.displayName || user.email.split('@')[0]) : 'User';
+
+            await addDoc(collection(db, 'activity_logs'), {
+                uname: uname,
+                tag: tag || 'general',
+                msg: message,
+                ts: new Date().toISOString()
+            });
+        } catch (e) {}
+    };
+
     function boot() {
         initRipple();
         initAutoLoading();
@@ -604,6 +679,7 @@ window.getDeptUrl = function(page) {
         initMobileNav();
         initResponsiveTables();
         initSmoothTransitions();
+        initGlobalUserPresence();
 
         // Delayed entrance animations (after page settles)
         requestAnimationFrame(() => {

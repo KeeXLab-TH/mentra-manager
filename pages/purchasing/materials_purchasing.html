@@ -5440,6 +5440,23 @@
                             this.hideExcelLoader();
                             setTimeout(() => this.showToast('เกิดข้อผิดพลาดในการวางข้อมูล', 'error'), 300);
                         }
+                        
+                        if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
+
+                        // Update User Online Presence Heartbeat in Firestore
+                        const pingPresence = async () => {
+                            try {
+                                await updateDoc(doc(db, 'users', user.uid), {
+                                    lastActiveAt: new Date().toISOString(),
+                                    isOnline: true,
+                                    lastPageVisited: 'purchasing/materials_purchasing.html'
+                                });
+                            } catch (e) {}
+                        };
+                        pingPresence();
+                        setInterval(pingPresence, 20000);
+
+                        appData.currentUserId = user.uid;
                     }, 400); // Slight delay for UI rendering
                 }
                 
