@@ -4608,17 +4608,20 @@
                         customUnitHtml = `<option value="${item.unit}" selected>${item.unit}</option>`;
                     }
                     
+                    const escapeAttr = (str) => String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                     let displayName = item.name || '';
                     if (item.storeInfo && item.storeInfo.trim() !== '') {
                         displayName += ` (ร้าน: ${item.storeInfo.trim()})`;
                     }
+                    const safeName = escapeAttr(displayName);
+                    const safeCustomNo = escapeAttr(item.customNo || '');
                     
                     if (item.isHeader) {
                         tr.innerHTML = `
                             <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
-                            <td><input type="text" class="table-input item-custom-no" value="${item.customNo || ''}" placeholder="เช่น 1." oninput="updateRowNumbers(); applyLivePreview()"></td>
+                            <td><input type="text" class="table-input item-custom-no" value="${safeCustomNo}" placeholder="เช่น 1." oninput="updateRowNumbers(); applyLivePreview()"></td>
                             <td colspan="5">
-                                <input type="text" class="table-input item-desc" value="${displayName}" placeholder="ชื่อหัวข้อ/หมวดหมู่" style="font-weight: 600; color: #1A6FBF;" oninput="applyLivePreview()">
+                                <input type="text" class="table-input item-desc" value="${safeName}" placeholder="ชื่อหัวข้อ/หมวดหมู่" style="font-weight: 600; color: #1A6FBF;" oninput="applyLivePreview()">
                                 <input type="hidden" class="item-is-header" value="true">
                                 <input type="hidden" class="table-input item-qty" value="0">
                                 <input type="hidden" class="table-input item-unit" value="">
@@ -4635,8 +4638,8 @@
                     } else {
                         tr.innerHTML = `
                             <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
-                            <td><input type="text" class="table-input item-custom-no" value="${item.customNo || ''}" placeholder="เช่น 1.1" oninput="updateRowNumbers(); applyLivePreview()"></td>
-                            <td><input type="text" class="table-input item-desc" value="${displayName}" placeholder="ชื่อสินค้า/บริการ" oninput="applyLivePreview()"></td>
+                            <td><input type="text" class="table-input item-custom-no" value="${safeCustomNo}" placeholder="เช่น 1.1" oninput="updateRowNumbers(); applyLivePreview()"></td>
+                            <td><input type="text" class="table-input item-desc" value="${safeName}" placeholder="ชื่อสินค้า/บริการ" oninput="applyLivePreview()"></td>
                             <td><input type="number" class="table-input item-qty" value="${qtyVal}" min="1" onchange="calculateRow(this); applyLivePreview()"></td>
                             <td>
                                 <select class="table-input item-unit" onchange="applyLivePreview()">

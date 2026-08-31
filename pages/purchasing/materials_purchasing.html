@@ -4776,10 +4776,10 @@
                         tr.innerHTML = `
                             <td class="text-center text-slate-500 font-medium">${seqCellContent}</td>
                             <td>
-                                <input type="text" class="excel-input text-center text-slate-500 font-medium" data-id="${item.id}" data-field="customNo" value="${item.customNo || ''}" onchange="appData.updateItem('${item.id}', 'customNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="เช่น 1.">
+                                <input type="text" class="excel-input text-center text-slate-500 font-medium" data-id="${item.id}" data-field="customNo" value="${this.escapeAttr(item.customNo || '')}" onchange="appData.updateItem('${item.id}', 'customNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="เช่น 1.">
                             </td>
                             <td colspan="11" class="bg-slate-50">
-                                <input type="text" class="excel-input font-bold text-brand-600 bg-transparent w-full" data-id="${item.id}" data-field="name" value="${item.name || ''}" onchange="appData.updateItem('${item.id}', 'name', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="ชื่อหัวข้อ/หมวดหมู่">
+                                <input type="text" class="excel-input font-bold text-brand-600 bg-transparent w-full" data-id="${item.id}" data-field="name" value="${this.escapeAttr(item.name || '')}" onchange="appData.updateItem('${item.id}', 'name', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="ชื่อหัวข้อ/หมวดหมู่">
                             </td>
                             <td class="text-center bg-slate-50">
                                 <div class="flex items-center justify-center gap-1">
@@ -4798,16 +4798,16 @@
                         tr.innerHTML = `
                             <td class="text-center text-slate-500 font-medium">${seqCellContent}</td>
                             <td>
-                                <input type="text" class="excel-input text-center text-slate-500" data-id="${item.id}" data-field="customNo" value="${item.customNo || ''}" onchange="appData.updateItem('${item.id}', 'customNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="เช่น 1.1">
+                                <input type="text" class="excel-input text-center text-slate-500" data-id="${item.id}" data-field="customNo" value="${this.escapeAttr(item.customNo || '')}" onchange="appData.updateItem('${item.id}', 'customNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="เช่น 1.1">
                             </td>
                             <td>
-                                <input type="text" class="excel-input font-medium text-slate-800 ${nameIndentClass}" data-id="${item.id}" data-field="name" value="${item.name}" onchange="appData.updateItem('${item.id}', 'name', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="ชื่อรายการ">
+                                <input type="text" class="excel-input font-medium text-slate-800 ${nameIndentClass}" data-id="${item.id}" data-field="name" value="${this.escapeAttr(item.name || '')}" onchange="appData.updateItem('${item.id}', 'name', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="ชื่อรายการ">
                             </td>
                             <td>
                                 <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="qty" value="${item.qty}" onchange="appData.updateItem('${item.id}', 'qty', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
                             </td>
                             <td>
-                                <input type="text" class="excel-input text-center" data-id="${item.id}" data-field="unit" value="${item.unit || ''}" onchange="appData.updateItem('${item.id}', 'unit', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="หน่วย">
+                                <input type="text" class="excel-input text-center" data-id="${item.id}" data-field="unit" value="${this.escapeAttr(item.unit || '')}" onchange="appData.updateItem('${item.id}', 'unit', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="หน่วย">
                             </td>
                             <td>
                                 <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="unitPrice" value="${item.unitPrice}" onchange="appData.updateItem('${item.id}', 'unitPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
@@ -4828,12 +4828,12 @@
                                 ${profitPct !== 0 ? profitPct.toFixed(2) + '%' : '-'}
                             </td>
                             <td>
-                                <input type="text" class="excel-input text-xs" data-id="${item.id}" data-field="storeInfo" placeholder="ชื่อ/เบอร์ร้าน" value="${item.storeInfo || ''}" onchange="appData.updateItem('${item.id}', 'storeInfo', this.value)" onkeydown="appData.handleExcelKeydown(event)">
+                                <input type="text" class="excel-input text-xs" data-id="${item.id}" data-field="storeInfo" placeholder="ชื่อ/เบอร์ร้าน" value="${this.escapeAttr(item.storeInfo || '')}" onchange="appData.updateItem('${item.id}', 'storeInfo', this.value)" onkeydown="appData.handleExcelKeydown(event)">
                             </td>
                             <td class="text-center">
                                 <div class="flex items-center justify-center gap-1 p-1">
-                                    <input type="text" class="excel-input text-xs !min-h-[28px] !p-1 border border-slate-200 rounded" data-id="${item.id}" data-field="link" placeholder="URL" value="${item.link || ''}" onchange="appData.updateItem('${item.id}', 'link', this.value)" onkeydown="appData.handleExcelKeydown(event)">
-                                    ${item.link ? `<a href="${item.link}" target="_blank" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors shrink-0" title="เปิดลิงก์"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
+                                    <input type="text" class="excel-input text-xs !min-h-[28px] !p-1 border border-slate-200 rounded" data-id="${item.id}" data-field="link" placeholder="URL" value="${this.escapeAttr(item.link || '')}" onchange="appData.updateItem('${item.id}', 'link', this.value)" onkeydown="appData.handleExcelKeydown(event)">
+                                    ${item.link ? `<a href="${this.escapeAttr(item.link)}" target="_blank" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors shrink-0" title="เปิดลิงก์"><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>` : ''}
                                 </div>
                             </td>
                             <td class="text-center">
@@ -5198,6 +5198,16 @@
 
                 // 🟡 YELLOW Criteria: Work-in-progress (e.g. Has store link/info but missing price, or partial fields)
                 return 'yellow';
+            },
+
+            escapeAttr(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
             },
 
             setRowColor(event, itemId, color) {
