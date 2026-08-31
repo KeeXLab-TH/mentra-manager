@@ -4011,7 +4011,7 @@
                             email: ''
                         }));
                     }
-                    window.location.href = `quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}${shopParam}`;
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}${shopParam}`;
                 }
             },
 
@@ -4197,13 +4197,13 @@
                             }
                         } catch(e) {}
                     }
-                    window.location.href = `sales_invoice.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`sales_invoice.html?projectId=${encodeURIComponent(this.currentProjectId)}`) : `../accounting/sales_invoice.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
                 }
             },
 
             goToReceipt() {
                 if (this.currentProjectId) {
-                    window.location.href = `sales_receipt.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`sales_receipt.html?projectId=${encodeURIComponent(this.currentProjectId)}`) : `../accounting/sales_receipt.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
                 }
             },
 
