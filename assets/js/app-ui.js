@@ -602,14 +602,10 @@ window.getDeptUrl = function(page) {
             const { getAuth, onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
             const { initializeFirestore, doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-            const firebaseConfig = {
-                apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
-                authDomain: "mentra-manager-e039f.firebaseapp.com",
-                projectId: "mentra-manager-e039f",
-                storageBucket: "mentra-manager-e039f.firebasestorage.app",
-                messagingSenderId: "563604754745",
-                appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
-            };
+            let configMod;
+            try { configMod = await import('./firebase-config.js'); } catch(e) { return; }
+            const firebaseConfig = configMod.FIREBASE_CONFIG || configMod.default?.FIREBASE_CONFIG;
+            if (!firebaseConfig) return;
 
             let app;
             try { app = getApp(); } catch (e) { app = initializeApp(firebaseConfig); }
@@ -644,14 +640,10 @@ window.getDeptUrl = function(page) {
             const { getAuth } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
             const { initializeFirestore, collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
 
-            const firebaseConfig = {
-                apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
-                authDomain: "mentra-manager-e039f.firebaseapp.com",
-                projectId: "mentra-manager-e039f",
-                storageBucket: "mentra-manager-e039f.firebasestorage.app",
-                messagingSenderId: "563604754745",
-                appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
-            };
+            let configMod;
+            try { configMod = await import('./firebase-config.js'); } catch(e) { return; }
+            const firebaseConfig = configMod.FIREBASE_CONFIG || configMod.default?.FIREBASE_CONFIG;
+            if (!firebaseConfig) return;
 
             let app;
             try { app = getApp(); } catch (e) { app = initializeApp(firebaseConfig); }

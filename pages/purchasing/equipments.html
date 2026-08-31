@@ -2,6 +2,10 @@
 <html lang="th" style="background-color:#f8fafc">
 
 <head>
+    <!-- Security Headers (meta fallback) -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
     <!-- Anti-Flash Instant Background -->
     <style>html,body{background:#f8fafc!important;}</style>
     <script>
@@ -2767,14 +2771,10 @@ async function init() {
         GAS_URL = cfg.GAS_URL || cfg.default?.GAS_URL;
         DRIVE_ROOT_FOLDER_ID = cfg.DRIVE_ROOT_FOLDER_ID || cfg.default?.DRIVE_ROOT_FOLDER_ID;
     } catch (e) {
-        console.warn('Failed to load config, using fallbacks');
     }
 
-    if (!GAS_URL) {
-        GAS_URL = 'https://script.google.com/macros/s/AKfycbwRIcnykIL630Op5cf6qWO_zpbkzqYfY_pDEyOf0vA_cpaxio9Gu813nfxuuufHhZXW/exec';
-    }
-    if (!DRIVE_ROOT_FOLDER_ID) {
-        DRIVE_ROOT_FOLDER_ID = '1a0B6l56PAVCZ4v8lzSeIRslq78XSJh8e';
+    if (!FIREBASE_CONFIG || !GAS_URL || !DRIVE_ROOT_FOLDER_ID) {
+        throw new Error('ไม่พบไฟล์การตั้งค่า firebase-config.js กรุณาติดต่อผู้ดูแลระบบ');
     }
 
     app = initializeApp(FIREBASE_CONFIG);

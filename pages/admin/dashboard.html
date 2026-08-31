@@ -2,6 +2,10 @@
 <html lang="th" style="background-color:#f0f4f9">
 
 <head>
+    <!-- Security Headers (meta fallback) -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mentra Manager — Dashboard</title>
@@ -3070,7 +3074,7 @@
         import {
             initializeFirestore, collection, doc, addDoc, updateDoc, getDocs,
             getDoc, query, orderBy, where, setDoc, deleteDoc, Timestamp,
-            persistentLocalCache, persistentMultipleTabManager
+            persistentLocalCache, persistentMultipleTabManager, arrayUnion
         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         // ---- LOAD CONFIG ----
@@ -3081,25 +3085,11 @@
             GAS_URL = cfg.GAS_URL || cfg.default?.GAS_URL;
             DRIVE_ROOT_FOLDER_ID = cfg.DRIVE_ROOT_FOLDER_ID || cfg.default?.DRIVE_ROOT_FOLDER_ID;
         } catch (e) {
-            console.warn('firebase-config.js not found, using defaults');
+            // firebase-config.js ไม่พบ — ระบบจะหยุดทำงาน
         }
 
-        // Fallback (แก้ตรงนี้ถ้าไม่ใช้ firebase-config.js)
-        if (!FIREBASE_CONFIG) {
-            FIREBASE_CONFIG = {
-                apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
-                authDomain: "mentra-manager-e039f.firebaseapp.com",
-                projectId: "mentra-manager-e039f",
-                storageBucket: "mentra-manager-e039f.firebasestorage.app",
-                messagingSenderId: "563604754745",
-                appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
-            };
-        }
-        if (!GAS_URL) {
-            GAS_URL = 'https://script.google.com/macros/s/AKfycbwRIcnykIL630Op5cf6qWO_zpbkzqYfY_pDEyOf0vA_cpaxio9Gu813nfxuuufHhZXW/exec';
-        }
-        if (!DRIVE_ROOT_FOLDER_ID) {
-            DRIVE_ROOT_FOLDER_ID = '1a0B6l56PAVCZ4v8lzSeIRslq78XSJh8e';
+        if (!FIREBASE_CONFIG || !GAS_URL || !DRIVE_ROOT_FOLDER_ID) {
+            throw new Error('ไม่พบไฟล์การตั้งค่า firebase-config.js กรุณาติดต่อผู้ดูแลระบบ');
         }
 
         const app = initializeApp(FIREBASE_CONFIG);
@@ -3415,11 +3405,6 @@
             percentEl.textContent = '0%';
             fillEl.style.width = '0%';
 
-            if (!GAS_URL) {
-                progressEl.style.display = 'none';
-                throw new Error('GAS_URL ไม่ได้รับการตั้งค่า');
-            }
-
             // 1. สร้าง folder ใน Drive
             let folderId = null;
             const folderName = `${projectNo}_${projectName}`;
@@ -3540,7 +3525,6 @@
 
             } catch (err) {
                 progressEl.style.display = 'none';
-                console.error('Upload error:', err);
                 throw new Error('อัพโหลดไฟล์ล้มเหลว: ' + err.message);
             }
         }
@@ -3954,7 +3938,6 @@
                 const folderId = await getOrCreateProjectFolder();
                 if (!folderId) throw new Error('ไม่พบโฟลเดอร์สำหรับจัดเก็บไฟล์');
 
-                console.log('[Upload] Step 1: Requesting OAuth token from GAS...');
                 percentEl.textContent = 'กำลังเตรียม...';
 
                 // ── Step 1: ขอ OAuth Token จาก GAS (ไม่ใช้ UrlFetchApp) ──
@@ -3976,7 +3959,6 @@
                     });
                     clearTimeout(tid);
                     const rawText = await gasRes.text();
-                    console.log('[Upload] GAS response:', rawText.slice(0, 100));
                     gasResult = JSON.parse(rawText);
                 } catch (gasErr) {
                     clearTimeout(tid);
@@ -3989,7 +3971,6 @@
                 }
 
                 const oauthToken = gasResult.token;
-                console.log('[Upload] Step 2: Creating resumable upload session from browser...');
                 percentEl.textContent = 'กำลังเตรียมอัพโหลด...';
 
                 // ── Step 2: Browser สร้าง Resumable Upload Session ตรงกับ Drive API ──
@@ -4023,7 +4004,6 @@
                     throw new Error('Drive API ไม่ส่ง upload URL กลับมา');
                 }
 
-                console.log('[Upload] Step 3: Uploading file directly to Drive...');
                 percentEl.textContent = '0%';
 
                 // ── Step 3: PUT ไฟล์ตรงไป Google Drive ── เร็วมาก! ──
@@ -4066,7 +4046,6 @@
                                     uploadedAt: new Date().toISOString()
                                 }
                             }));
-                            console.log('[Upload] ✅ Direct upload complete. File ID:', driveResponse.id);
                             resolve();
                         } else {
                             console.error('[Upload] Drive PUT failed:', xhr.status, xhr.responseText);

@@ -1,0 +1,29 @@
+# ======================================================
+# Mentra Manager — .gitignore
+# ======================================================
+
+# ⚠️ SECURITY: ไฟล์ config ที่มี API Key และ Secret
+# ห้าม commit ขึ้น repository สาธารณะเด็ดขาด!
+assets/js/firebase-config.js
+
+# ตัวอย่าง config (ให้ใช้ไฟล์นี้เป็น template)
+# assets/js/firebase-config.example.js  ← ไม่ได้ ignore, commit ได้
+
+# ======================================================
+# Temp / Debug files (ไม่ควรอยู่ใน repo)
+# ======================================================
+check2.js
+check3.js
+temp.js
+temp_script.js
+
+# ======================================================
+# OS / Editor files
+# ======================================================
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# Node modules (ถ้าใช้ npm ในอนาคต)
+node_modules/

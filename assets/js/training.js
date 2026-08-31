@@ -9,17 +9,9 @@
             const cfg = await import('./firebase-config.js');
             FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
         } catch (e) {
-            console.warn('firebase-config.js not found, using defaults');
         }
         if (!FIREBASE_CONFIG) {
-            FIREBASE_CONFIG = {
-                apiKey: "AIzaSyDRGKOGn4v7of-AH8HuZTtk8FfI24NHdCU",
-                authDomain: "mentra-manager-e039f.firebaseapp.com",
-                projectId: "mentra-manager-e039f",
-                storageBucket: "mentra-manager-e039f.firebasestorage.app",
-                messagingSenderId: "563604754745",
-                appId: "1:563604754745:web:ea0892fafb48b74dcf58e8"
-            };
+            throw new Error('ไม่พบไฟล์ firebase-config.js กรุณาติดต่อผู้ดูแลระบบ');
         }
 
         // ใช้ default app instance เดียวกับ index.html/dashboard.html (สำคัญมาก!)
