@@ -995,16 +995,26 @@
                 filter: none !important;
             }
             #pPageWrapper, #pInvPageWrapper {
+                width: 100% !important;
+                max-width: 210mm !important;
+                min-height: 295mm !important;
+                box-sizing: border-box !important;
+                padding: 8mm 12mm 8mm 12mm !important;
+                margin: 0 auto !important;
                 page-break-inside: auto !important;
                 break-inside: auto !important;
                 overflow: visible !important;
             }
-            /* Page setup */
+            /* Page setup: 0 margin so internal wrapper padding defines exact printable A4 boundary */
             @page {
                 size: A4 portrait;
-                margin: 15mm 12mm 15mm 12mm;
+                margin: 0;
             }
-            /* Table/page break rules */
+            /* Component page-break rules */
+            #pHeaderSection, #pInfoRow, #pSummaryTotalsBox, #pLeftSummarySection, #pBuyerSignatureBlock, #pSellerSignatureBlock, [id*="Signature"] {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
             #pTablesContainer, #pInvTablesContainer {
                 display: block !important;
                 page-break-inside: auto !important;
@@ -1679,15 +1689,15 @@
             <!-- Hidden Print Template for html2pdf -->
             <div id="printArea" class="print-area" style="display: none; background: #ffffff;">
                 <div id="pPageWrapper"
-                    style="width: 715px; min-height: 1010px; padding: 16px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column; justify-content: space-between; overflow: visible;">
+                    style="width: 715px; min-height: 1010px; padding: 12px 24px 14px 24px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.5; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column; justify-content: space-between; overflow: visible;">
 
                     <!-- ══ HEADER ══ -->
                     <div id="pHeaderSection"
-                        style="display: flex; flex-direction: column; padding-bottom: 12px; margin-bottom: 14px; border-bottom: 2.5px solid var(--pdf-primary, #1A6FBF); width: 100%; box-sizing: border-box; gap: 10px;">
+                        style="display: flex; flex-direction: column; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 2.5px solid var(--pdf-primary, #1A6FBF); width: 100%; box-sizing: border-box; gap: 8px; page-break-inside: avoid; break-inside: avoid;">
                         
                         <!-- Row 1 (Top) -->
                         <div id="header-row-1" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                            <div id="zone-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 12px;">
+                            <div id="zone-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 10px;">
                                 <div id="block-logo" class="header-block">
                                     <img id="pLogoImg" src="../../assets/img/logo.png"
                                         style="height: 56px; max-width: 250px; object-fit: contain; flex-shrink: 0;"
@@ -1695,15 +1705,15 @@
                                 </div>
                                 <div id="block-company" class="header-block">
                                     <div id="pIssuerName"
-                                        style="font-size: 14.5px; font-weight: 700; color: #1e1b4b; line-height: 1.3; white-space: nowrap; letter-spacing: normal;">
+                                        style="font-size: 14px; font-weight: 700; color: #1e1b4b; line-height: 1.3; white-space: nowrap; letter-spacing: normal;">
                                         บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
                                     <div id="pIssuerSubName"
-                                        style="font-size: 10.5px; font-weight: 600; color: var(--pdf-secondary, #E07B2F); margin: 1px 0 4px 0; white-space: nowrap;">
+                                        style="font-size: 10.5px; font-weight: 600; color: var(--pdf-secondary, #E07B2F); margin: 1px 0 3px 0; white-space: nowrap;">
                                         MENTRA SOLUTION CO., LTD. (Head Office)</div>
-                                    <div id="pIssuerAddress" style="font-size: 11px; color: #6b7280; line-height: 1.5; letter-spacing: normal;">
+                                    <div id="pIssuerAddress" style="font-size: 10.5px; color: #6b7280; line-height: 1.4; letter-spacing: normal;">
                                         115/123 ม.12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540
                                     </div>
-                                    <div id="pIssuerContact" style="font-size: 11px; color: #6b7280; letter-spacing: normal;">
+                                    <div id="pIssuerContact" style="font-size: 10.5px; color: #6b7280; letter-spacing: normal;">
                                         <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;
                                         <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">EMAIL:</span>
                                         wattanachai966@gmail.com &nbsp;
@@ -1712,16 +1722,16 @@
                                 </div>
                             </div>
                             <div id="hResize1" class="header-zone-resizer" data-row="1" data-idx="0"></div>
-                            <div id="zone-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;">
+                            <div id="zone-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
                             </div>
                             <div id="hResize2" class="header-zone-resizer" data-row="1" data-idx="1"></div>
-                            <div id="zone-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 12px;">
+                            <div id="zone-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 10px;">
                                 <div id="block-title" class="header-block">
                                     <div
-                                        style="font-size: 21px; font-weight: 800; color: var(--pdf-primary, #1A6FBF); line-height: 1.1; white-space: nowrap; letter-spacing: normal;">
+                                        style="font-size: 20px; font-weight: 800; color: var(--pdf-primary, #1A6FBF); line-height: 1.1; white-space: nowrap; letter-spacing: normal;">
                                         ใบเสนอราคา</div>
                                     <div id="pIssuerQuotationText"
-                                        style="font-size: 11px; color: #6b7280; font-weight: 700; letter-spacing: 2px; margin-top: 3px;">
+                                        style="font-size: 10.5px; color: #6b7280; font-weight: 700; letter-spacing: 2px; margin-top: 2px;">
                                         QUOTATION</div>
                                 </div>
                             </div>
@@ -1729,25 +1739,25 @@
                         
                         <!-- Row 2 (Middle) -->
                         <div id="header-row-2" style="display: none; justify-content: space-between; align-items: flex-start; width: 100%;">
-                            <div id="zone-mid-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 12px;"></div>
+                            <div id="zone-mid-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 10px;"></div>
                             <div id="hResize3" class="header-zone-resizer" data-row="2" data-idx="0"></div>
-                            <div id="zone-mid-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;"></div>
+                            <div id="zone-mid-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;"></div>
                             <div id="hResize4" class="header-zone-resizer" data-row="2" data-idx="1"></div>
-                            <div id="zone-mid-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 12px;"></div>
+                            <div id="zone-mid-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 10px;"></div>
                         </div>
 
                         <!-- Row 3 (Bottom) -->
-                        <div id="header-row-3" style="display: none; justify-content: space-between; align-items: flex-start; width: 100%; gap: 10px;">
-                            <div id="zone-bot-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 12px;"></div>
-                            <div id="zone-bot-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;"></div>
-                            <div id="zone-bot-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 12px;"></div>
+                        <div id="header-row-3" style="display: none; justify-content: space-between; align-items: flex-start; width: 100%; gap: 8px;">
+                            <div id="zone-bot-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 10px;"></div>
+                            <div id="zone-bot-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;"></div>
+                            <div id="zone-bot-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 10px;"></div>
                         </div>
 
                     </div>
 
                     <!-- ══ RECIPIENT + DOC INFO ══ -->
                     <div id="pInfoRow"
-                        style="display: flex; gap: 0; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e8edf5;">
+                        style="display: flex; gap: 0; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #e8edf5; page-break-inside: avoid; break-inside: avoid;">
                         <!-- Left: Recipient -->
                         <div id="pRecipientPanel" style="flex: 1.4; padding: 0 20px 0 0;">
                             <div id="pRecipientTitle"
@@ -1834,7 +1844,7 @@
 
 
                     <!-- ══ INTRO ══ -->
-                    <p id="pIntroText" style="margin-bottom: 10px; font-size: 11px; color: #374151; letter-spacing: normal;">ทางบริษัทฯ
+                    <p id="pIntroText" style="margin-bottom: 8px; font-size: 11px; color: #374151; letter-spacing: normal;">ทางบริษัทฯ
                         มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:</p>
 
                     <!-- ══ ITEMS TABLE ══ -->
@@ -1843,50 +1853,50 @@
                     </div>
 
                     <!-- ══ SUMMARY + REMARK ══ -->
-                    <div style="display: flex; gap: 18px; align-items: flex-start; margin-top: 15px;">
+                    <div style="display: flex; gap: 14px; align-items: flex-start; margin-top: 10px; page-break-inside: avoid; break-inside: avoid;">
                         <!-- Left area (Remark + Baht Text) -->
                         <div style="flex: 1; display: flex; flex-direction: column;" id="pLeftSummarySection">
                             <!-- Remark -->
                             <div style="flex: 1;" id="pRemarkContainer">
                                 <div
-                                    style="font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 5px; letter-spacing: normal;">
+                                    style="font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 4px; letter-spacing: normal;">
                                     หมายเหตุ (Remark):</div>
                                 <div id="pRemark"
-                                    style="font-size: 11px; color: #4b5563; padding: 9px 12px; background: #f9fafb; border-radius: 5px; border: 1px solid #e5e7eb; min-height: 52px; white-space: normal; line-height: 1.6; letter-spacing: normal;">
+                                    style="font-size: 11px; color: #4b5563; padding: 6px 10px; background: #f9fafb; border-radius: 5px; border: 1px solid #e5e7eb; min-height: 44px; white-space: normal; line-height: 1.5; letter-spacing: normal;">
                                     -</div>
                             </div>
                             <!-- Left Baht Text Placeholder -->
                             <div id="pLeftBahtTextContainer"></div>
                         </div>
                         <!-- Totals -->
-                        <div id="pSummaryTotalsBox" style="flex: 0.85; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column;">
+                        <div id="pSummaryTotalsBox" style="flex: 0.85; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; page-break-inside: avoid; break-inside: avoid;">
                             <table
                                 style="width: 100%; border-collapse: collapse; font-size: 11px; letter-spacing: normal;">
                                 <tr>
-                                    <td style="padding: 6px 12px; color: #6b7280; letter-spacing: normal;">รวมเงิน (Sub
+                                    <td style="padding: 5px 10px; color: #6b7280; letter-spacing: normal;">รวมเงิน (Sub
                                         Total):</td>
-                                    <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
+                                    <td style="padding: 5px 10px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
                                         id="pSubTotal">0.00</td>
                                 </tr>
                                 <tr>
                                     <td
-                                        style="padding: 6px 12px; color: #6b7280; white-space: nowrap; letter-spacing: normal;">
+                                        style="padding: 5px 10px; color: #6b7280; white-space: nowrap; letter-spacing: normal;">
                                         ภาษีมูลค่าเพิ่ม 7% (VAT):</td>
-                                    <td style="padding: 6px 12px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
+                                    <td style="padding: 5px 10px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
                                         id="pVat">0.00</td>
                                 </tr>
                                 <tr style="background: var(--pdf-primary-light, #e8f1fb);">
                                     <td
-                                        style="padding: 8px 12px; color: var(--pdf-primary, #1A6FBF); font-weight: 700; font-size: 12px; white-space: nowrap; letter-spacing: normal;">
+                                        style="padding: 6px 10px; color: var(--pdf-primary, #1A6FBF); font-weight: 700; font-size: 11.5px; white-space: nowrap; letter-spacing: normal;">
                                         จำนวนเงินรวมทั้งสิ้น:</td>
-                                    <td style="padding: 8px 12px; text-align: right; color: var(--pdf-primary, #1A6FBF); font-weight: 700; font-size: 12px; letter-spacing: normal;"
+                                    <td style="padding: 6px 10px; text-align: right; color: var(--pdf-primary, #1A6FBF); font-weight: 700; font-size: 11.5px; letter-spacing: normal;"
                                         id="pGrandTotal">0.00</td>
                                 </tr>
                             </table>
                             <!-- Right Baht Text Placeholder -->
                             <div id="pRightBahtTextContainer">
                                 <div id="pBahtText"
-                                    style="text-align: center; font-weight: 600; font-size: 11px; color: var(--pdf-primary, #1A6FBF); padding: 6px 12px; background: #fff; letter-spacing: normal;">
+                                    style="text-align: center; font-weight: 600; font-size: 11px; color: var(--pdf-primary, #1A6FBF); padding: 5px 10px; background: #fff; letter-spacing: normal;">
                                     (ศูนย์บาทถ้วน)
                                 </div>
                             </div>
@@ -1897,7 +1907,7 @@
                     <div style="flex-grow: 1;"></div>
 
                     <!-- ══ SIGNATURE BLOCK ══ -->
-                    <div style="border-top: 1px solid #cbd5e1; padding-top: 16px; margin-top: 18px;">
+                    <div style="border-top: 1px solid #cbd5e1; padding-top: 10px; margin-top: 10px; page-break-inside: avoid; break-inside: avoid;">
                         <div
                             style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px;">
                             <!-- Left: Buyer -->
@@ -2128,6 +2138,18 @@
                         <option value="horizontal">เฉพาะแนวนอน (Horizontal)</option>
                         <option value="none">ไม่มีเส้นขอบ (No Borders)</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>ระยะความสูงแถวตาราง (<span id="rowPaddingLabel">5</span>px)</label>
+                    <input type="range" id="settingTableRowPadding" min="2" max="14" value="5" step="0.5" class="form-control" oninput="document.getElementById('rowPaddingLabel').innerText=this.value; applyLivePreview()">
+                </div>
+                <div class="form-group">
+                    <label>ระยะความสูงหัวตาราง (<span id="hdrPaddingLabel">6.5</span>px)</label>
+                    <input type="range" id="settingTableHeaderPadding" min="3" max="14" value="6.5" step="0.5" class="form-control" oninput="document.getElementById('hdrPaddingLabel').innerText=this.value; applyLivePreview()">
+                </div>
+                <div class="form-group">
+                    <label>ระยะห่างด้านบนตาราง (<span id="tableMarginTopLabel">0</span>px)</label>
+                    <input type="range" id="settingTableMarginTop" min="0" max="25" value="0" step="1" class="form-control" oninput="document.getElementById('tableMarginTopLabel').innerText=this.value; applyLivePreview()">
                 </div>
                 <div class="form-group">
                     <label>หัวตาราง (Header Align)</label>
@@ -2907,18 +2929,22 @@
 
             const thAlignSeq = tableHeaderAlign === 'auto' ? ['center', 'left', 'center', 'center', 'right', 'right'] : Array(6).fill(tableHeaderAlign);
 
+            const rowPadding = parseFloat(document.getElementById('settingTableRowPadding')?.value || 5);
+            const hdrPadding = parseFloat(document.getElementById('settingTableHeaderPadding')?.value || 6.5);
+            const tableMarginTop = parseFloat(document.getElementById('settingTableMarginTop')?.value || 0);
+
             const rows = document.getElementById('itemsBody').children;
             
             const createTableHTML = (isFirst = true) => `
-                <table class="pItemsTable" style="width: 100%; border-collapse: collapse; margin-top: ${isFirst ? '0' : '15px'}; margin-bottom: 0; font-family: ${fontFamily}; letter-spacing: normal; ${tableOuterBorder} ${tableBorderRadius}">
+                <table class="pItemsTable" style="width: 100%; border-collapse: collapse; margin-top: ${isFirst ? tableMarginTop + 'px' : '15px'}; margin-bottom: 0; font-family: ${fontFamily}; letter-spacing: normal; ${tableOuterBorder} ${tableBorderRadius}">
                     <thead>
                         <tr class="pTableHeadRow" style="background-color: ${thBgColor}; border-bottom: ${thBorderBottom};">
-                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[0]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 38px;">ลำดับ</th>
-                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[1]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; border-right: ${thBorderRightVal};">รายการสินค้า / รายละเอียด</th>
-                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[2]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 50px;">จำนวน</th>
-                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[3]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 50px;">หน่วย</th>
-                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[4]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 95px;">ราคา/หน่วย</th>
-                            <th style="padding: 9px 7px; text-align: ${thAlignSeq[5]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; width: 110px;">จำนวนเงิน</th>
+                            <th style="padding: ${hdrPadding}px 6px; text-align: ${thAlignSeq[0]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 38px;">ลำดับ</th>
+                            <th style="padding: ${hdrPadding}px 6px; text-align: ${thAlignSeq[1]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; border-right: ${thBorderRightVal};">รายการสินค้า / รายละเอียด</th>
+                            <th style="padding: ${hdrPadding}px 6px; text-align: ${thAlignSeq[2]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 50px;">จำนวน</th>
+                            <th style="padding: ${hdrPadding}px 6px; text-align: ${thAlignSeq[3]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 50px;">หน่วย</th>
+                            <th style="padding: ${hdrPadding}px 6px; text-align: ${thAlignSeq[4]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; border-right: ${thBorderRightVal}; width: 95px;">ราคา/หน่วย</th>
+                            <th style="padding: ${hdrPadding}px 6px; text-align: ${thAlignSeq[5]}; font-size: ${headerFontSize}px; font-weight: 600; color: ${thTextColor} !important; background-color: ${thBgColor} !important; letter-spacing: normal; white-space: nowrap; width: 110px;">จำนวนเงิน</th>
                         </tr>
                     </thead>
                     <tbody style="letter-spacing: normal;">
@@ -2977,19 +3003,19 @@
                 if (isHeader) {
                     currentTableHTML += `
                         <tr style="${rowBorder} letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
-                            <td style="padding: 7px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
-                            <td colspan="5" style="padding: 7px 6px 7px ${descPadding}; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; letter-spacing: normal !important; text-align: left;">${descContent}</td>
+                            <td style="padding: ${rowPadding}px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
+                            <td colspan="5" style="padding: ${rowPadding}px 6px ${rowPadding}px ${descPadding}; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; letter-spacing: normal !important; text-align: left;">${descContent}</td>
                         </tr>
                     `;
                 } else {
                     currentTableHTML += `
                         <tr style="${rowBorder} letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
-                            <td style="padding: 7px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
-                            <td style="padding: 7px 6px 7px ${descPadding}; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">${descContent}</td>
-                            <td style="padding: 7px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
-                            <td style="padding: 7px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
-                            <td style="padding: 7px 6px; text-align: right; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
-                            <td style="padding: 7px 6px; text-align: right; ${cellBorder} font-weight: 500; font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
+                            <td style="padding: ${rowPadding}px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
+                            <td style="padding: ${rowPadding}px 6px ${rowPadding}px ${descPadding}; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">${descContent}</td>
+                            <td style="padding: ${rowPadding}px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
+                            <td style="padding: ${rowPadding}px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
+                            <td style="padding: ${rowPadding}px 6px; text-align: right; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
+                            <td style="padding: ${rowPadding}px 6px; text-align: right; ${cellBorder} font-weight: 500; font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
                         </tr>
                     `;
                 }
@@ -3004,12 +3030,12 @@
                     const zebraColor = (zebraStripes && i % 2 === 1) ? '#f8fafc' : 'transparent';
                     currentTableHTML += `
                         <tr style="${rowBorder} letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
-                            <td style="padding: 5px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                            <td style="padding: 5px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; text-align: center; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                            <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
                         </tr>
                     `;
                 }
@@ -3478,9 +3504,12 @@
                 itemsPage2Plus: document.getElementById('settingItemsPage2Plus')?.value || '18',
                 primaryColor: document.getElementById('settingPrimaryColor')?.value || '#1A6FBF',
                 showLogo: document.getElementById('settingShowLogo') ? document.getElementById('settingShowLogo').checked : true,
-                logoSize: document.getElementById('settingLogoSize')?.value || '80',
-                fontSize: document.getElementById('settingFontSize')?.value || '14',
+                logoSize: document.getElementById('settingLogoSize')?.value || '56',
+                fontSize: document.getElementById('settingFontSize')?.value || '11',
                 headerFontSize: document.getElementById('settingHeaderFontSize')?.value || '11',
+                rowPadding: document.getElementById('settingTableRowPadding')?.value || '5',
+                hdrPadding: document.getElementById('settingTableHeaderPadding')?.value || '6.5',
+                tableMarginTop: document.getElementById('settingTableMarginTop')?.value || '0',
                 sellerName: document.getElementById('settingSellerName')?.value || '',
                 sellerRole: document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา',
                 leftSignerTitle: document.getElementById('settingLeftSignerTitle')?.value || 'ผู้สั่งซื้อ',
@@ -4043,6 +4072,9 @@
                 logoSize: 56,
                 fontSize: 11,
                 headerFontSize: 11,
+                rowPadding: 5,
+                hdrPadding: 6.5,
+                tableMarginTop: 0,
                 sellerName: shopSigner,
                 sellerRole: 'ผู้เสนอราคา',
                 headerDirection: 'row',
@@ -4115,6 +4147,9 @@
             }
             if (savedSettings && !savedSettings.headerDirection) {
                 finalSettings.headerDirection = defaultSettings.headerDirection;
+            }
+            if (finalSettings.fontSize && parseFloat(finalSettings.fontSize) >= 14) {
+                finalSettings.fontSize = 11;
             }
             
             applyTemplateSettings(finalSettings);
@@ -4550,9 +4585,12 @@
                     itemsPage2Plus: document.getElementById('settingItemsPage2Plus')?.value || '18',
                     primaryColor: document.getElementById('settingPrimaryColor')?.value || '#1A6FBF',
                     showLogo: document.getElementById('settingShowLogo') ? document.getElementById('settingShowLogo').checked : true,
-                    logoSize: document.getElementById('settingLogoSize')?.value || '80',
-                    fontSize: document.getElementById('settingFontSize')?.value || '14',
+                    logoSize: document.getElementById('settingLogoSize')?.value || '56',
+                    fontSize: document.getElementById('settingFontSize')?.value || '11',
                     headerFontSize: document.getElementById('settingHeaderFontSize')?.value || '11',
+                    rowPadding: document.getElementById('settingTableRowPadding')?.value || '5',
+                    hdrPadding: document.getElementById('settingTableHeaderPadding')?.value || '6.5',
+                    tableMarginTop: document.getElementById('settingTableMarginTop')?.value || '0',
                     sellerName: document.getElementById('settingSellerName')?.value || '',
                     sellerRole: document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา',
                     leftSignerTitle: document.getElementById('settingLeftSignerTitle')?.value || 'ผู้สั่งซื้อ',
@@ -4991,8 +5029,36 @@
             if (settings.primaryColor) document.getElementById('settingPrimaryColor').value = settings.primaryColor;
             if (settings.showLogo !== undefined) document.getElementById('settingShowLogo').checked = settings.showLogo;
             if (settings.logoSize) document.getElementById('settingLogoSize').value = settings.logoSize;
-            if (settings.fontSize) document.getElementById('settingFontSize').value = settings.fontSize;
-            if (settings.headerFontSize) document.getElementById('settingHeaderFontSize').value = settings.headerFontSize;
+            if (settings.fontSize) {
+                const fsEl = document.getElementById('settingFontSize');
+                if (fsEl) fsEl.value = settings.fontSize;
+                const fsLbl = document.getElementById('fontSizeLabel');
+                if (fsLbl) fsLbl.innerText = settings.fontSize;
+            }
+            if (settings.headerFontSize) {
+                const hfsEl = document.getElementById('settingHeaderFontSize');
+                if (hfsEl) hfsEl.value = settings.headerFontSize;
+                const hfsLbl = document.getElementById('hdrFontSizeLabel');
+                if (hfsLbl) hfsLbl.innerText = settings.headerFontSize;
+            }
+            if (settings.rowPadding !== undefined) {
+                const rpEl = document.getElementById('settingTableRowPadding');
+                if (rpEl) rpEl.value = settings.rowPadding;
+                const rpLbl = document.getElementById('rowPaddingLabel');
+                if (rpLbl) rpLbl.innerText = settings.rowPadding;
+            }
+            if (settings.hdrPadding !== undefined) {
+                const hpEl = document.getElementById('settingTableHeaderPadding');
+                if (hpEl) hpEl.value = settings.hdrPadding;
+                const hpLbl = document.getElementById('hdrPaddingLabel');
+                if (hpLbl) hpLbl.innerText = settings.hdrPadding;
+            }
+            if (settings.tableMarginTop !== undefined) {
+                const tmtEl = document.getElementById('settingTableMarginTop');
+                if (tmtEl) tmtEl.value = settings.tableMarginTop;
+                const tmtLbl = document.getElementById('tableMarginTopLabel');
+                if (tmtLbl) tmtLbl.innerText = settings.tableMarginTop;
+            }
             if (settings.sellerName) document.getElementById('settingSellerName').value = settings.sellerName;
             if (settings.sellerRole) document.getElementById('settingSellerRole').value = settings.sellerRole;
             if (settings.leftSignerTitle) document.getElementById('settingLeftSignerTitle').value = settings.leftSignerTitle;
