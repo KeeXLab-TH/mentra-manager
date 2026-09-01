@@ -1,0 +1,56 @@
+{
+  "_meta": {
+    "exportedAt": "2026-09-01T12:00:00.000Z",
+    "exportedBy": "admin@mentra.com",
+    "projectId": "mentra-manager-e039f",
+    "version": "1.0"
+  },
+  "collections": {
+    "users": {
+      "SAMPLE_USER_UID_123456": {
+        "uid": "SAMPLE_USER_UID_123456",
+        "username": "admin",
+        "email": "admin@mentra.com",
+        "displayName": "ผู้ดูแลระบบ",
+        "firstName": "Admin",
+        "lastName": "Mentra",
+        "role": "admin",
+        "status": "approved",
+        "allowedPages": {
+          "dashboard.html": true,
+          "materials_purchasing.html": true,
+          "materials_purchasing_company.html": true,
+          "quotation.html": true,
+          "products.html": true,
+          "equipments.html": true,
+          "external_training.html": true,
+          "calendar.html": true,
+          "crm.html": true,
+          "register_training.html": true,
+          "ocr_table.html": true,
+          "certificate_template.html": true,
+          "internship_journal.html": true,
+          "business_card.html": true
+        },
+        "createdAt": "2026-09-01T00:00:00.000Z",
+        "lastActiveAt": "2026-09-01T12:00:00.000Z"
+      }
+    },
+    "usernames": {
+      "admin": {
+        "uid": "SAMPLE_USER_UID_123456",
+        "username": "admin",
+        "email": "admin@mentra.com",
+        "role": "admin"
+      }
+    },
+    "activity_logs": {
+      "sample_log_001": {
+        "time": "12:00:00",
+        "type": "db",
+        "message": "@admin: สำรองข้อมูลระบบทั้งหมด",
+        "timestamp": "2026-09-01T12:00:00.000Z"
+      }
+    }
+  }
+}

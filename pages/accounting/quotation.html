@@ -57,7 +57,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Sarabun', 'Tahoma', sans-serif;
+            font-family: 'Kanit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         /* ================================================
@@ -1641,6 +1641,17 @@
                         </div>
                         
                         <div style="display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+                            <!-- Quick Digital Signature Toggle & Upload Group -->
+                            <div style="display: inline-flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 3px 6px; gap: 6px;">
+                                <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: 600; color: #1e293b; cursor: pointer; padding: 0.4rem 0.5rem; user-select: none;">
+                                    <input type="checkbox" id="quickToggleSignature" style="width: 16px; height: 16px; accent-color: var(--primary-color, #1A6FBF); cursor: pointer;" onchange="toggleQuickSignature(this.checked)">
+                                    <span id="quickToggleSignatureLabel">✍️ ลายเซ็นอิเล็กทรอนิกส์</span>
+                                </label>
+                                <button type="button" class="btn" onclick="openSignatureUploaderDirect()" title="อัปโหลด / ปรับแต่งรูปลายเซ็น" style="padding: 4px 10px; font-size: 0.82rem; border-radius: 8px; border: 1px dashed #86efac; color: #15803d; background: #f0fdf4; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
+                                    <i class='bx bx-upload'></i> แนบรูป
+                                </button>
+                            </div>
+
                             <button class="btn" onclick="openHistoryModal()"
                                 style="padding: 0.65rem 1.25rem; font-size: 0.9rem; border: 1px solid #e2e8f0; color: #475569; background: #f8fafc; border-radius: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;"
                                 onmouseover="this.style.background='#eff6ff'; this.style.color='#2563eb'; this.style.borderColor='#bfdbfe';" onmouseout="this.style.background='#f8fafc'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';">
@@ -1668,7 +1679,7 @@
             <!-- Hidden Print Template for html2pdf -->
             <div id="printArea" class="print-area" style="display: none; background: #ffffff;">
                 <div id="pPageWrapper"
-                    style="width: 715px; padding: 14px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: block; overflow: visible;">
+                    style="width: 715px; min-height: 1010px; padding: 16px 28px 26px 28px; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.6; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column; justify-content: space-between; overflow: visible;">
 
                     <!-- ══ HEADER ══ -->
                     <div id="pHeaderSection"
@@ -1922,7 +1933,10 @@
                                     ขอแสดงความนับถือ / Sincerely Yours,</div>
                                 <!-- Signature Space -->
                                 <div id="pSellerSignatureSpace"
-                                    style="height: 40px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 10px;">
+                                    style="height: 40px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 10px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: visible;">
+                                    <div id="pSellerSignatureWrapper" style="position: absolute; bottom: -4px; left: 50%; transform: translate(-50%, 0); cursor: grab; user-select: none; display: inline-flex; align-items: center; justify-content: center; z-index: 5; transition: transform 0.05s linear;" title="คลิกลากเพื่อปรับตำแหน่งลายเซ็น">
+                                        <img id="pSellerSignatureImg" src="" style="display: none; max-height: 45px; max-width: 220px; object-fit: contain; pointer-events: none;" alt="Digital Signature">
+                                    </div>
                                 </div>
                                 <div id="pSellerName"
                                     style="font-size: 11px; color: #374151; margin-top: 6px; font-weight: 600; font-family: 'Sarabun', sans-serif;">
@@ -2149,7 +2163,46 @@
 
                 <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
 
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ผู้ลงนาม / ลายเซ็น</h4>
+                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ผู้ลงนาม / ลายเซ็นอิเล็กทรอนิกส์</h4>
+                
+                <!-- Digital Signature Toggle, Gallery & Multi-Signature Selection Box -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #166534; font-size: 0.9rem; margin: 0; cursor: pointer;">
+                            <input type="checkbox" id="settingUseSignatureImage" style="width: 17px; height: 17px; accent-color: #16a34a; cursor: pointer;" onchange="handleUseSignatureChange(this.checked)">
+                            <span>แนบรูปลายเซ็น / ตราประทับ</span>
+                        </label>
+                        <button type="button" onclick="document.getElementById('settingSignatureFileInput').click()" class="btn btn-outline" style="font-size: 0.78rem; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border-color: #86efac; color: #15803d; background: white; font-weight: 600;">
+                            <i class='bx bx-upload'></i> อัปโหลดรูปใหม่
+                        </button>
+                    </div>
+
+                    <!-- Hidden File Input for uploading signatures -->
+                    <input type="file" id="settingSignatureFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="handleSignatureFileUpload(event)">
+
+                    <!-- Saved Signatures Gallery Grid -->
+                    <div style="font-size: 0.76rem; font-weight: 600; color: #64748b; margin-bottom: 5px;">
+                        คลังรูปภาพ (คลิกรูปเพื่อเลือกใส่/นำออกจากเอกสาร):
+                    </div>
+                    <div id="savedSignaturesGallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 6px; margin-bottom: 12px; max-height: 130px; overflow-y: auto; padding: 2px;">
+                        <!-- Gallery cards injected via JS -->
+                    </div>
+
+                    <!-- Active Signatures Layers on Document -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 4px;">
+                            <i class='bx bx-layer' style="color: #2563eb;"></i> รูปที่แสดงบนเอกสาร (<span id="activeSigCount">0</span> รูป)
+                        </span>
+                        <button type="button" onclick="resetAllSignatureOffsets()" style="background: none; border: none; font-size: 0.75rem; color: #2563eb; cursor: pointer; text-decoration: underline; padding: 0;">
+                            รีเซ็ตตำแหน่งทั้งหมด
+                        </button>
+                    </div>
+
+                    <div id="activeSignaturesList" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+                        <!-- Dynamic Layer Cards for each active signature on document -->
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>รูปแบบช่องเซ็นผู้สั่งซื้อ (Buyer Signature)</label>
                     <select id="settingSignatureFormat" class="form-control" onchange="applyLivePreview()">
@@ -2159,7 +2212,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>ขนาดพื้นที่เซ็นชื่อ (Signature Size)</label>
+                    <label>ขนาดความสูงพื้นที่เซ็นชื่อ (Signature Box Height)</label>
                     <select id="settingSignatureSize" class="form-control" onchange="applyLivePreview()">
                         <option value="30">เล็ก (Small)</option>
                         <option value="40" selected>ปานกลาง (Medium)</option>
@@ -2192,7 +2245,7 @@
         </div>
 
         <!-- Right Area: Preview Canvas -->
-        <div id="livePreviewContainer" style="flex: 1; overflow: auto; padding: 40px; display: flex; justify-content: center; align-items: flex-start; background: #e2e8f0;">
+        <div id="livePreviewContainer" style="flex: 1; overflow: auto; padding: 30px 40px; display: flex; justify-content: center; align-items: flex-start; background: #64748b;">
             <!-- printArea will be moved here dynamically when opened -->
         </div>
     </div>
@@ -2363,6 +2416,28 @@
                                 window.quotationTemplates = JSON.parse(localTemplates);
                             }
                         }
+
+                        window.savedSignaturesByCompany = {};
+                        if (userData && userData.savedSignaturesByCompany) {
+                            window.savedSignaturesByCompany = userData.savedSignaturesByCompany;
+                            localStorage.setItem('saved_signatures_by_company', JSON.stringify(window.savedSignaturesByCompany));
+                        } else {
+                            const localCompanySigs = localStorage.getItem('saved_signatures_by_company');
+                            if (localCompanySigs) {
+                                try {
+                                    window.savedSignaturesByCompany = JSON.parse(localCompanySigs);
+                                } catch(e) {
+                                    window.savedSignaturesByCompany = {};
+                                }
+                            } else {
+                                const legacySigs = (userData && userData.savedSignatures) || JSON.parse(localStorage.getItem('saved_signatures') || '[]');
+                                if (Array.isArray(legacySigs) && legacySigs.length > 0) {
+                                    window.savedSignaturesByCompany["บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)"] = legacySigs;
+                                    localStorage.setItem('saved_signatures_by_company', JSON.stringify(window.savedSignaturesByCompany));
+                                }
+                            }
+                        }
+                        renderSavedSignaturesGallery();
 
                         // Migration from old single template
                         if (Object.keys(window.quotationTemplates).length === 0) {
@@ -3308,6 +3383,569 @@
         let printAreaOriginalParent = null;
         let printAreaOriginalNextSibling = null;
 
+        // --- Per-Company Multi-Signature Library & Draggable Management ---
+        window.savedSignaturesByCompany = {};
+        window.activeSignatures = [];
+
+        function getCurrentIssuerName() {
+            const displayEl = document.getElementById('currentIssuerDisplay');
+            const name = displayEl ? displayEl.innerText.trim() : '';
+            return (name && !name.includes('กรุณาเลือกบริษัท')) ? name : 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+        }
+
+        function getSavedSignatures(targetCompany) {
+            const company = targetCompany || getCurrentIssuerName();
+            if (!window.savedSignaturesByCompany) {
+                window.savedSignaturesByCompany = {};
+            }
+
+            if (!window.savedSignaturesByCompany[company]) {
+                const stored = localStorage.getItem('saved_signatures_by_company');
+                if (stored) {
+                    try {
+                        window.savedSignaturesByCompany = JSON.parse(stored);
+                    } catch(e) {
+                        window.savedSignaturesByCompany = {};
+                    }
+                }
+            }
+
+            if (!window.savedSignaturesByCompany[company] || !Array.isArray(window.savedSignaturesByCompany[company])) {
+                window.savedSignaturesByCompany[company] = [];
+            }
+
+            return window.savedSignaturesByCompany[company] || [];
+        }
+
+        function renderSavedSignaturesGallery() {
+            const container = document.getElementById('savedSignaturesGallery');
+            if (!container) return;
+
+            const company = getCurrentIssuerName();
+            const list = getSavedSignatures(company);
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 12px; color: #94a3b8; font-size: 0.78rem; background: white; border: 1px dashed #cbd5e1; border-radius: 8px;">
+                        ยังไม่มีรูปในคลังของ "${company}" <button type="button" onclick="document.getElementById('settingSignatureFileInput').click()" style="color: #16a34a; background: none; border: none; font-weight: 600; cursor: pointer; text-decoration: underline;">+ อัปโหลดรูปแรก</button>
+                    </div>
+                `;
+                renderActiveSignaturesList();
+                return;
+            }
+
+            let html = '';
+            list.forEach((sig) => {
+                const isAdded = (window.activeSignatures && window.activeSignatures.some(a => a.sigId === sig.id || a.dataUrl === sig.dataUrl));
+                const borderStyle = isAdded ? 'border: 2px solid #2563eb; background: #eff6ff; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);' : 'border: 1px solid #cbd5e1; background: white;';
+                const badge = isAdded ? `<span style="position: absolute; top: 3px; right: 3px; background: #2563eb; color: white; border-radius: 4px; padding: 1px 4px; font-size: 8px; font-weight: 700;">บนเอกสาร</span>` : '';
+
+                html += `
+                    <div style="position: relative; border-radius: 8px; padding: 4px 6px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 68px; ${borderStyle}"
+                        onclick="toggleSignatureToDocument('${sig.id}')"
+                        title="${isAdded ? 'คลิกเพื่อนำออก หรือจัดการด้านล่าง' : 'คลิกเพื่อเพิ่มใส่เอกสาร'}"
+                        onmouseover="if(!${isAdded}) this.style.borderColor='#2563eb'"
+                        onmouseout="if(!${isAdded}) this.style.borderColor='#cbd5e1'"
+                    >
+                        ${badge}
+                        <div style="flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <img src="${sig.dataUrl}" style="max-height: 38px; max-width: 100%; object-fit: contain;">
+                        </div>
+                        <div style="font-size: 0.68rem; color: #334155; font-weight: 600; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${sig.name || 'รูปภาพ'}
+                        </div>
+                        <button type="button" onclick="event.stopPropagation(); deleteSignatureFromGallery('${sig.id}')" title="ลบออกจากคลังของบริษัทนี้" style="position: absolute; top: 3px; left: 3px; background: rgba(239, 68, 68, 0.12); color: #ef4444; border: none; border-radius: 4px; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+                            &times;
+                        </button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            renderActiveSignaturesList();
+        }
+
+        let autoSaveTemplateTimeout = null;
+        function autoSaveCurrentIssuerTemplate() {
+            const currentIssuerDisplay = getCurrentIssuerName();
+            if (!currentIssuerDisplay || currentIssuerDisplay.includes('กรุณาเลือกบริษัท')) return;
+
+            if (!window.quotationTemplates) window.quotationTemplates = {};
+
+            const useSigImg = document.getElementById('settingUseSignatureImage') ? document.getElementById('settingUseSignatureImage').checked : (window.activeSignatures && window.activeSignatures.length > 0);
+
+            const templateSettings = { 
+                itemsPage1: document.getElementById('settingItemsPage1')?.value || '14',
+                itemsPage2Plus: document.getElementById('settingItemsPage2Plus')?.value || '18',
+                primaryColor: document.getElementById('settingPrimaryColor')?.value || '#1A6FBF',
+                showLogo: document.getElementById('settingShowLogo') ? document.getElementById('settingShowLogo').checked : true,
+                logoSize: document.getElementById('settingLogoSize')?.value || '80',
+                fontSize: document.getElementById('settingFontSize')?.value || '14',
+                headerFontSize: document.getElementById('settingHeaderFontSize')?.value || '11',
+                sellerName: document.getElementById('settingSellerName')?.value || '',
+                sellerRole: document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา',
+                leftSignerTitle: document.getElementById('settingLeftSignerTitle')?.value || 'ผู้สั่งซื้อ',
+                sincerelyYours: document.getElementById('settingSincerelyYours')?.value || 'ขอแสดงความนับถือ / Sincerely Yours,',
+                headerDirection: document.getElementById('settingHeaderDirection')?.value || 'row',
+                headerRows: document.getElementById('settingHeaderRows')?.value || '3',
+                headerTextAlign: document.getElementById('settingHeaderTextAlign')?.value || 'auto',
+                headerVAlign: document.getElementById('settingHeaderVAlign')?.value || 'flex-start',
+                fontFamily: document.getElementById('settingFontFamily')?.value || "Sarabun",
+                fontWeight: document.getElementById('settingFontWeight')?.value || "400",
+                tableBorder: document.getElementById('settingTableBorder')?.value || 'rounded',
+                tableHeaderAlign: document.getElementById('settingTableHeaderAlign')?.value || 'auto',
+                tableHeaderStyle: document.getElementById('settingTableHeaderStyle')?.value || 'solid',
+                zebraStripes: document.getElementById('settingZebraStripes') ? document.getElementById('settingZebraStripes').checked : true,
+                showRemark: document.getElementById('settingShowRemark') ? document.getElementById('settingShowRemark').checked : true,
+                bahtTextPosition: document.getElementById('settingBahtTextPosition')?.value || 'right',
+                showHeaderLine: document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true,
+                signatureFormat: document.getElementById('settingSignatureFormat')?.value || 'full',
+                signatureSize: document.getElementById('settingSignatureSize')?.value || '40',
+                useSignatureImage: useSigImg,
+                activeSignatures: JSON.parse(JSON.stringify(window.activeSignatures || [])),
+                signatureImage: (window.activeSignatures && window.activeSignatures[0]) ? window.activeSignatures[0].dataUrl : '',
+                signatureImageSize: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].size || 45) : 45,
+                signatureOffsetX: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].offsetX || 0) : 0,
+                signatureOffsetY: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].offsetY || 0) : 0,
+                introText: document.getElementById('settingIntroText')?.value || 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:',
+                issuerName: currentIssuerDisplay,
+                headerLayout: typeof getCurrentHeaderLayout === 'function' ? getCurrentHeaderLayout() : null
+            };
+
+            window.quotationTemplates[currentIssuerDisplay] = templateSettings;
+            localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
+
+            // Debounced cloud sync
+            if (autoSaveTemplateTimeout) clearTimeout(autoSaveTemplateTimeout);
+            autoSaveTemplateTimeout = setTimeout(async () => {
+                if (currentUser) {
+                    try {
+                        await setDoc(doc(db, 'users', currentUser.uid), {
+                            quotationTemplates: window.quotationTemplates,
+                            savedSignaturesByCompany: window.savedSignaturesByCompany
+                        }, { merge: true });
+                    } catch (err) {
+                        console.error("Auto cloud sync quotation template error:", err);
+                    }
+                }
+            }, 800);
+        }
+
+        function toggleSignatureToDocument(sigId) {
+            const list = getSavedSignatures();
+            const sig = list.find(s => s.id === sigId);
+            if (!sig) return;
+
+            if (!window.activeSignatures) window.activeSignatures = [];
+            const existingIndex = window.activeSignatures.findIndex(a => a.sigId === sig.id);
+
+            if (existingIndex >= 0) {
+                // Remove if already on document
+                window.activeSignatures.splice(existingIndex, 1);
+            } else {
+                // Add new layer
+                const offsetCount = window.activeSignatures.length;
+                window.activeSignatures.push({
+                    id: 'act_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                    sigId: sig.id,
+                    name: sig.name || 'ลายเซ็น',
+                    dataUrl: sig.dataUrl,
+                    size: 45,
+                    offsetX: offsetCount === 0 ? 0 : (offsetCount === 1 ? 35 : -35),
+                    offsetY: offsetCount === 0 ? 0 : 5
+                });
+            }
+
+            const useSigCheckbox = document.getElementById('settingUseSignatureImage');
+            if (useSigCheckbox) {
+                useSigCheckbox.checked = (window.activeSignatures.length > 0);
+            }
+
+            syncQuickSignatureToggle();
+            renderSavedSignaturesGallery();
+            applyLivePreview();
+            autoSaveCurrentIssuerTemplate();
+        }
+
+        function renderActiveSignaturesList() {
+            const listContainer = document.getElementById('activeSignaturesList');
+            const countLabel = document.getElementById('activeSigCount');
+            if (countLabel) countLabel.innerText = window.activeSignatures ? window.activeSignatures.length : 0;
+            if (!listContainer) return;
+
+            if (!window.activeSignatures || window.activeSignatures.length === 0) {
+                listContainer.innerHTML = `
+                    <div style="text-align: center; padding: 10px; color: #94a3b8; font-size: 0.75rem; background: white; border: 1px dashed #cbd5e1; border-radius: 6px;">
+                        ยังไม่มีรูปที่เลือกใส่เอกสาร (คลิกรูปในคลังด้านบนเพื่อใส่)
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            window.activeSignatures.forEach((item, index) => {
+                html += `
+                    <div class="active-sig-card" data-id="${item.id}" style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 6px; overflow: hidden;">
+                                <span style="font-size: 0.72rem; font-weight: 700; background: #e2e8f0; color: #475569; border-radius: 4px; padding: 1px 5px;">#${index + 1}</span>
+                                <img src="${item.dataUrl}" style="height: 22px; max-width: 40px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px; background: #f8fafc;">
+                                <span style="font-size: 0.78rem; font-weight: 700; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;">${item.name || 'รูปภาพ'}</span>
+                            </div>
+                            <button type="button" onclick="removeActiveSignature('${item.id}')" title="นำรูปนี้ออกจากเอกสาร" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer; font-weight: 600;">
+                                <i class='bx bx-trash'></i> นำออก
+                            </button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 4px;">
+                            <div style="font-size: 0.72rem; color: #64748b;">
+                                <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                                    <span>แนวตั้ง (Y):</span>
+                                    <span id="lbl_y_${item.id}">${item.offsetY || 0}px</span>
+                                </div>
+                                <input type="range" id="input_y_${item.id}" min="-60" max="40" value="${item.offsetY || 0}" step="1" style="width: 100%; height: 4px; cursor: pointer; padding: 0;" oninput="updateActiveSigProperty('${item.id}', 'offsetY', this.value)">
+                            </div>
+                            <div style="font-size: 0.72rem; color: #64748b;">
+                                <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                                    <span>แนวนอน (X):</span>
+                                    <span id="lbl_x_${item.id}">${item.offsetX || 0}px</span>
+                                </div>
+                                <input type="range" id="input_x_${item.id}" min="-120" max="120" value="${item.offsetX || 0}" step="1" style="width: 100%; height: 4px; cursor: pointer; padding: 0;" oninput="updateActiveSigProperty('${item.id}', 'offsetX', this.value)">
+                            </div>
+                        </div>
+                        <div style="font-size: 0.72rem; color: #64748b;">
+                            <div style="display: flex; justify-content: space-between; font-weight: 600;">
+                                <span>ขนาดความสูง:</span>
+                                <span id="lbl_sz_${item.id}">${item.size || 45}px</span>
+                            </div>
+                            <input type="range" id="input_sz_${item.id}" min="20" max="140" value="${item.size || 45}" step="1" style="width: 100%; height: 4px; cursor: pointer; padding: 0;" oninput="updateActiveSigProperty('${item.id}', 'size', this.value)">
+                        </div>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+        }
+
+        function removeActiveSignature(activeId) {
+            if (!window.activeSignatures) return;
+            window.activeSignatures = window.activeSignatures.filter(a => a.id !== activeId);
+            const useSigCheckbox = document.getElementById('settingUseSignatureImage');
+            if (useSigCheckbox) {
+                useSigCheckbox.checked = (window.activeSignatures.length > 0);
+            }
+            syncQuickSignatureToggle();
+            renderSavedSignaturesGallery();
+            applyLivePreview();
+            autoSaveCurrentIssuerTemplate();
+        }
+
+        function updateActiveSigProperty(activeId, prop, value) {
+            if (!window.activeSignatures) return;
+            const item = window.activeSignatures.find(a => a.id === activeId);
+            if (!item) return;
+
+            const intVal = parseInt(value) || 0;
+            item[prop] = intVal;
+
+            if (prop === 'offsetY') {
+                const lbl = document.getElementById(`lbl_y_${activeId}`);
+                if (lbl) lbl.innerText = intVal + 'px';
+                const el = document.getElementById(`pSellerSigWrapper_${activeId}`);
+                if (el) el.style.bottom = `${-4 + intVal}px`;
+            } else if (prop === 'offsetX') {
+                const lbl = document.getElementById(`lbl_x_${activeId}`);
+                if (lbl) lbl.innerText = intVal + 'px';
+                const el = document.getElementById(`pSellerSigWrapper_${activeId}`);
+                if (el) el.style.transform = `translate(calc(-50% + ${intVal}px), 0)`;
+            } else if (prop === 'size') {
+                const lbl = document.getElementById(`lbl_sz_${activeId}`);
+                if (lbl) lbl.innerText = intVal + 'px';
+                const img = document.getElementById(`sig_img_${activeId}`);
+                if (img) img.style.height = `${intVal}px`;
+            }
+
+            autoSaveCurrentIssuerTemplate();
+        }
+
+        function resetAllSignatureOffsets() {
+            if (!window.activeSignatures) return;
+            window.activeSignatures.forEach((item, index) => {
+                item.offsetX = index === 0 ? 0 : (index === 1 ? 35 : -35);
+                item.offsetY = 0;
+            });
+            renderActiveSignaturesList();
+            applyLivePreview();
+            autoSaveCurrentIssuerTemplate();
+        }
+
+        async function deleteSignatureFromGallery(sigId) {
+            const company = getCurrentIssuerName();
+            if (!confirm(`ต้องการลบรูปภาพนี้ออกจากคลังของ "${company}" ใช่หรือไม่?`)) return;
+
+            let list = getSavedSignatures(company);
+            list = list.filter(s => s.id !== sigId);
+            window.savedSignaturesByCompany[company] = list;
+            localStorage.setItem('saved_signatures_by_company', JSON.stringify(window.savedSignaturesByCompany));
+
+            // Also remove from active signatures if present
+            if (window.activeSignatures) {
+                window.activeSignatures = window.activeSignatures.filter(a => a.sigId !== sigId);
+                const useSigCheckbox = document.getElementById('settingUseSignatureImage');
+                if (useSigCheckbox) {
+                    useSigCheckbox.checked = (window.activeSignatures.length > 0);
+                }
+                syncQuickSignatureToggle();
+            }
+
+            if (currentUser) {
+                try {
+                    await setDoc(doc(db, 'users', currentUser.uid), {
+                        savedSignaturesByCompany: window.savedSignaturesByCompany
+                    }, { merge: true });
+                } catch(e) {
+                    console.error("Error updating saved signatures in cloud:", e);
+                }
+            }
+
+            renderSavedSignaturesGallery();
+            applyLivePreview();
+            autoSaveCurrentIssuerTemplate();
+        }
+
+        function handleSignatureFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 3 * 1024 * 1024) {
+                alert('ขนาดไฟล์รูปภาพต้องไม่เกิน 3MB');
+                return;
+            }
+
+            const company = getCurrentIssuerName();
+            const currentList = getSavedSignatures(company);
+            const defaultName = file.name ? file.name.replace(/\.[^/.]+$/, "") : `ลายเซ็น/ตราประทับ ${currentList.length + 1}`;
+            const sigName = prompt(`ตั้งชื่อรูปนี้สำหรับ ${company}:`, defaultName);
+            if (sigName === null) return; // user cancelled
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const dataUrl = e.target.result;
+                const newSig = {
+                    id: 'sig_' + Date.now(),
+                    name: sigName.trim() || defaultName,
+                    dataUrl: dataUrl,
+                    createdAt: new Date().toISOString()
+                };
+
+                let list = getSavedSignatures(company);
+                list.push(newSig);
+                window.savedSignaturesByCompany[company] = list;
+                localStorage.setItem('saved_signatures_by_company', JSON.stringify(window.savedSignaturesByCompany));
+
+                // Auto-add newly uploaded signature to active layers for this company
+                if (!window.activeSignatures) window.activeSignatures = [];
+                const offsetCount = window.activeSignatures.length;
+                window.activeSignatures.push({
+                    id: 'act_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                    sigId: newSig.id,
+                    name: newSig.name,
+                    dataUrl: dataUrl,
+                    size: 45,
+                    offsetX: offsetCount === 0 ? 0 : (offsetCount === 1 ? 35 : -35),
+                    offsetY: 0
+                });
+
+                const useSigCheckbox = document.getElementById('settingUseSignatureImage');
+                if (useSigCheckbox) useSigCheckbox.checked = true;
+                syncQuickSignatureToggle();
+
+                if (currentUser) {
+                    try {
+                        await setDoc(doc(db, 'users', currentUser.uid), {
+                            savedSignaturesByCompany: window.savedSignaturesByCompany
+                        }, { merge: true });
+                    } catch(err) {
+                        console.error("Error saving signature to cloud:", err);
+                    }
+                }
+
+                renderSavedSignaturesGallery();
+                applyLivePreview();
+                autoSaveCurrentIssuerTemplate();
+
+                event.target.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleUseSignatureChange(checked) {
+            const settingCheckbox = document.getElementById('settingUseSignatureImage');
+            const quickToggle = document.getElementById('quickToggleSignature');
+            if (settingCheckbox) settingCheckbox.checked = checked;
+            if (quickToggle) quickToggle.checked = checked;
+
+            if (checked) {
+                // If checked ON and no active signatures currently, restore the first saved signature or prompt
+                if (!window.activeSignatures || window.activeSignatures.length === 0) {
+                    const list = getSavedSignatures();
+                    if (list && list.length > 0) {
+                        const first = list[0];
+                        window.activeSignatures = [{
+                            id: 'act_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            sigId: first.id,
+                            name: first.name || 'ลายเซ็น',
+                            dataUrl: first.dataUrl,
+                            size: 45,
+                            offsetX: 0,
+                            offsetY: 0
+                        }];
+                    } else {
+                        // If no saved signatures yet in gallery, check if template or shop had one
+                        const currentIssuerDisplay = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || '';
+                        let shopSig = '';
+                        if (currentIssuerDisplay && registeredShopsCache) {
+                            const shop = registeredShopsCache.find(s => (s.name || s) === currentIssuerDisplay);
+                            if (shop && (shop.signature || shop.signatureImage)) {
+                                shopSig = shop.signature || shop.signatureImage;
+                            }
+                        }
+                        if (shopSig) {
+                            window.activeSignatures = [{
+                                id: 'act_' + Date.now(),
+                                name: 'ลายเซ็นหลัก',
+                                dataUrl: shopSig,
+                                size: 45,
+                                offsetX: 0,
+                                offsetY: 0
+                            }];
+                        }
+                    }
+                }
+            }
+
+            syncQuickSignatureToggle();
+            renderSavedSignaturesGallery();
+            renderActiveSignaturesList();
+            applyLivePreview();
+            autoSaveCurrentIssuerTemplate();
+        }
+
+        function toggleQuickSignature(checked) {
+            handleUseSignatureChange(checked);
+        }
+
+        function syncQuickSignatureToggle() {
+            const settingCheckbox = document.getElementById('settingUseSignatureImage');
+            const quickToggle = document.getElementById('quickToggleSignature');
+            const quickLabel = document.getElementById('quickToggleSignatureLabel');
+            const count = (window.activeSignatures && window.activeSignatures.length) || 0;
+            if (settingCheckbox && quickToggle) {
+                quickToggle.checked = settingCheckbox.checked;
+            }
+            if (quickLabel) {
+                quickLabel.innerText = count > 1 ? `✍️ ลายเซ็น/ตราประทับ (${count} รูป)` : (count === 1 ? '✍️ ลายเซ็น/ตราประทับ (1 รูป)' : '✍️ ลายเซ็นอิเล็กทรอนิกส์');
+            }
+        }
+
+        function openSignatureUploaderDirect() {
+            openTemplateSettingsModal();
+            setTimeout(() => {
+                const box = document.getElementById('savedSignaturesGallery');
+                if (box) {
+                    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    renderSavedSignaturesGallery();
+                }
+            }, 150);
+        }
+
+        // --- Interactive Dragging on Live Preview Signature ---
+        function initSignatureDraggable() {
+            const container = document.getElementById('pSellerSignatureSpace');
+            if (!container || container._dragBound) return;
+            container._dragBound = true;
+
+            let activeDragItem = null;
+            let startMouseX = 0, startMouseY = 0;
+            let startOffsetX = 0, startOffsetY = 0;
+            let currentActiveObj = null;
+
+            const onMouseDown = (e) => {
+                const targetWrapper = e.target.closest('.sig-drag-item');
+                if (!targetWrapper) return;
+
+                const activeId = targetWrapper.dataset.id;
+                if (!activeId || !window.activeSignatures) return;
+
+                currentActiveObj = window.activeSignatures.find(a => a.id === activeId);
+                if (!currentActiveObj) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+                activeDragItem = targetWrapper;
+
+                startMouseX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+                startMouseY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+                startOffsetX = currentActiveObj.offsetX || 0;
+                startOffsetY = currentActiveObj.offsetY || 0;
+
+                targetWrapper.style.cursor = 'grabbing';
+                targetWrapper.style.outline = '2px dashed #2563eb';
+                targetWrapper.style.background = 'rgba(37, 99, 235, 0.08)';
+                targetWrapper.style.borderRadius = '4px';
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+                document.addEventListener('touchmove', onMouseMove, { passive: false });
+                document.addEventListener('touchend', onMouseUp);
+            };
+
+            const onMouseMove = (e) => {
+                if (!activeDragItem || !currentActiveObj) return;
+                if (e.cancelable) e.preventDefault();
+
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+                const deltaX = clientX - startMouseX;
+                const deltaY = -(clientY - startMouseY);
+
+                currentActiveObj.offsetX = Math.max(-120, Math.min(120, Math.round(startOffsetX + deltaX)));
+                currentActiveObj.offsetY = Math.max(-60, Math.min(40, Math.round(startOffsetY + deltaY)));
+
+                activeDragItem.style.bottom = `${-4 + currentActiveObj.offsetY}px`;
+                activeDragItem.style.transform = `translate(calc(-50% + ${currentActiveObj.offsetX}px), 0)`;
+
+                // Update slider inputs in sidebar
+                const xInput = document.getElementById(`input_x_${currentActiveObj.id}`);
+                const yInput = document.getElementById(`input_y_${currentActiveObj.id}`);
+                const xLbl = document.getElementById(`lbl_x_${currentActiveObj.id}`);
+                const yLbl = document.getElementById(`lbl_y_${currentActiveObj.id}`);
+                if (xInput) xInput.value = currentActiveObj.offsetX;
+                if (yInput) yInput.value = currentActiveObj.offsetY;
+                if (xLbl) xLbl.innerText = currentActiveObj.offsetX + 'px';
+                if (yLbl) yLbl.innerText = currentActiveObj.offsetY + 'px';
+            };
+
+            const onMouseUp = () => {
+                if (!activeDragItem) return;
+                activeDragItem.style.cursor = 'grab';
+                activeDragItem.style.outline = 'none';
+                activeDragItem.style.background = 'transparent';
+                activeDragItem = null;
+                currentActiveObj = null;
+
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                document.removeEventListener('touchmove', onMouseMove);
+                document.removeEventListener('touchend', onMouseUp);
+
+                autoSaveCurrentIssuerTemplate();
+            };
+
+            container.addEventListener('mousedown', onMouseDown);
+            container.addEventListener('touchstart', onMouseDown, { passive: false });
+        }
+
         function openIssuerSelectionModal() {
             document.getElementById('issuerSelectionModal').style.display = 'flex';
             const container = document.getElementById('issuerCardsContainer');
@@ -3322,6 +3960,8 @@
                 const sName = shop.name || '-';
                 const sColor = shop.themeColor || '#1A6FBF';
                 const sLogo = shop.logo ? `<img src="${shop.logo}" style="height: 30px; object-fit: contain;">` : `<i class='bx bx-building-house' style="font-size: 1.5rem; color: ${sColor};"></i>`;
+                const hasSig = shop.signature || shop.signatureImage || (window.quotationTemplates && window.quotationTemplates[sName] && window.quotationTemplates[sName].signatureImage);
+                const sigBadge = hasSig ? `<span style="font-size: 0.72rem; color: #16a34a; background: #dcfce7; padding: 1px 6px; border-radius: 4px; font-weight: 600; margin-left: 6px;">✍️ มีลายเซ็น</span>` : '';
                 
                 html += `
                     <div onclick="selectIssuerFromModal('${sName.replace(/'/g, "\\'")}')" 
@@ -3332,9 +3972,11 @@
                             ${sLogo}
                         </div>
                         <div style="flex: 1; min-width: 0;">
-                            <div style="font-weight: 700; color: #1e293b; font-size: 1.05rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sName}</div>
+                            <div style="font-weight: 700; color: #1e293b; font-size: 1.05rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center;">
+                                <span>${sName}</span> ${sigBadge}
+                            </div>
                             <div style="font-size: 0.85rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${shop.taxId ? `TAX: ${shop.taxId}` : 'No TAX ID'} | ${shop.tel || '-'}
+                                ${shop.taxId ? `TAX: ${shop.taxId}` : 'No TAX ID'} | ${shop.tel || shop.phone || '-'}
                             </div>
                         </div>
                         <i class='bx bx-chevron-right' style="font-size: 1.5rem; color: #cbd5e1;"></i>
@@ -3365,6 +4007,7 @@
             let shopTheme = '#1A6FBF';
             let shopSigner = '( นายวัฒนชัย วิศวสุวรรณ )';
             let shopHasLogo = true;
+            let shopSignature = '';
             
             if (safeCompanyName && registeredShopsCache) {
                 const shop = registeredShopsCache.find(s => {
@@ -3375,14 +4018,30 @@
                     if (shop.themeColor) shopTheme = shop.themeColor;
                     if (shop.signer) shopSigner = shop.signer;
                     if (!shop.logo) shopHasLogo = false;
+                    if (shop.signature) shopSignature = shop.signature;
+                    if (shop.signatureImage) shopSignature = shop.signatureImage;
+                }
+            }
+
+            if (shopSignature) {
+                const compSigs = getSavedSignatures(safeCompanyName);
+                if (compSigs.length === 0) {
+                    if (!window.savedSignaturesByCompany) window.savedSignaturesByCompany = {};
+                    window.savedSignaturesByCompany[safeCompanyName] = [{
+                        id: 'sig_' + Date.now(),
+                        name: 'ลายเซ็นหลัก',
+                        dataUrl: shopSignature,
+                        createdAt: new Date().toISOString()
+                    }];
+                    localStorage.setItem('saved_signatures_by_company', JSON.stringify(window.savedSignaturesByCompany));
                 }
             }
 
             const defaultSettings = {
                 primaryColor: shopTheme,
                 showLogo: shopHasLogo,
-                logoSize: 80,
-                fontSize: 14,
+                logoSize: 56,
+                fontSize: 11,
                 headerFontSize: 11,
                 sellerName: shopSigner,
                 sellerRole: 'ผู้เสนอราคา',
@@ -3397,6 +4056,19 @@
                 zebraStripes: true,
                 leftSignerTitle: 'ผู้สั่งซื้อ',
                 sincerelyYours: 'ขอแสดงความนับถือ / Sincerely Yours,',
+                useSignatureImage: !!shopSignature,
+                activeSignatures: shopSignature ? [{
+                    id: 'act_' + Date.now(),
+                    name: 'ลายเซ็น',
+                    dataUrl: shopSignature,
+                    size: 45,
+                    offsetX: 0,
+                    offsetY: 0
+                }] : [],
+                signatureImage: shopSignature,
+                signatureImageSize: 45,
+                signatureOffsetX: 0,
+                signatureOffsetY: 0,
                 issuerName: safeCompanyName,
                 headerLayout: {
                     left: ["block-logo", "block-company"],
@@ -3459,10 +4131,11 @@
             
             document.getElementById('livePreviewContainer').appendChild(printArea);
             printArea.style.display = 'block';
-            printArea.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
-            printArea.style.borderRadius = '4px';
+            printArea.style.boxShadow = '0 16px 40px rgba(0,0,0,0.28), 0 4px 12px rgba(0,0,0,0.15)';
+            printArea.style.borderRadius = '3px';
             printArea.style.transformOrigin = 'top center';
             printArea.style.transform = 'scale(0.85)';
+            printArea.style.marginBottom = '60px';
             
             document.getElementById('templateSettingsModal').style.display = 'flex';
             
@@ -3491,9 +4164,13 @@
             });
 
             applyLivePreview(); // Sync the panel sliders to current preview
-            // Show resizers for header width adjustment
+            renderSavedSignaturesGallery();
+            // Show resizers for header width adjustment & init signature draggable
             document.body.classList.add('modal-open');
-            setTimeout(() => initHeaderResizers(), 100);
+            setTimeout(() => {
+                initHeaderResizers();
+                initSignatureDraggable();
+            }, 100);
         }
 
         function closeTemplateSettingsModal() {
@@ -3537,12 +4214,23 @@
             const showHeaderLine = document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true;
             const sigFormat = document.getElementById('settingSignatureFormat') ? document.getElementById('settingSignatureFormat').value : 'full';
             const sigSize = document.getElementById('settingSignatureSize') ? parseInt(document.getElementById('settingSignatureSize').value) : 40;
+            const useSigImg = document.getElementById('settingUseSignatureImage') ? document.getElementById('settingUseSignatureImage').checked : false;
+            const sigImgSize = document.getElementById('settingSignatureImageSize') ? parseInt(document.getElementById('settingSignatureImageSize').value) : 45;
+            const sigOffsetX = document.getElementById('settingSignatureOffsetX') ? parseInt(document.getElementById('settingSignatureOffsetX').value) : 0;
+            const sigOffsetY = document.getElementById('settingSignatureOffsetY') ? parseInt(document.getElementById('settingSignatureOffsetY').value) : 0;
 
-            // Sync range input labels
+            // Sync range input labels & Quick toggle
             const fsLabel = document.getElementById('fontSizeLabel');
             if (fsLabel) fsLabel.innerText = fontSize;
             const hfsLabel = document.getElementById('hdrFontSizeLabel');
             if (hfsLabel) hfsLabel.innerText = headerFontSize;
+            const sigImgSizeLbl = document.getElementById('sigImgSizeLabel');
+            if (sigImgSizeLbl) sigImgSizeLbl.innerText = sigImgSize;
+            const sigOffsetXLabel = document.getElementById('sigOffsetXLabel');
+            if (sigOffsetXLabel) sigOffsetXLabel.innerText = sigOffsetX;
+            const sigOffsetYLabel = document.getElementById('sigOffsetYLabel');
+            if (sigOffsetYLabel) sigOffsetYLabel.innerText = sigOffsetY;
+            syncQuickSignatureToggle();
 
             const printArea = document.getElementById('printArea');
             if (printArea) {
@@ -3632,11 +4320,11 @@
                 : `.print-area .pItemsTable tbody tr:nth-child(even) { background-color: transparent !important; }`;
 
             styleEl.textContent = `
-                /* ===== DYNAMIC PRINT STYLES ===== */
-                body, input, select, textarea, button, #pPageWrapper, #pPageWrapper *, .table-input {
+                /* ===== DYNAMIC PRINT & DOCUMENT PREVIEW STYLES ===== */
+                #printArea, #printArea *, .print-area, .print-area *, #pPageWrapper, #pPageWrapper *, #__printOnlyWrapper, #__printOnlyWrapper * {
                     font-family: '${fontFamily}', 'Sarabun', 'Tahoma', sans-serif !important;
                 }
-                .print-area > div, #pPageWrapper {
+                #pPageWrapper, .print-area > div, #__printOnlyWrapper > div {
                     font-size: ${fontSize}px !important;
                     font-weight: ${fontWeight} !important;
                 }
@@ -3757,6 +4445,8 @@
             const pBuyerDate = document.getElementById('pBuyerSignatureDate');
             const pLeftTitle = document.getElementById('pLeftSignerTitle');
             const pSellerSpace = document.getElementById('pSellerSignatureSpace');
+            const pSellerSigWrapper = document.getElementById('pSellerSignatureWrapper');
+            const pSellerSigImg = document.getElementById('pSellerSignatureImg');
 
             if (pBuyerBlock && pBuyerDots && pBuyerDate) {
                 if (sigFormat === 'hidden') {
@@ -3780,6 +4470,23 @@
             }
             if (pSellerSpace) {
                 pSellerSpace.style.height = sigSize + 'px';
+            }
+
+            // Apply Multi-Signatures / Stamps & Position (Container height remains fixed; images float above the line)
+            if (pSellerSpace) {
+                pSellerSpace.style.height = sigSize + 'px';
+                if (useSigImg && window.activeSignatures && window.activeSignatures.length > 0) {
+                    pSellerSpace.innerHTML = window.activeSignatures.map((item, idx) => {
+                        const itemSize = item.size || 45;
+                        return `
+                            <div id="pSellerSigWrapper_${item.id}" class="sig-drag-item" data-id="${item.id}" style="position: absolute; bottom: ${-4 + (item.offsetY || 0)}px; left: 50%; transform: translate(calc(-50% + ${(item.offsetX || 0)}px), 0); cursor: grab; user-select: none; display: inline-flex; align-items: center; justify-content: center; z-index: ${5 + idx}; transition: outline 0.1s;" title="คลิกลากเพื่อปรับตำแหน่ง (${item.name || 'ลายเซ็น'})">
+                                <img id="sig_img_${item.id}" src="${item.dataUrl}" style="height: ${itemSize}px; max-width: 220px; object-fit: contain; pointer-events: none;" alt="${item.name || 'Signature'}">
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    pSellerSpace.innerHTML = '';
+                }
             }
 
             // Apply Logo
@@ -3833,87 +4540,113 @@
         }
 
         async function saveTemplateSettings(showAlert = true) {
-            const currentIssuerDisplay = document.getElementById('currentIssuerDisplay').innerText;
-            const templateSettings = { 
-                itemsPage1: document.getElementById('settingItemsPage1') ? document.getElementById('settingItemsPage1').value : '14',
-                itemsPage2Plus: document.getElementById('settingItemsPage2Plus') ? document.getElementById('settingItemsPage2Plus').value : '18',
-                primaryColor: document.getElementById('settingPrimaryColor').value,
-                showLogo: document.getElementById('settingShowLogo').checked,
-                logoSize: document.getElementById('settingLogoSize').value,
-                fontSize: document.getElementById('settingFontSize').value,
-                headerFontSize: document.getElementById('settingHeaderFontSize').value,
-                sellerName: document.getElementById('settingSellerName').value,
-                sellerRole: document.getElementById('settingSellerRole').value,
-                leftSignerTitle: document.getElementById('settingLeftSignerTitle') ? document.getElementById('settingLeftSignerTitle').value : 'ผู้สั่งซื้อ',
-                sincerelyYours: document.getElementById('settingSincerelyYours') ? document.getElementById('settingSincerelyYours').value : 'ขอแสดงความนับถือ / Sincerely Yours,',
-                headerDirection: document.getElementById('settingHeaderDirection').value,
-                headerRows: document.getElementById('settingHeaderRows') ? document.getElementById('settingHeaderRows').value : '3',
-                headerTextAlign: document.getElementById('settingHeaderTextAlign').value,
-                headerVAlign: document.getElementById('settingHeaderVAlign').value,
-                fontFamily: document.getElementById('settingFontFamily') ? document.getElementById('settingFontFamily').value : "Sarabun",
-                fontWeight: document.getElementById('settingFontWeight') ? document.getElementById('settingFontWeight').value : "400",
-                tableBorder: document.getElementById('settingTableBorder') ? document.getElementById('settingTableBorder').value : 'rounded',
-                tableHeaderAlign: document.getElementById('settingTableHeaderAlign') ? document.getElementById('settingTableHeaderAlign').value : 'auto',
-                tableHeaderStyle: document.getElementById('settingTableHeaderStyle') ? document.getElementById('settingTableHeaderStyle').value : 'solid',
-                zebraStripes: document.getElementById('settingZebraStripes') ? document.getElementById('settingZebraStripes').checked : true,
-                showRemark: document.getElementById('settingShowRemark') ? document.getElementById('settingShowRemark').checked : true,
-                bahtTextPosition: document.getElementById('settingBahtTextPosition') ? document.getElementById('settingBahtTextPosition').value : 'right',
-                showHeaderLine: document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true,
-                signatureFormat: document.getElementById('settingSignatureFormat') ? document.getElementById('settingSignatureFormat').value : 'full',
-                signatureSize: document.getElementById('settingSignatureSize') ? document.getElementById('settingSignatureSize').value : '40',
-                introText: document.getElementById('settingIntroText') ? document.getElementById('settingIntroText').value : 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:',
-                issuerName: currentIssuerDisplay,
-                headerLayout: getCurrentHeaderLayout(),
-                infoPanelOrder: getInfoPanelOrder(),
-                infoPanelLeftFlex: getInfoPanelFlex('left'),
-                infoPanelRightFlex: getInfoPanelFlex('right'),
-                infoDivider: document.getElementById('settingInfoDivider') ? document.getElementById('settingInfoDivider').checked : true,
-                headerFlex: {
-                    left: document.getElementById('zone-left') ? document.getElementById('zone-left').style.flex || '1' : '1',
-                    center: document.getElementById('zone-center') ? document.getElementById('zone-center').style.flex || '1' : '1',
-                    right: document.getElementById('zone-right') ? document.getElementById('zone-right').style.flex || '1' : '1',
-                    midLeft: document.getElementById('zone-mid-left') ? document.getElementById('zone-mid-left').style.flex || '1' : '1',
-                    midCenter: document.getElementById('zone-mid-center') ? document.getElementById('zone-mid-center').style.flex || '1' : '1',
-                    midRight: document.getElementById('zone-mid-right') ? document.getElementById('zone-mid-right').style.flex || '1' : '1',
-                    botLeft: document.getElementById('zone-bot-left') ? document.getElementById('zone-bot-left').style.flex || '1' : '1',
-                    botCenter: document.getElementById('zone-bot-center') ? document.getElementById('zone-bot-center').style.flex || '1' : '1',
-                    botRight: document.getElementById('zone-bot-right') ? document.getElementById('zone-bot-right').style.flex || '1' : '1'
-                },
-                recipientTitle: document.getElementById('settingRecipientTitle') ? document.getElementById('settingRecipientTitle').value : 'RECIPIENT INFORMATION',
-                docDetailsTitle: document.getElementById('settingDocDetailsTitle') ? document.getElementById('settingDocDetailsTitle').value : 'DOCUMENT DETAILS',
-                infoLabels: {
-                    to: document.getElementById('settingLabelTo') ? document.getElementById('settingLabelTo').value : 'ชื่อ / To:',
-                    address: document.getElementById('settingLabelAddress') ? document.getElementById('settingLabelAddress').value : 'ที่อยู่:',
-                    attn: document.getElementById('settingLabelAttn') ? document.getElementById('settingLabelAttn').value : 'ติดต่อ / Attn:',
-                    tel: document.getElementById('settingLabelTel') ? document.getElementById('settingLabelTel').value : 'โทร / Tel:',
-                    email: document.getElementById('settingLabelEmail') ? document.getElementById('settingLabelEmail').value : 'อีเมล:',
-                    refNo: document.getElementById('settingLabelRefNo') ? document.getElementById('settingLabelRefNo').value : 'เลขที่ / Ref. No:',
-                    date: document.getElementById('settingLabelDate') ? document.getElementById('settingLabelDate').value : 'วันที่ / Date:',
-                    validity: document.getElementById('settingLabelValidity') ? document.getElementById('settingLabelValidity').value : 'ยืนราคา / Validity:',
-                    delivery: document.getElementById('settingLabelDelivery') ? document.getElementById('settingLabelDelivery').value : 'ส่งมอบ / Delivery:',
-                    payment: document.getElementById('settingLabelPayment') ? document.getElementById('settingLabelPayment').value : 'ชำระเงิน / Payment:'
-                }
-            };
-            
-            if (!window.quotationTemplates) window.quotationTemplates = {};
-            window.quotationTemplates[currentIssuerDisplay] = templateSettings;
-            
-            localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
-            applyTemplateSettings(templateSettings);
+            try {
+                const currentIssuerDisplay = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                const useSigImg = document.getElementById('settingUseSignatureImage') ? document.getElementById('settingUseSignatureImage').checked : (window.activeSignatures && window.activeSignatures.length > 0);
+                const primarySigUrl = (window.activeSignatures && window.activeSignatures[0]) ? window.activeSignatures[0].dataUrl : '';
 
-            if (currentUser) {
-                try {
-                    await setDoc(doc(db, 'users', currentUser.uid), {
-                        quotationTemplates: window.quotationTemplates
-                    }, { merge: true });
-                    if(showAlert) alert('บันทึกการตั้งค่ารูปแบบฟอร์มสำหรับร้านค้านี้ลงคลาวด์สำเร็จ');
-                } catch (err) {
-                    console.error('Error saving template:', err);
+                const templateSettings = { 
+                    itemsPage1: document.getElementById('settingItemsPage1')?.value || '14',
+                    itemsPage2Plus: document.getElementById('settingItemsPage2Plus')?.value || '18',
+                    primaryColor: document.getElementById('settingPrimaryColor')?.value || '#1A6FBF',
+                    showLogo: document.getElementById('settingShowLogo') ? document.getElementById('settingShowLogo').checked : true,
+                    logoSize: document.getElementById('settingLogoSize')?.value || '80',
+                    fontSize: document.getElementById('settingFontSize')?.value || '14',
+                    headerFontSize: document.getElementById('settingHeaderFontSize')?.value || '11',
+                    sellerName: document.getElementById('settingSellerName')?.value || '',
+                    sellerRole: document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา',
+                    leftSignerTitle: document.getElementById('settingLeftSignerTitle')?.value || 'ผู้สั่งซื้อ',
+                    sincerelyYours: document.getElementById('settingSincerelyYours')?.value || 'ขอแสดงความนับถือ / Sincerely Yours,',
+                    headerDirection: document.getElementById('settingHeaderDirection')?.value || 'row',
+                    headerRows: document.getElementById('settingHeaderRows')?.value || '3',
+                    headerTextAlign: document.getElementById('settingHeaderTextAlign')?.value || 'auto',
+                    headerVAlign: document.getElementById('settingHeaderVAlign')?.value || 'flex-start',
+                    fontFamily: document.getElementById('settingFontFamily')?.value || "Sarabun",
+                    fontWeight: document.getElementById('settingFontWeight')?.value || "400",
+                    tableBorder: document.getElementById('settingTableBorder')?.value || 'rounded',
+                    tableHeaderAlign: document.getElementById('settingTableHeaderAlign')?.value || 'auto',
+                    tableHeaderStyle: document.getElementById('settingTableHeaderStyle')?.value || 'solid',
+                    zebraStripes: document.getElementById('settingZebraStripes') ? document.getElementById('settingZebraStripes').checked : true,
+                    showRemark: document.getElementById('settingShowRemark') ? document.getElementById('settingShowRemark').checked : true,
+                    bahtTextPosition: document.getElementById('settingBahtTextPosition')?.value || 'right',
+                    showHeaderLine: document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true,
+                    signatureFormat: document.getElementById('settingSignatureFormat')?.value || 'full',
+                    signatureSize: document.getElementById('settingSignatureSize')?.value || '40',
+                    useSignatureImage: useSigImg,
+                    activeSignatures: JSON.parse(JSON.stringify(window.activeSignatures || [])),
+                    signatureImage: primarySigUrl,
+                    signatureImageSize: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].size || 45) : 45,
+                    signatureOffsetX: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].offsetX || 0) : 0,
+                    signatureOffsetY: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].offsetY || 0) : 0,
+                    introText: document.getElementById('settingIntroText')?.value || 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:',
+                    issuerName: currentIssuerDisplay,
+                    headerLayout: typeof getCurrentHeaderLayout === 'function' ? getCurrentHeaderLayout() : null,
+                    infoPanelOrder: typeof getInfoPanelOrder === 'function' ? getInfoPanelOrder() : ['pRecipientPanel', 'pInfoResizer', 'pDocDetailsPanel'],
+                    infoPanelLeftFlex: typeof getInfoPanelFlex === 'function' ? getInfoPanelFlex('left') : '1.4',
+                    infoPanelRightFlex: typeof getInfoPanelFlex === 'function' ? getInfoPanelFlex('right') : '0.6',
+                    infoDivider: document.getElementById('settingInfoDivider') ? document.getElementById('settingInfoDivider').checked : true,
+                    headerFlex: {
+                        left: document.getElementById('zone-left') ? document.getElementById('zone-left').style.flex || '1' : '1',
+                        center: document.getElementById('zone-center') ? document.getElementById('zone-center').style.flex || '1' : '1',
+                        right: document.getElementById('zone-right') ? document.getElementById('zone-right').style.flex || '1' : '1',
+                        midLeft: document.getElementById('zone-mid-left') ? document.getElementById('zone-mid-left').style.flex || '1' : '1',
+                        midCenter: document.getElementById('zone-mid-center') ? document.getElementById('zone-mid-center').style.flex || '1' : '1',
+                        midRight: document.getElementById('zone-mid-right') ? document.getElementById('zone-mid-right').style.flex || '1' : '1',
+                        botLeft: document.getElementById('zone-bot-left') ? document.getElementById('zone-bot-left').style.flex || '1' : '1',
+                        botCenter: document.getElementById('zone-bot-center') ? document.getElementById('zone-bot-center').style.flex || '1' : '1',
+                        botRight: document.getElementById('zone-bot-right') ? document.getElementById('zone-bot-right').style.flex || '1' : '1'
+                    },
+                    recipientTitle: document.getElementById('settingRecipientTitle')?.value || 'RECIPIENT INFORMATION',
+                    docDetailsTitle: document.getElementById('settingDocDetailsTitle')?.value || 'DOCUMENT DETAILS',
+                    infoLabels: {
+                        to: document.getElementById('settingLabelTo')?.value || 'ชื่อ / To:',
+                        address: document.getElementById('settingLabelAddress')?.value || 'ที่อยู่:',
+                        attn: document.getElementById('settingLabelAttn')?.value || 'ติดต่อ / Attn:',
+                        tel: document.getElementById('settingLabelTel')?.value || 'โทร / Tel:',
+                        email: document.getElementById('settingLabelEmail')?.value || 'อีเมล:',
+                        refNo: document.getElementById('settingLabelRefNo')?.value || 'เลขที่ / Ref. No:',
+                        date: document.getElementById('settingLabelDate')?.value || 'วันที่ / Date:',
+                        validity: document.getElementById('settingLabelValidity')?.value || 'ยืนราคา / Validity:',
+                        delivery: document.getElementById('settingLabelDelivery')?.value || 'ส่งมอบ / Delivery:',
+                        payment: document.getElementById('settingLabelPayment')?.value || 'ชำระเงิน / Payment:'
+                    }
+                };
+                
+                if (!window.quotationTemplates) window.quotationTemplates = {};
+                window.quotationTemplates[currentIssuerDisplay] = templateSettings;
+                
+                localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
+                applyTemplateSettings(templateSettings);
+
+                // Also persist signature to registered shop in memory if matched
+                if (registeredShopsCache && Array.isArray(registeredShopsCache)) {
+                    const shop = registeredShopsCache.find(s => (s.name || s) === currentIssuerDisplay);
+                    if (shop && typeof shop === 'object') {
+                        shop.signature = primarySigUrl;
+                        shop.signatureImage = primarySigUrl;
+                    }
                 }
-            } else {
-                if(showAlert) alert('บันทึกการตั้งค่าสำหรับร้านนี้ในเครื่องสำเร็จ');
+
+                if (currentUser) {
+                    try {
+                        await setDoc(doc(db, 'users', currentUser.uid), {
+                            quotationTemplates: window.quotationTemplates,
+                            savedSignaturesByCompany: window.savedSignaturesByCompany
+                        }, { merge: true });
+                        if(showAlert) alert(`บันทึกการตั้งค่ารูปแบบฟอร์มและคลังลายเซ็นสำหรับ "${currentIssuerDisplay}" สำเร็จ`);
+                    } catch (err) {
+                        console.error('Error saving template to cloud:', err);
+                        if(showAlert) alert('บันทึกลงในเครื่องสำเร็จ (การเชื่อมต่อคลาวด์ขัดข้องชั่วคราว)');
+                    }
+                } else {
+                    if(showAlert) alert(`บันทึกการตั้งค่าและคลังลายเซ็นสำหรับ "${currentIssuerDisplay}" ในเครื่องสำเร็จ`);
+                }
+            } catch (error) {
+                console.error('Error executing saveTemplateSettings:', error);
+                alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
+            } finally {
+                closeTemplateSettingsModal();
             }
-            closeTemplateSettingsModal();
         }
 
         function applyHeaderLayout(layout) {
@@ -4308,6 +5041,31 @@
 
             const sigSizeEl = document.getElementById('settingSignatureSize');
             if (sigSizeEl) sigSizeEl.value = settings.signatureSize || '40';
+
+            const useSigEl = document.getElementById('settingUseSignatureImage');
+            if (useSigEl) useSigEl.checked = settings.useSignatureImage !== undefined ? settings.useSignatureImage : false;
+
+            const quickSigEl = document.getElementById('quickToggleSignature');
+            if (quickSigEl) quickSigEl.checked = useSigEl ? useSigEl.checked : false;
+
+            // Restore Active Signatures on document
+            if (settings.activeSignatures && Array.isArray(settings.activeSignatures)) {
+                window.activeSignatures = settings.activeSignatures;
+            } else if (settings.signatureImage) {
+                window.activeSignatures = [{
+                    id: 'act_' + Date.now(),
+                    name: 'ลายเซ็นหลัก',
+                    dataUrl: settings.signatureImage,
+                    size: parseInt(settings.signatureImageSize || 45),
+                    offsetX: parseInt(settings.signatureOffsetX || 0),
+                    offsetY: parseInt(settings.signatureOffsetY || 0)
+                }];
+            } else {
+                window.activeSignatures = [];
+            }
+
+            renderSavedSignaturesGallery();
+            renderActiveSignaturesList();
             
             const introTextEl = document.getElementById('settingIntroText');
             if (introTextEl) introTextEl.value = settings.introText !== undefined ? settings.introText : 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:';
@@ -5304,6 +6062,21 @@
         window.swapInfoPanels = swapInfoPanels;
         window.toggleInfoDrag = toggleInfoDrag;
         window.applyInfoPanelSettings = applyInfoPanelSettings;
+        window.handleSignatureFileUpload = handleSignatureFileUpload;
+        window.handleUseSignatureChange = handleUseSignatureChange;
+        window.toggleQuickSignature = toggleQuickSignature;
+        window.syncQuickSignatureToggle = syncQuickSignatureToggle;
+        window.openSignatureUploaderDirect = openSignatureUploaderDirect;
+        window.toggleSignatureToDocument = toggleSignatureToDocument;
+        window.renderActiveSignaturesList = renderActiveSignaturesList;
+        window.removeActiveSignature = removeActiveSignature;
+        window.updateActiveSigProperty = updateActiveSigProperty;
+        window.resetAllSignatureOffsets = resetAllSignatureOffsets;
+        window.deleteSignatureFromGallery = deleteSignatureFromGallery;
+        window.renderSavedSignaturesGallery = renderSavedSignaturesGallery;
+        window.getSavedSignatures = getSavedSignatures;
+        window.autoSaveCurrentIssuerTemplate = autoSaveCurrentIssuerTemplate;
+        window.initSignatureDraggable = initSignatureDraggable;
 
         // Init info panel resizer
         initInfoResizer();

@@ -1059,11 +1059,123 @@
         input:checked + .slider { background-color: var(--success); }
         input:checked + .slider:before { transform: translateX(22px); }
 
+        /* ===== DATA MANAGEMENT ===== */
+        .data-mgmt-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+        }
+        .data-mgmt-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .btn-data-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Kanit', sans-serif;
+        }
+        .btn-data-action.export-btn {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.4);
+        }
+        .btn-data-action.export-btn:hover { transform: translateY(-1px); }
+        .btn-data-action.import-btn {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+        }
+        .btn-data-action.import-btn:hover { transform: translateY(-1px); }
+        .btn-data-action:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        .fb-config-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 5px 0; font-size: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .fb-config-row:last-child { border-bottom: none; }
+        .fb-config-label { color: var(--text-secondary); }
+        .fb-config-val { color: var(--primary); font-weight: 600; font-family: 'Inter', monospace; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .fb-field { display: flex; flex-direction: column; gap: 4px; }
+        .fb-field label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .fb-field input { padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; font-size: 13px; color: #ffffff; outline: none; font-family: 'Inter', monospace; transition: all 0.2s ease; }
+        .fb-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); }
+        .fb-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .fb-form-grid .full { grid-column: 1 / -1; }
+
+        /* Guide Accordion Box */
+        .guide-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 9px 14px;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px dashed var(--primary-border);
+            border-radius: 10px;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Kanit', sans-serif;
+            margin-bottom: 12px;
+        }
+        .guide-toggle-btn:hover {
+            background: rgba(56, 189, 248, 0.15);
+        }
+        .guide-content-box {
+            display: none;
+            background: #080f20;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 12px;
+            line-height: 1.65;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+        }
+        .guide-content-box.show {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .guide-step {
+            margin-bottom: 10px;
+        }
+        .guide-step:last-child {
+            margin-bottom: 0;
+        }
+        .guide-step-title {
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
         @media (max-width: 950px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .flow-grid { grid-template-columns: 1fr; }
             .dashboard-split-grid { grid-template-columns: 1fr; }
             .svg-pipeline-wrap { display: none; }
+            .data-mgmt-grid { grid-template-columns: 1fr; }
+            .fb-form-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 600px) {
             .stats-grid { grid-template-columns: 1fr; }
@@ -1103,6 +1215,9 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn-hdr-action" onclick="exportFullBackup()">
+                    <span>💾</span> Backup
+                </button>
                 <button class="btn-hdr-action" onclick="openPendingApprovalsModal()">
                     <span>🛡️</span> คำขออนุมัติ <span class="pending-count-badge" id="hdrPendingBadge">0</span>
                 </button>
@@ -1238,6 +1353,39 @@
                             <span class="flow-detail-val" style="font-size:11px;">1a0B6l56PA...</span>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.5 DATA & FIREBASE MANAGEMENT (CLEAN & COMPACT) -->
+        <div class="data-mgmt-panel">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <!-- Backup / Restore buttons -->
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="font-weight: 700; font-size: 14px; color: #ffffff; display: flex; align-items: center; gap: 6px;">
+                        <span>🗄️</span> ฐานข้อมูล:
+                    </span>
+                    <button class="btn-data-action export-btn" style="width: auto; padding: 8px 16px;" onclick="exportFullBackup()">
+                        <span>📥</span> Backup ข้อมูล
+                    </button>
+                    <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="handleImportFileSelect(event)">
+                    <button class="btn-data-action import-btn" style="width: auto; padding: 8px 16px;" onclick="document.getElementById('importFileInput').click()">
+                        <span>📤</span> Restore ข้อมูล
+                    </button>
+                </div>
+
+                <!-- Firebase Switcher info & buttons -->
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+                        <span>🔥</span> Firebase: <strong id="cfgProjectId" style="color: var(--primary); font-family: 'Inter', monospace;">—</strong>
+                        <span id="activeProfileLabel" style="font-size: 11px; padding: 2px 8px; border-radius: 6px; background: rgba(56,189,248,0.1); color: var(--primary);">DEFAULT</span>
+                    </span>
+                    <button class="btn-action-pill cyan" onclick="openFirebaseSwitcherModal()">
+                        <span>🔄</span> สลับบัญชี Firebase
+                    </button>
+                    <button class="btn-action-pill menu-trigger" onclick="resetToDefaultConfig()" title="รีเซ็ตกลับค่า default">
+                        <span>↩️</span> ค่าเริ่มต้น
+                    </button>
                 </div>
             </div>
         </div>
@@ -1434,26 +1582,114 @@
         </div>
     </div>
 
+    <!-- MODAL: FIREBASE SWITCHER (ONE-CLICK PASTE OR SIMPLE FIELDS) -->
+    <div id="firebaseSwitcherModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 580px;">
+            <div class="modal-header">
+                <h3><span>🔥</span> สลับบัญชี Firebase</h3>
+                <button class="modal-close" onclick="closeFirebaseSwitcherModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- HELP GUIDE TOGGLE -->
+                <button type="button" class="guide-toggle-btn" onclick="toggleFirebaseHelpGuide()">
+                    <span>📖 ดูวิธีหาค่า Config จาก Firebase Console (คำแนะนำทีละขั้นตอน)</span>
+                    <span id="guideArrow">▼</span>
+                </button>
+
+                <!-- COLLAPSIBLE GUIDE CONTENT -->
+                <div id="firebaseHelpGuide" class="guide-content-box">
+                    <div class="guide-step">
+                        <div class="guide-step-title"><span>1️⃣</span> วิธีเอา Firebase Config:</div>
+                        <div>1. เข้าเว็บ <a href="https://console.firebase.google.com" target="_blank" style="color:var(--primary); text-decoration:underline;">console.firebase.google.com</a> ➔ เลือกโปรเจกต์</div>
+                        <div>2. กดไอคอน <strong>⚙️ Project Settings</strong> (ฟันเฟืองมุมซ้ายบน)</div>
+                        <div>3. เลื่อนลงล่างสุดที่หัวข้อ <strong>"Your apps"</strong> ➔ เลือกเว็บแอป <code>&lt;/&gt;</code></div>
+                        <div>4. คัดลอกโค้ดทั้งก้อน <code>const firebaseConfig = { ... };</code> มาวางในกล่องด้านล่างได้เลย!</div>
+                    </div>
+                    <div class="guide-step" style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 8px;">
+                        <div class="guide-step-title"><span>2️⃣</span> วิธีเอา Google Apps Script URL (Google Drive):</div>
+                        <div>1. เปิดเว็บ <a href="https://script.google.com" target="_blank" style="color:var(--orange); text-decoration:underline;">script.google.com</a> ➔ เปิดโปรเจกต์</div>
+                        <div>2. กด <strong>Deploy</strong> (ขวาบน) ➔ <strong>Manage deployments</strong></div>
+                        <div>3. คัดลอก <strong>Web app URL</strong> มาใส่ในช่อง GAS URL (ถ้ามี)</div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px;">
+                        💡 <em>ดูคู่มือฉบับเต็มและตัวอย่างโครงสร้างไฟล์ได้ในโฟลเดอร์ <code>_account_migration_kit/README.md</code></em>
+                    </div>
+                </div>
+
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
+                    วางโค้ด Firebase Config ลงในช่องด้านล่าง (ระบบจะกรอกข้อมูลให้อัตโนมัติ) หรือกรอกแค่ Project ID & API Key:
+                </p>
+
+                <!-- PASTE SNIPPET BOX -->
+                <div class="fb-field" style="margin-bottom: 12px;">
+                    <label>📋 วาง Firebase Config (JSON หรือ Object):</label>
+                    <textarea id="fbPasteSnippet" rows="4" placeholder='const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  projectId: "your-project-id",
+  ...
+};' style="width:100%; padding:10px 12px; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; font-size:12px; color:#fff; font-family:'Inter', monospace; outline:none; resize:vertical;" oninput="handleFirebaseSnippetPaste()"></textarea>
+                </div>
+
+                <div class="fb-form-grid">
+                    <div class="fb-field">
+                        <label>Project ID <span style="color:var(--danger);">*</span></label>
+                        <input type="text" id="fbProjectId" placeholder="my-project-id">
+                    </div>
+                    <div class="fb-field">
+                        <label>API Key <span style="color:var(--danger);">*</span></label>
+                        <input type="text" id="fbApiKey" placeholder="AIzaSy...">
+                    </div>
+                    <div class="fb-field">
+                        <label>Auth Domain</label>
+                        <input type="text" id="fbAuthDomain" placeholder="my-project.firebaseapp.com">
+                    </div>
+                    <div class="fb-field">
+                        <label>GAS Web App URL (ถ้ามี)</label>
+                        <input type="text" id="fbGasUrl" placeholder="https://script.google.com/macros/s/.../exec">
+                    </div>
+                </div>
+
+                <button class="btn-submit" style="margin-top: 16px;" onclick="saveFirebaseConfig()">
+                    <span>💾</span> บันทึกและสลับบัญชี
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK Modules -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import { initializeFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection, query, where, addDoc, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-        // Load config from firebase-config.js
+        // Load config from firebase-config.js (with localStorage override support)
         const configScript = await import('../../assets/js/firebase-config.js').catch(() => null);
         let firebaseConfig = null;
         let gasUrl = null;
         let fbEmail = 'mentra.manager@gmail.com';
         let driveEmail = 'mentra.manager@gmail.com';
         let driveRootFolderId = null;
+        let activeProfileName = 'DEFAULT';
         
-        if (configScript) {
+        // Check localStorage for active Firebase override
+        const savedActive = localStorage.getItem('mentra_active_firebase_profile');
+        const savedOverride = JSON.parse(localStorage.getItem('mentra_firebase_override') || 'null');
+        
+        if (savedActive && savedOverride && savedOverride.config && savedOverride.config.projectId) {
+            firebaseConfig = savedOverride.config;
+            if (savedOverride.gasUrl) gasUrl = savedOverride.gasUrl;
+            if (savedOverride.driveFolderId) driveRootFolderId = savedOverride.driveFolderId;
+            activeProfileName = 'CUSTOM';
+        }
+
+        // Fallback to firebase-config.js if no valid override
+        if (!firebaseConfig && configScript) {
             firebaseConfig = configScript.FIREBASE_CONFIG || configScript.default?.FIREBASE_CONFIG;
             if (configScript.GAS_URL) gasUrl = configScript.GAS_URL;
             if (configScript.FIREBASE_ACCOUNT_EMAIL) fbEmail = configScript.FIREBASE_ACCOUNT_EMAIL;
             if (configScript.DRIVE_ACCOUNT_EMAIL) driveEmail = configScript.DRIVE_ACCOUNT_EMAIL;
             if (configScript.DRIVE_ROOT_FOLDER_ID) driveRootFolderId = configScript.DRIVE_ROOT_FOLDER_ID;
+            activeProfileName = 'DEFAULT';
         }
 
         if (!firebaseConfig || !gasUrl) {
@@ -2308,6 +2544,195 @@
                 showNotification(`บันทึกสิทธิ์ไม่สำเร็จ: ${err.message}`, 'error');
             }
         };
+
+        // ============================================================
+        // DATA BACKUP & RESTORE (SIMPLE)
+        // ============================================================
+        const BACKUP_COLLECTIONS = ['users', 'usernames', 'activity_logs'];
+
+        // Show current config info
+        function updateConfigDisplay() {
+            const cfgEl = document.getElementById('cfgProjectId');
+            if (cfgEl) cfgEl.textContent = firebaseConfig?.projectId || '—';
+            const labelEl = document.getElementById('activeProfileLabel');
+            if (labelEl) labelEl.textContent = activeProfileName === 'DEFAULT' ? 'DEFAULT' : activeProfileName;
+        }
+        updateConfigDisplay();
+
+        // EXPORT BACKUP
+        window.exportFullBackup = async function() {
+            showNotification('กำลังสำรองข้อมูล...', 'info');
+            try {
+                const backupData = {
+                    _meta: { exportedAt: new Date().toISOString(), exportedBy: auth.currentUser?.email || 'unknown', projectId: firebaseConfig.projectId },
+                    collections: {}
+                };
+                for (const colName of BACKUP_COLLECTIONS) {
+                    try {
+                        const snap = await getDocs(collection(db, colName));
+                        const docs = {};
+                        snap.docs.forEach(d => { docs[d.id] = d.data(); });
+                        backupData.collections[colName] = docs;
+                    } catch (e) { backupData.collections[colName] = { _error: e.message }; }
+                }
+                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                const filename = `mentra_backup_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.json`;
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(a.href);
+
+                let total = 0;
+                Object.values(backupData.collections).forEach(c => { if (!c._error) total += Object.keys(c).length; });
+                addLog('db', `สำรองข้อมูล ${total} รายการ`);
+                showNotification(`สำรองเสร็จ! ${total} รายการ → ${filename}`, 'success');
+            } catch (err) {
+                showNotification(`สำรองล้มเหลว: ${err.message}`, 'error');
+            }
+        };
+
+        // IMPORT BACKUP
+        window.handleImportFileSelect = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.collections || !data._meta) {
+                        showNotification('ไฟล์ไม่ใช่รูปแบบ Backup ของ Mentra', 'error');
+                        return;
+                    }
+                    // Build summary
+                    let summary = `ข้อมูลจาก: ${data._meta.projectId || '-'}\nสำรองเมื่อ: ${new Date(data._meta.exportedAt).toLocaleString('th-TH')}\n\n`;
+                    for (const [col, docs] of Object.entries(data.collections)) {
+                        summary += `${col}: ${docs._error ? 'Error' : Object.keys(docs).length} รายการ\n`;
+                    }
+                    if (!confirm(`ยืนยันนำเข้าข้อมูล? (ข้อมูล ID ซ้ำจะถูกเขียนทับ)\n\n${summary}`)) return;
+
+                    showNotification('กำลังนำเข้าข้อมูล...', 'info');
+                    let totalImported = 0;
+                    for (const [colName, colData] of Object.entries(data.collections)) {
+                        if (colData._error) continue;
+                        const docIds = Object.keys(colData);
+                        for (let i = 0; i < docIds.length; i += 10) {
+                            const batch = docIds.slice(i, i + 10);
+                            await Promise.all(batch.map(id => setDoc(doc(db, colName, id), colData[id])));
+                            totalImported += batch.length;
+                        }
+                    }
+                    addLog('db', `นำเข้าข้อมูลสำรอง ${totalImported} รายการ`);
+                    showNotification(`นำเข้าสำเร็จ! ${totalImported} รายการ`, 'success');
+                    updateDashboardStats(); loadDirectoryUsersData(); loadPendingApprovals(); loadActivityLogsFromFirestore();
+                } catch (err) {
+                    showNotification(`นำเข้าล้มเหลว: ${err.message}`, 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        };
+
+        // FIREBASE SWITCHER (ONE-CLICK PASTE OR SIMPLE FIELDS)
+        window.openFirebaseSwitcherModal = function() {
+            const saved = JSON.parse(localStorage.getItem('mentra_firebase_override') || 'null');
+            if (saved) {
+                document.getElementById('fbProjectId').value = saved.config?.projectId || '';
+                document.getElementById('fbApiKey').value = saved.config?.apiKey || '';
+                document.getElementById('fbAuthDomain').value = saved.config?.authDomain || '';
+                document.getElementById('fbGasUrl').value = saved.gasUrl || '';
+            } else {
+                document.getElementById('fbProjectId').value = '';
+                document.getElementById('fbApiKey').value = '';
+                document.getElementById('fbAuthDomain').value = '';
+                document.getElementById('fbGasUrl').value = '';
+            }
+            document.getElementById('fbPasteSnippet').value = '';
+            document.getElementById('firebaseSwitcherModal').classList.add('active');
+        };
+
+        window.closeFirebaseSwitcherModal = function() {
+            document.getElementById('firebaseSwitcherModal').classList.remove('active');
+        };
+
+        window.toggleFirebaseHelpGuide = function() {
+            const guide = document.getElementById('firebaseHelpGuide');
+            const arrow = document.getElementById('guideArrow');
+            if (guide) {
+                const isOpen = guide.classList.toggle('show');
+                if (arrow) arrow.textContent = isOpen ? '▲' : '▼';
+            }
+        };
+
+        // Auto-extract values when pasting Firebase snippet/JSON
+        window.handleFirebaseSnippetPaste = function() {
+            const raw = document.getElementById('fbPasteSnippet').value;
+            if (!raw) return;
+
+            // Extract projectId
+            const pIdMatch = raw.match(/projectId["']?\s*:\s*["']([^"']+)["']/);
+            if (pIdMatch) document.getElementById('fbProjectId').value = pIdMatch[1];
+
+            // Extract apiKey
+            const keyMatch = raw.match(/apiKey["']?\s*:\s*["']([^"']+)["']/);
+            if (keyMatch) document.getElementById('fbApiKey').value = keyMatch[1];
+
+            // Extract authDomain
+            const authMatch = raw.match(/authDomain["']?\s*:\s*["']([^"']+)["']/);
+            if (authMatch) {
+                document.getElementById('fbAuthDomain').value = authMatch[1];
+            } else if (pIdMatch) {
+                document.getElementById('fbAuthDomain').value = `${pIdMatch[1]}.firebaseapp.com`;
+            }
+
+            // Extract GAS URL if present
+            const gasMatch = raw.match(/GAS_URL["']?\s*:\s*["']([^"']+)["']/i) || raw.match(/https:\/\/script\.google\.com\/macros\/s\/[^\s"']+/);
+            if (gasMatch) document.getElementById('fbGasUrl').value = gasMatch[1] || gasMatch[0];
+
+            showNotification('ตรวจพบข้อมูล Config และกรอกให้อัตโนมัติแล้ว! ✅', 'info');
+        };
+
+        window.saveFirebaseConfig = function() {
+            const projectId = document.getElementById('fbProjectId').value.trim();
+            const apiKey = document.getElementById('fbApiKey').value.trim();
+            let authDomain = document.getElementById('fbAuthDomain').value.trim();
+            const gasUrlVal = document.getElementById('fbGasUrl').value.trim();
+
+            if (!projectId || !apiKey) {
+                showNotification('กรุณากรอกอย่างน้อย: Project ID และ API Key', 'warning');
+                return;
+            }
+
+            if (!authDomain) authDomain = `${projectId}.firebaseapp.com`;
+
+            const override = {
+                config: {
+                    apiKey: apiKey,
+                    authDomain: authDomain,
+                    projectId: projectId,
+                    storageBucket: `${projectId}.firebasestorage.app`
+                },
+                gasUrl: gasUrlVal || gasUrl
+            };
+
+            localStorage.setItem('mentra_firebase_override', JSON.stringify(override));
+            localStorage.setItem('mentra_active_firebase_profile', 'CUSTOM');
+            showNotification('บันทึกแล้ว กำลังเชื่อมต่อ Firebase ใหม่...', 'success');
+            setTimeout(() => window.location.reload(), 1000);
+        };
+
+        window.resetToDefaultConfig = function() {
+            if (!localStorage.getItem('mentra_active_firebase_profile')) {
+                showNotification('กำลังใช้ค่าเริ่มต้น (Default) อยู่แล้ว', 'info');
+                return;
+            }
+            if (!confirm('รีเซ็ตกลับไปใช้ค่าเริ่มต้นจาก firebase-config.js?\n\nหน้าเว็บจะ reload')) return;
+            localStorage.removeItem('mentra_active_firebase_profile');
+            localStorage.removeItem('mentra_firebase_override');
+            showNotification('กำลัง reload เพื่อกลับค่าเริ่มต้น...', 'info');
+            setTimeout(() => window.location.reload(), 1000);
+        };
+
     </script>
 
     <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>

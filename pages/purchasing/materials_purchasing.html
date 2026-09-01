@@ -4719,12 +4719,11 @@
                     
                     let profitClass = profitPct > 0 ? 'text-emerald-600' : (profitPct < 0 ? 'text-red-500' : 'text-slate-500');
 
-                    // Exclude sub-items (items with sub-numbering like 1.1, 1.2) from sum totals
-                    const isSubItem = Boolean(item.customNo && item.customNo.trim().includes('.'));
-                    if (!isSubItem) {
+                    // Sum all valid non-header items
+                    if (!item.isHeader) {
                         sumTotal += totalAmt;
-                        sumTarget += (item.qty || 0) * (item.targetPrice || 0);
-                        const actualFoundTotal = item.foundTotalPrice !== undefined && item.foundTotalPrice !== null && item.foundTotalPrice !== '' ? parseFloat(item.foundTotalPrice) || 0 : (item.qty || 0) * (item.foundPrice || 0);
+                        sumTarget += (parseFloat(item.qty) || 0) * (parseFloat(item.targetPrice) || 0);
+                        const actualFoundTotal = item.foundTotalPrice !== undefined && item.foundTotalPrice !== null && item.foundTotalPrice !== '' ? (parseFloat(item.foundTotalPrice) || 0) : ((parseFloat(item.qty) || 0) * (parseFloat(item.foundPrice) || 0));
                         sumFound += actualFoundTotal;
                     }
 
