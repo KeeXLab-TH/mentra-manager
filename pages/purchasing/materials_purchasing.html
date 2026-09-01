@@ -1213,6 +1213,48 @@
                             <span class="text-xl font-black text-brand-600" id="total-amount-sum">0.00</span>
                         </div>
                     </div>
+
+                    <!-- Educational Institution Tax & Withholding Tax Bar -->
+                    <div class="bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 border-t border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 relative z-10 text-xs">
+                        <div class="flex items-center gap-2 font-bold text-slate-700">
+                            <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-calculator text-[11px]"></i>
+                            </span>
+                            <span class="text-xs sm:text-sm font-bold text-slate-800">คำนวณภาษี (สำหรับสถานศึกษา / หน่วยงานรัฐ)</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                            <!-- ภาษีซื้อ 7% -->
+                            <div class="flex items-baseline gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-xs" title="ภาษีซื้อ 7% (คิดจากราคาทุนรวม)">
+                                <span class="text-[11px] font-medium text-slate-500">หัก ภาษีซื้อ 7%:</span>
+                                <span class="text-xs font-bold text-slate-800" id="tax-input-vat">-฿0.00</span>
+                            </div>
+
+                            <!-- ภาษีขาย 7% -->
+                            <div class="flex items-baseline gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-xs" title="ภาษีขาย 7% (คิดจากราคาขายรวม)">
+                                <span class="text-[11px] font-medium text-slate-500">หัก ภาษีขาย 7%:</span>
+                                <span class="text-xs font-bold text-blue-700" id="tax-output-vat">-฿0.00</span>
+                            </div>
+
+                            <!-- หัก ณ ที่จ่าย 1% -->
+                            <div class="flex items-baseline gap-1.5 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 shadow-xs" title="หัก ณ ที่จ่าย 1% สำหรับสถานศึกษา/ราชการ (คิดจากราคาขายรวม)">
+                                <span class="text-[11px] font-semibold text-rose-600">หัก ณ ที่จ่าย 1%:</span>
+                                <span class="text-xs font-bold text-rose-700" id="tax-wht-1pct">-฿0.00</span>
+                            </div>
+
+                            <!-- ยอดคงเหลือหลังหักภาษี (7% + 7% + 1%) -->
+                            <div class="flex items-baseline gap-1.5 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200 shadow-xs" title="ยอดราคาขายหลังหัก ภาษีซื้อ 7% - ภาษีขาย 7% - หัก ณ ที่จ่าย 1%">
+                                <span class="text-[11px] font-bold text-blue-800">ยอดขายหลังหักภาษี:</span>
+                                <span class="text-xs font-black text-blue-700" id="tax-net-receive">฿0.00</span>
+                            </div>
+
+                            <!-- กำไรสุทธิคงเหลือจริง (หลังหักทุนและภาษี) -->
+                            <div class="flex items-baseline gap-1.5 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-300 shadow-xs" title="กำไรสุทธิคงเหลือเข้ากระเป๋าจริง (ราคาขาย - ทุน - ภาษีซื้อ 7% - ภาษีขาย 7% - หัก ณ ที่จ่าย 1%)">
+                                <span class="text-[11px] font-bold text-emerald-800">กำไรสุทธิคงเหลือจริง:</span>
+                                <span class="text-xs font-black text-emerald-600" id="tax-net-profit">฿0.00</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Gallery View Card -->
@@ -4890,6 +4932,43 @@
                 const profitSumEl = document.getElementById('total-profit-sum');
                 profitSumEl.innerText = profitDisplay;
                 profitSumEl.title = profitDisplay;
+
+                // --- Calculate Tax Breakdown for Institutions (ภาษีซื้อ 7%, ภาษีขาย 7%, หัก ณ ที่จ่าย 1%) ---
+                const inputVat = Math.round(sumFound * 0.07 * 100) / 100;
+                const outputVat = Math.round(sumTotal * 0.07 * 100) / 100;
+                const wht1Pct = Math.round(sumTotal * 0.01 * 100) / 100;
+                const netAfterAllTaxes = Math.round((sumTotal - inputVat - outputVat - wht1Pct) * 100) / 100;
+                const netProfitAfterAll = Math.round((sumTotal - sumFound - inputVat - outputVat - wht1Pct) * 100) / 100;
+
+                const taxInputVatEl = document.getElementById('tax-input-vat');
+                if (taxInputVatEl) {
+                    taxInputVatEl.innerText = '-' + this.formatCurrency(inputVat);
+                    taxInputVatEl.title = `ภาษีซื้อ 7% (คิดจากราคาทุนรวม ${this.formatCurrency(sumFound)})`;
+                }
+
+                const taxOutputVatEl = document.getElementById('tax-output-vat');
+                if (taxOutputVatEl) {
+                    taxOutputVatEl.innerText = '-' + this.formatCurrency(outputVat);
+                    taxOutputVatEl.title = `ภาษีขาย 7% (คิดจากราคาขายรวม ${this.formatCurrency(sumTotal)})`;
+                }
+
+                const taxWhtEl = document.getElementById('tax-wht-1pct');
+                if (taxWhtEl) {
+                    taxWhtEl.innerText = '-' + this.formatCurrency(wht1Pct);
+                    taxWhtEl.title = `หัก ณ ที่จ่าย 1% (คิดจากราคาขายรวม ${this.formatCurrency(sumTotal)})`;
+                }
+
+                const taxNetReceiveEl = document.getElementById('tax-net-receive');
+                if (taxNetReceiveEl) {
+                    taxNetReceiveEl.innerText = this.formatCurrency(netAfterAllTaxes);
+                    taxNetReceiveEl.title = `ยอดราคาขายหลังหัก ภาษีซื้อ 7% (${this.formatCurrency(inputVat)}) - ภาษีขาย 7% (${this.formatCurrency(outputVat)}) - หัก ณ ที่จ่าย 1% (${this.formatCurrency(wht1Pct)}) = ${this.formatCurrency(netAfterAllTaxes)}`;
+                }
+
+                const taxNetProfitEl = document.getElementById('tax-net-profit');
+                if (taxNetProfitEl) {
+                    taxNetProfitEl.innerText = this.formatCurrency(netProfitAfterAll);
+                    taxNetProfitEl.title = `กำไรสุทธิคงเหลือเข้ากระเป๋าจริง (ราคาขาย ${this.formatCurrency(sumTotal)} - ทุน ${this.formatCurrency(sumFound)} - ภาษีซื้อ ${this.formatCurrency(inputVat)} - ภาษีขาย ${this.formatCurrency(outputVat)} - หัก ณ ที่จ่าย 1% ${this.formatCurrency(wht1Pct)}) = ${this.formatCurrency(netProfitAfterAll)}`;
+                }
 
                 // --- RESTORE FOCUS STATE ---
                 if (activeId && activeField) {
