@@ -25,7 +25,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -175,6 +175,53 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8; 
+        }
+
+        /* ===== GALLERY PDF PRINT STYLES ===== */
+        @media print {
+            body > *:not(#galleryPrintOnlyWrapper):not(#__printOnlyWrapper) {
+                display: none !important;
+            }
+            #galleryPrintOnlyWrapper {
+                display: block !important;
+                position: static !important;
+                width: 100% !important;
+                height: auto !important;
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            #galleryPrintOnlyWrapper #galleryPrintArea {
+                display: block !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                background: white !important;
+            }
+            #galleryPrintArea * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            .gallery-pdf-page-container {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+            .gallery-pdf-item {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 10mm 10mm 10mm 10mm;
+            }
         }
     
 /* ================================================
@@ -1193,9 +1240,18 @@
                 <!-- Gallery View Card -->
                 <div id="detail-view-gallery" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                     <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
-                        <h3 class="font-bold text-slate-700 flex items-center gap-2">
-                            <i class="fa-regular fa-images text-brand-500"></i> รูปภาพและรายละเอียดสินค้า
-                        </h3>
+                        <div class="flex items-center gap-3">
+                            <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                                <i class="fa-regular fa-images text-brand-500"></i> รูปภาพและรายละเอียดสินค้า
+                            </h3>
+                            <span id="gallery-count-badge" class="px-2.5 py-0.5 text-xs rounded-full bg-brand-50 text-brand-700 font-semibold border border-brand-200">0 รายการ</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <button onclick="appData.exportGalleryPDF()" class="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-4 py-2 rounded-xl font-bold shadow-sm hover:shadow-md transition-all flex items-center gap-2 text-sm" title="ส่งออก / พิมพ์แคตตาล็อกรูปภาพและรายการเป็น PDF">
+                                <i class="fa-solid fa-file-pdf"></i>
+                                <span>ดาวน์โหลด PDF แคตตาล็อก</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="p-6 bg-slate-50 min-h-[400px]">
                         <div id="gallery-grid" class="flex flex-col gap-4">
@@ -1796,6 +1852,85 @@
                 </div>
             </div>
 
+            <!-- GALLERY PDF EXPORT / PRINT MODAL -->
+            <div id="gallery-pdf-modal" class="fixed inset-0 z-[80] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0 p-3 sm:p-6">
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="gallery-pdf-modal-content">
+                    <!-- Modal Header -->
+                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/80">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 border border-rose-200">
+                                <i class="fa-solid fa-file-pdf text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-base sm:text-lg font-bold text-slate-800">ส่งออกแคตตาล็อกรูปภาพและรายการวัสดุ (PDF)</h3>
+                                <p class="text-xs text-slate-500">พิมพ์หรือบันทึกเป็น PDF (ฟอนต์คมชัด เวกเตอร์ 100% พร้อมรูปภาพและจำนวน)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="appData.executePrintGalleryPDF()" class="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-4 py-2 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 text-sm">
+                                <i class="fa-solid fa-print"></i> พิมพ์ / บันทึกเป็น PDF
+                            </button>
+                            <button onclick="appData.closeGalleryPDFModal()" class="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Options Toolbar -->
+                    <div class="px-6 py-3 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer select-none">
+                                <input type="checkbox" id="pdf-opt-show-price" onchange="appData.refreshGalleryPDFPreview()" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>แสดงราคา / มูลค่า</span>
+                            </label>
+                            <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer select-none">
+                                <input type="checkbox" id="pdf-opt-show-store" checked onchange="appData.refreshGalleryPDFPreview()" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>แสดงข้อมูลร้านค้า</span>
+                            </label>
+                            <div class="flex items-center gap-2 font-medium text-slate-700">
+                                <span>รูปภาพต่อแถว:</span>
+                                <select id="pdf-opt-cols" onchange="appData.refreshGalleryPDFPreview()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs outline-none focus:border-brand-500">
+                                    <option value="3" selected>3 รูป / แถว</option>
+                                    <option value="2">2 รูป / แถว (รูปใหญ่)</option>
+                                    <option value="4">4 รูป / แถว (รูปกะทัดรัด)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-slate-500 text-[11px] flex items-center gap-1.5">
+                            <i class="fa-solid fa-circle-info text-brand-500"></i>
+                            <span>เลือก "Save as PDF / บันทึกเป็น PDF" ในหน้าต่างการพิมพ์</span>
+                        </div>
+                    </div>
+
+                    <!-- Preview Body -->
+                    <div class="flex-1 bg-slate-200/70 p-4 sm:p-6 overflow-y-auto" id="gallery-pdf-preview-scroll">
+                        <div id="gallery-pdf-preview-container" class="max-w-[210mm] mx-auto bg-white shadow-xl rounded-sm p-6 sm:p-8">
+                            <!-- Injected Preview HTML -->
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="px-6 py-3 border-t border-slate-200 bg-white flex justify-between items-center text-xs text-slate-500">
+                        <span id="gallery-pdf-status-text" class="flex items-center gap-1.5 font-medium">
+                            <i class="fa-solid fa-check text-emerald-500"></i> พร้อมส่งออกเอกสาร
+                        </span>
+                        <div class="flex items-center gap-3">
+                            <button onclick="appData.closeGalleryPDFModal()" class="px-4 py-2 rounded-xl font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
+                                ปิด
+                            </button>
+                            <button onclick="appData.executePrintGalleryPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 text-sm">
+                                <i class="fa-solid fa-download"></i> บันทึกเป็น PDF / พิมพ์
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dedicated Gallery Print Container -->
+            <div id="galleryPrintOnlyWrapper" style="display:none;">
+                <div id="galleryPrintArea"></div>
+            </div>
+
         </main>
     </div>
 
@@ -1842,19 +1977,50 @@
             // Ensure every item has an id (Firebase key or auto-generated for arrays).
             _getItemsList(items) {
                 if (!items) return [];
+                let list = [];
                 if (Array.isArray(items)) {
-                    return items.map((val, index) => {
+                    list = items.map((val, index) => {
                         if (!val.id) val.id = 'item_auto_' + index;
                         return val;
                     });
+                } else {
+                    list = Object.entries(items).map(([key, val]) => ({ ...val, id: val.id || key }));
                 }
-                return Object.entries(items).map(([key, val]) => ({ ...val, id: val.id || key }));
+
+                // Filter out dead/stale blob URLs that were mistakenly saved previously
+                list.forEach(item => {
+                    if (item.images && Array.isArray(item.images)) {
+                        item.images = item.images.filter(img => {
+                            if (typeof img !== 'string') return false;
+                            if (img.startsWith('blob:') && (!this.activeUploads || !this.activeUploads.has(img))) {
+                                return false; // Clean stale dead blob
+                            }
+                            return true;
+                        });
+                    }
+                    if (item.imageUrl && typeof item.imageUrl === 'string' && item.imageUrl.startsWith('blob:') && (!this.activeUploads || !this.activeUploads.has(item.imageUrl))) {
+                        item.imageUrl = '';
+                    }
+                });
+
+                return list;
             },
             getSafeImageUrl(url) {
-                if (!url) return '';
-                if (url.includes('drive.google.com/uc?id=')) {
-                    const fileId = new URLSearchParams(url.split('?')[1]).get('id');
-                    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
+                if (!url || typeof url !== 'string') return '';
+                if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+
+                // Extract Google Drive File ID from any Google Drive URL format
+                let fileId = null;
+                let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                if (match) fileId = match[1];
+                else {
+                    match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                    if (match) fileId = match[1];
+                }
+
+                if (fileId) {
+                    // Google's high-speed CDN (lh3.googleusercontent.com/d/{id}=w1000)
+                    return `https://lh3.googleusercontent.com/d/${fileId}=w1000`;
                 }
                 return url;
             },
@@ -2786,12 +2952,17 @@
             // Gallery Rendering
             renderGallery() {
                 const grid = document.getElementById('gallery-grid');
+                const badge = document.getElementById('gallery-count-badge');
                 if (!grid) return;
                 
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 // Safely convert items (Firebase may return Array or Object)
                 const itemsList = this._getItemsList(proj ? proj.items : null);
                 
+                if (badge) {
+                    badge.innerText = `${itemsList ? itemsList.length : 0} รายการ`;
+                }
+
                 if (!proj || itemsList.length === 0) {
                     grid.innerHTML = `
                         <div class="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-white">
@@ -2833,10 +3004,20 @@
                     const imagesList = Array.isArray(item.images) ? item.images : Object.values(item.images);
                     let imagesHtml = '';
                     imagesList.forEach((img, imgIndex) => {
-                        const isUploading = img.startsWith('blob:');
+                        const isUploading = typeof img === 'string' && img.startsWith('blob:') && this.activeUploads && this.activeUploads.has(img);
+                        
+                        let driveId = null;
+                        if (!isUploading && typeof img === 'string') {
+                            let match = img.match(/\/d\/([a-zA-Z0-9_-]+)/) || img.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                            if (match) driveId = match[1];
+                        }
+                        const fallbackHandler = driveId 
+                            ? `if(!this.dataset.fallback){this.dataset.fallback='1';this.src='https://drive.google.com/thumbnail?id=${driveId}&sz=w1000';}else{this.src='https://placehold.co/150x150/f8fafc/cbd5e1?text=No+Image';this.onerror=null;}`
+                            : `this.src='https://placehold.co/150x150/f8fafc/cbd5e1?text=No+Image'; this.onerror=null;`;
+
                         imagesHtml += `
                             <div class="h-32 min-w-[8rem] max-w-sm shrink-0 relative bg-slate-100 flex items-center justify-center rounded-xl overflow-hidden group cursor-pointer border border-slate-200 shadow-sm hover:border-brand-300 transition-colors" ${isUploading ? '' : `onclick="appData.openLightbox('${item.id}', ${imgIndex})"`}>
-                                <img src="${isUploading ? img : appData.getSafeImageUrl(img)}" alt="Image" class="h-full w-auto max-w-full object-contain ${isUploading ? 'opacity-50 blur-sm scale-105' : ''}" onerror="this.src='https://placehold.co/150x150/f8fafc/cbd5e1?text=No+Image'; this.onerror=null;">
+                                <img src="${isUploading ? img : appData.getSafeImageUrl(img)}" alt="Image" loading="lazy" referrerpolicy="no-referrer" class="h-full w-auto max-w-full object-contain ${isUploading ? 'opacity-50 blur-sm scale-105' : ''}" onerror="${fallbackHandler}">
                                 ${isUploading ? `
                                 <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/30 backdrop-blur-[2px]">
                                     <div class="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin shadow-sm"></div>
@@ -2870,6 +3051,271 @@
                     
                     card.innerHTML = leftPanel + rightPanel;
                     grid.appendChild(card);
+                });
+            },
+
+            // Gallery PDF Export
+            exportGalleryPDF() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) {
+                    this.showToast('กรุณาเลือกโครงการก่อนดำเนินการ', 'error');
+                    return;
+                }
+                const itemsList = this._getItemsList(proj.items);
+                if (itemsList.length === 0) {
+                    Swal.fire({
+                        title: 'ไม่มีรายการวัสดุ',
+                        text: 'ไม่พบรายการสินค้าในโครงการนี้ กรุณาเพิ่มรายการสินค้าก่อนส่งออก PDF',
+                        icon: 'warning',
+                        confirmButtonColor: '#1A6FBF'
+                    });
+                    return;
+                }
+
+                const modal = document.getElementById('gallery-pdf-modal');
+                const content = document.getElementById('gallery-pdf-modal-content');
+                if (!modal || !content) return;
+
+                this.refreshGalleryPDFPreview();
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }, 10);
+            },
+
+            closeGalleryPDFModal() {
+                const modal = document.getElementById('gallery-pdf-modal');
+                const content = document.getElementById('gallery-pdf-modal-content');
+                if (!modal || !content) return;
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }, 280);
+            },
+
+            refreshGalleryPDFPreview() {
+                const container = document.getElementById('gallery-pdf-preview-container');
+                if (!container) return;
+
+                const showPrice = document.getElementById('pdf-opt-show-price')?.checked || false;
+                const showStore = document.getElementById('pdf-opt-show-store')?.checked || false;
+                const cols = parseInt(document.getElementById('pdf-opt-cols')?.value || '3', 10);
+
+                container.innerHTML = this.buildGalleryPDFContent({ showPrice, showStore, cols, isPrint: false });
+            },
+
+            buildGalleryPDFContent({ showPrice = false, showStore = true, cols = 3, isPrint = false } = {}) {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return '<div class="p-6 text-center text-slate-400">ไม่พบข้อมูลโครงการ</div>';
+
+                const itemsList = this._getItemsList(proj.items);
+                let displayDate = '-';
+                if (proj.date) {
+                    const d = new Date(proj.date);
+                    if (!isNaN(d.getTime())) {
+                        displayDate = d.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+                    }
+                }
+
+                const dispCompany = this.getCompanyDisplayString ? this.getCompanyDisplayString(proj.company) : (proj.company || '-');
+                const instLogo = (this.companyLogos && proj.company && this.companyLogos[typeof proj.company === 'string' ? proj.company : proj.company.name]) ? this.companyLogos[typeof proj.company === 'string' ? proj.company : proj.company.name] : '';
+                const totalQty = itemsList.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
+                const printTimestamp = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                let colStyle = 'grid-template-columns: repeat(3, minmax(0, 1fr));';
+                if (cols === 2) {
+                    colStyle = 'grid-template-columns: repeat(2, minmax(0, 1fr));';
+                } else if (cols === 4) {
+                    colStyle = 'grid-template-columns: repeat(4, minmax(0, 1fr));';
+                }
+
+                let itemsHtml = '';
+                itemsList.forEach((item, index) => {
+                    const imagesList = Array.isArray(item.images) ? item.images : (item.images ? Object.values(item.images) : []);
+                    if (imagesList.length === 0 && item.imageUrl && item.imageUrl.trim() !== '') {
+                        imagesList.push(item.imageUrl);
+                    }
+
+                    let imagesGridHtml = '';
+                    if (imagesList.length > 0) {
+                        let imgCards = '';
+                        imagesList.forEach((img, imgIdx) => {
+                            const safeUrl = this.getSafeImageUrl(img);
+                            const imgHeight = cols === 2 ? '170px' : (cols === 4 ? '110px' : '135px');
+                            imgCards += `
+                                <div style="height: ${imgHeight}; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 4px; box-sizing: border-box;">
+                                    <img src="${safeUrl}" alt="${item.name || 'สินค้า'} - ${imgIdx + 1}" referrerpolicy="no-referrer" style="max-height: 100%; max-width: 100%; object-fit: contain; display: block;" onerror="this.src='https://placehold.co/150x150/f8fafc/cbd5e1?text=No+Image';">
+                                </div>
+                            `;
+                        });
+                        imagesGridHtml = `
+                            <div style="display: grid; ${colStyle} gap: 10px; margin-top: 10px; width: 100%; box-sizing: border-box;">
+                                ${imgCards}
+                            </div>
+                        `;
+                    } else {
+                        imagesGridHtml = `
+                            <div style="margin-top: 8px; padding: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; text-align: center; color: #94a3b8; font-size: 12px;">
+                                <i class="fa-regular fa-image" style="margin-right: 4px;"></i> ไม่มีรูปภาพแนบสำหรับรายการนี้
+                            </div>
+                        `;
+                    }
+
+                    let priceBadge = '';
+                    if (showPrice && (item.unitPrice || item.totalSell)) {
+                        const uPrice = parseFloat(item.unitPrice) || 0;
+                        const tPrice = parseFloat(item.totalSell) || (uPrice * (parseFloat(item.qty) || 0));
+                        priceBadge = `
+                            <span style="display: inline-flex; align-items: center; background-color: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px;">
+                                ฿${uPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / หน่วย (รวม ฿${tPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+                            </span>
+                        `;
+                    }
+
+                    let storeBadge = '';
+                    if (showStore && item.storeInfo) {
+                        storeBadge = `
+                            <span style="display: inline-flex; align-items: center; gap: 4px; background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px;">
+                                <i class="fa-solid fa-store" style="font-size: 10px; color: #64748b;"></i> ${item.storeInfo}
+                            </span>
+                        `;
+                    }
+
+                    const itemNoDisplay = item.customNo ? item.customNo : (index + 1);
+
+                    itemsHtml += `
+                        <div class="gallery-pdf-item" style="border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 14px; padding: 12px 14px; background-color: #ffffff; page-break-inside: avoid; break-inside: avoid; box-sizing: border-box;">
+                            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
+                                <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                                    <span style="background-color: #1A6FBF; color: #ffffff; font-weight: 700; font-size: 12px; padding: 2px 10px; border-radius: 6px; white-space: nowrap;">
+                                        ข้อ ${itemNoDisplay}
+                                    </span>
+                                    <span style="font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.3;">
+                                        ${item.name || 'ไม่มีชื่อรายการ'}
+                                    </span>
+                                </div>
+                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
+                                    <span style="display: inline-flex; align-items: center; gap: 4px; background-color: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 6px;">
+                                        จำนวน: ${item.qty || 0} ${item.unit || ''}
+                                    </span>
+                                    ${priceBadge}
+                                    ${storeBadge}
+                                </div>
+                            </div>
+                            ${imagesGridHtml}
+                        </div>
+                    `;
+                });
+
+                return `
+                    <div class="gallery-pdf-page-container" style="font-family: 'Kanit', 'Sarabun', 'Inter', sans-serif; color: #1e293b; line-height: 1.4; width: 100%; box-sizing: border-box; background: #ffffff;">
+                        <!-- HEADER -->
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 2px solid #1A6FBF; margin-bottom: 14px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                ${instLogo ? `<img src="${instLogo}" alt="Logo" style="height: 48px; width: 48px; object-fit: contain; border-radius: 8px; border: 1px solid #e2e8f0; padding: 2px;">` : `
+                                <div style="width: 44px; height: 44px; border-radius: 10px; background: linear-gradient(135deg, #1A6FBF, #0e4a85); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                </div>`}
+                                <div>
+                                    <div style="font-size: 16px; font-weight: 800; color: #1A6FBF; letter-spacing: -0.2px;">Mentra Manager</div>
+                                    <div style="font-size: 11px; color: #64748b; font-weight: 500;">ระบบบริหารจัดการวัสดุอุปกรณ์และการจัดซื้อ</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 15px; font-weight: 800; color: #0f172a;">เอกสารแคตตาล็อกรูปภาพและรายการวัสดุ</div>
+                                <div style="font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">MATERIALS & EQUIPMENT SPECIFICATION</div>
+                                <div style="font-size: 10px; color: #94a3b8; margin-top: 2px;">พิมพ์เมื่อ: ${printTimestamp}</div>
+                            </div>
+                        </div>
+
+                        <!-- PROJECT DETAILS CARD -->
+                        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0;">
+                                <div style="font-size: 14px; font-weight: 700; color: #1A6FBF;">
+                                    <i class="fa-solid fa-folder-open" style="margin-right: 4px;"></i> ${proj.name || 'ไม่มีชื่อโครงการ'}
+                                </div>
+                                <div style="font-size: 12px; font-weight: 600; color: #475569; background: #ffffff; padding: 2px 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                                    รหัสงาน: ${proj.code || '-'}
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 11.5px;">
+                                <div><span style="color: #64748b;">สถานศึกษา:</span> <strong style="color: #1e293b;">${proj.institution || '-'}</strong></div>
+                                <div><span style="color: #64748b;">แผนก/สาขา:</span> <strong style="color: #1e293b;">${proj.department || '-'}</strong></div>
+                                <div><span style="color: #64748b;">วันที่:</span> <strong style="color: #1e293b;">${displayDate}</strong></div>
+                                <div><span style="color: #64748b;">คู่ค้า/ร้านค้า:</span> <strong style="color: #1e293b;">${dispCompany || '-'}</strong></div>
+                                <div><span style="color: #64748b;">ครูผู้สอน/ผู้ประสาน:</span> <strong style="color: #1e293b;">${proj.teacher || '-'}</strong></div>
+                                <div><span style="color: #64748b;">สรุปรายการ:</span> <strong style="color: #1A6FBF;">${itemsList.length} รายการ (รวม ${totalQty} ชิ้น)</strong></div>
+                            </div>
+                        </div>
+
+                        <!-- ITEMS GALLERY -->
+                        <div style="display: flex; flex-direction: column; width: 100%;">
+                            ${itemsHtml}
+                        </div>
+
+                        <!-- FOOTER -->
+                        <div style="margin-top: 18px; padding-top: 8px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #94a3b8;">
+                            <span>เอกสารนี้สร้างโดยระบบ Mentra Manager — หน้าแคตตาล็อกรูปภาพและรายการวัสดุอุปกรณ์</span>
+                            <span>หน้าแคตตาล็อกสินค้า</span>
+                        </div>
+                    </div>
+                `;
+            },
+
+            executePrintGalleryPDF() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) {
+                    this.showToast('ไม่พบข้อมูลโครงการ', 'error');
+                    return;
+                }
+
+                const printArea = document.getElementById('galleryPrintArea');
+                const wrapper = document.getElementById('galleryPrintOnlyWrapper');
+                if (!printArea || !wrapper) return;
+
+                const showPrice = document.getElementById('pdf-opt-show-price')?.checked || false;
+                const showStore = document.getElementById('pdf-opt-show-store')?.checked || false;
+                const cols = parseInt(document.getElementById('pdf-opt-cols')?.value || '3', 10);
+
+                printArea.innerHTML = this.buildGalleryPDFContent({ showPrice, showStore, cols, isPrint: true });
+
+                const statusEl = document.getElementById('gallery-pdf-status-text');
+                if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-brand-500"></i> กำลังโหลดรูปภาพและจัดเตรียม PDF...';
+
+                // Preload all images
+                const images = Array.from(printArea.querySelectorAll('img'));
+                const imgPromises = images.map(img => {
+                    if (img.complete) return Promise.resolve();
+                    return new Promise(resolve => {
+                        img.onload = resolve;
+                        img.onerror = resolve;
+                        setTimeout(resolve, 2000); // 2s fallback per image
+                    });
+                });
+
+                Promise.all([document.fonts.ready, ...imgPromises]).then(() => {
+                    if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-check text-emerald-500"></i> พร้อมพิมพ์ / บันทึก PDF';
+                    const originalTitle = document.title;
+                    const safeName = (proj.name || 'โครงการ').replace(/[\\/:*?"<>|]/g, '_');
+                    const safeCode = proj.code ? `[${proj.code}] ` : '';
+                    document.title = `${safeCode}${safeName}_แกลลอรี่รูปภาพและรายการวัสดุ`;
+
+                    wrapper.style.display = 'block';
+
+                    setTimeout(() => {
+                        window.print();
+                        setTimeout(() => {
+                            document.title = originalTitle;
+                            wrapper.style.display = 'none';
+                        }, 500);
+                    }, 250);
                 });
             },
             
@@ -3265,7 +3711,9 @@
                                                 }
 
                                                 // OPTIMISTIC UI: Show placeholder immediately
+                                                this.activeUploads = this.activeUploads || new Set();
                                                 const tempUrl = URL.createObjectURL(blob);
+                                                this.activeUploads.add(tempUrl);
                                                 item.images.push(tempUrl);
                                                 this.renderGallery();
                                                 this.showToast('กำลังอัปโหลดรูปภาพในเบื้องหลัง...', 'info');
@@ -3286,6 +3734,7 @@
                                                 } else {
                                                     item.images.push(driveUrl);
                                                 }
+                                                this.activeUploads.delete(tempUrl);
                                                 URL.revokeObjectURL(tempUrl); // Clean up memory
                                                 
                                                 this.updateItem(itemId, 'images', item.images);
@@ -3297,6 +3746,10 @@
                                                 if (item && item.images) {
                                                     item.images = item.images.filter(img => !img.startsWith('blob:'));
                                                     this.renderGallery();
+                                                }
+                                                if (typeof tempUrl !== 'undefined') {
+                                                    this.activeUploads.delete(tempUrl);
+                                                    URL.revokeObjectURL(tempUrl);
                                                 }
                                                 Swal.fire('ข้อผิดพลาด', 'ไม่สามารถอัปโหลดรูปภาพได้: ' + error.message, 'error');
                                             }
@@ -3374,6 +3827,8 @@
                 
                 if (url.startsWith('data:image/')) {
                     // OPTIMISTIC UI: Show placeholder immediately and close modal
+                    this.activeUploads = this.activeUploads || new Set();
+                    this.activeUploads.add(url);
                     item.images.push(url);
                     this.renderGallery();
                     this.closeImageModal();
@@ -3397,6 +3852,7 @@
                         } else {
                             item.images.push(driveUrl);
                         }
+                        this.activeUploads.delete(url);
                         
                         this.updateItem(this.currentImageItemId, 'images', item.images);
                         this.renderGallery();
@@ -3408,6 +3864,7 @@
                             item.images = item.images.filter(img => img !== url);
                             this.renderGallery();
                         }
+                        this.activeUploads.delete(url);
                         Swal.fire('ข้อผิดพลาด', 'ไม่สามารถอัปโหลดรูปภาพได้: ' + error.message, 'error');
                     }
                 } else {
@@ -3425,7 +3882,7 @@
             openLightbox(itemId, index) {
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
-                const item = proj.items.find(i => i.id === itemId);
+                const item = this._getItemsList(proj.items).find(i => String(i.id) === String(itemId));
                 if (!item || !item.images || item.images.length === 0) return;
                 
                 this.currentLightboxItemId = itemId;
@@ -3446,35 +3903,42 @@
             
             updateLightboxImage() {
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
-                const item = proj.items.find(i => i.id === this.currentLightboxItemId);
+                if (!proj) return;
+                const item = this._getItemsList(proj.items).find(i => String(i.id) === String(this.currentLightboxItemId));
                 if (!item || !item.images) return;
                 
-                const imgUrl = item.images[this.currentLightboxImageIndex];
+                const imagesList = Array.isArray(item.images) ? item.images : Object.values(item.images);
+                const imgUrl = imagesList[this.currentLightboxImageIndex];
                 const imgElement = document.getElementById('lightbox-image');
-                imgElement.src = this.getSafeImageUrl(imgUrl);
+                if (imgElement) imgElement.src = this.getSafeImageUrl(imgUrl);
                 
-                document.getElementById('lightbox-counter').innerText = `${this.currentLightboxImageIndex + 1} / ${item.images.length}`;
+                const counter = document.getElementById('lightbox-counter');
+                if (counter) counter.innerText = `${this.currentLightboxImageIndex + 1} / ${imagesList.length}`;
             },
             
             prevLightboxImage() {
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
-                const item = proj.items.find(i => i.id === this.currentLightboxItemId);
+                if (!proj) return;
+                const item = this._getItemsList(proj.items).find(i => String(i.id) === String(this.currentLightboxItemId));
                 if (!item || !item.images) return;
                 
+                const imagesList = Array.isArray(item.images) ? item.images : Object.values(item.images);
                 this.currentLightboxImageIndex--;
                 if (this.currentLightboxImageIndex < 0) {
-                    this.currentLightboxImageIndex = item.images.length - 1;
+                    this.currentLightboxImageIndex = imagesList.length - 1;
                 }
                 this.updateLightboxImage();
             },
             
             nextLightboxImage() {
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
-                const item = proj.items.find(i => i.id === this.currentLightboxItemId);
+                if (!proj) return;
+                const item = this._getItemsList(proj.items).find(i => String(i.id) === String(this.currentLightboxItemId));
                 if (!item || !item.images) return;
                 
+                const imagesList = Array.isArray(item.images) ? item.images : Object.values(item.images);
                 this.currentLightboxImageIndex++;
-                if (this.currentLightboxImageIndex >= item.images.length) {
+                if (this.currentLightboxImageIndex >= imagesList.length) {
                     this.currentLightboxImageIndex = 0;
                 }
                 this.updateLightboxImage();
@@ -5532,6 +5996,21 @@
             window.saveProjectToFirestore = async function(projData) {
                 try {
                     let cleanedData = JSON.parse(JSON.stringify(projData)); // Ensure no undefined or proxies
+
+                    // Clean any temporary/optimistic blob: or data: URLs before saving to Firebase
+                    if (cleanedData.items) {
+                        const isArr = Array.isArray(cleanedData.items);
+                        const itemList = isArr ? cleanedData.items : Object.values(cleanedData.items);
+                        for (let item of itemList) {
+                            if (item.images && Array.isArray(item.images)) {
+                                item.images = item.images.filter(img => typeof img === 'string' && !img.startsWith('blob:'));
+                            }
+                            if (item.imageUrl && typeof item.imageUrl === 'string' && item.imageUrl.startsWith('blob:')) {
+                                item.imageUrl = '';
+                            }
+                        }
+                    }
+
                     let sizeBytes = new Blob([JSON.stringify(cleanedData)]).size;
                     
                     // Emergency compression if document approaches 1MB Firebase limit
