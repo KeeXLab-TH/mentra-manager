@@ -1111,6 +1111,9 @@
                     <button type="button" class="popover-btn-action create-new" onclick="openShopModal()">
                         <i class='bx bx-plus'></i> <span>เพิ่มร้านค้า</span>
                     </button>
+                    <button type="button" class="popover-btn-action" onclick="window.location.href='../admin/company_settings.html'" style="color: #1A6FBF; font-weight: 600;">
+                        <i class='bx bx-buildings'></i> <span>จัดการข้อมูลบริษัท & ร้านค้า</span>
+                    </button>
                     <button type="button" class="popover-btn-action logout" onclick="handleLogout()">
                         <i class='bx bx-log-out'></i> <span>ออกจากระบบ (Logout)</span>
                     </button>
@@ -1145,6 +1148,12 @@
 
                 <!-- Module Section: Administration & CRM -->
                 <div class="sec-nav-divider">ฝ่ายบริหาร & CRM</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/company_settings.html'" id="nav-company-settings">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-buildings'></i>
+                        <span>ข้อมูลบริษัท & ร้านค้า</span>
+                    </div>
+                </button>
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/crm.html'" id="nav-crm">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-bar-chart-alt-2'></i>
@@ -1196,25 +1205,19 @@
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/quotation.html'" id="nav-quotation">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-file-blank'></i>
-                        <span>ใบเสนอราคา</span>
+                        <span>ออกเอกสารงานขาย</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-folder-open'></i>
+                        <span>ประวัติเอกสารที่ออก</span>
                     </div>
                 </button>
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_dashboard.html'" id="nav-sales-dashboard">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-spreadsheet'></i>
                         <span>ระบบเอกสารงานขาย</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_invoice.html'" id="nav-sales-invoice">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-receipt'></i>
-                        <span>ใบกำกับภาษี / แจ้งหนี้</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_receipt.html'" id="nav-sales-receipt">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-check-shield'></i>
-                        <span>ใบเสร็จรับเงิน</span>
                     </div>
                 </button>
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/ocr_table.html'" id="nav-ocr">

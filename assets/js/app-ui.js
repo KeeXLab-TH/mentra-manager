@@ -17,17 +17,16 @@
 window.PAGE_DEPT_MAP = {
     'dashboard.html': 'admin/dashboard.html',
     'console_admin.html': 'admin/console_admin.html',
-    'crm.html': 'admin/crm.html',
+    'company_settings.html': 'admin/company_settings.html',
     'business_card.html': 'admin/business_card.html',
     'materials_purchasing.html': 'purchasing/materials_purchasing.html',
     'materials_purchasing_company.html': 'purchasing/materials_purchasing_company.html',
     'products.html': 'purchasing/products.html',
-    'equipments.html': 'purchasing/equipments.html',
     'quotation.html': 'accounting/quotation.html',
+    'sales_documents.html': 'accounting/sales_documents.html',
     'sales_dashboard.html': 'accounting/sales_dashboard.html',
     'sales_invoice.html': 'accounting/sales_invoice.html',
     'sales_receipt.html': 'accounting/sales_receipt.html',
-    'ocr_table.html': 'accounting/ocr_table.html',
     'calendar.html': 'schedule/calendar.html',
     'tasks.html': 'schedule/tasks.html',
     'external_training.html': 'schedule/external_training.html',
@@ -46,7 +45,7 @@ window.getDeptUrl = function(page) {
     const hash = parts[0].includes('#') ? '#' + parts[0].split('#')[1] : '';
     
     const subpath = window.PAGE_DEPT_MAP[fileName] || fileName;
-    const path = location.pathname;
+    const path = (location.pathname || '').replace(/\\/g, '/');
 
     if (path.includes('/pages/admin/') || path.includes('/pages/purchasing/') ||
         path.includes('/pages/accounting/') || path.includes('/pages/schedule/')) {
@@ -956,98 +955,160 @@ window.applySidebarPermissions = function(userData) {
         console.error('Dropdown init error:', err);
     }
 
+    const isAdmin = userData.role === 'admin';
+
     // 1. Hide/Show Admin Console menu based on Role
     const adminMenus = document.querySelectorAll('#adminMenu, a[href*="console_admin.html"], button[onclick*="console_admin.html"], [data-page*="console_admin.html"]');
     adminMenus.forEach(el => {
-        if (userData.role === 'admin') {
+        if (isAdmin) {
             el.style.display = '';
         } else {
             el.style.display = 'none';
         }
     });
 
-    // 2. Hide navigation items for pages that are disabled for this user (including admins if explicitly configured)
-    if (userData.allowedPages) {
-        const PAGE_SELECTOR_MAP = {
-            'dashboard.html': [
-                '#nav-dashboard', '#nav-projects', '#nav-items', 
-                'a[href*="dashboard.html"]', 'button[onclick*="dashboard"]',
-                'button[onclick*="navigateTo(\'dashboard\')"]', 'button[onclick*="navigateTo(\'projects\')"]', 'button[onclick*="navigateTo(\'items\')"]',
-                '[data-page*="dashboard.html"]'
-            ],
-            'materials_purchasing.html': [
-                '#nav-purchasing', '#nav-purchasing-school', 'a[href*="materials_purchasing.html"]', 'button[onclick*="materials_purchasing.html"]',
-                '[data-page*="materials_purchasing.html"]'
-            ],
-            'materials_purchasing_company.html': [
-                '#nav-purchasing-company', 'a[href*="materials_purchasing_company.html"]', 'button[onclick*="materials_purchasing_company.html"]',
-                '[data-page*="materials_purchasing_company.html"]'
-            ],
-            'quotation.html': [
-                '#nav-quotation', 'a[href*="quotation.html"]', 'button[onclick*="quotation.html"]',
-                '[data-page*="quotation.html"]'
-            ],
-            'products.html': [
-                '#nav-products', 'a[href*="products.html"]', 'button[onclick*="products.html"]',
-                '[data-page*="products.html"]'
-            ],
-            'equipments.html': [
-                '#nav-equipments', 'a[href*="equipments.html"]', 'button[onclick*="equipments.html"]',
-                '[data-page*="equipments.html"]'
-            ],
-            'external_training.html': [
-                '#nav-training', 'a[href*="external_training.html"]', 'button[onclick*="external_training.html"]',
-                '[data-page*="external_training.html"]'
-            ],
-            'calendar.html': [
-                '#nav-calendar', 'a[href*="calendar.html"]', 'button[onclick*="calendar.html"]',
-                '[data-page*="calendar.html"]'
-            ],
-            'crm.html': [
-                '#nav-crm', 'a[href*="crm.html"]', 'button[onclick*="crm.html"]',
-                '[data-page*="crm.html"]'
-            ],
-            'register_training.html': [
-                '#nav-register-training', 'a[href*="register_training.html"]', 'button[onclick*="register_training.html"]',
-                '[data-page*="register_training.html"]'
-            ],
-            'ocr_table.html': [
-                '#nav-ocr', 'a[href*="ocr_table.html"]', 'button[onclick*="ocr_table.html"]',
-                '[data-page*="ocr_table.html"]'
-            ],
-            'certificate_template.html': [
-                '#nav-certificate', 'a[href*="certificate_template.html"]', 'button[onclick*="certificate_template.html"]',
-                '[data-page*="certificate_template.html"]'
-            ],
-            'internship_journal.html': [
-                '#nav-internship', 'a[href*="internship_journal.html"]', 'button[onclick*="internship_journal.html"]',
-                '[data-page*="internship_journal.html"]'
-            ],
-            'business_card.html': [
-                '#nav-business-card', 'a[href*="business_card.html"]', 'button[onclick*="business_card.html"]',
-                '[data-page*="business_card.html"]'
-            ]
-        };
+    const PAGE_SELECTOR_MAP = {
+        'dashboard.html': [
+            '#nav-dashboard', '#nav-projects', '#nav-items', 
+            'a[href*="dashboard.html"]', 'button[onclick*="dashboard"]',
+            'button[onclick*="navigateTo(\'dashboard\')"]', 'button[onclick*="navigateTo(\'projects\')"]', 'button[onclick*="navigateTo(\'items\')"]',
+            '[data-page*="dashboard.html"]'
+        ],
+        'company_settings.html': [
+            '#nav-company-settings',
+            'a[href*="company_settings.html"]',
+            'button[onclick*="company_settings.html"]',
+            '[data-page*="company_settings.html"]'
+        ],
+        'materials_purchasing.html': [
+            '#nav-purchasing', '#nav-purchasing-school', 'a[href*="materials_purchasing.html"]', 'button[onclick*="materials_purchasing.html"]',
+            '[data-page*="materials_purchasing.html"]'
+        ],
+        'materials_purchasing_company.html': [
+            '#nav-purchasing-company', 'a[href*="materials_purchasing_company.html"]', 'button[onclick*="materials_purchasing_company.html"]',
+            '[data-page*="materials_purchasing_company.html"]'
+        ],
+        'quotation.html': [
+            '#nav-quotation', 'a[href*="quotation.html"]', 'button[onclick*="quotation.html"]',
+            '[data-page*="quotation.html"]'
+        ],
+        'sales_documents.html': [
+            '#nav-sales-documents',
+            'a[href*="sales_documents.html"]',
+            'button[onclick*="sales_documents.html"]',
+            '[data-page*="sales_documents.html"]'
+        ],
+        'sales_dashboard.html': [
+            '#nav-sales-dashboard',
+            'a[href*="sales_dashboard.html"]',
+            'button[onclick*="sales_dashboard.html"]',
+            '[data-page*="sales_dashboard.html"]'
+        ],
+        'products.html': [
+            '#nav-products', 'a[href*="products.html"]', 'button[onclick*="products.html"]',
+            '[data-page*="products.html"]'
+        ],
+        'tasks.html': [
+            '#nav-tasks',
+            'a[href*="tasks.html"]',
+            'button[onclick*="tasks.html"]',
+            '[data-page*="tasks.html"]'
+        ],
+        'external_training.html': [
+            '#nav-training', 'a[href*="external_training.html"]', 'button[onclick*="external_training.html"]',
+            '[data-page*="external_training.html"]'
+        ],
+        'calendar.html': [
+            '#nav-calendar', 'a[href*="calendar.html"]', 'button[onclick*="calendar.html"]',
+            '[data-page*="calendar.html"]'
+        ],
+        'register_training.html': [
+            '#nav-register-training', 'a[href*="register_training.html"]', 'button[onclick*="register_training.html"]',
+            '[data-page*="register_training.html"]'
+        ],
+        'certificate_template.html': [
+            '#nav-certificate', 'a[href*="certificate_template.html"]', 'button[onclick*="certificate_template.html"]',
+            '[data-page*="certificate_template.html"]'
+        ],
+        'internship_journal.html': [
+            '#nav-internship', 'a[href*="internship_journal.html"]', 'button[onclick*="internship_journal.html"]',
+            '[data-page*="internship_journal.html"]'
+        ],
+        'business_card.html': [
+            '#nav-business-card', 'a[href*="business_card.html"]', 'button[onclick*="business_card.html"]',
+            '[data-page*="business_card.html"]'
+        ]
+    };
 
-        Object.keys(userData.allowedPages).forEach(pageKey => {
-            if (userData.allowedPages[pageKey] === false) {
-                const selectors = PAGE_SELECTOR_MAP[pageKey] || [];
-                selectors.forEach(sel => {
-                    document.querySelectorAll(sel).forEach(el => {
-                        el.style.setProperty('display', 'none', 'important');
-                    });
+    if (isAdmin) {
+        // ADMIN: Always display ALL menus and pages without any restrictions!
+        Object.keys(PAGE_SELECTOR_MAP).forEach(pageKey => {
+            const selectors = PAGE_SELECTOR_MAP[pageKey] || [];
+            selectors.forEach(sel => {
+                document.querySelectorAll(sel).forEach(el => {
+                    if (el.style.display === 'none') {
+                        el.style.removeProperty('display');
+                    }
                 });
+            });
+        });
+        document.querySelectorAll('#nav-purchasing-group').forEach(el => {
+            if (el.style.display === 'none') {
+                el.style.removeProperty('display');
             }
         });
 
-        // Hide main group if both sub-pages are disabled
-        const isSchoolDisabled = userData.allowedPages['materials_purchasing.html'] === false;
-        const isCompanyDisabled = userData.allowedPages['materials_purchasing_company.html'] === false;
-        if (isSchoolDisabled && isCompanyDisabled) {
-            document.querySelectorAll('#nav-purchasing-group').forEach(el => {
-                el.style.setProperty('display', 'none', 'important');
+        try {
+            localStorage.setItem('mentra_user_permissions', JSON.stringify({
+                uid: userData.uid || userData.id,
+                role: 'admin',
+                allowedPages: {}
+            }));
+        } catch(e) {}
+
+        try {
+            window.highlightActiveSidebar();
+        } catch(e) {}
+        return;
+    }
+
+    // 2. Hide navigation items for pages that are disabled for REGULAR USERS
+    const allowedPages = userData.allowedPages || {};
+    try {
+        localStorage.setItem('mentra_user_permissions', JSON.stringify({
+            uid: userData.uid || userData.id,
+            role: userData.role || 'user',
+            allowedPages: allowedPages
+        }));
+    } catch(e) {}
+
+    Object.keys(PAGE_SELECTOR_MAP).forEach(pageKey => {
+        const isDenied = allowedPages[pageKey] === false;
+        const selectors = PAGE_SELECTOR_MAP[pageKey] || [];
+        selectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                if (isDenied) {
+                    el.style.setProperty('display', 'none', 'important');
+                } else if (el.style.display === 'none') {
+                    el.style.removeProperty('display');
+                }
             });
-        }
+        });
+    });
+
+    // Hide main group if both sub-pages are disabled
+    const isSchoolDisabled = allowedPages['materials_purchasing.html'] === false;
+    const isCompanyDisabled = allowedPages['materials_purchasing_company.html'] === false;
+    if (isSchoolDisabled && isCompanyDisabled) {
+        document.querySelectorAll('#nav-purchasing-group').forEach(el => {
+            el.style.setProperty('display', 'none', 'important');
+        });
+    } else {
+        document.querySelectorAll('#nav-purchasing-group').forEach(el => {
+            if (el.style.display === 'none') {
+                el.style.removeProperty('display');
+            }
+        });
     }
 
     // 3. Highlight current active sidebar item strictly based on URL + query params
@@ -1139,14 +1200,21 @@ window.highlightActiveSidebar = function() {
 window.checkPageAccess = function(userData) {
     if (!userData) return true;
 
+    // Admin has 100% full access to all pages
+    if (userData.role === 'admin') {
+        window.applySidebarPermissions(userData);
+        return true;
+    }
+
     let currentFile = window.location.pathname.split('/').pop() || '../../index.html';
     if (!currentFile || currentFile === '' || currentFile === '/') currentFile = 'dashboard.html';
     currentFile = currentFile.split('?')[0].split('#')[0];
 
-    // If current page is explicitly set to false in allowedPages (applies to ALL accounts including Admin)
+    // If current page is explicitly set to false in allowedPages for regular users
     if (userData.allowedPages && userData.allowedPages[currentFile] === false) {
         alert('ขออภัย บัญชีของคุณไม่มีสิทธิ์เข้าถึงหน้าเว็บนี้ กรุณาติดต่อผู้ดูแลระบบ');
-        window.location.href = 'dashboard.html';
+        const target = typeof window.getDeptUrl === 'function' ? window.getDeptUrl('dashboard.html') : 'dashboard.html';
+        window.location.href = target;
         return false;
     }
 

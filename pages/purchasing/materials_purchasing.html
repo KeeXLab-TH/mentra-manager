@@ -38,6 +38,8 @@
     
     <!-- SweetAlert2 for Popups -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Telegram Notification Service -->
+    <script src="../../assets/js/telegram-service.js"></script>
 
     <!-- Premium UI Overlay -->
     <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780690277137">
@@ -815,7 +817,7 @@
     <script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5"></script>
 </head>
 
-<body class="text-slate-800 antialiased min-h-screen flex" style="display: none !important;">
+<body class="text-slate-800 antialiased min-h-screen flex">
 
     <!-- 
       Note: The Sidebar and Topbar are fully styled with Tailwind to match the Mentra Manager layout. 
@@ -823,6 +825,12 @@
     -->
 
     <!-- ===== SIDEBAR (Tailwind Mockup matching Mentra) ===== -->
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- TOAST CONTAINER (new stackable system) -->
+    <div id="toastContainer"></div>
+
     <!-- SIDEBAR OVERLAY (mobile) -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
@@ -916,6 +924,9 @@
                     <button type="button" class="popover-btn-action create-new" onclick="openShopModal()">
                         <i class='bx bx-plus'></i> <span>เพิ่มร้านค้า</span>
                     </button>
+                    <button type="button" class="popover-btn-action" onclick="window.location.href='../admin/company_settings.html'" style="color: #1A6FBF; font-weight: 600;">
+                        <i class='bx bx-buildings'></i> <span>จัดการข้อมูลบริษัท & ร้านค้า</span>
+                    </button>
                     <button type="button" class="popover-btn-action logout" onclick="handleLogout()">
                         <i class='bx bx-log-out'></i> <span>ออกจากระบบ (Logout)</span>
                     </button>
@@ -948,12 +959,12 @@
                     </div>
                 </button>
 
-                <!-- Module Section: Administration & CRM -->
-                <div class="sec-nav-divider">ฝ่ายบริหาร & CRM</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/crm.html'" id="nav-crm">
+                <!-- Module Section: Administration -->
+                <div class="sec-nav-divider">ฝ่ายบริหาร</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/company_settings.html'" id="nav-company-settings">
                     <div class="sec-nav-item-left">
-                        <i class='bx bx-bar-chart-alt-2'></i>
-                        <span>ระบบ CRM</span>
+                        <i class='bx bx-buildings'></i>
+                        <span>ข้อมูลบริษัท & ร้านค้า</span>
                     </div>
                 </button>
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
@@ -983,12 +994,6 @@
                         <span>รายการสินค้า</span>
                     </div>
                 </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/equipments.html'" id="nav-equipments">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-store-alt'></i>
-                        <span>ข้อมูลร้านสำหรับสั่งวัสดุ</span>
-                    </div>
-                </button>
                 <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('items') : window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-purchase-tag-alt'></i>
@@ -1001,31 +1006,19 @@
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/quotation.html'" id="nav-quotation">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-file-blank'></i>
-                        <span>ใบเสนอราคา</span>
+                        <span>ออกเอกสารงานขาย</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-folder-open'></i>
+                        <span>ประวัติเอกสารที่ออก</span>
                     </div>
                 </button>
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_dashboard.html'" id="nav-sales-dashboard">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-spreadsheet'></i>
                         <span>ระบบเอกสารงานขาย</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_invoice.html'" id="nav-sales-invoice">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-receipt'></i>
-                        <span>ใบกำกับภาษี / แจ้งหนี้</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_receipt.html'" id="nav-sales-receipt">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-check-shield'></i>
-                        <span>ใบเสร็จรับเงิน</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/ocr_table.html'" id="nav-ocr">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-scan'></i>
-                        <span>OCR อ่านเอกสาร</span>
                     </div>
                 </button>
 
@@ -1209,14 +1202,6 @@
                         <button id="btn-cancel-quotation" onclick="appData.cancelQuotationConfirmation()" class="h-10 px-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="ยกเลิกการยืนยันเพื่อกลับไปเสนอราคาใหม่">
                             <i class="fa-solid fa-rotate-left"></i>
                             <span class="hidden sm:inline">ยกเลิกการยืนยัน</span>
-                        </button>
-                        <button id="btn-goto-invoice" onclick="appData.goToInvoice()" class="h-10 px-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="ไปหน้าใบกำกับภาษี">
-                            <i class="fa-solid fa-file-invoice"></i>
-                            <span class="hidden sm:inline">ไปหน้า Invoice</span>
-                        </button>
-                        <button id="btn-goto-receipt" onclick="appData.goToReceipt()" class="h-10 px-4 rounded-lg border border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="ไปหน้าใบเสร็จรับเงิน">
-                            <i class="fa-solid fa-receipt"></i>
-                            <span class="hidden sm:inline">ไปหน้า Receipt</span>
                         </button>
                         <button id="btn-edit-project" onclick="appData.openEditProjectModal()" class="w-10 h-10 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-100 hover:text-brand-700 transition-colors flex items-center justify-center shadow-sm" title="แก้ไขรายละเอียดโครงการ">
                             <i class="fa-solid fa-pen-to-square"></i>
@@ -4594,27 +4579,90 @@
             
             openQuotationForProject() {
                 if (this.currentProjectId) {
-                    const proj = this.projects.find(p => p.id === this.currentProjectId);
+                    let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
+                    if (!proj) {
+                        try {
+                            const cached = localStorage.getItem('material_projects');
+                            if (cached) {
+                                const list = JSON.parse(cached);
+                                if (Array.isArray(list)) proj = list.find(p => String(p.id) === String(this.currentProjectId));
+                            }
+                        } catch(e) {}
+                    }
+
                     let shopParam = '';
                     if (proj) {
-                        const shopName = proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '';
+                        const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
                         if (shopName) {
                             shopParam = `&shop=${encodeURIComponent(shopName)}`;
                         }
-                        localStorage.setItem('pending_quotation_project', JSON.stringify({
+                        
+                        // Clean items of heavy base64 images to prevent localStorage quota issues
+                        const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
+                        const cleanItems = rawItems.map(it => ({
+                            id: it.id,
+                            isHeader: !!it.isHeader,
+                            customNo: it.customNo || '',
+                            name: it.name || it.desc || '',
+                            desc: it.desc || it.name || '',
+                            qty: Number(it.qty) || 1,
+                            unit: it.unit || 'ชุด',
+                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            storeInfo: it.storeInfo || ''
+                        }));
+
+                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
+                        const pendingData = {
                             source: 'school',
                             projectId: this.currentProjectId,
                             institution: proj.institution || '',
-                            items: proj.items || [],
+                            items: cleanItems,
                             company: proj.institution || '',
                             shop: shopName,
-                            address: '',
-                            attn: '',
-                            tel: '',
-                            email: ''
-                        }));
+                            name: proj.name || '',
+                            code: proj.code || '',
+                            address: proj.address || instDetails.address || '',
+                            attn: proj.teacher || proj.attn || instDetails.contact || '',
+                            tel: proj.tel || instDetails.phone || '',
+                            email: proj.email || instDetails.email || '',
+                            taxId: proj.taxId || instDetails.taxId || '',
+                            discountType: proj.discountType || 'percent',
+                            discountValue: proj.discountValue || 0,
+                            timestamp: Date.now()
+                        };
+
+                        try {
+                            sessionStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+
+                        try {
+                            localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {
+                            console.warn("Could not save pending_quotation_project to localStorage:", e);
+                        }
+
+                        // Also cache full projects list without heavy images
+                        try {
+                            const lightProjects = this.projects.map(p => {
+                                const pCopy = { ...p };
+                                if (Array.isArray(pCopy.items)) {
+                                    pCopy.items = pCopy.items.map(it => {
+                                        const { images, ...lightItem } = it;
+                                        return lightItem;
+                                    });
+                                }
+                                return pCopy;
+                            });
+                            localStorage.setItem('material_projects', JSON.stringify(lightProjects));
+                        } catch(e) {}
+
+                        // Ensure latest data is synced to Firestore
+                        if (window.saveProjectToFirestore) {
+                            window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on openQuotation error:', e));
+                        }
                     }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}${shopParam}`;
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}`;
                 }
             },
 
@@ -4771,19 +4819,29 @@
                         this.syncCurrentProject();
                         this.updateWorkflowUI(proj);
                         
+                        if (window.TelegramService) {
+                            try {
+                                const totalAmt = (proj.items || []).reduce((sum, it) => sum + ((Number(it.qty) || 1) * (Number(it.unitPrice) || Number(it.targetPrice) || 0)), 0);
+                                window.TelegramService.sendQuotationAlert({
+                                    refNo: proj.docWorkflow.quotation.docNumber,
+                                    toCompany: proj.institution || proj.name || 'โครงการ',
+                                    issuer: proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : 'Mentra Manager',
+                                    grandTotal: totalAmt.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                                    itemsCount: (proj.items || []).length,
+                                    signer: userEl ? userEl.innerText : 'ระบบ'
+                                });
+                            } catch (e) {
+                                console.warn('[Telegram] Could not send quotation alert:', e);
+                            }
+                        }
+                        
                         Swal.fire({
-                            title: 'ยืนยันเรียบร้อย!',
-                            text: 'ต้องการดำเนินการขั้นต่อไป (ออกใบกำกับภาษี) เลยหรือไม่?',
+                            title: 'ยืนยันใบเสนอราคาเรียบร้อย!',
+                            text: 'สถานะได้รับการอัปเดตเป็นยืนยันแล้ว',
                             icon: 'success',
-                            showCancelButton: true,
-                            confirmButtonText: '<i class="fa-solid fa-file-invoice"></i> ไปหน้าใบกำกับภาษี',
-                            cancelButtonText: 'ทำภายหลัง',
+                            confirmButtonText: 'ตกลง',
                             confirmButtonColor: '#10b981',
                             customClass: { popup: 'mentra-swal-popup' }
-                        }).then((nextResult) => {
-                            if (nextResult.isConfirmed) {
-                                this.goToInvoice();
-                            }
                         });
                     }
                 });
@@ -4791,22 +4849,135 @@
 
             async goToInvoice() {
                 if (this.currentProjectId) {
-                    const proj = this.projects.find(p => p.id === this.currentProjectId);
-                    if (proj) {
+                    let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
+                    if (!proj) {
                         try {
-                            localStorage.setItem('material_projects', JSON.stringify(this.projects));
-                            if (window.saveProjectToFirestore) {
-                                await window.saveProjectToFirestore(proj);
+                            const cached = localStorage.getItem('material_projects');
+                            if (cached) {
+                                const list = JSON.parse(cached);
+                                if (Array.isArray(list)) proj = list.find(p => String(p.id) === String(this.currentProjectId));
                             }
                         } catch(e) {}
                     }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`sales_invoice.html?projectId=${encodeURIComponent(this.currentProjectId)}`) : `../accounting/sales_invoice.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
+
+                    let shopParam = '';
+                    if (proj) {
+                        const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                        if (shopName) {
+                            shopParam = `&shop=${encodeURIComponent(shopName)}`;
+                        }
+                        const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
+                        const cleanItems = rawItems.map(it => ({
+                            id: it.id,
+                            isHeader: !!it.isHeader,
+                            customNo: it.customNo || '',
+                            name: it.name || it.desc || '',
+                            desc: it.desc || it.name || '',
+                            qty: Number(it.qty) || 1,
+                            unit: it.unit || 'ชุด',
+                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            storeInfo: it.storeInfo || ''
+                        }));
+
+                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
+                        const pendingData = {
+                            source: 'school',
+                            projectId: this.currentProjectId,
+                            institution: proj.institution || '',
+                            items: cleanItems,
+                            company: proj.institution || '',
+                            shop: shopName,
+                            name: proj.name || '',
+                            code: proj.code || '',
+                            address: proj.address || instDetails.address || '',
+                            attn: proj.teacher || proj.attn || instDetails.contact || '',
+                            tel: proj.tel || instDetails.phone || '',
+                            email: proj.email || instDetails.email || '',
+                            taxId: proj.taxId || instDetails.taxId || '',
+                            discountType: proj.discountType || 'percent',
+                            discountValue: proj.discountValue || 0,
+                            timestamp: Date.now()
+                        };
+
+                        try {
+                            sessionStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+                        try {
+                            localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+                        if (window.saveProjectToFirestore) {
+                            window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToInvoice error:', e));
+                        }
+                    }
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=invoice${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=invoice${shopParam}`;
                 }
             },
 
-            goToReceipt() {
+            async goToReceipt() {
                 if (this.currentProjectId) {
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`sales_receipt.html?projectId=${encodeURIComponent(this.currentProjectId)}`) : `../accounting/sales_receipt.html?projectId=${encodeURIComponent(this.currentProjectId)}`;
+                    let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
+                    if (!proj) {
+                        try {
+                            const cached = localStorage.getItem('material_projects');
+                            if (cached) {
+                                const list = JSON.parse(cached);
+                                if (Array.isArray(list)) proj = list.find(p => String(p.id) === String(this.currentProjectId));
+                            }
+                        } catch(e) {}
+                    }
+
+                    let shopParam = '';
+                    if (proj) {
+                        const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                        if (shopName) {
+                            shopParam = `&shop=${encodeURIComponent(shopName)}`;
+                        }
+                        const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
+                        const cleanItems = rawItems.map(it => ({
+                            id: it.id,
+                            isHeader: !!it.isHeader,
+                            customNo: it.customNo || '',
+                            name: it.name || it.desc || '',
+                            desc: it.desc || it.name || '',
+                            qty: Number(it.qty) || 1,
+                            unit: it.unit || 'ชุด',
+                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            storeInfo: it.storeInfo || ''
+                        }));
+
+                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
+                        const pendingData = {
+                            source: 'school',
+                            projectId: this.currentProjectId,
+                            institution: proj.institution || '',
+                            items: cleanItems,
+                            company: proj.institution || '',
+                            shop: shopName,
+                            name: proj.name || '',
+                            code: proj.code || '',
+                            address: proj.address || instDetails.address || '',
+                            attn: proj.teacher || proj.attn || instDetails.contact || '',
+                            tel: proj.tel || instDetails.phone || '',
+                            email: proj.email || instDetails.email || '',
+                            taxId: proj.taxId || instDetails.taxId || '',
+                            discountType: proj.discountType || 'percent',
+                            discountValue: proj.discountValue || 0,
+                            timestamp: Date.now()
+                        };
+
+                        try {
+                            sessionStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+                        try {
+                            localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+                        if (window.saveProjectToFirestore) {
+                            window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToReceipt error:', e));
+                        }
+                    }
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=receipt${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=receipt${shopParam}`;
                 }
             },
 
@@ -4821,8 +4992,7 @@
                     return;
                 }
                 if (stepNum === 1) {
-                    // Already on this page
-                    this.showToast('คุณอยู่ในหน้าใบเสนอราคาแล้ว', 'info');
+                    this.openQuotationForProject();
                 } else if (stepNum === 2) {
                     this.goToInvoice();
                 } else if (stepNum === 3) {

@@ -1562,6 +1562,13 @@
                         await signOut(auth);
                         showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ', 'error');
                     } else {
+                        try {
+                            localStorage.setItem('mentra_user_permissions', JSON.stringify({
+                                uid: user.uid,
+                                role: userData.role || 'user',
+                                allowedPages: userData.role === 'admin' ? {} : (userData.allowedPages || {})
+                            }));
+                        } catch(e) {}
                         window.location.href = 'pages/admin/dashboard.html';
                     }
                 } catch (e) {

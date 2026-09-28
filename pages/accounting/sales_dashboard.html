@@ -2253,6 +2253,12 @@
     <!-- TOAST CONTAINER (new stackable system) -->
     <div id="toastContainer"></div>
 
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- TOAST CONTAINER (new stackable system) -->
+    <div id="toastContainer"></div>
+
     <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar" id="sidebar">
         <!-- 1. PRIMARY SLIM DARK RAIL (LEFT) -->
@@ -2340,6 +2346,9 @@
                     <button type="button" class="popover-btn-action create-new" onclick="openShopModal()">
                         <i class='bx bx-plus'></i> <span>เพิ่มร้านค้า</span>
                     </button>
+                    <button type="button" class="popover-btn-action" onclick="window.location.href='../admin/company_settings.html'" style="color: #1A6FBF; font-weight: 600;">
+                        <i class='bx bx-buildings'></i> <span>จัดการข้อมูลบริษัท & ร้านค้า</span>
+                    </button>
                     <button type="button" class="popover-btn-action logout" onclick="handleLogout()">
                         <i class='bx bx-log-out'></i> <span>ออกจากระบบ (Logout)</span>
                     </button>
@@ -2372,12 +2381,12 @@
                     </div>
                 </button>
 
-                <!-- Module Section: Administration & CRM -->
-                <div class="sec-nav-divider">ฝ่ายบริหาร & CRM</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/crm.html'" id="nav-crm">
+                <!-- Module Section: Administration -->
+                <div class="sec-nav-divider">ฝ่ายบริหาร</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/company_settings.html'" id="nav-company-settings">
                     <div class="sec-nav-item-left">
-                        <i class='bx bx-bar-chart-alt-2'></i>
-                        <span>ระบบ CRM</span>
+                        <i class='bx bx-buildings'></i>
+                        <span>ข้อมูลบริษัท & ร้านค้า</span>
                     </div>
                 </button>
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
@@ -2407,12 +2416,6 @@
                         <span>รายการสินค้า</span>
                     </div>
                 </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/equipments.html'" id="nav-equipments">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-store-alt'></i>
-                        <span>ข้อมูลร้านสำหรับสั่งวัสดุ</span>
-                    </div>
-                </button>
                 <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('items') : window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-purchase-tag-alt'></i>
@@ -2425,31 +2428,19 @@
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/quotation.html'" id="nav-quotation">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-file-blank'></i>
-                        <span>ใบเสนอราคา</span>
+                        <span>ออกเอกสารงานขาย</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-folder-open'></i>
+                        <span>ประวัติเอกสารที่ออก</span>
                     </div>
                 </button>
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_dashboard.html'" id="nav-sales-dashboard">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-spreadsheet'></i>
                         <span>ระบบเอกสารงานขาย</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_invoice.html'" id="nav-sales-invoice">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-receipt'></i>
-                        <span>ใบกำกับภาษี / แจ้งหนี้</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_receipt.html'" id="nav-sales-receipt">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-check-shield'></i>
-                        <span>ใบเสร็จรับเงิน</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/ocr_table.html'" id="nav-ocr">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-scan'></i>
-                        <span>OCR อ่านเอกสาร</span>
                     </div>
                 </button>
 
@@ -3358,6 +3349,8 @@
                 return;
             }
 
+            if (window.checkPageAccess && !window.checkPageAccess(currentUserData)) return;
+
             setupUI();
             document.body.style.display = 'flex';
 
@@ -3728,13 +3721,13 @@
 
                 if(rStatus === 'confirmed') {
                     statusHtml = '<span style="background: #d1fae5; color: #059669; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">🎉 เสร็จสมบูรณ์ <i class="fa-solid fa-check"></i></span>';
-                    actionHtml = `<button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.85rem; border-color: #10b981; color: #10b981;" onclick="goToSalesPage('sales_receipt.html', '${p.id}')">ดูเอกสาร</button>`;
+                    actionHtml = `<button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.85rem; border-color: #10b981; color: #10b981;" onclick="goToSalesPage('quotation.html', '${p.id}')">ดูเอกสาร</button>`;
                 } else if (iStatus === 'confirmed') {
                     statusHtml = '<span style="background: #ede9fe; color: #6d28d9; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">🧾 ยืนยันใบกำกับภาษีแล้ว</span>';
-                    actionHtml = `<button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.85rem; border-color: #8b5cf6; color: #8b5cf6;" onclick="goToSalesPage('sales_receipt.html', '${p.id}')">ออกใบเสร็จ</button>`;
+                    actionHtml = `<button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.85rem; border-color: #8b5cf6; color: #8b5cf6;" onclick="goToSalesPage('quotation.html', '${p.id}')">ดูเอกสาร</button>`;
                 } else if (qStatus === 'confirmed') {
                     statusHtml = '<span style="background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">✓ ยืนยันเสนอราคาแล้ว</span>';
-                    actionHtml = `<button class="btn btn-primary btn-sm" style="padding: 4px 12px; font-size: 0.85rem;" onclick="goToSalesPage('sales_invoice.html', '${p.id}')">ออกใบกำกับ</button>`;
+                    actionHtml = `<button class="btn btn-primary btn-sm" style="padding: 4px 12px; font-size: 0.85rem;" onclick="goToSalesPage('quotation.html', '${p.id}')">ดูใบเสนอราคา</button>`;
                 } else {
                     statusHtml = '<span style="background: #fef3c7; color: #d97706; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">📝 รอเสนอราคา</span>';
                     actionHtml = `<button class="btn btn-outline btn-sm" style="padding: 4px 12px; font-size: 0.85rem;" onclick="goToSalesPage('${linkPage}', '${p.id}')">ดำเนินการ</button>`;

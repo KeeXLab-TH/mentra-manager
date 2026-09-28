@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="th" style="background-color:#f8fafc">
+
+<head>
+    <!-- Security Headers -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
+    <!-- Anti-Flash Instant Background -->
+    <style>html,body{background:#f8fafc!important;}</style>
+    <script>
+    (function(){
+        var d=document,o=d.createElement('div');
+        o.id='mentra-page-transition-overlay';
+        o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(248,250,252,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:1;transition:opacity .22s ease-out;pointer-events:none;';
+        d.documentElement.appendChild(o);
+        function fadeOut(){if(o){o.style.opacity='0';setTimeout(function(){o.style.pointerEvents='none';},280);}}
+        if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',fadeOut);}else{fadeOut();}
+        window.addEventListener('pageshow',function(){if(o){o.style.opacity='0';o.style.pointerEvents='none';}});
+    })();
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mentra Manager — ประวัติเอกสารที่ออกทั้งหมด</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <!-- Mentra App UI & Sidebars -->
+    <link rel="stylesheet" href="../../assets/css/app-ui.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard-dual-sidebar.css">
+    <script src="../../assets/js/app-ui.js" defer></script>
+    <script src="../../assets/js/dashboard-dual-sidebar.js"></script>
+
+    <style>
+        :root {
+            --primary: #1A6FBF;
+            --primary-dark: #145999;
+            --primary-light: #eff6ff;
+            --secondary: #E07B2F;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --bg-page: #f8fafc;
+            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+            --card-shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Kanit', 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            font-family: 'Kanit', 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        input, button, select, textarea {
+            font-family: 'Kanit', 'Prompt', sans-serif !important;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Prompt', 'Kanit', sans-serif;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-left: var(--sidebar-w, 260px);
+            transition: margin-left 0.25s ease;
+            min-width: 0;
+        }
+
+        .container-fluid {
+            padding: 24px 32px 60px 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Top Bar */
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-title-wrap h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+            color: #0f172a;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        .topbar-badge {
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 9999px;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-card:hover {
+            box-shadow: var(--card-shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .kpi-info span.label {
+            display: block;
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .kpi-info h2 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #0f172a;
+            font-family: var(--app-font);
+        }
+
+        .kpi-info span.subval {
+            font-size: 0.70rem;
+            font-weight: 600;
+            color: #10b981;
+            margin-top: 2px;
+            display: block;
+        }
+
+        .kpi-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .icon-blue { background: #eff6ff; color: #2563eb; }
+        .icon-amber { background: #fffbeb; color: #d97706; }
+        .icon-emerald { background: #f0fdf4; color: #059669; }
+        .icon-purple { background: #faf5ff; color: #7c3aed; }
+
+        /* Filter Toolbar */
+        .filter-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .filter-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .filter-tabs {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: 10px;
+            gap: 3px;
+        }
+
+        .filter-tab {
+            padding: 6px 14px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-tab.active {
+            background: #ffffff;
+            color: #1d4ed8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .filter-search-box {
+            position: relative;
+            min-width: 280px;
+            flex: 1;
+            max-width: 420px;
+        }
+
+        .filter-search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.15rem;
+        }
+
+        .filter-search-input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-family: 'Kanit', 'Prompt', sans-serif;
+            background: #ffffff;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .filter-search-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        .filter-bottom-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 6px 12px;
+            font-size: 0.84rem;
+            font-family: 'Kanit', 'Prompt', sans-serif;
+            border: 1px solid var(--border-color);
+            border-radius: 9px;
+            background: #ffffff;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        .btn-action-primary {
+            padding: 8px 16px;
+            font-size: 0.86rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-action-primary:hover {
+            background: linear-gradient(135deg, #1e40af, #1d4ed8);
+            transform: translateY(-1px);
+        }
+
+        /* Data Table Card */
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+        }
+
+        .table-header-tip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background: #f0f7ff;
+            border-bottom: 1px solid #dbeafe;
+            color: #1d4ed8;
+            font-size: 0.84rem;
+            font-weight: 600;
+        }
+
+        .table-header-tip i {
+            font-size: 1.15rem;
+            color: #2563eb;
+            flex-shrink: 0;
+        }
+
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+
+        .doc-table thead {
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .doc-table th {
+            padding: 10px 14px;
+            font-weight: 700;
+            color: #475569;
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+        }
+
+        .doc-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        /* Interactive Clickable Rows */
+        .doc-row {
+            cursor: pointer;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid transparent;
+        }
+
+        .doc-row:hover {
+            background: #f8fbff !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+        }
+
+        .doc-row.type-quotation:hover { border-left-color: #2563eb; }
+        .doc-row.type-invoice:hover { border-left-color: #f59e0b; }
+        .doc-row.type-receipt:hover { border-left-color: #10b981; }
+
+        /* Document Ref & Types */
+        .ref-code-wrap {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ref-code-main {
+            font-family: var(--app-font);
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 0.82rem;
+            letter-spacing: 0.2px;
+        }
+
+        .btn-copy-ref {
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 5px;
+            font-size: 0.82rem;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.15s;
+        }
+
+        .btn-copy-ref:hover {
+            color: #2563eb;
+            background: #eff6ff;
+        }
+
+        /* Badges */
+        .doc-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            white-space: nowrap;
+            margin-top: 4px;
+        }
+
+        .badge-pill-quotation { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .badge-pill-invoice { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .badge-pill-receipt { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+
+        .parent-ref-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            margin-top: 4px;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.72rem;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .parent-ref-pill:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        /* Customer column styling */
+        .customer-title {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.81rem;
+            line-height: 1.35;
+            max-width: 250px;
+        }
+
+        .customer-sub {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Issuer column styling */
+        .issuer-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: #334155;
+            max-width: 170px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Amount styling */
+        .amount-main {
+            font-family: var(--app-font);
+            font-weight: 600;
+            font-size: 0.84rem;
+            color: #0f172a;
+            text-align: right;
+            letter-spacing: -0.1px;
+        }
+
+        .amount-sub {
+            font-size: 0.69rem;
+            color: #64748b;
+            text-align: right;
+            margin-top: 1px;
+        }
+
+        /* Status styling */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-pill.status-confirmed {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-pill.status-issued {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        /* Action Buttons */
+        .btn-primary-view {
+            padding: 5px 11px;
+            border-radius: 7px;
+            border: 1px solid #bfdbfe;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #1d4ed8;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: var(--app-font);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(37,99,235,0.06);
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary-view:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            color: #ffffff;
+            border-color: #1d4ed8;
+            box-shadow: 0 3px 8px rgba(37,99,235,0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-sec-action {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.88rem;
+            transition: all 0.15s ease;
+        }
+
+        .btn-sec-action:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+            border-color: #cbd5e1;
+        }
+
+        .btn-sec-action.danger:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fca5a5;
+        }
+
+        .btn-table-action {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: #475569;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s;
+        }
+
+        .btn-table-action:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        /* Detail Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(6px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            border-radius: 20px;
+            width: 820px;
+            max-width: 96%;
+            max-height: 92vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.28);
+            font-family: 'Kanit', 'Prompt', sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 18px 26px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-body {
+            padding: 24px 26px;
+            overflow-y: auto;
+            flex: 1;
+            background: #ffffff;
+        }
+
+        .modal-footer {
+            padding: 16px 26px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: #f8fafc;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #docDetailModal, #docDetailModal * {
+                visibility: visible;
+            }
+            #docDetailModal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                background: white;
+                display: block !important;
+                padding: 0;
+            }
+            .modal-header, .modal-footer {
+                display: none !important;
+            }
+            .modal-box {
+                box-shadow: none;
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- TOAST CONTAINER (new stackable system) -->
+    <div id="toastContainer"></div>
+
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- TOAST CONTAINER (new stackable system) -->
+    <div id="toastContainer"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <!-- 1. PRIMARY SLIM DARK RAIL (LEFT) -->
+        <div class="rail-primary">
+            <!-- Brand Logo Mark -->
+            <div class="rail-logo-wrap" onclick="typeof navigateTo === 'function' ? navigateTo('dashboard') : window.location.href='../admin/dashboard.html'" title="Mentra Manager">
+                <img src="../../assets/img/logo.png" alt="Mentra" class="rail-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <i class='bx bxs-compass rail-logo-icon' style="display: none;"></i>
+            </div>
+
+            <!-- Icon Nav Stack -->
+            <div class="rail-nav-group">
+                <!-- Search -->
+                <button type="button" class="rail-icon-btn" onclick="focusQuickSearch()" id="railBtnSearch">
+                    <i class='bx bx-search'></i>
+                    <span class="rail-tooltip">ค้นหาด่วน (⌘F)</span>
+                </button>
+
+                <!-- Dashboard -->
+                <button type="button" class="rail-icon-btn" onclick="handleRailTab('dashboard', this)" id="railBtnDashboard">
+                    <i class='bx bx-grid-alt'></i>
+                    <span class="rail-tooltip">Dashboard / ภาพรวม</span>
+                </button>
+
+                <!-- Projects -->
+                <button type="button" class="rail-icon-btn" onclick="handleRailTab('projects', this)" id="railBtnProjects">
+                    <i class='bx bx-briefcase'></i>
+                    <span class="rail-tooltip">โครงการทั้งหมด (Projects)</span>
+                </button>
+
+                <!-- Purchasing -->
+                <button type="button" class="rail-icon-btn" onclick="handleRailTab('purchasing', this)" id="railBtnPurchasing">
+                    <i class='bx bx-cart'></i>
+                    <span class="rail-tooltip">ฝ่ายจัดซื้อ & สินค้า</span>
+                </button>
+
+                <!-- Accounting -->
+                <button type="button" class="rail-icon-btn" onclick="handleRailTab('accounting', this)" id="railBtnAccounting">
+                    <i class='bx bx-receipt'></i>
+                    <span class="rail-tooltip">บัญชี & การเงิน</span>
+                </button>
+
+                <!-- Schedule -->
+                <button type="button" class="rail-icon-btn" onclick="handleRailTab('schedule', this)" id="railBtnSchedule">
+                    <i class='bx bx-calendar'></i>
+                    <span class="rail-tooltip">ตารางงาน & อบรม</span>
+                </button>
+            </div>
+
+            <!-- Rail Bottom: Collapse toggle & Admin Settings -->
+            <div class="rail-bottom">
+                <button type="button" class="rail-collapse-toggle" onclick="toggleSidebarCollapse()" id="railCollapseBtn" title="ย่อ/ขยายแถบเมนู">
+                    <i class='bx bx-chevron-left'></i>
+                </button>
+                <button type="button" class="rail-icon-btn" onclick="window.location.href='../admin/console_admin.html'" title="ตั้งค่าระบบ">
+                    <i class='bx bx-cog'></i>
+                    <span class="rail-tooltip">Admin Console</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. SECONDARY FLYOUT PANEL (WHITE) -->
+        <div class="rail-secondary" id="railSecondaryPanel">
+            <!-- Org Switcher Header -->
+            <div class="org-switcher-header">
+                <div class="org-switcher-btn" id="orgSwitcherBtn" onclick="toggleOrgPopover(event)">
+                    <div class="org-avatar">
+                        <img id="sidebarOrgLogo" src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <span id="sidebarOrgInitials" style="display:none;">M</span>
+                    </div>
+                    <div class="org-meta">
+                        <div class="org-title" id="sidebarOrgName">Mentra Solution</div>
+                        <div class="org-subtitle" id="sidebarUserEmail">accounts@mentrasolution.com</div>
+                    </div>
+                    <i class='bx bx-chevron-up-down org-caret'></i>
+                </div>
+
+                <!-- Floating Popover (Multi-Shop Management) -->
+                <div class="org-switcher-popover" id="orgSwitcherPopover">
+                    <div class="popover-section-label">เลือกร้านค้าที่จัดการ</div>
+                    <div class="popover-list" id="orgSwitcherPopoverList">
+                        <!-- Rendered dynamically by dashboard-dual-sidebar.js -->
+                    </div>
+                    <div class="popover-divider"></div>
+                    <button type="button" class="popover-btn-action create-new" onclick="openShopModal()">
+                        <i class='bx bx-plus'></i> <span>เพิ่มร้านค้า</span>
+                    </button>
+                    <button type="button" class="popover-btn-action" onclick="window.location.href='../admin/company_settings.html'" style="color: #1A6FBF; font-weight: 600;">
+                        <i class='bx bx-buildings'></i> <span>จัดการข้อมูลบริษัท & ร้านค้า</span>
+                    </button>
+                    <button type="button" class="popover-btn-action logout" onclick="handleLogout()">
+                        <i class='bx bx-log-out'></i> <span>ออกจากระบบ (Logout)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Search Input -->
+            <div class="secondary-search-wrap">
+                <div class="secondary-search-box">
+                    <i class='bx bx-search'></i>
+                    <input type="text" id="sidebarQuickSearch" placeholder="Search...." oninput="filterSidebarNav(this.value)">
+                    <span class="search-kbd">⌘ F</span>
+                </div>
+            </div>
+
+            <!-- Secondary Navigation Items -->
+            <div class="secondary-nav-body" id="secondaryNavBody">
+                <!-- Flat Primary Links -->
+                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('dashboard') : window.location.href='../admin/dashboard.html'" id="nav-dashboard">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-grid-alt'></i>
+                        <span>Dashboard</span>
+                    </div>
+                </button>
+
+                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('projects') : window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-briefcase'></i>
+                        <span>โครงการทั้งหมด</span>
+                    </div>
+                </button>
+
+                <!-- Module Section: Administration -->
+                <div class="sec-nav-divider">ฝ่ายบริหาร</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/company_settings.html'" id="nav-company-settings">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-buildings'></i>
+                        <span>ข้อมูลบริษัท & ร้านค้า</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-id-card'></i>
+                        <span>นามบัตรดิจิทัล</span>
+                    </div>
+                </button>
+
+                <!-- Module Section: Purchasing -->
+                <div class="sec-nav-divider">จัดซื้อ & สินค้า</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing.html'" id="nav-purchasing-school">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-buildings'></i>
+                        <span>จัดซื้อ (สถานศึกษา)</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing_company.html'" id="nav-purchasing-company">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-briefcase-alt'></i>
+                        <span>จัดซื้อ (บริษัทเอกชน)</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/products.html'" id="nav-products">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-package'></i>
+                        <span>รายการสินค้า</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('items') : window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-purchase-tag-alt'></i>
+                        <span>ราคาทุน / สิ่งของ</span>
+                    </div>
+                </button>
+
+                <!-- Module Section: Accounting -->
+                <div class="sec-nav-divider">งานบัญชี & การเงิน</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/quotation.html'" id="nav-quotation">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-file-blank'></i>
+                        <span>ออกเอกสารงานขาย</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-folder-open'></i>
+                        <span>ประวัติเอกสารที่ออก</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_dashboard.html'" id="nav-sales-dashboard">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-spreadsheet'></i>
+                        <span>ระบบเอกสารงานขาย</span>
+                    </div>
+                </button>
+
+                <!-- Module Section: Schedule -->
+                <div class="sec-nav-divider">ตารางงาน & การอบรม</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/tasks.html'" id="nav-tasks">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-check-square'></i>
+                        <span>งานที่ได้รับมอบหมาย</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/calendar.html'" id="nav-calendar">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-calendar-event'></i>
+                        <span>ปฏิทินตารางงาน</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/external_training.html'" id="nav-training">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-award'></i>
+                        <span>ระบบตารางจัดอบรม</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/internship_journal.html'" id="nav-internship">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-book-bookmark'></i>
+                        <span>บันทึกการฝึกงาน</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT WRAPPER ===== -->
+    <div class="main-wrapper">
+        
+        <!-- Top Sticky Header -->
+        <header class="topbar">
+            <div class="topbar-title-wrap">
+                <i class='bx bx-folder-open' style="font-size: 1.6rem; color: #2563eb;"></i>
+                <h1>ประวัติเอกสารที่ออกทั้งหมด</h1>
+                <span class="topbar-badge" id="totalDocsBadge">0 ฉบับ</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <a href="quotation.html" class="btn-action-primary">
+                    <i class='bx bx-plus'></i> ออกเอกสารใหม่
+                </a>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="container-fluid">
+            
+            <!-- KPI Summary Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card" onclick="setDocTypeFilter('quotation')" style="cursor: pointer;">
+                    <div class="kpi-info">
+                        <span class="label">📄 ใบเสนอราคา (Quotation)</span>
+                        <h2 id="kpiQuotationCount">0</h2>
+                        <span class="subval" id="kpiQuotationTotal">฿0.00</span>
+                    </div>
+                    <div class="kpi-icon-box icon-blue">
+                        <i class='bx bx-file-blank'></i>
+                    </div>
+                </div>
+
+                <div class="kpi-card" onclick="setDocTypeFilter('invoice')" style="cursor: pointer;">
+                    <div class="kpi-info">
+                        <span class="label">📋 ใบส่งของ/ใบแจ้งหนี้</span>
+                        <h2 id="kpiInvoiceCount">0</h2>
+                        <span class="subval" id="kpiInvoiceTotal">฿0.00</span>
+                    </div>
+                    <div class="kpi-icon-box icon-amber">
+                        <i class='bx bx-receipt'></i>
+                    </div>
+                </div>
+
+                <div class="kpi-card" onclick="setDocTypeFilter('receipt')" style="cursor: pointer;">
+                    <div class="kpi-info">
+                        <span class="label">🧾 ใบเสร็จรับเงิน</span>
+                        <h2 id="kpiReceiptCount">0</h2>
+                        <span class="subval" id="kpiReceiptTotal">฿0.00</span>
+                    </div>
+                    <div class="kpi-icon-box icon-emerald">
+                        <i class='bx bx-check-shield'></i>
+                    </div>
+                </div>
+
+                <div class="kpi-card" onclick="setDocTypeFilter('all')" style="cursor: pointer;">
+                    <div class="kpi-info">
+                        <span class="label">💰 ยอดสุทธิรวมทุกเอกสาร</span>
+                        <h2 id="kpiGrandTotalAll">฿0.00</h2>
+                        <span class="subval" style="color: #64748b;" id="kpiTotalAllDocs">รวม 0 ฉบับ</span>
+                    </div>
+                    <div class="kpi-icon-box icon-purple">
+                        <i class='bx bx-wallet'></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Panel -->
+            <div class="filter-panel">
+                <div class="filter-top-row">
+                    <!-- Tab Pills -->
+                    <div class="filter-tabs">
+                        <button type="button" class="filter-tab active" id="tabAll" onclick="setDocTypeFilter('all')">
+                            ทั้งหมด (<span id="countAll">0</span>)
+                        </button>
+                        <button type="button" class="filter-tab" id="tabQuotation" onclick="setDocTypeFilter('quotation')">
+                            📄 ใบเสนอราคา (<span id="countQuotation">0</span>)
+                        </button>
+                        <button type="button" class="filter-tab" id="tabInvoice" onclick="setDocTypeFilter('invoice')">
+                            📋 ใบแจ้งหนี้ (<span id="countInvoice">0</span>)
+                        </button>
+                        <button type="button" class="filter-tab" id="tabReceipt" onclick="setDocTypeFilter('receipt')">
+                            🧾 ใบเสร็จรับเงิน (<span id="countReceipt">0</span>)
+                        </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="filter-search-box">
+                        <i class='bx bx-search'></i>
+                        <input type="text" id="searchInput" class="filter-search-input" placeholder="ค้นหาเลขที่, ลูกค้า, ผู้ออก หรือรายการ..." oninput="handleSearch(this.value)">
+                    </div>
+                </div>
+
+                <div class="filter-bottom-row">
+                    <select class="filter-select" id="shopFilter" onchange="applyFilters()">
+                        <option value="">🏢 ผู้ออกเอกสารทั้งหมด</option>
+                    </select>
+
+                    <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+                        <option value="">สถานะทั้งหมด</option>
+                        <option value="issued">ออกเอกสารแล้ว</option>
+                        <option value="confirmed">ยืนยันแล้ว</option>
+                    </select>
+
+                    <button type="button" class="btn-table-action" onclick="resetFilters()">
+                        <i class='bx bx-reset'></i> รีเซ็ตตัวกรอง
+                    </button>
+
+                    <div style="flex: 1;"></div>
+
+                    <button type="button" class="btn-table-action" onclick="loadAllDocuments()">
+                        <i class='bx bx-refresh'></i> โหลดข้อมูลใหม่
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Table Card -->
+            <div class="table-card">
+                <div class="table-header-tip">
+                    <i class='bx bxs-bulb'></i>
+                    <span><b>เคล็ดลับ:</b> คลิกที่แถวรายการใดก็ได้ หรือคลิกปุ่ม <b>"ดู/พิมพ์เอกสาร"</b> เพื่อเปิดดูใบเอกสารที่ออกในแบบฟอร์ม A4 และสั่งพิมพ์ได้ทันที</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="doc-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 110px;">วันที่ออก</th>
+                                <th style="width: 220px;">ประเภท & เลขที่เอกสาร</th>
+                                <th>ลูกค้า / ผู้รับ</th>
+                                <th style="width: 170px;">ผู้ออกเอกสาร</th>
+                                <th style="width: 80px; text-align: center;">รายการ</th>
+                                <th style="width: 140px; text-align: right;">ยอดสุทธิ</th>
+                                <th style="width: 120px; text-align: center;">สถานะ</th>
+                                <th style="width: 195px; text-align: center;">ดูเอกสาร / จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="docsTableBody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 48px; color: #94a3b8;">
+                                    <i class='bx bx-loader-alt bx-spin' style="font-size: 2rem; display: block; margin-bottom: 8px;"></i>
+                                    กำลังโหลดรายการเอกสาร...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ===== DOCUMENT DETAILS MODAL ===== -->
+    <div class="modal-overlay" id="docDetailModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div id="modalDocBadge" class="doc-badge-pill badge-pill-quotation">📄 ใบเสนอราคา</div>
+                    <h3 id="modalRefNo" style="margin: 0; font-size: 1.15rem; font-weight: 800; font-family: 'Prompt', 'Kanit', sans-serif;">MTQ...</h3>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-table-action" onclick="printModalDoc()" title="พิมพ์เอกสาร">
+                        <i class='bx bx-printer'></i> พิมพ์
+                    </button>
+                    <button type="button" onclick="closeDocModal()" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; padding: 0 4px;">&times;</button>
+                </div>
+            </div>
+
+            <div class="modal-body" id="modalDocBody">
+                <!-- Dynamically generated document preview -->
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-table-action" onclick="closeDocModal()">
+                    <i class='bx bx-x'></i> ปิดหน้าต่าง
+                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn-table-action" onclick="printModalDoc()">
+                        <i class='bx bx-printer'></i> พิมพ์เอกสาร
+                    </button>
+                    <button type="button" class="btn-action-primary" id="modalOpenInFormBtn">
+                        <i class='bx bx-file'></i> เปิดดูในแบบฟอร์มเต็ม (A4)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK & Logic -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import {
+            initializeFirestore, doc, getDoc, collection, getDocs, query, orderBy, deleteDoc,
+            persistentLocalCache, persistentMultipleTabManager
+        } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        // Firebase Config
+        let FIREBASE_CONFIG = null;
+        try {
+            const cfg = await import('../../assets/js/firebase-config.js');
+            FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
+        } catch (e) {}
+
+        if (!FIREBASE_CONFIG) {
+            throw new Error('ไม่พบการตั้งค่า firebase-config.js');
+        }
+
+        const app = initializeApp(FIREBASE_CONFIG);
+        const auth = getAuth(app);
+        const db = initializeFirestore(app, {
+            localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+        });
+
+        let currentUser = null;
+        let allDocuments = [];
+        let filteredDocuments = [];
+        let currentFilterType = 'all';
+
+        // Auth Guard
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                try {
+                    const userSnap = await getDoc(doc(db, 'users', user.uid));
+                    if (userSnap.exists()) {
+                        const currentUserData = userSnap.data();
+                        if (window.checkPageAccess && !window.checkPageAccess(currentUserData)) return;
+                    }
+                } catch (e) {
+                    console.warn('Could not check page access:', e);
+                }
+
+                const overlay = document.getElementById('mentra-page-transition-overlay');
+                if (overlay) {
+                    overlay.style.opacity = '0';
+                    overlay.style.pointerEvents = 'none';
+                }
+                await loadAllDocuments();
+            } else {
+                window.location.href = '../../index.html';
+            }
+        });
+
+        // Load documents from Firestore
+        async function loadAllDocuments() {
+            if (!currentUser) return;
+            const tbody = document.getElementById('docsTableBody');
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;"><i class='bx bx-loader-alt bx-spin' style="font-size: 1.8rem; display: block; margin-bottom: 8px;"></i> กำลังโหลดข้อมูลเอกสาร...</td></tr>`;
+
+            allDocuments = [];
+
+            try {
+                // 1. Fetch from central sales_documents collection
+                const centralRef = collection(db, 'users', currentUser.uid, 'sales_documents');
+                const centralQuery = query(centralRef, orderBy('createdAt', 'desc'));
+                const centralSnap = await getDocs(centralQuery);
+
+                centralSnap.forEach(d => {
+                    allDocuments.push({ id: d.id, _collection: 'sales_documents', ...d.data() });
+                });
+
+                // 2. Also check type-specific collections if central has few items or missing legacy items
+                const collectionsToCheck = [
+                    { name: 'quotations_history', defaultType: 'quotation', title: 'ใบเสนอราคา' },
+                    { name: 'invoices_history', defaultType: 'invoice', title: 'ใบส่งของ/ใบแจ้งหนี้' },
+                    { name: 'receipts_history', defaultType: 'receipt', title: 'ใบเสร็จรับเงิน' }
+                ];
+
+                for (const col of collectionsToCheck) {
+                    try {
+                        const colRef = collection(db, 'users', currentUser.uid, col.name);
+                        const q = query(colRef, orderBy('createdAt', 'desc'));
+                        const snap = await getDocs(q);
+                        snap.forEach(d => {
+                            const data = d.data();
+                            // If this refNo is not already in allDocuments, add it
+                            const exists = allDocuments.some(docItem => docItem.refNo === data.refNo);
+                            if (!exists) {
+                                allDocuments.push({
+                                    id: d.id,
+                                    _collection: col.name,
+                                    docType: data.docType || col.defaultType,
+                                    docTypeTitle: data.docTypeTitle || col.title,
+                                    ...data
+                                });
+                            }
+                        });
+                    } catch (colErr) {
+                        console.warn(`Could not query ${col.name}:`, colErr);
+                    }
+                }
+
+                // Sort all documents by createdAt or docDate descending
+                allDocuments.sort((a, b) => {
+                    const dateA = new Date(a.createdAt || a.docDate || 0).getTime();
+                    const dateB = new Date(b.createdAt || b.docDate || 0).getTime();
+                    return dateB - dateA;
+                });
+
+                // Populate Issuer / Shop dropdown
+                populateShopFilter();
+
+                // Compute KPI numbers
+                updateKPICards();
+
+                // Apply initial filters
+                applyFilters();
+
+            } catch (err) {
+                console.error("Error loading sales documents:", err);
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #ef4444;">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${err.message}</td></tr>`;
+            }
+        }
+
+        function populateShopFilter() {
+            const select = document.getElementById('shopFilter');
+            const shops = new Set();
+            allDocuments.forEach(d => {
+                if (d.issuer && d.issuer.trim()) shops.add(d.issuer.trim());
+            });
+
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">🏢 ผู้ออกเอกสารทั้งหมด</option>';
+            shops.forEach(s => {
+                select.innerHTML += `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`;
+            });
+            select.value = currentVal;
+        }
+
+        function updateKPICards() {
+            let qCount = 0, qTotal = 0;
+            let iCount = 0, iTotal = 0;
+            let rCount = 0, rTotal = 0;
+            let grandTotalAll = 0;
+
+            allDocuments.forEach(d => {
+                const total = parseFloat(String(d.grandTotal || '0').replace(/,/g, '')) || 0;
+                grandTotalAll += total;
+
+                const type = d.docType || (d.refNo?.startsWith('MTI') ? 'invoice' : (d.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
+                if (type === 'quotation') {
+                    qCount++;
+                    qTotal += total;
+                } else if (type === 'invoice') {
+                    iCount++;
+                    iTotal += total;
+                } else if (type === 'receipt') {
+                    rCount++;
+                    rTotal += total;
+                }
+            });
+
+            document.getElementById('kpiQuotationCount').innerText = qCount;
+            document.getElementById('kpiQuotationTotal').innerText = `฿${formatNumber(qTotal)}`;
+
+            document.getElementById('kpiInvoiceCount').innerText = iCount;
+            document.getElementById('kpiInvoiceTotal').innerText = `฿${formatNumber(iTotal)}`;
+
+            document.getElementById('kpiReceiptCount').innerText = rCount;
+            document.getElementById('kpiReceiptTotal').innerText = `฿${formatNumber(rTotal)}`;
+
+            document.getElementById('kpiGrandTotalAll').innerText = `฿${formatNumber(grandTotalAll)}`;
+            document.getElementById('kpiTotalAllDocs').innerText = `รวม ${allDocuments.length} ฉบับ`;
+
+            document.getElementById('totalDocsBadge').innerText = `${allDocuments.length} ฉบับ`;
+            document.getElementById('countAll').innerText = allDocuments.length;
+            document.getElementById('countQuotation').innerText = qCount;
+            document.getElementById('countInvoice').innerText = iCount;
+            document.getElementById('countReceipt').innerText = rCount;
+        }
+
+        function setDocTypeFilter(type) {
+            currentFilterType = type;
+            ['all', 'quotation', 'invoice', 'receipt'].forEach(t => {
+                const tab = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if (tab) {
+                    if (t === type) tab.classList.add('active');
+                    else tab.classList.remove('active');
+                }
+            });
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const queryText = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+            const shopVal = document.getElementById('shopFilter')?.value || '';
+            const statusVal = document.getElementById('statusFilter')?.value || '';
+
+            filteredDocuments = allDocuments.filter(d => {
+                const type = d.docType || (d.refNo?.startsWith('MTI') ? 'invoice' : (d.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
+
+                // DocType filter
+                if (currentFilterType !== 'all' && type !== currentFilterType) return false;
+
+                // Shop filter
+                if (shopVal && d.issuer !== shopVal) return false;
+
+                // Status filter
+                if (statusVal && (d.status || 'issued') !== statusVal) return false;
+
+                // Search text filter
+                if (queryText) {
+                    const matchRef = (d.refNo || '').toLowerCase().includes(queryText);
+                    const matchParent = (d.parentRefNo || '').toLowerCase().includes(queryText);
+                    const matchCustomer = (d.toCompany || '').toLowerCase().includes(queryText);
+                    const matchIssuer = (d.issuer || '').toLowerCase().includes(queryText);
+                    const matchItems = Array.isArray(d.items) && d.items.some(it => (it.desc || '').toLowerCase().includes(queryText));
+                    if (!matchRef && !matchParent && !matchCustomer && !matchIssuer && !matchItems) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderTable(filteredDocuments);
+        }
+
+        function handleSearch(val) {
+            applyFilters();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('shopFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            setDocTypeFilter('all');
+        }
+
+        let currentModalDocIndex = null;
+
+        function renderTable(docs) {
+            const tbody = document.getElementById('docsTableBody');
+            if (!docs || docs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 50px; color: #94a3b8;"><i class='bx bx-file-blank' style="font-size: 2.5rem; display: block; margin-bottom: 10px; color: #cbd5e1;"></i>ไม่พบรายการเอกสารตามเงื่อนไขที่เลือก</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            docs.forEach((d, idx) => {
+                const type = d.docType || (d.refNo?.startsWith('MTI') ? 'invoice' : (d.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
+                let badgeClass = 'badge-pill-quotation';
+                let typeLabel = '📄 ใบเสนอราคา';
+                if (type === 'invoice') {
+                    badgeClass = 'badge-pill-invoice';
+                    typeLabel = '📋 ใบแจ้งหนี้ / ส่งของ';
+                } else if (type === 'receipt') {
+                    badgeClass = 'badge-pill-receipt';
+                    typeLabel = '🧾 ใบเสร็จรับเงิน';
+                }
+
+                const dateObj = new Date(d.docDate || d.createdAt);
+                const formattedDate = isNaN(dateObj.getTime()) ? (d.docDate || '-') : `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
+
+                const itemsCount = d.itemsCount || (Array.isArray(d.items) ? d.items.filter(it => !it.isHeader).length : 0);
+                const grandTotalNum = parseFloat(String(d.grandTotal || '0').replace(/,/g, '')) || 0;
+
+                const isConfirmed = d.status === 'confirmed';
+                const statusLabel = isConfirmed ? '✅ ยืนยันแล้ว' : '📝 ออกเอกสารแล้ว';
+                const statusClass = isConfirmed ? 'status-confirmed' : 'status-issued';
+
+                html += `
+                    <tr class="doc-row type-${type}" onclick="openInQuotationForm(${idx})" title="คลิกเพื่อเปิดเอกสาร ${escapeHtml(d.refNo || '')} ในแบบฟอร์มเพื่อดูหรือสั่งพิมพ์">
+                        <td style="color: #64748b; font-weight: 500; font-size: 0.78rem; white-space: nowrap;">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <i class='bx bx-calendar' style="color: #94a3b8;"></i>
+                                <span>${formattedDate}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="ref-code-wrap">
+                                <span class="ref-code-main">${escapeHtml(d.refNo || '-')}</span>
+                                <button type="button" class="btn-copy-ref" onclick="event.stopPropagation(); copyText('${escapeHtml(d.refNo || '')}', this)" title="คัดลอกเลขที่เอกสาร">
+                                    <i class='bx bx-copy'></i>
+                                </button>
+                            </div>
+                            <div>
+                                <span class="doc-badge-pill ${badgeClass}">${typeLabel}</span>
+                            </div>
+                            ${d.parentRefNo ? `
+                                <div>
+                                    <span class="parent-ref-pill" onclick="event.stopPropagation(); filterByParentRef('${escapeHtml(d.parentRefNo)}')" title="คลิกเพื่อค้นหาเอกสารต้นทาง">
+                                        <i class='bx bx-link-alt'></i> ต้นทาง: ${escapeHtml(d.parentRefNo)}
+                                    </span>
+                                </div>
+                            ` : ''}
+                        </td>
+                        <td>
+                            <div class="customer-title">${escapeHtml(d.toCompany || '-')}</div>
+                            ${d.toAttn ? `<div class="customer-sub"><i class='bx bx-user'></i> <span>ผู้ติดต่อ: ${escapeHtml(d.toAttn)}</span></div>` : ''}
+                        </td>
+                        <td>
+                            <div class="issuer-chip" title="${escapeHtml(d.issuer || 'ร้านค้า/บริษัท')}">
+                                <i class='bx bx-store-alt'></i>
+                                <span>${escapeHtml(d.issuer || 'ร้านค้า/บริษัท')}</span>
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span style="background: #f1f5f9; padding: 2px 7px; border-radius: 6px; font-weight: 600; font-size: 0.74rem; color: #475569;">
+                                ${itemsCount}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="amount-main">฿${formatNumber(grandTotalNum)}</div>
+                            <div class="amount-sub">${d.vat && parseFloat(d.vat) > 0 ? 'รวม VAT 7%' : 'แยก VAT'}</div>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="status-pill ${statusClass}">${statusLabel}</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <div style="display: flex; gap: 5px; align-items: center; justify-content: center;">
+                                <button type="button" class="btn-primary-view" onclick="event.stopPropagation(); openInQuotationForm(${idx})" title="เปิดดูเอกสารแบบเต็มและสั่งพิมพ์">
+                                    <i class='bx bx-file'></i> ดู/พิมพ์เอกสาร
+                                </button>
+                                <button type="button" class="btn-sec-action" onclick="event.stopPropagation(); viewDocDetails(${idx})" title="ดูสรุปแบบย่อ">
+                                    <i class='bx bx-show'></i>
+                                </button>
+                                <button type="button" class="btn-sec-action danger" onclick="event.stopPropagation(); deleteDocument(${idx})" title="ลบประวัติ">
+                                    <i class='bx bx-trash'></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        // View details modal
+        window.viewDocDetails = function(index) {
+            currentModalDocIndex = index;
+            const d = filteredDocuments[index];
+            if (!d) return;
+
+            const modal = document.getElementById('docDetailModal');
+            const badge = document.getElementById('modalDocBadge');
+            const refNoEl = document.getElementById('modalRefNo');
+            const bodyEl = document.getElementById('modalDocBody');
+            const openInFormBtn = document.getElementById('modalOpenInFormBtn');
+
+            const type = d.docType || (d.refNo?.startsWith('MTI') ? 'invoice' : (d.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
+            badge.className = `doc-badge-pill badge-pill-${type}`;
+            badge.innerText = d.docTypeTitle || (type === 'invoice' ? '📋 ใบส่งของ/ใบแจ้งหนี้' : (type === 'receipt' ? '🧾 ใบเสร็จรับเงิน' : '📄 ใบเสนอราคา'));
+            refNoEl.innerText = d.refNo || '-';
+
+            openInFormBtn.onclick = () => openInQuotationForm(index);
+
+            // Build Item rows
+            let itemsHtml = '';
+            if (Array.isArray(d.items) && d.items.length > 0) {
+                d.items.forEach((it, i) => {
+                    if (it.isHeader) {
+                        itemsHtml += `<tr style="background:#f1f5f9; font-weight:700;"><td colspan="5" style="padding:10px 14px; color:#1e293b; border-bottom:1px solid #e2e8f0;">${escapeHtml(it.desc || '-')}</td></tr>`;
+                    } else {
+                        const lineTotal = parseFloat(String(it.total || (it.qty * it.price) || 0));
+                        itemsHtml += `
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:9px 12px; text-align:center; color:#64748b;">${it.customNo || (i + 1)}</td>
+                                <td style="padding:9px 12px; font-weight:500; color:#1e293b;">${escapeHtml(it.desc || '-')}</td>
+                                <td style="padding:9px 12px; text-align:center; color:#475569;">${it.qty || 1} ${escapeHtml(it.unit || '')}</td>
+                                <td style="padding:9px 12px; text-align:right; color:#475569;">฿${formatNumber(it.price || 0)}</td>
+                                <td style="padding:9px 12px; text-align:right; font-weight:700; color:#0f172a;">฿${formatNumber(lineTotal)}</td>
+                            </tr>
+                        `;
+                    }
+                });
+            } else {
+                itemsHtml = `<tr><td colspan="5" style="text-align:center; padding:24px; color:#94a3b8;">ไม่มีรายการสินค้า</td></tr>`;
+            }
+
+            const grandTotalNum = parseFloat(String(d.grandTotal || '0').replace(/,/g, '')) || 0;
+            const thaiBahtText = ArabicNumberToText(grandTotalNum);
+
+            bodyEl.innerHTML = `
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px 22px; margin-bottom:20px;">
+                    <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:20px;">
+                        <div>
+                            <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">ลูกค้า / ผู้รับเอกสาร</span>
+                            <div style="font-weight:800; font-size:1.1rem; color:#0f172a; margin-top:4px;">${escapeHtml(d.toCompany || '-')}</div>
+                            ${d.toAddress ? `<div style="font-size:0.85rem; color:#475569; margin-top:4px; line-height:1.4;"><i class='bx bx-map-pin' style="color:#94a3b8;"></i> ${escapeHtml(d.toAddress)}</div>` : ''}
+                            ${d.toTaxId ? `<div style="font-size:0.83rem; color:#475569; margin-top:3px;"><i class='bx bx-id-card' style="color:#94a3b8;"></i> เลขประจำตัวผู้เสียภาษี: <b>${escapeHtml(d.toTaxId)}</b></div>` : ''}
+                            ${d.toAttn ? `<div style="font-size:0.83rem; color:#475569; margin-top:3px;"><i class='bx bx-user' style="color:#94a3b8;"></i> ผู้ติดต่อ: <b>${escapeHtml(d.toAttn)}</b> ${d.toTel ? `(โทร: ${escapeHtml(d.toTel)})` : ''}</div>` : ''}
+                        </div>
+                        <div style="border-left:1px solid #e2e8f0; padding-left:20px;">
+                            <span style="font-size:0.75rem; color:#64748b; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">ข้อมูลผู้ออกและวันที่</span>
+                            <div style="font-weight:700; font-size:1rem; color:#0f172a; margin-top:4px;">${escapeHtml(d.issuer || 'ร้านค้า/บริษัท')}</div>
+                            <div style="font-size:0.85rem; color:#475569; margin-top:5px;"><i class='bx bx-calendar' style="color:#94a3b8;"></i> วันที่เอกสาร: <b>${escapeHtml(d.docDate || '-')}</b></div>
+                            ${d.parentRefNo ? `<div style="font-size:0.85rem; color:#2563eb; margin-top:4px;"><i class='bx bx-link-alt'></i> อ้างอิงเอกสารเดิม: <b>${escapeHtml(d.parentRefNo)}</b></div>` : ''}
+                            <div style="font-size:0.78rem; color:#94a3b8; margin-top:4px;">บันทึกเมื่อ: ${new Date(d.createdAt).toLocaleString('th-TH')}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse; font-size:0.88rem; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; margin-bottom:16px;">
+                    <thead style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
+                        <tr>
+                            <th style="padding:10px 12px; width:45px; text-align:center; color:#475569;">#</th>
+                            <th style="padding:10px 12px; text-align:left; color:#475569;">รายการสินค้า/บริการ</th>
+                            <th style="padding:10px 12px; width:110px; text-align:center; color:#475569;">จำนวน</th>
+                            <th style="padding:10px 12px; width:120px; text-align:right; color:#475569;">ราคา/หน่วย</th>
+                            <th style="padding:10px 12px; width:130px; text-align:right; color:#475569;">จำนวนเงิน</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+
+                <div style="display:grid; grid-template-columns:1fr auto; gap:20px; align-items:flex-end;">
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px;">
+                        <span style="font-size:0.75rem; color:#64748b; font-weight:700;">จำนวนเงินตัวอักษร:</span>
+                        <div style="font-weight:700; color:#1e293b; font-size:0.92rem; margin-top:2px;">( ${thaiBahtText} )</div>
+                    </div>
+                    <div style="width:300px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px;">
+                        ${d.subTotal ? `<div style="display:flex; justify-content:space-between; font-size:0.86rem; margin-bottom:5px; color:#64748b;"><span>ยอดรวมก่อนภาษี:</span><span style="font-weight:600; color:#0f172a;">฿${d.subTotal}</span></div>` : ''}
+                        ${d.vat ? `<div style="display:flex; justify-content:space-between; font-size:0.86rem; margin-bottom:8px; color:#64748b;"><span>ภาษีมูลค่าเพิ่ม (VAT 7%):</span><span style="font-weight:600; color:#0f172a;">฿${d.vat}</span></div>` : ''}
+                        <div style="display:flex; justify-content:space-between; font-weight:800; font-size:1.15rem; color:#1d4ed8; border-top:1px solid #e2e8f0; padding-top:8px;">
+                            <span>ยอดสุทธิรวม:</span>
+                            <span style="font-family:'Prompt', sans-serif;">฿${formatNumber(grandTotalNum)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+        };
+
+        window.closeDocModal = function() {
+            document.getElementById('docDetailModal').style.display = 'none';
+        };
+
+        window.printModalDoc = function() {
+            window.print();
+        };
+
+        window.copyText = function(text, btn) {
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => {
+                const origHtml = btn.innerHTML;
+                btn.innerHTML = `<i class='bx bx-check' style="color: #10b981;"></i>`;
+                setTimeout(() => { btn.innerHTML = origHtml; }, 1500);
+            }).catch(e => console.warn('Copy failed:', e));
+        };
+
+        window.filterByParentRef = function(parentRef) {
+            if (!parentRef) return;
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = parentRef;
+                applyFilters();
+            }
+        };
+
+        // Open in quotation form (Go directly to full quotation.html with all document data loaded)
+        window.openInQuotationForm = function(index) {
+            const d = filteredDocuments[index];
+            if (!d) return;
+
+            // Save document into localStorage so quotation.html can load it
+            try {
+                localStorage.setItem('pending_load_quotation', JSON.stringify(d));
+            } catch (e) {
+                console.error("Error setting pending_load_quotation:", e);
+            }
+
+            const type = d.docType || (d.refNo?.startsWith('MTI') ? 'invoice' : (d.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
+            window.location.href = `quotation.html?docType=${encodeURIComponent(type)}&loadPending=true`;
+        };
+
+        // Delete document
+        window.deleteDocument = async function(index) {
+            const d = filteredDocuments[index];
+            if (!d) return;
+
+            if (!confirm(`คุณต้องการลบประวัติเอกสาร ${d.refNo || ''} (${d.toCompany || ''}) ใช่หรือไม่?`)) return;
+
+            try {
+                // Delete from central collection
+                if (d.id) {
+                    await deleteDoc(doc(db, 'users', currentUser.uid, 'sales_documents', d.id));
+                }
+                // Also delete from type collection if exists
+                if (d._collection && d._collection !== 'sales_documents' && d.id) {
+                    await deleteDoc(doc(db, 'users', currentUser.uid, d._collection, d.id));
+                }
+
+                alert('ลบเอกสารเรียบร้อยแล้ว');
+                await loadAllDocuments();
+            } catch (err) {
+                console.error("Error deleting document:", err);
+                alert('เกิดข้อผิดพลาดในการลบเอกสาร');
+            }
+        };
+
+        // Thai Baht Text Conversion
+        function ArabicNumberToText(Number) {
+            let NumberStr = (Number || 0).toString();
+            let SplitNum = NumberStr.split('.');
+            let BahtNum = SplitNum[0];
+            let SatangNum = SplitNum.length > 1 ? SplitNum[1] : "00";
+
+            if (SatangNum.length == 1) SatangNum += "0";
+            if (SatangNum.length > 2) SatangNum = SatangNum.substring(0, 2);
+            if (BahtNum == "0" && SatangNum == "00") return "ศูนย์บาทถ้วน";
+
+            const TxtNumArr = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า", "สิบ"];
+            const TxtDigitArr = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+
+            function ConvertText(numStr) {
+                let text = "";
+                let len = numStr.length;
+                for (let i = 0; i < len; i++) {
+                    let n = parseInt(numStr.charAt(i));
+                    let digit = len - i - 1;
+                    if (n !== 0) {
+                        if (digit === 1 && n === 1) {
+                            text += "สิบ";
+                        } else if (digit === 1 && n === 2) {
+                            text += "ยี่สิบ";
+                        } else if (digit === 0 && n === 1 && len > 1 && numStr.charAt(i - 1) != '0') {
+                            text += "เอ็ด";
+                        } else {
+                            text += TxtNumArr[n] + TxtDigitArr[digit];
+                        }
+                    }
+                }
+                return text;
+            }
+
+            let BahtText = "";
+            if (parseInt(BahtNum) > 0) {
+                if (BahtNum.length > 6) {
+                    let millions = BahtNum.substring(0, BahtNum.length - 6);
+                    let rest = BahtNum.substring(BahtNum.length - 6);
+                    BahtText = ConvertText(millions) + "ล้าน" + ConvertText(rest) + "บาท";
+                } else {
+                    BahtText = ConvertText(BahtNum) + "บาท";
+                }
+            }
+
+            if (parseInt(SatangNum) > 0) {
+                BahtText += ConvertText(SatangNum) + "สตางค์";
+            } else {
+                BahtText += "ถ้วน";
+            }
+
+            return BahtText;
+        }
+
+        // Helper functions
+        function formatNumber(num) {
+            return parseFloat(num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Logout handler
+        window.handleLogout = async function() {
+            if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+                try {
+                    await signOut(auth);
+                    window.location.href = '../../index.html';
+                } catch (e) {
+                    console.error('Logout failed:', e);
+                }
+            }
+        };
+
+        window.setDocTypeFilter = setDocTypeFilter;
+        window.handleSearch = handleSearch;
+        window.applyFilters = applyFilters;
+        window.resetFilters = resetFilters;
+        window.loadAllDocuments = loadAllDocuments;
+    </script>
+
+    <!-- ===== MODAL: จัดการข้อมูลร้านค้า & อัปโหลดโลโก้ ===== -->
+    <div class="modal-overlay" id="shopManageModal" style="display:none;">
+        <div class="modal" style="max-width: 580px; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(7, 37, 66, 0.25);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #072542 0%, #0d4b85 100%); color: #ffffff; padding: 18px 24px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">🏪</span>
+                        <h3 id="shopModalTitle" style="color: #ffffff; font-size: 18px; font-weight: 700; margin: 0; font-family: var(--sidebar-font);">เพิ่มร้านค้าใหม่</h3>
+                    </div>
+                    <div style="font-size: 12px; color: rgba(255, 255, 255, 0.82); margin-top: 3px; font-family: var(--sidebar-font);">กรอกข้อมูลร้านค้าและอัปโหลดโลโก้ เพื่อแยกพื้นที่จัดเก็บข้อมูลอิสระ</div>
+                </div>
+                <button class="modal-close" style="color: rgba(255, 255, 255, 0.85); font-size: 18px;" onclick="closeShopModal()">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 22px; max-height: 72vh; overflow-y: auto;">
+                <!-- Logo Upload Section -->
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 14px; margin-bottom: 18px; transition: all 0.2s;" id="shopLogoDropzone">
+                    <div style="position: relative; margin-bottom: 10px;">
+                        <div id="shopLogoPreviewContainer" style="width: 84px; height: 84px; border-radius: 18px; background: #ffffff; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+                            <img id="shopLogoPreview" src="" style="width: 100%; height: 100%; object-fit: contain; display: none;" alt="Logo Preview">
+                            <div id="shopLogoPlaceholder" style="text-align: center; color: #94a3b8;">
+                                <i class='bx bx-image-add' style="font-size: 32px; display: block; line-height: 1;"></i>
+                                <span style="font-size: 11px; font-weight: 600; margin-top: 4px; display: block;">โลโก้ร้าน</span>
+                            </div>
+                        </div>
+                        <button type="button" id="shopRemoveLogoBtn" onclick="removeShopLogoPreview()" style="display: none; position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: #fff; border: 2px solid #fff; font-size: 11px; cursor: pointer; align-items: center; justify-content: center;" title="ลบโลโก้">✕</button>
+                    </div>
+                    <div style="text-align: center;">
+                        <label for="shopLogoFileInput" class="btn btn-outline btn-sm" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; font-weight: 600; font-size: 12.5px; padding: 6px 14px; background: #ffffff;">
+                            <i class='bx bx-cloud-upload'></i> <span>เลือกรูปโลโก้ร้านค้า</span>
+                        </label>
+                        <input type="file" id="shopLogoFileInput" accept="image/*" style="display: none;" onchange="handleShopLogoSelect(this)">
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">รองรับไฟล์ PNG, JPG, WebP หรือ SVG (ขนาดไม่เกิน 2MB)</div>
+                    </div>
+                </div>
+
+                <!-- Form Fields -->
+                <input type="hidden" id="editingShopId" value="">
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="field-group" style="grid-column: 1 / -1;">
+                        <label for="shopNameInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">ชื่อร้านค้า / บริษัท <span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="shopNameInput" placeholder="เช่น Point Studio, โรงพิมพ์มิตรภาพ, บริษัท ทีพี มีเดีย จำกัด" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); outline: none; transition: border-color 0.2s;" required>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="shopShortCodeInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">รหัสย่อร้าน (Short Code)</label>
+                        <input type="text" id="shopShortCodeInput" placeholder="เช่น PS, TP, MTR" maxlength="6" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); text-transform: uppercase;">
+                    </div>
+
+                    <div class="field-group">
+                        <label for="shopCategoryInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">หมวดหมู่ / ประเภทธุรกิจ</label>
+                        <select id="shopCategoryInput" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); background: #ffffff;">
+                            <option value="สตูดิโอ & มีเดีย">สตูดิโอ & มีเดีย</option>
+                            <option value="สิ่งพิมพ์ & โฆษณา">สิ่งพิมพ์ & โฆษณา</option>
+                            <option value="ไอที & ซอฟต์แวร์">ไอที & ซอฟต์แวร์</option>
+                            <option value="ค้าปลีก & จัดจำหน่าย">ค้าปลีก & จัดจำหน่าย</option>
+                            <option value="บริการ & ก่อสร้าง">บริการ & ก่อสร้าง</option>
+                            <option value="ร้านค้าทั่วไป">ร้านค้าทั่วไป</option>
+                        </select>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="shopPhoneInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">เบอร์โทรศัพท์ติดต่อ</label>
+                        <input type="tel" id="shopPhoneInput" placeholder="เช่น 02-123-4567, 081-xxx-xxxx" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font);">
+                    </div>
+
+                    <div class="field-group">
+                        <label for="shopEmailInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">อีเมลร้านค้า</label>
+                        <input type="email" id="shopEmailInput" placeholder="shop@example.com" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font);">
+                    </div>
+
+                    <div class="field-group" style="grid-column: 1 / -1;">
+                        <label for="shopTaxIdInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">เลขประจำตัวผู้เสียภาษี (Tax ID)</label>
+                        <input type="text" id="shopTaxIdInput" placeholder="เลขประจำตัว 13 หลัก (ใช้สำหรับเปิดบิล/ออกเอกสาร)" maxlength="20" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font);">
+                    </div>
+
+                    <div class="field-group" style="grid-column: 1 / -1;">
+                        <label for="shopAddressInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">ที่อยู่ / ที่ตั้งร้าน</label>
+                        <textarea id="shopAddressInput" rows="2" placeholder="ระบุเลขที่ตั้ง อาคาร ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); resize: vertical;"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 14px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn btn-outline" onclick="closeShopModal()" style="padding: 8px 16px; border-radius: 9px; font-weight: 600; font-size: 13px;">ยกเลิก</button>
+                <button type="button" class="btn btn-primary" onclick="saveShopModalData()" style="padding: 8px 20px; border-radius: 9px; font-weight: 600; font-size: 13px; background: linear-gradient(135deg, #072542 0%, #0d4b85 100%); border: none; color: #ffffff; display: flex; align-items: center; gap: 6px;">
+                    <i class='bx bx-check-circle'></i> <span>บันทึกและสลับไปใช้งาน</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

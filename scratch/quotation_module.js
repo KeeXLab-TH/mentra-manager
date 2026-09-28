@@ -1,3093 +1,4 @@
-<!DOCTYPE html>
-<html lang="th" style="background-color:#f8fafc">
 
-<head>
-    <!-- Security Headers (meta fallback) -->
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    <!-- Anti-Flash Instant Background -->
-    <style>html,body{background:#f8fafc!important;}</style>
-    <script>
-    (function(){
-        var d=document,o=d.createElement('div');
-        o.id='mentra-page-transition-overlay';
-        o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(248,250,252,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:1;transition:opacity .22s ease-out;pointer-events:none;';
-        d.documentElement.appendChild(o);
-        function fadeOut(){if(o){o.style.opacity='0';setTimeout(function(){o.style.pointerEvents='none';},280);}}
-        if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',fadeOut);}else{fadeOut();}
-        window.addEventListener('pageshow',function(){if(o){o.style.opacity='0';o.style.pointerEvents='none';}});
-        setTimeout(fadeOut, 800);
-    })();
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quotation Generator</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-    <!-- Boxicons -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- html2pdf.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- pdfmake for Pure Vector Editable PDF with Thai fonts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <!-- SortableJS for drag-and-drop -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-    <!-- Telegram Notification Service -->
-    <script src="../../assets/js/telegram-service.js"></script>
-    <!-- SweetAlert2 for Modern Popups -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-        // Universal instant issuer modal controller (always available from 0ms)
-        window.openIssuerSelectionModal = function() {
-            const modal = document.getElementById('issuerSelectionModal');
-            if (modal) {
-                modal.style.display = 'flex';
-                modal.style.zIndex = '999999';
-            }
-            if (typeof window.renderIssuerCards === 'function') {
-                window.renderIssuerCards();
-            }
-        };
-        window.closeIssuerSelectionModal = function() {
-            const modal = document.getElementById('issuerSelectionModal');
-            if (modal) modal.style.display = 'none';
-        };
-    </script>
-
-    <style>
-        /* SweetAlert2 Mentra Theme Customization */
-        .swal2-popup {
-            font-family: 'Sarabun', 'Kanit', sans-serif !important;
-            border-radius: 16px !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-            padding: 1.5rem 1.75rem !important;
-        }
-        .swal2-title {
-            font-family: 'Kanit', 'Sarabun', sans-serif !important;
-            font-weight: 600 !important;
-            font-size: 1.3rem !important;
-            color: #1e293b !important;
-        }
-        .swal2-html-container {
-            font-family: 'Sarabun', sans-serif !important;
-            font-size: 0.95rem !important;
-            color: #475569 !important;
-            line-height: 1.6 !important;
-        }
-        .swal2-confirm {
-            background-color: var(--primary-color, #1A6FBF) !important;
-            border-radius: 8px !important;
-            font-weight: 500 !important;
-            padding: 8px 22px !important;
-            font-size: 0.9rem !important;
-            box-shadow: 0 2px 6px rgba(26, 111, 191, 0.3) !important;
-        }
-        .swal2-cancel {
-            border-radius: 8px !important;
-            font-weight: 500 !important;
-            padding: 8px 22px !important;
-            font-size: 0.9rem !important;
-        }
-
-        :root {
-            --primary-color: #1A6FBF;
-            --primary-hover: #145999;
-            --bg-color: #f3f4f6;
-            --card-bg: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --border-color: #e5e7eb;
-            --danger-color: #ef4444;
-            --danger-hover: #dc2626;
-            --success-color: #10b981;
-            --input-bg: #f9fafb;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Kanit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        /* ================================================
-           SIDEBAR & MAIN LAYOUT (From dashboard.html)
-           ================================================ */
-        :root {
-            --sidebar-w: 260px;
-            --sidebar-w-collapsed: 72px;
-            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
-            --header-h: 68px;
-            --primary: #1A6FBF;
-            --primary-light: #e8f1fb;
-            --secondary: #E07B2F;
-            --radius-md: 12px;
-            --radius-sm: 8px;
-            --t-fast: 0.15s ease;
-            --t-normal: 0.25s ease;
-            --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        body {
-            display: flex;
-            min-height: 100vh;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow: hidden;
-            font-family: 'Kanit', 'Sarabun', sans-serif !important;
-        }
-
-        .sidebar {
-            width: var(--sidebar-w);
-            background: var(--sidebar-bg);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 100;
-            transition: width var(--t-slow), transform var(--t-slow);
-            overflow: hidden;
-            will-change: width, transform;
-        }
-
-        .sidebar.collapsed {
-            width: var(--sidebar-w-collapsed);
-        }
-
-        .sidebar.collapsed .sidebar-logo-text,
-        .sidebar.collapsed .nav-label,
-        .sidebar.collapsed .nav-section-title,
-        .sidebar.collapsed .user-info,
-        .sidebar.collapsed .btn-logout-text {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-            white-space: nowrap;
-            display: none;
-        }
-
-        .sidebar.collapsed .sidebar-logo {
-            justify-content: center;
-            padding-right: 0;
-        }
-
-        .sidebar.collapsed .nav-item {
-            justify-content: center;
-        }
-
-        .sidebar-logo {
-            padding: 20px 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-height: var(--header-h);
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .sidebar-logo img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            background: white;
-            border-radius: 10px;
-            padding: 4px;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .sidebar-logo-text {
-            transition: opacity var(--t-normal), width var(--t-normal);
-            overflow: hidden;
-        }
-
-        .sidebar-logo-text .app-name {
-            font-size: 15px;
-            font-weight: 800;
-            color: white;
-            line-height: 1.1;
-            white-space: nowrap;
-        }
-
-        .sidebar-logo-text .app-sub {
-            font-size: 10.5px;
-            color: rgba(255, 255, 255, 0.50);
-            font-weight: 400;
-            margin-top: 2px;
-            white-space: nowrap;
-        }
-
-        .collapse-btn {
-            position: absolute;
-            right: -12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 24px;
-            height: 24px;
-            background: white;
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--primary);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            z-index: 10;
-            transition: background var(--t-fast), transform var(--t-normal);
-        }
-
-        .collapse-btn:hover {
-            background: var(--primary-light);
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            padding: 12px 10px;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .nav-section-title {
-            font-size: 9.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: rgba(255, 255, 255, 0.38);
-            padding: 8px 12px 4px;
-            margin-top: 10px;
-            white-space: nowrap;
-            transition: opacity var(--t-normal);
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 13px;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            color: rgba(255, 255, 255, 0.70);
-            font-size: 13.5px;
-            font-weight: 500;
-            transition: background var(--t-fast), color var(--t-fast);
-            margin-bottom: 2px;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            font-family: 'Kanit', sans-serif;
-            position: relative;
-            white-space: nowrap;
-            text-decoration: none;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.10);
-            color: white;
-        }
-
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.16);
-            color: white;
-            font-weight: 600;
-        }
-
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 20%;
-            bottom: 20%;
-            width: 3px;
-            background: var(--secondary);
-            border-radius: 0 3px 3px 0;
-        }
-
-        .nav-item.active .nav-icon {
-            background: var(--secondary);
-            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.4);
-        }
-
-        .nav-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-sm);
-            background: rgba(255, 255, 255, 0.10);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            flex-shrink: 0;
-            transition: background var(--t-fast), box-shadow var(--t-fast);
-        }
-
-        .nav-label {
-            transition: opacity var(--t-normal);
-            overflow: hidden;
-        }
-
-        .sidebar-user {
-            padding: 14px;
-            border-top: 1px solid rgba(255, 255, 255, 0.10);
-            flex-shrink: 0;
-        }
-
-        .user-card {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: var(--radius-md);
-            background: rgba(255, 255, 255, 0.07);
-            margin-bottom: 10px;
-            overflow: hidden;
-            transition: justify-content var(--t-normal);
-        }
-
-        .user-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            font-weight: 700;
-            color: white;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.35);
-        }
-
-        .user-info {
-            min-width: 0;
-        }
-
-        .user-info .user-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: white;
-            line-height: 1.2;
-            white-space: nowrap;
-        }
-
-        .user-info .user-role {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.50);
-            margin-top: 2px;
-        }
-
-        .role-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .role-badge.admin {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .role-badge.user {
-            background: rgba(255, 255, 255, 0.18);
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .btn-logout {
-            width: 100%;
-            padding: 9px 12px;
-            background: rgba(239, 68, 68, 0.13);
-            border: 1px solid rgba(239, 68, 68, 0.28);
-            border-radius: var(--radius-sm);
-            color: #fca5a5;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background var(--t-fast), color var(--t-fast);
-            font-family: 'Kanit', sans-serif;
-            overflow: hidden;
-        }
-
-        .btn-logout:hover {
-            background: rgba(239, 68, 68, 0.28);
-            color: white;
-        }
-
-        .btn-logout-text {
-            white-space: nowrap;
-            transition: opacity var(--t-normal);
-        }
-
-        .main-wrapper {
-            flex: 1;
-            margin-left: var(--sidebar-w);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            min-width: 0;
-            transition: margin-left var(--t-slow);
-            background: #f0f4f8;
-        }
-
-        .topbar {
-            height: var(--header-h);
-            background: #ffffff;
-            border-bottom: 1px solid #e8edf2;
-            display: flex;
-            align-items: center;
-            padding: 0 28px;
-            justify-content: space-between;
-            flex-shrink: 0;
-            z-index: 90;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-            position: relative;
-        }
-        .topbar::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #1A6FBF 0%, #38bdf8 50%, #E07B2F 100%);
-            opacity: 0.7;
-        }
-
-        .topbar-breadcrumb {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .breadcrumb-title {
-            font-size: 17px;
-            font-weight: 800;
-            color: #0f172a;
-            letter-spacing: -0.3px;
-        }
-
-        .breadcrumb-sub {
-            font-size: 11.5px;
-            color: #64748b;
-            margin-top: 2px;
-            font-weight: 500;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 22px 24px 100px;
-            overflow-y: auto;
-            background: linear-gradient(145deg, #eef2f8 0%, #f0f4f8 40%, #e8f0fa 100%);
-        }
-
-        .container {
-            max-width: 100% !important;
-            margin: 0 !important;
-            background: none !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-        }
-
-        .form-content {
-            background: white !important;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border-color);
-            padding: 24px !important;
-        }
-
-        .header-actions {
-            display: none !important;
-        }
-
-        /* ================================================
-           MOBILE & TABLET RESPONSIVE MEDIA QUERIES
-           ================================================ */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(15,23,42,0.45);
-            z-index: 99;
-            backdrop-filter: blur(2px);
-        }
-        .sidebar-overlay.show {
-            display: block;
-        }
-
-        .hamburger {
-            display: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-muted);
-            padding: 8px;
-            border-radius: var(--radius-sm);
-            transition: background var(--t-fast), color var(--t-fast);
-            margin-right: 12px;
-            align-items: center;
-            justify-content: center;
-        }
-        .hamburger:hover {
-            background: #f1f5f9;
-            color: var(--text-main);
-        }
-
-        @media (max-width: 900px) {
-            .sidebar {
-                transform: translateX(-100%);
-                width: var(--sidebar-w);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .main-wrapper {
-                margin-left: 0 !important;
-            }
-            .hamburger {
-                display: flex !important;
-            }
-            .content-area {
-                padding: 20px 16px;
-            }
-            .topbar {
-                padding: 0 18px;
-            }
-            .collapse-btn {
-                display: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                display: block;
-                overflow-x: hidden;
-                overflow-y: auto;
-                height: auto;
-            }
-            .main-wrapper {
-                display: block;
-                width: 100%;
-                height: auto;
-                overflow: visible;
-            }
-            .topbar {
-                padding: 0 16px;
-                gap: 10px;
-                flex-wrap: wrap;
-                height: auto;
-                padding-top: 12px;
-                padding-bottom: 12px;
-            }
-            .topbar-breadcrumb {
-                flex: 1;
-                min-width: 200px;
-            }
-            .content-area {
-                padding: 16px;
-                height: auto;
-                overflow: visible;
-            }
-            .grid-2 {
-                grid-template-columns: 1fr !important;
-                gap: 1rem !important;
-                margin-bottom: 1rem !important;
-            }
-            .table-responsive {
-                margin: 0 -16px;
-                padding: 0 16px;
-                width: calc(100% + 32px);
-                border-radius: 0;
-                border-left: none;
-                border-right: none;
-                -webkit-overflow-scrolling: touch;
-            }
-            .form-content {
-                padding: 16px !important;
-            }
-            .summary-section {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 1rem;
-            }
-            .remark-box {
-                width: 100%;
-            }
-            .summary-box {
-                width: 100% !important;
-                margin-top: 0;
-            }
-        }
-
-        .header-actions {
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #f8fafc;
-        }
-
-        .header-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-        }
-
-        .btn-danger {
-            background: var(--danger-color);
-            color: white;
-            padding: 0.4rem 0.8rem;
-        }
-
-        .btn-danger:hover {
-            background: var(--danger-hover);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-        }
-
-        .btn-outline:hover {
-            background: var(--bg-color);
-        }
-
-        .form-content {
-            padding: 2rem;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text-main);
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 0.5rem;
-            display: inline-block;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.4rem;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            background-color: var(--input-bg);
-            transition: all 0.2s;
-            color: var(--text-main);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        /* Table Styles */
-        .table-responsive {
-            overflow-x: auto;
-            margin-bottom: 2rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th {
-            background-color: #eef2ff;
-            padding: 0.9rem 1rem;
-            font-size: 0.95rem;
-            color: #312e81;
-            font-weight: 600;
-            border: 0.5px solid #cbd5e1;
-            border-bottom: 2px solid var(--primary-color);
-            letter-spacing: normal !important;
-        }
-
-        #itemTable tbody tr:nth-child(even) {
-            background-color: #f8fafc;
-        }
-
-        td {
-            padding: 0.75rem 1rem;
-            border: 0.5px solid #cbd5e1;
-            vertical-align: middle;
-        }
-
-        .table-input {
-            width: 100%;
-            padding: 0.45rem 0.65rem;
-            min-height: 38px;
-            line-height: 1.5;
-            border: 1px solid transparent;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-family: 'Sarabun', 'Prompt', sans-serif;
-            transition: all 0.2s;
-            background-color: transparent;
-            box-sizing: border-box;
-        }
-
-        .table-input:hover {
-            background-color: rgba(37, 99, 235, 0.03);
-        }
-
-        .table-input:focus {
-            outline: none;
-            border-color: transparent;
-            box-shadow: none;
-            background-color: #eff6ff;
-            border-radius: 4px;
-        }
-
-        /* Hide spinner controls on chrome, safari, edge, firefox for clean look */
-        input[type=number].table-input::-webkit-inner-spin-button, 
-        input[type=number].table-input::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-        input[type=number].table-input {
-            -moz-appearance: textfield;
-        }
-
-        .col-qty {
-            width: 90px;
-            min-width: 85px;
-        }
-
-        .col-unit {
-            width: 105px;
-            min-width: 95px;
-        }
-
-        .col-price {
-            width: 140px;
-            min-width: 125px;
-        }
-
-        .col-action {
-            width: 90px;
-            text-align: center;
-        }
-
-        .summary-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-top: 2rem;
-            gap: 2rem;
-        }
-
-        .remark-box {
-            flex: 1;
-        }
-
-        .summary-box {
-            width: 350px;
-            background: #f8fafc;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-            font-size: 0.95rem;
-        }
-
-        .summary-row.total {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            border-top: 1px solid var(--border-color);
-            padding-top: 0.75rem;
-            margin-top: 0.75rem;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-
-        .loading-overlay.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--border-color);
-            border-top-color: var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-    
-        /* ===========================
-           TOPBAR RIGHT MENU (Moved from Sidebar)
-           =========================== */
-        .topbar-right-menu {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-left: auto;
-        }
-
-        .topbar-right-menu #adminMenu {
-            align-items: center;
-            gap: 8px;
-            margin: 0;
-            padding: 0;
-            border: none;
-        }
-
-        .topbar-right-menu #adminMenu[style*="block"] {
-            display: flex !important;
-        }
-
-        .topbar-right-menu #adminMenu .nav-section-title {
-            display: none; /* Hide "จัดการระบบ" text in topbar */
-        }
-
-        .topbar-right-menu .nav-item {
-            width: auto;
-            margin: 0;
-            padding: 8px 12px;
-            background: transparent;
-            color: var(--text-secondary);
-            border-radius: var(--radius-sm);
-        }
-
-        .topbar-right-menu .nav-item:hover {
-            background: var(--bg);
-            color: var(--primary);
-        }
-
-        .topbar-right-menu .nav-label {
-            display: none; /* Hide text, show only icon on small screens, or show both on large? Let's show both on large */
-        }
-        
-        @media (min-width: 1200px) {
-            .topbar-right-menu .nav-label {
-                display: block;
-                font-size: 13px;
-            }
-        }
-
-        .topbar-right-menu .sidebar-user {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            padding: 0;
-            margin: 0;
-            border: none;
-            background: transparent;
-            gap: 16px;
-        }
-
-        .topbar-right-menu .user-card {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: transparent;
-            padding: 0;
-        }
-
-        .topbar-right-menu .user-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .topbar-right-menu .user-name {
-            font-size: 14px;
-            color: var(--text);
-            max-width: 150px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .topbar-right-menu .btn-logout {
-            margin: 0;
-            padding: 8px 16px;
-            width: auto;
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border-radius: var(--radius-sm);
-        }
-
-        .topbar-right-menu .btn-logout:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-    
-        @media (max-width: 900px) {
-            .topbar-right-menu {
-                display: none !important;
-            }
-        }
-
-        /* ═══ DOCUMENT WORKFLOW STEP BAR ═══ */
-        .workflow-step-bar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-top: 1px solid #e2e8f0;
-            border-bottom: 1px solid #e2e8f0;
-            margin: 0;
-        }
-        .wf-step {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 16px;
-            border-radius: 10px;
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: #94a3b8;
-            background: transparent;
-            cursor: default;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            user-select: none;
-        }
-        .wf-step .wf-num {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            font-size: 0.75rem;
-            font-weight: 800;
-            background: #e2e8f0;
-            color: #94a3b8;
-            flex-shrink: 0;
-            transition: all 0.3s ease;
-        }
-        .wf-step.active {
-            color: #1e40af;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-        }
-        .wf-step.active .wf-num {
-            background: linear-gradient(135deg, #1d4ed8, #2563eb);
-            color: #ffffff;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-        }
-        .wf-step.completed {
-            color: #15803d;
-            cursor: pointer;
-        }
-        .wf-step.completed:hover {
-            background: #f0fdf4;
-        }
-        .wf-step.completed .wf-num {
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-            color: #ffffff;
-        }
-        .wf-connector {
-            display: flex;
-            align-items: center;
-            padding: 0 4px;
-        }
-        .wf-connector .wf-line {
-            width: 32px;
-            height: 2px;
-            background: #e2e8f0;
-            border-radius: 2px;
-            transition: background 0.3s ease;
-        }
-        .wf-connector.done .wf-line {
-            background: #22c55e;
-        }
-        .wf-connector .wf-arrow {
-            color: #cbd5e1;
-            font-size: 0.9rem;
-            margin-left: -2px;
-            transition: color 0.3s ease;
-        }
-        .wf-connector.done .wf-arrow {
-            color: #22c55e;
-        }
-
-        /* Workflow Confirm Button in Action Bar */
-        .btn-workflow-confirm {
-            padding: 0.55rem 1.2rem;
-            font-size: 0.88rem;
-            border: none;
-            color: #ffffff;
-            background: linear-gradient(135deg, #059669, #10b981);
-            border-radius: 10px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        .btn-workflow-confirm:hover {
-            background: linear-gradient(135deg, #047857, #059669);
-            box-shadow: 0 6px 18px rgba(5, 150, 105, 0.4);
-            transform: translateY(-1px);
-        }
-        .btn-workflow-complete {
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-            border: 1px solid #bbf7d0;
-            color: #15803d;
-            background: #f0fdf4;
-            border-radius: 10px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            cursor: default;
-        }
-
-        @media print {
-            .workflow-step-bar { display: none !important; }
-        }
-
-        /* Prevent table rows from breaking across pages */
-        #printArea tr, .table-responsive tr {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-            -webkit-column-break-inside: avoid !important;
-        }
-
-        /* ===== NATIVE VECTOR PDF PRINT STYLES ===== */
-        @media print {
-            /* Hide EVERYTHING except the printArea */
-            body > *:not(#__printOnlyWrapper) {
-                display: none !important;
-            }
-            #__printOnlyWrapper {
-                display: block !important;
-                position: static !important;
-                width: 100% !important;
-                height: auto !important;
-                background: white !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                overflow: visible !important;
-            }
-            #__printOnlyWrapper #printArea,
-            #__printOnlyWrapper #invoicePrintArea {
-                display: block !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-                background: white !important;
-            }
-            /* Force exact background colors and graphic colors when printing */
-            #printArea *, #invoicePrintArea * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                opacity: 1 !important;
-                filter: none !important;
-            }
-            #pPageWrapper, #pInvPageWrapper {
-                display: block !important;
-                width: 100% !important;
-                max-width: 210mm !important;
-                min-height: 297mm !important;
-                box-sizing: border-box !important;
-                padding: 10mm 15mm 8mm 15mm !important;
-                margin: 0 auto !important;
-                page-break-inside: auto !important;
-                break-inside: auto !important;
-                overflow: visible !important;
-            }
-            .preview-page-break-indicator {
-                display: none !important;
-            }
-            /* Page setup: 0 margin so internal wrapper padding defines exact printable A4 boundary */
-            @page {
-                size: A4 portrait;
-                margin: 0;
-            }
-            /* Component page-break rules */
-            #pHeaderSection, #pInfoRow, #pSummaryTotalsBox, #pLeftSummarySection, #pBuyerSignatureBlock, #pSellerSignatureBlock, [id*="Signature"], #pBottomSectionWrapper, #pSummarySection {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-            #pBottomSectionWrapper {
-                display: flex !important;
-                flex-direction: column !important;
-                flex: none !important;
-                margin-top: 5px !important;
-            }
-            #pPageWrapper.single-page,
-            #pInvPageWrapper.single-page {
-                display: flex !important;
-                flex-direction: column !important;
-                height: 296.5mm !important;
-                max-height: 296.5mm !important;
-                min-height: 296.5mm !important;
-                box-sizing: border-box !important;
-                padding: 10mm 15mm 8mm 15mm !important;
-                margin: 0 auto !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                page-break-after: avoid !important;
-                break-after: avoid !important;
-                overflow: hidden !important;
-            }
-            #pPageWrapper.single-page #pBottomSectionWrapper,
-            #pInvPageWrapper.single-page #pBottomSectionWrapper {
-                display: flex !important;
-                flex-direction: column !important;
-                flex: 1 1 auto !important;
-                margin-top: 6px !important;
-            }
-            #pPageWrapper.single-page #pSignatureSection,
-            #pInvPageWrapper.single-page #pSignatureSection {
-                margin-top: auto !important;
-            }
-            #pTablesContainer, #pInvTablesContainer {
-                display: block !important;
-                page-break-inside: auto !important;
-                break-inside: auto !important;
-            }
-            .print-page {
-                display: block !important;
-            }
-            .print-page:not(:first-child) {
-                padding-top: 24px !important;
-            }
-            .print-page:not(:last-child) {
-                page-break-after: always !important;
-                break-after: page !important;
-            }
-            #pTablesContainer tr, #pInvTablesContainer tr {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-        }
-
-        /* ===== STANDARD A4 DOCUMENT FORMAT (210mm x 297mm / 794px x 1123px) ===== */
-        #printArea, .preview-a4-sheet {
-            width: 794px !important;
-            min-height: 1123px !important;
-            box-sizing: border-box !important;
-            background: #ffffff !important;
-            margin: 0 auto;
-        }
-        #pPageWrapper, #pInvPageWrapper {
-            width: 794px !important;
-            min-height: 1123px !important;
-            box-sizing: border-box !important;
-            padding: 10mm 15mm 8mm 15mm !important;
-            background: #ffffff !important;
-            color: #1f2937 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: flex-start !important;
-            overflow: visible !important;
-        }
-        #pPageWrapper.single-page,
-        #pInvPageWrapper.single-page {
-            height: 1123px !important;
-            min-height: 1123px !important;
-        }
-        #pBottomSectionWrapper {
-            display: flex !important;
-            flex-direction: column !important;
-            flex: 1 1 auto !important;
-        }
-        #pSignatureSection {
-            margin-top: auto !important;
-        }
-
-        /* Auto-compact mode for documents with 13-20 items fitting on 1 page */
-        #pPageWrapper.compact-fit-1page #pHeaderSection,
-        #pInvPageWrapper.compact-fit-1page #pHeaderSection {
-            padding-bottom: 5px !important;
-            margin-bottom: 5px !important;
-            gap: 5px !important;
-        }
-        #pPageWrapper.compact-fit-1page #pInfoRow,
-        #pInvPageWrapper.compact-fit-1page #pInfoRow {
-            margin-bottom: 5px !important;
-            padding-bottom: 5px !important;
-        }
-        #pPageWrapper.compact-fit-1page #pIntroText,
-        #pInvPageWrapper.compact-fit-1page #pIntroText {
-            margin-bottom: 5px !important;
-            font-size: 10.5px !important;
-        }
-        #pPageWrapper.compact-fit-1page #pBottomSectionWrapper,
-        #pInvPageWrapper.compact-fit-1page #pBottomSectionWrapper {
-            margin-top: 4px !important;
-            flex: 1 1 auto !important;
-        }
-        #pPageWrapper.compact-fit-1page #pSignatureSection,
-        #pInvPageWrapper.compact-fit-1page #pSignatureSection {
-            padding-top: 4px !important;
-            margin-top: auto !important;
-        }
-        #pPageWrapper.compact-fit-1page #pSellerSignatureSpace {
-            height: 24px !important;
-        }
-        #pPageWrapper.compact-fit-1page #pLeftSignerTitle,
-        #pPageWrapper.compact-fit-1page #pRightSignerTitle {
-            margin-bottom: 3px !important;
-        }
-
-        /* SortableJS drag and drop styling for template editor */
-        .header-zone {
-            min-height: 20px;
-        }
-        /* Info Row drag styles */
-        #pInfoRow > div {
-            cursor: default;
-        }
-        #pInfoRow.drag-mode > div {
-            cursor: grab;
-            outline: 2px dashed #cbd5e1;
-            outline-offset: 3px;
-            border-radius: 4px;
-            transition: outline 0.2s, background 0.2s;
-        }
-        #pInfoRow.drag-mode > div:hover {
-            outline-color: var(--primary-color, #1A6FBF);
-            background: rgba(26, 111, 191, 0.03);
-        }
-        .info-panel-ghost {
-            opacity: 0.4;
-            background: #e0ecfb !important;
-        }
-        /* Resize handle - only show when settings modal is open */
-        #pInfoResizer {
-            width: 0;
-            flex-shrink: 0;
-            cursor: col-resize;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 2;
-            transition: background 0.15s;
-            overflow: hidden;
-        }
-        body.modal-open #pInfoResizer {
-            width: 10px;
-        }
-        #pInfoResizer::after {
-            content: '';
-            width: 3px;
-            height: 32px;
-            border-radius: 3px;
-            background: #d1d5db;
-            transition: background 0.15s, height 0.15s;
-        }
-        #pInfoResizer:hover::after,
-        #pInfoResizer.resizing::after {
-            background: var(--primary-color, #1A6FBF);
-            height: 48px;
-        }
-        .header-zone {
-            min-width: 0 !important;
-            box-sizing: border-box;
-        }
-        body.modal-open .header-zone {
-            align-self: stretch !important;
-        }
-        .header-zone-resizer {
-            width: 14px !important;
-            margin: 0 -2px;
-            flex-shrink: 0 !important;
-            cursor: col-resize !important;
-            display: none;
-            align-items: center !important;
-            justify-content: center !important;
-            position: relative !important;
-            z-index: 20 !important;
-            align-self: stretch !important;
-            min-height: 48px;
-            touch-action: none !important;
-        }
-        .header-zone-resizer::after {
-            content: '';
-            width: 4px;
-            height: 100%;
-            min-height: 40px;
-            border-radius: 4px;
-            background: #cbd5e1;
-            transition: background 0.15s, width 0.15s;
-        }
-        .header-zone-resizer:hover::after,
-        .header-zone-resizer.resizing::after {
-            background: var(--primary-color, #1A6FBF);
-            width: 6px;
-        }
-        body.modal-open .header-zone-resizer {
-            display: flex !important;
-        }
-        body.info-resizing * {
-            user-select: none !important;
-            cursor: col-resize !important;
-        }
-        .sortable-active-container {
-            border: 2px dashed #cbd5e1;
-            background: rgba(248, 250, 252, 0.5);
-            min-height: 60px;
-        }
-        .sortable-active-container > * {
-            cursor: grab;
-            transition: outline 0.2s;
-        }
-        .sortable-active-container > *:hover {
-            outline: 2px dashed var(--primary-color, #1A6FBF);
-            outline-offset: 4px;
-            background: rgba(26, 111, 191, 0.02);
-        }
-        .sortable-ghost {
-            opacity: 0.4;
-            background-color: #f1f5f9;
-        }
-    </style>
-
-    <!-- Core App Theme Stylesheet -->
-    <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780690277137">
-    <link rel="stylesheet" href="../../assets/css/quotation-pro.css?v=20260918_v4">
-    <style>
-        /* Strict View Mode: Absolutely No Split View */
-        .quote-workspace {
-            display: block !important;
-            width: 100% !important;
-        }
-        .quote-workspace.mode-editor #quoteEditorCol {
-            display: block !important;
-            width: 100% !important;
-        }
-        .quote-workspace.mode-editor #quotePreviewCol {
-            display: none !important;
-        }
-        .quote-workspace.mode-preview #quoteEditorCol {
-            display: none !important;
-        }
-        .quote-workspace.mode-preview #quotePreviewCol {
-            display: flex !important;
-            max-width: 1100px !important;
-            margin: 0 auto !important;
-            width: 100% !important;
-        /* 2-Column Grid for Recipient & Document Details */
-        .quote-top-cards-grid {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            gap: 20px !important;
-            align-items: stretch !important;
-            margin-bottom: 20px !important;
-        }
-        .quote-top-cards-grid > .pro-card {
-            margin-bottom: 0 !important;
-            height: 100% !important;
-        }
-        @media (max-width: 1024px) {
-            .quote-top-cards-grid {
-                grid-template-columns: 1fr !important;
-                gap: 16px !important;
-            }
-        }
-
-        /* Static Action Footer - Never Follows Scroll */
-        .pro-floating-bar,
-        .pro-action-bar {
-            position: static !important;
-            margin-top: 24px !important;
-            margin-bottom: 40px !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            background: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 16px !important;
-            box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03) !important;
-            padding: 14px 22px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            gap: 16px !important;
-            flex-wrap: wrap !important;
-            left: auto !important;
-            right: auto !important;
-            bottom: auto !important;
-            z-index: 10 !important;
-        }
-    </style>
-    <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
-    <!-- SortableJS -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    <!-- Dual-Rail Sidebar & Multi-Shop Styles -->
-    <link rel="stylesheet" href="../../assets/css/dashboard-dual-sidebar.css?v=2.5">
-    <!-- Dual-Rail Sidebar & Multi-Shop Controller -->
-    <script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5"></script>
-</head>
-
-<body>
-
-    <!-- SIDEBAR OVERLAY (mobile) -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-    <!-- TOAST CONTAINER (new stackable system) -->
-    <div id="toastContainer"></div>
-
-    <!-- SIDEBAR OVERLAY (mobile) -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-    <!-- TOAST CONTAINER (new stackable system) -->
-    <div id="toastContainer"></div>
-
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar" id="sidebar">
-        <!-- 1. PRIMARY SLIM DARK RAIL (LEFT) -->
-        <div class="rail-primary">
-            <!-- Brand Logo Mark -->
-            <div class="rail-logo-wrap" onclick="typeof navigateTo === 'function' ? navigateTo('dashboard') : window.location.href='../admin/dashboard.html'" title="Mentra Manager">
-                <img src="../../assets/img/logo.png" alt="Mentra" class="rail-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <i class='bx bxs-compass rail-logo-icon' style="display: none;"></i>
-            </div>
-
-            <!-- Icon Nav Stack -->
-            <div class="rail-nav-group">
-                <!-- Search -->
-                <button type="button" class="rail-icon-btn" onclick="focusQuickSearch()" id="railBtnSearch">
-                    <i class='bx bx-search'></i>
-                    <span class="rail-tooltip">ค้นหาด่วน (⌘F)</span>
-                </button>
-
-                <!-- Dashboard -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('dashboard', this)" id="railBtnDashboard">
-                    <i class='bx bx-grid-alt'></i>
-                    <span class="rail-tooltip">Dashboard / ภาพรวม</span>
-                </button>
-
-                <!-- Projects -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('projects', this)" id="railBtnProjects">
-                    <i class='bx bx-briefcase'></i>
-                    <span class="rail-tooltip">โครงการทั้งหมด (Projects)</span>
-                </button>
-
-                <!-- Purchasing -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('purchasing', this)" id="railBtnPurchasing">
-                    <i class='bx bx-cart'></i>
-                    <span class="rail-tooltip">ฝ่ายจัดซื้อ & สินค้า</span>
-                </button>
-
-                <!-- Accounting -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('accounting', this)" id="railBtnAccounting">
-                    <i class='bx bx-receipt'></i>
-                    <span class="rail-tooltip">บัญชี & การเงิน</span>
-                </button>
-
-                <!-- Schedule -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('schedule', this)" id="railBtnSchedule">
-                    <i class='bx bx-calendar'></i>
-                    <span class="rail-tooltip">ตารางงาน & อบรม</span>
-                </button>
-            </div>
-
-            <!-- Rail Bottom: Collapse toggle & Admin Settings -->
-            <div class="rail-bottom">
-                <button type="button" class="rail-collapse-toggle" onclick="toggleSidebarCollapse()" id="railCollapseBtn" title="ย่อ/ขยายแถบเมนู">
-                    <i class='bx bx-chevron-left'></i>
-                </button>
-                <button type="button" class="rail-icon-btn" onclick="window.location.href='../admin/console_admin.html'" title="ตั้งค่าระบบ">
-                    <i class='bx bx-cog'></i>
-                    <span class="rail-tooltip">Admin Console</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 2. SECONDARY FLYOUT PANEL (WHITE) -->
-        <div class="rail-secondary" id="railSecondaryPanel">
-            <!-- Org Switcher Header -->
-            <div class="org-switcher-header">
-                <div class="org-switcher-btn" id="orgSwitcherBtn" onclick="toggleOrgPopover(event)">
-                    <div class="org-avatar">
-                        <img id="sidebarOrgLogo" src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <span id="sidebarOrgInitials" style="display:none;">M</span>
-                    </div>
-                    <div class="org-meta">
-                        <div class="org-title" id="sidebarOrgName">Mentra Solution</div>
-                        <div class="org-subtitle" id="sidebarUserEmail">accounts@mentrasolution.com</div>
-                    </div>
-                    <i class='bx bx-chevron-up-down org-caret'></i>
-                </div>
-
-                <!-- Floating Popover (Multi-Shop Management) -->
-                <div class="org-switcher-popover" id="orgSwitcherPopover">
-                    <div class="popover-section-label">เลือกร้านค้าที่จัดการ</div>
-                    <div class="popover-list" id="orgSwitcherPopoverList">
-                        <!-- Rendered dynamically by dashboard-dual-sidebar.js -->
-                    </div>
-                    <div class="popover-divider"></div>
-                    <button type="button" class="popover-btn-action create-new" onclick="openShopModal()">
-                        <i class='bx bx-plus'></i> <span>เพิ่มร้านค้า</span>
-                    </button>
-                    <button type="button" class="popover-btn-action" onclick="window.location.href='../admin/company_settings.html'" style="color: #1A6FBF; font-weight: 600;">
-                        <i class='bx bx-buildings'></i> <span>จัดการข้อมูลบริษัท & ร้านค้า</span>
-                    </button>
-                    <button type="button" class="popover-btn-action logout" onclick="handleLogout()">
-                        <i class='bx bx-log-out'></i> <span>ออกจากระบบ (Logout)</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Quick Search Input -->
-            <div class="secondary-search-wrap">
-                <div class="secondary-search-box">
-                    <i class='bx bx-search'></i>
-                    <input type="text" id="sidebarQuickSearch" placeholder="Search...." oninput="filterSidebarNav(this.value)">
-                    <span class="search-kbd">⌘ F</span>
-                </div>
-            </div>
-
-            <!-- Secondary Navigation Items -->
-            <div class="secondary-nav-body" id="secondaryNavBody">
-                <!-- Flat Primary Links -->
-                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('dashboard') : window.location.href='../admin/dashboard.html'" id="nav-dashboard">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-grid-alt'></i>
-                        <span>Dashboard</span>
-                    </div>
-                </button>
-
-                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('projects') : window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-briefcase'></i>
-                        <span>โครงการทั้งหมด</span>
-                    </div>
-                </button>
-
-                <!-- Module Section: Administration -->
-                <div class="sec-nav-divider">ฝ่ายบริหาร</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/company_settings.html'" id="nav-company-settings">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-buildings'></i>
-                        <span>ข้อมูลบริษัท & ร้านค้า</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-id-card'></i>
-                        <span>นามบัตรดิจิทัล</span>
-                    </div>
-                </button>
-
-                <!-- Module Section: Purchasing -->
-                <div class="sec-nav-divider">จัดซื้อ & สินค้า</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing.html'" id="nav-purchasing-school">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-buildings'></i>
-                        <span>จัดซื้อ (สถานศึกษา)</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing_company.html'" id="nav-purchasing-company">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-briefcase-alt'></i>
-                        <span>จัดซื้อ (บริษัทเอกชน)</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/products.html'" id="nav-products">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-package'></i>
-                        <span>รายการสินค้า</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('items') : window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-purchase-tag-alt'></i>
-                        <span>ราคาทุน / สิ่งของ</span>
-                    </div>
-                </button>
-
-                <!-- Module Section: Accounting -->
-                <div class="sec-nav-divider">งานบัญชี & การเงิน</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/quotation.html'" id="nav-quotation">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-file-blank'></i>
-                        <span>ออกเอกสารงานขาย</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-folder-open'></i>
-                        <span>ประวัติเอกสารที่ออก</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_dashboard.html'" id="nav-sales-dashboard">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-spreadsheet'></i>
-                        <span>ระบบเอกสารงานขาย</span>
-                    </div>
-                </button>
-
-                <!-- Module Section: Schedule -->
-                <div class="sec-nav-divider">ตารางงาน & การอบรม</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/tasks.html'" id="nav-tasks">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-check-square'></i>
-                        <span>งานที่ได้รับมอบหมาย</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/calendar.html'" id="nav-calendar">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-calendar-event'></i>
-                        <span>ปฏิทินตารางงาน</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/external_training.html'" id="nav-training">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-award'></i>
-                        <span>ระบบตารางจัดอบรม</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/internship_journal.html'" id="nav-internship">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-book-bookmark'></i>
-                        <span>บันทึกการฝึกงาน</span>
-                    </div>
-                </button>
-            </div>
-        </div>
-    </aside>
-
-    <!-- ===== MAIN CONTENT ===== -->
-    <div class="main-wrapper">
-        <header class="topbar">
-            <button class="hamburger" onclick="toggleSidebar()">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
-            <div class="topbar-breadcrumb">
-                <div class="breadcrumb-title">ระบบออกใบเสนอราคา (Quotation)</div>
-                <div class="breadcrumb-sub">สร้างและจัดการใบเสนอราคาสำหรับ Mentra Solution</div>
-            </div>
-        
-            <div class="topbar-actions" id="topbarActions"></div>
-            <div class="topbar-right-menu">
-                
-                <div id="adminMenu" style="display:none;">
-                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html?view=users'" id="nav-users">
-                        <div class="nav-icon">👥</div>
-                        <span class="nav-label">จัดการผู้ใช้งาน</span>
-                    </button>
-                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html'" id="nav-add-project">
-                        <div class="nav-icon">➕</div>
-                        <span class="nav-label">เพิ่มโครงการใหม่</span>
-                    </button>
-                    <a href="../admin/console_admin.html" class="nav-item" style="text-decoration: none;">
-                        <div class="nav-icon">🛠️</div>
-                        <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
-                    </a>
-                </div>
-                <div class="sidebar-user">
-                    <div class="user-card">
-                        <div class="user-avatar" id="userAvatar">M</div>
-                        <div class="user-info">
-                            <div class="user-name" id="userName">กำลังโหลด...</div>
-                            <div class="user-role">
-                                <span class="role-badge" id="userRoleBadge">-</span>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="btn-logout" onclick="handleLogout()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                        <span class="btn-logout-text">ออกจากระบบ</span>
-                    </button>
-                </div>
-            </div>
-
-        </header>
-
-        <main class="content-area">
-            <div class="container" style="max-width: 100% !important; padding: 0 !important; margin: 0 !important;">
-
-                <!-- ════════════════════════════════════════════════════════════
-                     1. HERO HEADER & QUICK KPI DASHBOARD BAR
-                     ════════════════════════════════════════════════════════════ -->
-                <div class="quote-hero-bar">
-                    <!-- ── Row 1: Issuer Identity ── -->
-                    <div class="hero-issuer-row">
-                        <div id="currentIssuerBanner" class="hero-issuer-pill" onclick="window.openIssuerSelectionModal()" style="cursor: pointer; position: relative; z-index: 10; user-select: none;" title="คลิกเพื่อเลือกหรือสลับผู้ออกเอกสาร">
-                            <div class="issuer-avatar" style="pointer-events: none;">
-                                <img id="currentIssuerLogo" src="" alt="Logo" style="display: none;">
-                                <i id="currentIssuerIcon" class='bx bx-buildings'></i>
-                            </div>
-                            <div class="issuer-details" style="pointer-events: none;">
-                                <span class="issuer-label">ผู้ออกเอกสาร (ISSUER)</span>
-                                <span class="issuer-name" id="currentIssuerDisplay">กรุณาเลือกบริษัท หรือ ร้านก่อน</span>
-                            </div>
-                            <button type="button" class="issuer-switch-btn" onclick="window.openIssuerSelectionModal(); event.stopPropagation();" title="คลิกเพื่อเลือกหรือสลับร้านค้า"><i class='bx bx-transfer-alt'></i> เปลี่ยน</button>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <button type="button" class="btn" onclick="openHistoryModal()"
-                                style="padding: 0.45rem 0.85rem; font-size: 0.82rem; border: 1px solid #e2e8f0; color: #475569; background: #ffffff; border-radius: 9px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;"
-                                onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
-                                <i class='bx bx-history' style="font-size: 1rem; color: #64748b;"></i> ประวัติ
-                            </button>
-                            <button type="button" class="btn" onclick="openTemplateSettingsModal()"
-                                style="padding: 0.45rem 0.85rem; font-size: 0.82rem; border: 1px solid #e2e8f0; color: #475569; background: #ffffff; border-radius: 9px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;"
-                                onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
-                                <i class='bx bx-slider-alt' style="font-size: 1rem; color: #64748b;"></i> ตั้งค่าฟอร์ม
-                            </button>
-                            <button type="button" onclick="exportToPDF()"
-                                style="padding: 0.45rem 1.15rem; font-size: 0.84rem; border: none; color: #ffffff; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 9px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); cursor: pointer;"
-                                title="ส่งออกหรือพิมพ์ใบเสนอราคา">
-                                <i class='bx bxs-file-pdf' style="font-size: 1.05rem;"></i> Export PDF / พิมพ์
-                            </button>
-                            <div class="hero-doc-type-badge" id="heroDocTypeBadge">
-                                <i class='bx bx-file-blank'></i>
-                                <span id="heroDocTypeBadgeText">ใบเสนอราคา</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ── Workflow Step Bar ── -->
-                    <div class="workflow-step-bar" id="workflowStepBar">
-                        <div class="wf-step active" id="wfStep1" onclick="onWorkflowStepClick('quotation')">
-                            <span class="wf-num" id="wfNum1">1</span>
-                            <span>ใบเสนอราคา</span>
-                        </div>
-                        <div class="wf-connector" id="wfConn1">
-                            <div class="wf-line"></div>
-                            <i class='bx bx-chevron-right wf-arrow'></i>
-                        </div>
-                        <div class="wf-step" id="wfStep2" onclick="onWorkflowStepClick('invoice')">
-                            <span class="wf-num" id="wfNum2">2</span>
-                            <span>ใบส่งของ/ใบแจ้งหนี้</span>
-                        </div>
-                        <div class="wf-connector" id="wfConn2">
-                            <div class="wf-line"></div>
-                            <i class='bx bx-chevron-right wf-arrow'></i>
-                        </div>
-                        <div class="wf-step" id="wfStep3" onclick="onWorkflowStepClick('receipt')">
-                            <span class="wf-num" id="wfNum3">3</span>
-                            <span>ใบเสร็จรับเงิน</span>
-                        </div>
-                    </div>
-
-                    <!-- ── Row 2: Controls (Meta + KPI + View Mode) ── -->
-                    <div class="hero-controls-row">
-                        <!-- Left: Document Meta -->
-                        <div class="hero-meta-group">
-                            <div class="hero-chip clickable" onclick="copyRefNo()" title="คัดลอกเลขที่เอกสาร">
-                                <i class='bx bx-receipt' style="color: #0284c7; font-size: 1rem;"></i>
-                                <span class="meta-label">เลขที่:</span>
-                                <span class="meta-val ref-no" id="heroRefNoDisplay">-</span>
-                                <i class='bx bx-copy' style="font-size: 0.78rem; color: #94a3b8;"></i>
-                            </div>
-                            <button type="button" class="hero-mini-btn" onclick="generateRefNo(true)" title="รันเลขที่เอกสารอัตโนมัติ">
-                                <i class='bx bx-refresh'></i> รันเลข
-                            </button>
-                            <div class="hero-chip">
-                                <i class='bx bx-calendar' style="color: #64748b; font-size: 1rem;"></i>
-                                <span class="meta-label">วันที่:</span>
-                                <span class="meta-val" id="heroDateDisplay">-</span>
-                            </div>
-                        </div>
-
-                        <!-- Spacer -->
-                        <div style="flex: 1; min-width: 12px;"></div>
-
-                        <!-- Right: KPI + View Mode -->
-                        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-                            <!-- KPI Card -->
-                            <div class="hero-kpi-card">
-                                <div class="kpi-item">
-                                    <span class="kpi-label">รายการ</span>
-                                    <span class="kpi-val"><span id="heroItemCount">1</span> ชิ้น</span>
-                                </div>
-                                <div class="kpi-divider"></div>
-                                <div class="kpi-item highlight">
-                                    <span class="kpi-label">ยอดสุทธิ</span>
-                                    <span class="kpi-val-grand" id="heroGrandTotal">฿0.00</span>
-                                </div>
-                            </div>
-
-                            <!-- View Mode Tabs (แบบตาราง / แบบกระดาษ) -->
-                            <div class="view-mode-tabs">
-                                <button type="button" class="v-tab active" id="btnModeEditor" onclick="setViewMode('editor')" title="แบบตาราง / กรอกข้อมูล">
-                                    <i class='bx bx-table'></i> <span>แบบตาราง</span>
-                                </button>
-                                <button type="button" class="v-tab" id="btnModePreview" onclick="setViewMode('preview')" title="แบบกระดาษ A4 / ตัวอย่างพิมพ์">
-                                    <i class='bx bx-file-blank'></i> <span>แบบกระดาษ</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ════════════════════════════════════════════════════════════
-                     2. MAIN WORKSPACE (แบบตาราง หรือ แบบกระดาษ)
-                     ════════════════════════════════════════════════════════════ -->
-                <div class="quote-workspace mode-editor" id="quoteWorkspace">
-
-                    <!-- ───────── LEFT COLUMN: FORM EDITOR ───────── -->
-                    <div id="quoteEditorCol">
-
-                        <!-- ══ Top Cards: 2 Columns Side-by-Side (Recipient & Terms) ══ -->
-                        <div class="quote-top-cards-grid">
-                            <!-- Card 1: ข้อมูลผู้รับ (To) -->
-                            <div class="pro-card">
-                                <div class="card-accent-bar card-accent-blue"></div>
-                                <div class="pro-card-header">
-                                    <h3 class="card-title">
-                                        <span class="card-title-icon icon-blue">
-                                            <i class='bx bx-user-pin'></i>
-                                        </span>
-                                        ข้อมูลผู้รับ (To / Recipient)
-                                    </h3>
-                                    <div style="display: flex; gap: 8px; align-items: center;">
-                                        <button type="button" class="btn" onclick="openRecipientModal()"
-                                            style="padding: 0.4rem 0.85rem; font-size: 0.82rem; border: 1px solid #bfdbfe; color: #1d4ed8; background: #eff6ff; border-radius: 9px; font-weight: 600; display: inline-flex; align-items: gap 6px; transition: all 0.2s;"
-                                            onmouseover="this.style.background='#dbeafe';" onmouseout="this.style.background='#eff6ff';">
-                                            <i class='bx bx-book-content' style="font-size: 1rem; color: #2563eb;"></i> สมุดผู้รับ
-                                        </button>
-                                        <button type="button" class="btn" onclick="saveCurrentRecipient()"
-                                            style="padding: 0.4rem 0.85rem; font-size: 0.82rem; border: 1px solid #bbf7d0; color: #15803d; background: #f0fdf4; border-radius: 9px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;"
-                                            onmouseover="this.style.background='#dcfce7';" onmouseout="this.style.background='#f0fdf4';">
-                                            <i class='bx bx-save' style="font-size: 1rem; color: #16a34a;"></i> บันทึกลงสมุด
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div style="margin-bottom: 12px;">
-                                    <label class="pro-label">ชื่อบริษัท / หน่วยงาน / ลูกค้า <span class="required">*</span></label>
-                                    <input type="text" class="pro-input" id="toCompany" placeholder="ระบุชื่อบริษัท โรงเรียน หรือลูกค้า..." oninput="triggerLiveSync()">
-                                </div>
-
-                                <div style="margin-bottom: 12px;">
-                                    <label class="pro-label">ที่อยู่ผู้รับ</label>
-                                    <textarea class="pro-input" id="toAddress" rows="2" placeholder="ระบุที่อยู่จัดส่ง / ที่อยู่บริษัท..." oninput="triggerLiveSync()"></textarea>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                                    <div>
-                                        <label class="pro-label">ผู้ติดต่อ (Attn)</label>
-                                        <input type="text" class="pro-input" id="toAttn" placeholder="ชื่อผู้ติดต่อ" oninput="triggerLiveSync()">
-                                    </div>
-                                    <div>
-                                        <label class="pro-label">เลขผู้เสียภาษี (TAX ID)</label>
-                                        <input type="text" class="pro-input" id="toTaxId" placeholder="0-0000-00000-00-0" oninput="triggerLiveSync()">
-                                    </div>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                    <div>
-                                        <label class="pro-label">เบอร์โทรศัพท์ (Tel)</label>
-                                        <input type="text" class="pro-input" id="toTel" placeholder="08X-XXX-XXXX" oninput="triggerLiveSync()">
-                                    </div>
-                                    <div>
-                                        <label class="pro-label">อีเมล (Email)</label>
-                                        <input type="email" class="pro-input" id="toEmail" placeholder="client@example.com" oninput="triggerLiveSync()">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Card 2: รายละเอียดเอกสาร & เงื่อนไข (Terms & Conditions) -->
-                            <div class="pro-card">
-                                <div class="card-accent-bar card-accent-amber"></div>
-                                <div class="pro-card-header">
-                                    <h3 class="card-title">
-                                        <span class="card-title-icon icon-amber">
-                                            <i class='bx bx-calendar-check'></i>
-                                        </span>
-                                        รายละเอียดเอกสาร & เงื่อนไขสัญญา
-                                    </h3>
-                                    <button type="button" class="btn" onclick="openTemplateSettingsModal()"
-                                        style="padding: 0.4rem 0.85rem; font-size: 0.82rem; border: 1px solid #fde68a; color: #b45309; background: #fffbeb; border-radius: 9px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;"
-                                        onmouseover="this.style.background='#fef3c7';" onmouseout="this.style.background='#fffbeb';"
-                                        title="ตั้งค่าแบบฟอร์มเอกสาร">
-                                        <i class='bx bx-slider-alt' style="font-size: 1rem; color: #d97706;"></i> ตั้งค่าเอกสาร
-                                    </button>
-                                </div>
-
-                                <!-- Row 1: Document No. & Date Grid -->
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; align-items: end;">
-                                    <div>
-                                        <label class="pro-label">เลขที่เอกสาร (Ref No.)</label>
-                                        <div style="display: flex; gap: 6px; align-items: center;">
-                                            <input type="text" class="pro-input font-mono font-bold" id="refNo" placeholder="MTQ260528001" style="flex: 1; min-width: 0; color: #0284c7; background: #f8fafc;" oninput="triggerLiveSync()">
-                                            <button type="button" class="btn" onclick="generateRefNo(true)"
-                                                style="padding: 0.46rem 0.75rem; font-size: 0.8rem; white-space: nowrap; border: 1px solid #bae6fd; color: #0284c7; background: #f0f9ff; border-radius: 9px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;"
-                                                title="รันเลขใหม่อัตโนมัติ">
-                                                <i class='bx bx-refresh'></i> รันเลข
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label class="pro-label">วันที่ (Date)</label>
-                                        <div style="display: flex; gap: 6px; align-items: center;">
-                                            <input type="date" class="pro-input" id="docDate" style="flex: 1; min-width: 0;" onchange="triggerLiveSync()">
-                                            <button type="button" class="btn" onclick="setCurrentDate()"
-                                                style="padding: 0.46rem 0.75rem; font-size: 0.8rem; white-space: nowrap; border: 1px solid #bae6fd; color: #0284c7; background: #f0f9ff; border-radius: 9px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;"
-                                                title="ตั้งเป็นวันที่ปัจจุบัน">
-                                                <i class='bx bx-calendar-event'></i> วันนี้
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Row 2: Validity & Delivery (2 Columns - presets on clean single line) -->
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
-                                    <div>
-                                        <label class="pro-label">กำหนดยืนราคา (Validity)</label>
-                                        <input type="text" class="pro-input" id="termValidity" value="30 วัน" oninput="triggerLiveSync()">
-                                        <div class="preset-chips">
-                                            <span class="preset-chip" onclick="setTermPreset('termValidity', '7 วัน', this)">7 วัน</span>
-                                            <span class="preset-chip" onclick="setTermPreset('termValidity', '15 วัน', this)">15 วัน</span>
-                                            <span class="preset-chip" onclick="setTermPreset('termValidity', '30 วัน', this)">30 วัน</span>
-                                            <span class="preset-chip" onclick="setTermPreset('termValidity', '60 วัน', this)">60 วัน</span>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label class="pro-label">กำหนดส่งมอบ (Delivery)</label>
-                                        <input type="text" class="pro-input" id="termDelivery" value="15-30 วัน" oninput="triggerLiveSync()">
-                                        <div class="preset-chips">
-                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', 'ทันที', this)">ทันที</span>
-                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', '7-15 วัน', this)">7-15 วัน</span>
-                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', '15-30 วัน', this)">15-30 วัน</span>
-                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', '30-45 วัน', this)">30-45 วัน</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Row 3: Payment Terms (Full Width - chips fit on 1 line across) -->
-                                <div style="margin-bottom: 12px;">
-                                    <label class="pro-label">เงื่อนไขชำระเงิน (Payment Terms)</label>
-                                    <input type="text" class="pro-input" id="termPayment" value="เงินสด" oninput="triggerLiveSync()">
-                                    <div class="preset-chips">
-                                        <span class="preset-chip" onclick="setTermPreset('termPayment', 'เงินสด', this)">เงินสด</span>
-                                        <span class="preset-chip" onclick="setTermPreset('termPayment', 'โอนเงิน', this)">โอนเงิน</span>
-                                        <span class="preset-chip" onclick="setTermPreset('termPayment', 'เครดิต 30 วัน', this)">เครดิต 30 วัน</span>
-                                        <span class="preset-chip" onclick="setTermPreset('termPayment', 'เครดิต 60 วัน', this)">เครดิต 60 วัน</span>
-                                        <span class="preset-chip" onclick="setTermPreset('termPayment', 'มัดจำ 30%', this)">มัดจำ 30%</span>
-                                        <span class="preset-chip" onclick="setTermPreset('termPayment', 'มัดจำ 50%', this)">มัดจำ 50%</span>
-                                    </div>
-                                </div>
-
-                                <!-- Row 4: Prepared By & Position (2 Columns - matches Card 1's 4th row) -->
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                                    <div>
-                                        <label class="pro-label" id="sellerNameLabel">ผู้เสนอราคา / ผู้ลงนาม (Prepared By)</label>
-                                        <input type="text" class="pro-input" id="sellerName" value="" placeholder="ระบุชื่อผู้เสนอราคา..." oninput="triggerLiveSync()">
-                                    </div>
-                                    <div>
-                                        <label class="pro-label" id="sellerRoleLabel">ตำแหน่ง (Position / Title)</label>
-                                        <input type="text" class="pro-input" id="sellerRole" value="ผู้เสนอราคา" placeholder="ระบุตำแหน่ง..." oninput="triggerLiveSync()">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Card 3: รายการสินค้าและบริการ (Products & Services) -->
-                        <div class="pro-card">
-                            <div class="card-accent-bar card-accent-indigo"></div>
-                            <div class="pro-card-header">
-                                <h3 class="card-title">
-                                    <span class="card-title-icon icon-indigo">
-                                        <i class='bx bx-shopping-bag'></i>
-                                    </span>
-                                    รายการสินค้า / บริการ (Items)
-                                </h3>
-                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    <button type="button" class="btn" onclick="openImportProjectModal()"
-                                        style="padding: 0.45rem 0.95rem; font-size: 0.84rem; border: 1px solid #bfdbfe; color: #1d4ed8; background: #eff6ff; border-radius: 9px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"
-                                        title="ดึงรายการพัสดุจากโครงการที่บันทึกไว้">
-                                        <i class='bx bx-import'></i> ดึงจากโครงการ
-                                    </button>
-                                    <button type="button" class="btn" onclick="addHeaderRow()"
-                                        style="padding: 0.45rem 0.95rem; font-size: 0.84rem; border: 1px solid #e2e8f0; color: #334155; background: #f8fafc; border-radius: 9px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"
-                                        title="เพิ่มแถบหัวข้อหมวดหมู่">
-                                        <i class='bx bx-heading'></i> เพิ่มหัวข้อ
-                                    </button>
-                                    <button type="button" class="btn" onclick="addTableRow()"
-                                        style="padding: 0.45rem 1.15rem; font-size: 0.84rem; border: none; color: #ffffff; background: linear-gradient(135deg, #2563eb, #1d4ed8); border-radius: 9px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);"
-                                        title="เพิ่มแถวรายการสินค้า">
-                                        <i class='bx bx-plus'></i> เพิ่มรายการ
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="pro-table-wrapper">
-                                <table class="pro-table" id="itemsTable">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 50px; text-align: center;">ลำดับ</th>
-                                            <th style="width: 70px; text-align: center;">ย่อย</th>
-                                            <th style="min-width: 220px; text-align: left;">รายการ / รายละเอียด</th>
-                                            <th style="width: 85px; text-align: center;">จำนวน</th>
-                                            <th style="width: 95px; text-align: center;">หน่วย</th>
-                                            <th style="width: 125px; text-align: right;">ราคา/หน่วย</th>
-                                            <th style="width: 125px; text-align: right;">จำนวนเงิน</th>
-                                            <th style="width: 85px; text-align: center;">จัดการ</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="itemsBody">
-                                        <!-- Rows added dynamically via JS -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Card 4: หมายเหตุ & สรุปยอดเงิน (Financials & Notes) -->
-                        <div class="pro-summary-grid">
-                            <!-- Left: Remark Card -->
-                            <div class="pro-card" style="margin-bottom: 0;">
-                                <div class="card-accent-bar card-accent-slate"></div>
-                                <div class="pro-card-header">
-                                    <h3 class="card-title">
-                                        <span class="card-title-icon icon-slate">
-                                            <i class='bx bx-edit-alt'></i>
-                                        </span>
-                                        หมายเหตุ (Remark)
-                                    </h3>
-                                </div>
-                                <textarea class="pro-input" id="remark" style="min-height: 140px; font-size: 0.9rem;" placeholder="ระบุเงื่อนไขพิเศษ ข้อกำหนด หรือหมายเหตุเพิ่มเติม..." oninput="triggerLiveSync()"></textarea>
-                                
-                                <div style="margin-top: 10px;">
-                                    <span style="font-size: 0.76rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 5px;">ข้อความมาตรฐานด่วน:</span>
-                                    <div class="preset-chips">
-                                        <span class="preset-chip" onclick="appendRemarkPreset('ราคานี้รวมภาษีมูลค่าเพิ่ม 7% เรียบร้อยแล้ว')">+ รวม VAT แล้ว</span>
-                                        <span class="preset-chip" onclick="appendRemarkPreset('รับประกันคุณภาพสินค้า/ผลงานเป็นระยะเวลา 1 ปี')">+ ประกัน 1 ปี</span>
-                                        <span class="preset-chip" onclick="appendRemarkPreset('ราคาดังกล่าวรวมค่าขนส่งและติดตั้ง ณ สถานที่ของผู้สั่งซื้อ')">+ รวมส่ง-ติดตั้ง</span>
-                                        <span class="preset-chip" onclick="appendRemarkPreset('ชำระมัดจำ 50% ก่อนเริ่มงาน ส่วนที่เหลือชำระเมื่องานแล้วเสร็จ')">+ มัดจำ 50%</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Right: Financial Summary Card -->
-                            <div class="summary-calc-card">
-                                <div class="calc-row">
-                                    <span>รวมเป็นเงิน (Sub Total)</span>
-                                    <span class="val" id="subTotalDisplay">0.00</span>
-                                </div>
-
-                                <div class="calc-row bordered">
-                                    <span style="color: #16a34a; font-weight: 600; display: flex; align-items: center; gap: 5px;">
-                                        <i class='bx bx-purchase-tag-alt'></i> ส่วนลด (Discount)
-                                    </span>
-                                    <span style="display: flex; align-items: center; gap: 6px;">
-                                        <input type="number" id="discountInput" value="0" min="0" step="0.01"
-                                            onchange="calculateAll(); triggerLiveSync()" oninput="calculateAll(); triggerLiveSync()"
-                                            style="width: 90px; padding: 4px 8px; border: 1.5px solid #86efac; border-radius: 8px; text-align: right; font-size: 0.92rem; font-family: inherit; background: #f0fdf4; color: #16a34a; font-weight: 700; outline: none;">
-                                        <span style="font-size: 0.82rem; color: #64748b; font-weight: 600;">บาท</span>
-                                    </span>
-                                </div>
-
-                                <div class="calc-row bordered">
-                                    <span style="font-weight: 600; color: #475569;">รูปแบบภาษี</span>
-                                    <select id="vatTypeSelect" onchange="calculateAll(); triggerLiveSync()"
-                                        style="padding: 4px 10px; border: 1.5px solid #bfdbfe; border-radius: 8px; font-size: 0.84rem; font-family: inherit; background: #eff6ff; color: #1d4ed8; font-weight: 600; cursor: pointer; outline: none;">
-                                        <option value="inclusive" selected>รวม VAT 7% แล้ว</option>
-                                        <option value="exclusive">แยก VAT 7%</option>
-                                        <option value="none">ไม่มี VAT</option>
-                                    </select>
-                                </div>
-
-                                <div class="calc-row bordered">
-                                    <span>ภาษีมูลค่าเพิ่ม 7% (VAT)</span>
-                                    <span class="val" id="vatDisplay">0.00</span>
-                                </div>
-
-                                <div class="calc-row grand-total">
-                                    <span class="label">ยอดรวมทั้งสิ้น (สุทธิ)</span>
-                                    <span class="val" id="grandTotalDisplay">0.00</span>
-                                </div>
-
-                                <div class="baht-text-card" id="thaiBahtText" onclick="copyBahtText()" title="คลิกเพื่อคัดลอกตัวหนังสือบาท">
-                                    (ศูนย์บาทถ้วน) <i class='bx bx-copy text-xs'></i>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- ───────── RIGHT COLUMN: LIVE A4 PREVIEW ───────── -->
-                    <div id="quotePreviewCol" style="display: none;">
-                        <!-- Preview Toolbar -->
-                        <div class="preview-toolbar">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <button type="button" onclick="setViewMode('editor')" 
-                                    style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 0.82rem; font-weight: 600; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; cursor: pointer; transition: all 0.2s;"
-                                    onmouseover="this.style.background='rgba(56, 189, 248, 0.22)'" 
-                                    onmouseout="this.style.background='rgba(56, 189, 248, 0.12)'">
-                                    <i class='bx bx-arrow-back'></i> กลับไปแก้ไขตาราง
-                                </button>
-                                <div class="preview-toolbar-title">
-                                    ตัวอย่างเอกสาร A4 (แบบกระดาษ)
-                                </div>
-                            </div>
-                            <div class="preview-zoom-controls">
-                                <button type="button" class="zoom-btn" onclick="changePreviewZoom(-0.1)" title="ย่อขนาด (-)">
-                                    <i class='bx bx-minus'></i>
-                                </button>
-                                <span class="zoom-label" id="previewZoomLabel">100%</span>
-                                <button type="button" class="zoom-btn" onclick="changePreviewZoom(0.1)" title="ขยายขนาด (+)">
-                                    <i class='bx bx-plus'></i>
-                                </button>
-                                <button type="button" class="zoom-btn" onclick="fitPreviewToScreen()" title="พอดีความกว้างหน้าจอ">
-                                    <i class='bx bx-fullscreen'></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Canvas Viewport containing #printArea -->
-                        <div class="preview-canvas-viewport" id="previewCanvasViewport">
-                            <!-- Hidden/Live Print Template -->
-                            <div id="printArea" class="print-area preview-a4-sheet" style="display: block; background: #ffffff;">
-                <div id="pPageWrapper" class="single-page"
-                    style="width: 794px; min-height: 1123px; padding: 10mm 15mm 8mm 15mm; background: white; color: #1f2937; font-family: 'Sarabun', 'Tahoma', sans-serif; font-size: 11px; line-height: 1.5; box-sizing: border-box; letter-spacing: normal; display: flex; flex-direction: column; justify-content: flex-start; overflow: visible;">
-
-                    <!-- ══ HEADER ══ -->
-                    <div id="pHeaderSection"
-                        style="display: flex; flex-direction: column; padding-bottom: 8px; margin-bottom: 8px; border-bottom: 2.5px solid var(--pdf-primary, #1A6FBF); width: 100%; box-sizing: border-box; gap: 8px; page-break-inside: avoid; break-inside: avoid;">
-                        
-                        <!-- Row 1 (Top) -->
-                        <div id="header-row-1" style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-                            <div id="zone-left" class="header-zone" style="flex: 2; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 10px;">
-                                <div id="block-logo" class="header-block">
-                                    <img id="pLogoImg" src="../../assets/img/logo.png"
-                                        style="height: 56px; max-width: 250px; object-fit: contain; flex-shrink: 0;"
-                                        alt="Company Logo">
-                                </div>
-                                <div id="block-company" class="header-block">
-                                    <div id="pIssuerName"
-                                        style="font-size: 14px; font-weight: 700; color: #1e1b4b; line-height: 1.3; white-space: pre-wrap; word-break: break-word; letter-spacing: normal; margin-bottom: 3px;">
-                                        บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)</div>
-                                    <div id="pIssuerAddress" style="font-size: 10.5px; color: #6b7280; line-height: 1.45; letter-spacing: normal; white-space: pre-wrap; word-break: break-word;">115/123 หมู่ 12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540</div>
-                                    <div id="pIssuerContact" style="font-size: 10.5px; color: #6b7280; line-height: 1.45; letter-spacing: normal; white-space: pre-wrap; word-break: break-word;">
-                                        <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TEL:</span> 089-924-9871 &nbsp;|&nbsp; <span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">EMAIL:</span> accounts@mentrasolution.com<br><span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TAX ID:</span> 0115568026644
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="hResize1" class="header-zone-resizer" data-row="1" data-idx="0"></div>
-                            <div id="zone-center" class="header-zone" style="flex: 0.2; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
-                            </div>
-                            <div id="hResize2" class="header-zone-resizer" data-row="1" data-idx="1"></div>
-                            <div id="zone-right" class="header-zone" style="flex: 1.2; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 10px;">
-                                <div id="block-title" class="header-block">
-                                    <div id="pDocumentTitleTH"
-                                        style="font-size: 20px; font-weight: 800; color: var(--pdf-primary, #1A6FBF); line-height: 1.1; white-space: nowrap; letter-spacing: normal;">
-                                        ใบเสนอราคา</div>
-                                    <div id="pIssuerQuotationText"
-                                        style="font-size: 10.5px; color: #6b7280; font-weight: 700; letter-spacing: 2px; margin-top: 2px;">
-                                        QUOTATION</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Row 2 (Middle) -->
-                        <div id="header-row-2" style="display: none; justify-content: space-between; align-items: flex-start; width: 100%;">
-                            <div id="zone-mid-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 10px;"></div>
-                            <div id="hResize3" class="header-zone-resizer" data-row="2" data-idx="0"></div>
-                            <div id="zone-mid-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;"></div>
-                            <div id="hResize4" class="header-zone-resizer" data-row="2" data-idx="1"></div>
-                            <div id="zone-mid-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 10px;"></div>
-                        </div>
-
-                        <!-- Row 3 (Bottom) -->
-                        <div id="header-row-3" style="display: none; justify-content: space-between; align-items: flex-start; width: 100%; gap: 8px;">
-                            <div id="zone-bot-left" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 10px;"></div>
-                            <div id="zone-bot-center" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;"></div>
-                            <div id="zone-bot-right" class="header-zone" style="flex: 1; display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 10px;"></div>
-                        </div>
-
-                    </div>
-
-                    <!-- ══ RECIPIENT + DOC INFO ══ -->
-                    <div id="pInfoRow"
-                        style="display: flex; gap: 0; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #e8edf5; page-break-inside: avoid; break-inside: avoid;">
-                        <!-- Left: Recipient -->
-                        <div id="pRecipientPanel" style="flex: 1.4; padding: 0 20px 0 0;">
-                            <div id="pRecipientTitle"
-                                style="font-size: 10px; font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: normal; margin-bottom: 8px; text-transform: uppercase;">
-                                RECIPIENT INFORMATION</div>
-                            <table
-                                style="width: 100%; border-collapse: collapse; border: none !important; margin: 0; padding: 0;">
-                                <tr style="border: none !important;">
-                                    <td id="labelTo"
-                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none; white-space: nowrap;">
-                                        ชื่อ :</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; font-weight: 700; color: #1e1b4b; line-height: 1.4;"
-                                        id="pToCompany"></td>
-                                </tr>
-                                <tr style="border: none !important;">
-                                    <td id="labelAddress"
-                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.5; outline: none; white-space: nowrap;">
-                                        ที่อยู่ :</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; color: #374151; line-height: 1.5; word-break: break-word; white-space: normal;"
-                                        id="pToAddress"></td>
-                                </tr>
-                                <tr id="pToTaxIdRow" style="border: none !important; display: none;">
-                                    <td id="labelTaxId"
-                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none; white-space: nowrap;">
-                                        เลขผู้เสียภาษี :</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; color: #374151; line-height: 1.4;"
-                                        id="pToTaxId"></td>
-                                </tr>
-                                <tr style="border: none !important;">
-                                    <td id="labelAttn"
-                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none; white-space: nowrap;">
-                                        ติดต่อ :</td>
-                                    <td style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; color: #374151; line-height: 1.4;"
-                                        id="pToAttn"></td>
-                                </tr>
-                                <tr style="border: none !important;">
-                                    <td id="labelTel"
-                                        style="width: 55px; min-width: 55px; vertical-align: top; border: none !important; padding: 2px 0; font-size: 11px; color: #6b7280; font-weight: 600; line-height: 1.4; outline: none; white-space: nowrap;">
-                                        โทร :</td>
-                                    <td
-                                        style="vertical-align: top; border: none !important; padding: 2px 0 2px 6px; font-size: 11px; color: #374151; line-height: 1.4;">
-                                        <span id="pToTel"></span>
-                                        <span style="margin: 0 5px; color: #d1d5db;">|</span>
-                                        <span id="labelEmail" style="color: #6b7280; font-weight: 600; outline: none;">อีเมล :</span><span
-                                            id="pToEmail"></span>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                        <!-- Resize Handle -->
-                        <div id="pInfoResizer" title="ลากเพื่อปรับขนาด"></div>
-                        <!-- Right: Doc Details -->
-                        <div id="pDocDetailsPanel" style="flex: 0.6; padding: 0 0 0 10px; border-left: 1px solid #e8edf5;">
-                            <div id="pDocDetailsTitle"
-                                style="font-size: 10px; font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: normal; margin-bottom: 8px; text-transform: uppercase;">
-                                DOCUMENT DETAILS</div>
-                            <div
-                                style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                                <span id="labelRefNo" style="color: #6b7280; font-weight: 600; outline: none;">เลขที่ / Ref. No:</span>
-                                <span style="font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: normal;" id="pRefNo"></span>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                                <span id="labelDate" style="color: #6b7280; font-weight: 600; outline: none;">วันที่ / Date:</span>
-                                <span style="color: #1f2937; letter-spacing: normal;" id="pDocDate"></span>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                                <span id="labelValidity" style="color: #6b7280; font-weight: 600; outline: none;">ยืนราคา / Validity:</span>
-                                <span style="color: #1f2937; letter-spacing: normal;" id="pValidity"></span>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
-                                <span id="labelDelivery" style="color: #6b7280; font-weight: 600; outline: none;">ส่งมอบ / Delivery:</span>
-                                <span style="color: #1f2937; letter-spacing: normal;" id="pDelivery"></span>
-                            </div>
-                            <div
-                                style="display: flex; justify-content: space-between; font-size: 11px; letter-spacing: normal;">
-                                <span id="labelPayment" style="color: #6b7280; font-weight: 600; outline: none;">ชำระเงิน / Payment:</span>
-                                <span style="color: #1f2937; letter-spacing: normal;" id="pPayment"></span>
-                            </div>
-                        </div>
-                    </div>
-
-
-                    <!-- ══ INTRO ══ -->
-                    <p id="pIntroText" style="margin-bottom: 8px; font-size: 11px; color: #374151; letter-spacing: normal;">ทางบริษัทฯ
-                        มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:</p>
-
-                    <!-- ══ ITEMS TABLE ══ -->
-                    <div id="pTablesContainer">
-                        <!-- Dynamic tables will be inserted here by JS -->
-                    </div>
-
-                    <!-- ══ BOTTOM SECTIONS WRAPPER (Keeps Summary & Signature Together) ══ -->
-                    <div id="pBottomSectionWrapper" style="display: flex; flex-direction: column; flex: 1 1 auto; margin-top: 6px; page-break-inside: avoid; break-inside: avoid;">
-                        
-                        <!-- ══ SUMMARY + REMARK ══ -->
-                        <div id="pSummarySection" style="display: flex; gap: 14px; align-items: flex-start; margin-bottom: 6px; page-break-inside: avoid; break-inside: avoid;">
-                            <!-- Left area (Remark + Baht Text) -->
-                            <div style="flex: 1; display: flex; flex-direction: column;" id="pLeftSummarySection">
-                                <!-- Remark -->
-                                <div style="flex: 1;" id="pRemarkContainer">
-                                    <div
-                                         style="font-size: 11px; font-weight: 600; color: #6b7280; margin-bottom: 4px; letter-spacing: normal;">
-                                        หมายเหตุ (Remark):</div>
-                                    <div id="pRemark"
-                                        style="font-size: 11px; color: #4b5563; padding: 4px 8px; background: #f9fafb; border-radius: 5px; border: 1px solid #e5e7eb; min-height: 24px; white-space: normal; line-height: 1.3; letter-spacing: normal;">
-                                        -</div>
-                                </div>
-                                <!-- Left Baht Text Placeholder -->
-                                <div id="pLeftBahtTextContainer"></div>
-                            </div>
-                            <!-- Totals -->
-                            <div id="pSummaryTotalsBox" style="flex: 0.85; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; page-break-inside: avoid; break-inside: avoid;">
-                                <table
-                                    style="width: 100%; border-collapse: collapse; font-size: 11px; letter-spacing: normal;">
-                                    <tr>
-                                        <td style="padding: 4px 8px; color: #6b7280; letter-spacing: normal;">รวมเงิน (Sub
-                                            Total):</td>
-                                        <td style="padding: 4px 8px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
-                                            id="pSubTotal">0.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td
-                                            style="padding: 4px 8px; color: #6b7280; white-space: nowrap; letter-spacing: normal;">
-                                            ภาษีมูลค่าเพิ่ม 7% (VAT):</td>
-                                        <td style="padding: 4px 8px; text-align: right; font-weight: 500; color: #1f2937; letter-spacing: normal;"
-                                            id="pVat">0.00</td>
-                                    </tr>
-                                    <tr style="background: var(--pdf-primary-light, #e8f1fb);">
-                                        <td
-                                            style="padding: 5px 8px; color: var(--pdf-primary, #1A6FBF); font-weight: 700; font-size: 11.5px; white-space: nowrap; letter-spacing: normal;">
-                                            จำนวนเงินรวมทั้งสิ้น:</td>
-                                        <td style="padding: 5px 8px; text-align: right; color: var(--pdf-primary, #1A6FBF); font-weight: 700; font-size: 11.5px; letter-spacing: normal;"
-                                            id="pGrandTotal">0.00</td>
-                                    </tr>
-                                </table>
-                                <!-- Right Baht Text Placeholder -->
-                                <div id="pRightBahtTextContainer">
-                                    <div id="pBahtText"
-                                        style="text-align: center; font-weight: 600; font-size: 11px; color: var(--pdf-primary, #1A6FBF); padding: 4px 8px; background: #fff; letter-spacing: normal;">
-                                        (ศูนย์บาทถ้วน)
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <!-- ══ SIGNATURE BLOCK ══ -->
-                        <div id="pSignatureSection" style="border-top: 1px solid #cbd5e1; padding-top: 6px; margin-top: auto; page-break-inside: avoid; break-inside: avoid;">
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px;">
-                                <!-- Left Signer Box -->
-                                <div id="pBuyerSignatureBlock"
-                                    style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                                    <div id="pLeftSignerTitle"
-                                        style="font-weight: 700; font-size: 11px; color: #1e1b4b; margin-bottom: 4px; text-align: center; font-family: 'Sarabun', sans-serif;">
-                                        ผู้สั่งซื้อ</div>
-                                    <!-- Buyer Signature Space (exact mirror of Seller space) -->
-                                    <div id="pBuyerSignatureSpace"
-                                        style="height: 30px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 2px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: visible;"></div>
-                                    <div id="pBuyerSignatureDots" style="display: none;"></div>
-                                    <div id="pBuyerRole"
-                                        style="font-size: 11px; color: var(--pdf-primary, #1A6FBF); margin-top: 4px; font-weight: 700; font-family: 'Sarabun', sans-serif;">
-                                        ผู้มีอำนาจลงนาม</div>
-                                    <!-- Left Date Line -->
-                                    <div id="pBuyerSignatureDate"
-                                        style="display: none; align-items: flex-end; font-size: 10.5px; color: #374151; width: 100%; margin-top: 4px;">
-                                        <span id="pLeftDateLabel" style="white-space: nowrap; margin-right: 4px; font-weight: 600;">วันที่ / Date:</span>
-                                        <div
-                                            style="flex: 1; border-bottom: 1px dashed #9ca3af; height: 14px; margin-bottom: 1px; text-align: center; font-size: 9.5px; color: #9ca3af; letter-spacing: 1.5px;">
-                                            ..... / ..... / .........
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Right Signer Box -->
-                                <div id="pSellerSignatureBlock"
-                                    style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center;">
-                                    <div id="pRightSignerTitle"
-                                        style="font-weight: 700; font-size: 11px; color: #1e1b4b; margin-bottom: 4px; font-family: 'Sarabun', sans-serif;">
-                                        ขอแสดงความนับถือ / Sincerely Yours,</div>
-                                    <!-- Signature Space -->
-                                    <div id="pSellerSignatureSpace"
-                                        style="height: 30px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 2px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: visible;">
-                                        <div id="pSellerSignatureWrapper" style="position: absolute; bottom: -4px; left: 50%; transform: translate(-50%, 0); cursor: grab; user-select: none; display: inline-flex; align-items: center; justify-content: center; z-index: 5; transition: transform 0.05s linear;" title="คลิกลากเพื่อปรับตำแหน่งลายเซ็น">
-                                            <img id="pSellerSignatureImg" src="" style="display: none; max-height: 45px; max-width: 220px; object-fit: contain; pointer-events: none;" alt="Digital Signature">
-                                        </div>
-                                    </div>
-                                    <div id="pSellerName"
-                                        style="font-size: 10.5px; color: #374151; margin-top: 4px; font-weight: 600; font-family: 'Sarabun', sans-serif;">
-                                        ( .................................................... )</div>
-                                    <div id="pSellerRole"
-                                        style="font-size: 11px; color: var(--pdf-primary, #1A6FBF); margin-top: 2px; font-weight: 700; font-family: 'Sarabun', sans-serif;">
-                                        ผู้เสนอราคา</div>
-                                    <!-- Right Date Line -->
-                                    <div id="pSellerSignatureDate"
-                                        style="display: none; align-items: flex-end; font-size: 10.5px; color: #374151; width: 100%; margin-top: 4px;">
-                                        <span id="pRightDateLabel" style="white-space: nowrap; margin-right: 4px; font-weight: 600;">วันที่ / Date:</span>
-                                        <div
-                                            style="flex: 1; border-bottom: 1px dashed #9ca3af; height: 14px; margin-bottom: 1px; text-align: center; font-size: 9.5px; color: #9ca3af; letter-spacing: 1.5px;">
-                                            ..... / ..... / .........
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div> <!-- /pPageWrapper -->
-            </div> <!-- /printArea -->
-
-                        </div> <!-- /previewCanvasViewport -->
-                    </div> <!-- /quotePreviewCol -->
-                </div> <!-- /quoteWorkspace -->
-
-                <!-- ════════════════════════════════════════════════════════════
-                     3. FOOTER ACTION BAR (Static / Stays at Bottom)
-                     ════════════════════════════════════════════════════════════ -->
-                <div class="pro-action-bar">
-                    <div class="bar-status">
-                        <span class="status-dot"></span>
-                        <span id="barStatusText">สถานะ: พร้อมออกเอกสาร</span>
-                        <span style="color: #cbd5e1;">•</span>
-                        <span style="color: #64748b; font-size: 0.86rem;">ยอดสุทธิ:</span>
-                        <span style="font-weight: 800; color: #1d4ed8; font-size: 1.1rem;" id="barGrandTotal">0.00 ฿</span>
-                    </div>
-
-                    <div class="bar-actions">
-                        <!-- Quick Digital Signature Toggle & Upload Group -->
-                        <div style="display: inline-flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 3px 8px; gap: 6px;">
-                            <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.84rem; font-weight: 600; color: #334155; cursor: pointer; padding: 0.35rem 0.5rem; user-select: none;">
-                                <input type="checkbox" id="quickToggleSignature" style="width: 16px; height: 16px; accent-color: #2563eb; cursor: pointer;" onchange="toggleQuickSignature(this.checked)">
-                                <span id="quickToggleSignatureLabel">✍️ ลายเซ็นอิเล็กทรอนิกส์</span>
-                            </label>
-                            <button type="button" class="btn" onclick="openSignatureUploaderDirect()" title="อัปโหลด / ปรับแต่งรูปลายเซ็น" style="padding: 4px 10px; font-size: 0.82rem; border-radius: 7px; border: 1px solid #bbf7d0; color: #15803d; background: #f0fdf4; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
-                                <i class='bx bx-upload'></i> แนบรูป
-                            </button>
-                        </div>
-
-                        <button type="button" class="btn" onclick="openHistoryModal()"
-                            style="padding: 0.55rem 1.05rem; font-size: 0.85rem; border: 1px solid #e2e8f0; color: #334155; background: #f8fafc; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;"
-                            onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a';" onmouseout="this.style.background='#f8fafc'; this.style.color='#334155';">
-                            <i class='bx bx-history' style="font-size: 1.1rem; color: #64748b;"></i> ประวัติ
-                        </button>
-                        
-                        <button type="button" class="btn" onclick="openTemplateSettingsModal()"
-                            style="padding: 0.55rem 1.05rem; font-size: 0.85rem; border: 1px solid #e2e8f0; color: #334155; background: #f8fafc; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;"
-                            onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a';" onmouseout="this.style.background='#f8fafc'; this.style.color='#334155';">
-                            <i class='bx bx-slider-alt' style="font-size: 1.1rem; color: #64748b;"></i> ตั้งค่าฟอร์ม
-                        </button>
-                        
-                        <button type="button" class="btn-cta-export" onclick="exportToPDF()">
-                            <i class='bx bxs-file-pdf' style="font-size: 1.2rem; color: #ffffff;"></i> Export PDF / พิมพ์
-                        </button>
-
-                        <button type="button" class="btn-workflow-confirm" id="btnWorkflowConfirm" onclick="confirmAndAdvanceWorkflow()">
-                            <i class='bx bx-check-circle' style="font-size: 1.15rem;"></i>
-                            <span id="btnWorkflowConfirmText">ยืนยัน → ออกใบแจ้งหนี้</span>
-                        </button>
-                    </div>
-                </div>
-
-            </div> <!-- /container -->
-        </main>
-    </div>
-
-    <!-- Live Editor Modal -->
-    <div id="templateSettingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f1f5f9; z-index: 1050; flex-direction: row; font-family: 'Sarabun', sans-serif;">
-        
-        <!-- Left Sidebar: Settings -->
-        <div style="width: 350px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; z-index: 10;">
-            <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; font-size: 1.2rem; color: var(--primary-color);"><i class='bx bx-customize'></i> ออกแบบฟอร์ม</h3>
-                <button onclick="closeTemplateSettingsModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
-            </div>
-            
-            <div style="flex: 1; overflow-y: auto; padding: 20px;">
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">รูปแบบส่วนหัว</h4>
-                <div class="form-group">
-                    <label>การเรียงตัว (Layout Direction)</label>
-                    <select id="settingHeaderDirection" class="form-control" onchange="applyLivePreview(); applyHeaderLayout(getCurrentHeaderLayout())">
-                        <option value="row">แนวนอน (Side-by-side)</option>
-                        <option value="column">แนวตั้ง (Stacked)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>จำนวนแถว Grid (Header Rows)</label>
-                    <select id="settingHeaderRows" class="form-control" onchange="applyHeaderLayout(getCurrentHeaderLayout())">
-                        <option value="1">1 แถว (1 Row)</option>
-                        <option value="2">2 แถว (2 Rows)</option>
-                        <option value="3" selected>3 แถว (3 Rows)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>การจัดวางข้อความ (Text Align)</label>
-                    <select id="settingHeaderTextAlign" class="form-control" onchange="applyHeaderLayout(getCurrentHeaderLayout())">
-                        <option value="auto">อัตโนมัติตามช่อง (Auto)</option>
-                        <option value="left">ชิดซ้าย (Left)</option>
-                        <option value="center">กึ่งกลาง (Center)</option>
-                        <option value="right">ชิดขวา (Right)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>การจัดวางแนวตั้ง (Vertical Align)</label>
-                    <select id="settingHeaderVAlign" class="form-control" onchange="applyHeaderLayout(getCurrentHeaderLayout())">
-                        <option value="flex-start">ชิดบน (Top)</option>
-                        <option value="center">กึ่งกลาง (Center)</option>
-                        <option value="flex-end">ชิดล่าง (Bottom)</option>
-                    </select>
-                </div>
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
-                    <i class='bx bx-building' style="color: var(--primary-color);"></i> ข้อมูลผู้ออกเอกสาร (หัวกระดาษ)
-                </h4>
-
-                <div class="form-group">
-                    <label>ชื่อบริษัท / ร้านค้า</label>
-                    <input type="text" id="settingIssuerName" class="form-control" style="font-weight: 600;" placeholder="ชื่อผู้ออกเอกสาร" oninput="applyIssuerInfoSettings()">
-                </div>
-
-                <div class="form-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <label style="margin: 0;">ที่อยู่ผู้ออกเอกสาร</label>
-                        <span style="font-size: 0.72rem; color: #64748b;">กด Enter ขึ้นบรรทัดใหม่</span>
-                    </div>
-                    <textarea id="settingIssuerAddress" class="form-control" rows="2" style="font-family: 'Sarabun', sans-serif; font-size: 0.85rem; line-height: 1.4; resize: vertical;" placeholder="ที่อยู่ผู้ออกเอกสาร..." oninput="applyIssuerInfoSettings()"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>รูปแบบการขึ้นบรรทัดใหม่ข้อมูลติดต่อ</label>
-                    <select id="settingContactBreakMode" class="form-control" onchange="onContactBreakModeChange()">
-                        <option value="2-lines" selected>แยก 2 บรรทัด (โทร, อีเมล / เลขประจำตัวผู้เสียภาษี) [แนะนำ]</option>
-                        <option value="3-lines">แยก 3 บรรทัด (โทร / อีเมล / เลขผู้เสียภาษี)</option>
-                        <option value="1-line">บรรทัดเดียวต่อเนื่อง (คั่นด้วย | )</option>
-                        <option value="custom">กำหนดเองอิสระ (Custom)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <label style="margin: 0;">ข้อความติดต่อ & เลขประจำตัวผู้เสียภาษี</label>
-                        <span style="font-size: 0.72rem; color: #64748b;">เว้นวรรค / Enter ได้อิสระ</span>
-                    </div>
-                    <textarea id="settingIssuerContact" class="form-control" rows="3" style="font-family: 'Sarabun', monospace, sans-serif; font-size: 0.83rem; line-height: 1.45; resize: vertical;" placeholder="TEL: ... | EMAIL: ...&#10;TAX ID: ..." oninput="onCustomContactInput()"></textarea>
-                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">
-                        💡 คำนำหน้าเช่น <code style="background: #e2e8f0; padding: 1px 4px; border-radius: 3px;">TEL:</code>, <code style="background: #e2e8f0; padding: 1px 4px; border-radius: 3px;">EMAIL:</code>, <code style="background: #e2e8f0; padding: 1px 4px; border-radius: 3px;">TAX ID:</code>, <code style="background: #e2e8f0; padding: 1px 4px; border-radius: 3px;">โทร:</code> จะถูกเน้นสีหลักให้อัตโนมัติ
-                    </div>
-                </div>
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ส่วนข้อมูลผู้รับ / เอกสาร</h4>
-                <div class="form-group">
-                    <label>ตำแหน่งแผง (Panel Layout)</label>
-                    <div style="display: flex; gap: 8px;">
-                        <button type="button" class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 0.5rem;" onclick="swapInfoPanels()">
-                            <i class='bx bx-transfer'></i> สลับซ้าย-ขวา
-                        </button>
-                        <button type="button" id="btnToggleDrag" class="btn btn-outline" style="flex: 1; font-size: 0.85rem; padding: 0.5rem;" onclick="toggleInfoDrag()">
-                            <i class='bx bx-move'></i> โหมดลาก
-                        </button>
-                    </div>
-                    <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 6px;">💡 กด "โหมดลาก" แล้วลากแผงในหน้าตัวอย่างเพื่อสลับตำแหน่ง</div>
-                </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="settingInfoDivider" checked style="width: 18px; height: 18px;" onchange="applyInfoPanelSettings()">
-                    <label style="margin: 0;">แสดงเส้นแบ่งกลาง (Divider)</label>
-                </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="settingShowHeaderLine" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
-                    <label style="margin: 0;">แสดงเส้นคั่นใต้หัวกระดาษ (Header Line)</label>
-                </div>
-                <div class="form-group">
-                    <label>ชื่อหัวข้อฝั่งผู้รับ</label>
-                    <input type="text" id="settingRecipientTitle" class="form-control" value="RECIPIENT INFORMATION" oninput="applyInfoPanelSettings()">
-                </div>
-                <div class="form-group">
-                    <label>ชื่อหัวข้อฝั่งเอกสาร</label>
-                    <input type="text" id="settingDocDetailsTitle" class="form-control" value="DOCUMENT DETAILS" oninput="applyInfoPanelSettings()">
-                </div>
-                
-                <div class="form-group" style="margin-top: 15px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; background-color: #f8fafc;">
-                    <div style="padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="const c = document.getElementById('customLabelsContainer'); c.style.display = c.style.display === 'none' ? 'block' : 'none';">
-                        <span style="font-weight: 600; font-size: 0.85rem; color: #475569;"><i class='bx bx-edit-alt'></i> แก้ไขข้อความหัวข้อย่อย (Labels)</span>
-                        <i class='bx bx-chevron-down' style="font-size: 1.2rem; color: #64748b;"></i>
-                    </div>
-                    <div id="customLabelsContainer" style="display: none; padding: 15px; background-color: #fff; border-top: 1px solid #e2e8f0;">
-                        <h5 style="font-size: 0.8rem; color: #1A6FBF; margin-bottom: 10px; font-weight: 700;">ฝั่งข้อมูลผู้รับ</h5>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ชื่อ / To</label><input type="text" id="settingLabelTo" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ชื่อ / To:" oninput="applyInfoPanelSettings()"></div>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ที่อยู่</label><input type="text" id="settingLabelAddress" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ที่อยู่:" oninput="applyInfoPanelSettings()"></div>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ติดต่อ / Attn</label><input type="text" id="settingLabelAttn" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ติดต่อ / Attn:" oninput="applyInfoPanelSettings()"></div>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">โทร / Tel</label><input type="text" id="settingLabelTel" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="โทร / Tel:" oninput="applyInfoPanelSettings()"></div>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">อีเมล</label><input type="text" id="settingLabelEmail" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="อีเมล:" oninput="applyInfoPanelSettings()"></div>
-                        
-                        <hr style="border: 0; border-top: 1px dashed var(--border-color); margin: 15px 0;">
-                        
-                        <h5 style="font-size: 0.8rem; color: #1A6FBF; margin-bottom: 10px; font-weight: 700;">ฝั่งข้อมูลเอกสาร</h5>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">เลขที่ / Ref. No</label><input type="text" id="settingLabelRefNo" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="เลขที่ / Ref. No:" oninput="applyInfoPanelSettings()"></div>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">วันที่ / Date</label><input type="text" id="settingLabelDate" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="วันที่ / Date:" oninput="applyInfoPanelSettings()"></div>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ยืนราคา / Validity</label><input type="text" id="settingLabelValidity" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ยืนราคา / Validity:" oninput="applyInfoPanelSettings()"></div>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ส่งมอบ / Delivery</label><input type="text" id="settingLabelDelivery" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ส่งมอบ / Delivery:" oninput="applyInfoPanelSettings()"></div>
-                        <div class="form-group" style="margin-bottom: 8px;"><label style="font-size: 0.75rem; margin-bottom: 2px;">ชำระเงิน / Payment</label><input type="text" id="settingLabelPayment" class="form-control" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" value="ชำระเงิน / Payment:" oninput="applyInfoPanelSettings()"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>ข้อความเกริ่นนำ (Intro Text)</label>
-                    <textarea id="settingIntroText" class="form-control" rows="2" style="font-family: 'Sarabun', sans-serif; font-size: 0.9rem;" oninput="applyLivePreview()">ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:</textarea>
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-
-                <div class="form-group">
-                    <label>สีหลัก (Primary Color)</label>
-                    <input type="color" id="settingPrimaryColor" class="form-control" value="#1A6FBF" style="height: 40px; padding: 2px; cursor: pointer;" oninput="applyLivePreview()">
-                </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="settingShowLogo" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
-                    <label style="margin: 0;">แสดงโลโก้บริษัท</label>
-                </div>
-                <div class="form-group">
-                    <label>ขนาดโลโก้ (px)</label>
-                    <input type="range" id="settingLogoSize" min="30" max="120" value="56" class="form-control" oninput="applyLivePreview()">
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ขนาดตัวอักษร</h4>
-                <div class="form-group">
-                    <label>ข้อความทั่วไป (<span id="fontSizeLabel">11</span>px)</label>
-                    <input type="range" id="settingFontSize" min="8" max="16" value="11" step="0.5" class="form-control" oninput="document.getElementById('fontSizeLabel').innerText=this.value; applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ขนาดหัวตาราง (<span id="hdrFontSizeLabel">11</span>px)</label>
-                    <input type="range" id="settingHeaderFontSize" min="8" max="16" value="11" step="0.5" class="form-control" oninput="document.getElementById('hdrFontSizeLabel').innerText=this.value; applyLivePreview()">
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">จำนวนรายการต่อหน้า (PDF / พิมพ์)</h4>
-                <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; user-select: none;">
-                        <input type="checkbox" id="settingAutoPageBreak" checked onchange="toggleAutoPageBreak(); applyLivePreview();" style="width: 18px; height: 18px; accent-color: #2563eb; cursor: pointer;">
-                        <span style="font-weight: 600; color: #334155;">🔄 คำนวณอัตโนมัติ (แนะนำ)</span>
-                    </label>
-                    <span style="font-size: 0.75rem; color: #94a3b8; font-style: italic;">วัดความสูงจริงของแต่ละรายการ</span>
-                </div>
-                <div id="manualPageBreakInputs" style="display: none; transition: all 0.2s;">
-                    <div class="form-group">
-                        <label>จำนวนรายการสูงสุด หน้าแรก (บรรทัด)</label>
-                        <input type="number" id="settingItemsPage1" class="form-control" value="14" min="1" max="50" oninput="applyLivePreview()">
-                    </div>
-                    <div class="form-group">
-                        <label>จำนวนรายการสูงสุด หน้าที่ 2 เป็นต้นไป (บรรทัด)</label>
-                        <input type="number" id="settingItemsPage2Plus" class="form-control" value="18" min="1" max="50" oninput="applyLivePreview()">
-                    </div>
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">รูปแบบตัวอักษรและตาราง</h4>
-                <div class="form-group">
-                    <label>แบบอักษร (Font)</label>
-                    <select id="settingFontFamily" class="form-control" onchange="applyLivePreview()">
-                        <option value="Sarabun">Sarabun (ทางการ)</option>
-                        <option value="Prompt">Prompt (ทันสมัย)</option>
-                        <option value="Kanit">Kanit (อ่านง่าย)</option>
-                        <option value="Noto Sans Thai">Noto Sans Thai (สากล)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>น้ำหนักตัวอักษร (Font Weight)</label>
-                    <select id="settingFontWeight" class="form-control" onchange="applyLivePreview()">
-                        <option value="300">บาง (Light - 300)</option>
-                        <option value="400" selected>ปกติ (Regular - 400)</option>
-                        <option value="500">กลาง (Medium - 500)</option>
-                        <option value="600">หนาปานกลาง (Semi-Bold - 600)</option>
-                        <option value="700">หนา (Bold - 700)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>เส้นขอบตาราง (Table Border)</label>
-                    <select id="settingTableBorder" class="form-control" onchange="applyLivePreview()">
-                        <option value="rounded">ทรงมน (Rounded)</option>
-                        <option value="all">กรอบ 4 ด้าน (All Borders)</option>
-                        <option value="horizontal">เฉพาะแนวนอน (Horizontal)</option>
-                        <option value="none">ไม่มีเส้นขอบ (No Borders)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>ระยะความสูงแถวตาราง (<span id="rowPaddingLabel">5</span>px)</label>
-                    <input type="range" id="settingTableRowPadding" min="2" max="14" value="5" step="0.5" class="form-control" oninput="document.getElementById('rowPaddingLabel').innerText=this.value; applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ระยะความสูงหัวตาราง (<span id="hdrPaddingLabel">6.5</span>px)</label>
-                    <input type="range" id="settingTableHeaderPadding" min="3" max="14" value="6.5" step="0.5" class="form-control" oninput="document.getElementById('hdrPaddingLabel').innerText=this.value; applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ระยะห่างด้านบนตาราง (<span id="tableMarginTopLabel">0</span>px)</label>
-                    <input type="range" id="settingTableMarginTop" min="0" max="25" value="0" step="1" class="form-control" oninput="document.getElementById('tableMarginTopLabel').innerText=this.value; applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>หัวตาราง (Header Align)</label>
-                    <select id="settingTableHeaderAlign" class="form-control" onchange="applyLivePreview()">
-                        <option value="auto">ตามประเภท (Auto)</option>
-                        <option value="center">กึ่งกลาง (Center)</option>
-                        <option value="left">ชิดซ้าย (Left)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>พื้นหลังหัวตาราง (Header Style)</label>
-                    <select id="settingTableHeaderStyle" class="form-control" onchange="applyLivePreview()">
-                        <option value="solid">สีทึบตามธีม (Solid)</option>
-                        <option value="light">สีอ่อนตามธีม (Light)</option>
-                        <option value="transparent">โปร่งใส (Transparent)</option>
-                    </select>
-                </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="settingZebraStripes" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
-                    <label style="margin: 0;">แถบสีสลับ (Zebra Stripes)</label>
-                </div>
-                 <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="settingShowRemark" checked style="width: 18px; height: 18px;" onchange="applyLivePreview()">
-                    <label style="margin: 0;">แสดงหมายเหตุ (Show Remark)</label>
-                </div>
-                <div class="form-group">
-                    <label>ตำแหน่งตัวอักษรบอกจำนวนเงินรวม (ไทย)</label>
-                    <select id="settingBahtTextPosition" class="form-control" onchange="applyLivePreview()">
-                        <option value="right">ชิดขวา (ใต้ตารางยอดรวม)</option>
-                        <option value="left">ชิดซ้าย (ใต้หมายเหตุ)</option>
-                    </select>
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-                <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">ผู้ลงนาม / ลายเซ็นอิเล็กทรอนิกส์</h4>
-                
-                <!-- Digital Signature Toggle, Gallery & Multi-Signature Selection Box -->
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 15px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                        <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #166534; font-size: 0.9rem; margin: 0; cursor: pointer;">
-                            <input type="checkbox" id="settingUseSignatureImage" style="width: 17px; height: 17px; accent-color: #16a34a; cursor: pointer;" onchange="handleUseSignatureChange(this.checked)">
-                            <span>แนบรูปลายเซ็น / ตราประทับ</span>
-                        </label>
-                        <button type="button" onclick="document.getElementById('settingSignatureFileInput').click()" class="btn btn-outline" style="font-size: 0.78rem; padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border-color: #86efac; color: #15803d; background: white; font-weight: 600;">
-                            <i class='bx bx-upload'></i> อัปโหลดรูปใหม่
-                        </button>
-                    </div>
-
-                    <!-- Hidden File Input for uploading signatures -->
-                    <input type="file" id="settingSignatureFileInput" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="handleSignatureFileUpload(event)">
-
-                    <!-- Saved Signatures Gallery Grid -->
-                    <div style="font-size: 0.76rem; font-weight: 600; color: #64748b; margin-bottom: 5px;">
-                        คลังรูปภาพ (คลิกรูปเพื่อเลือกใส่/นำออกจากเอกสาร):
-                    </div>
-                    <div id="savedSignaturesGallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 6px; margin-bottom: 12px; max-height: 130px; overflow-y: auto; padding: 2px;">
-                        <!-- Gallery cards injected via JS -->
-                    </div>
-
-                    <!-- Active Signatures Layers on Document -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 4px;">
-                            <i class='bx bx-layer' style="color: #2563eb;"></i> รูปที่แสดงบนเอกสาร (<span id="activeSigCount">0</span> รูป)
-                        </span>
-                        <button type="button" onclick="resetAllSignatureOffsets()" style="background: none; border: none; font-size: 0.75rem; color: #2563eb; cursor: pointer; text-decoration: underline; padding: 0;">
-                            รีเซ็ตตำแหน่งทั้งหมด
-                        </button>
-                    </div>
-
-                    <div id="activeSignaturesList" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
-                        <!-- Dynamic Layer Cards for each active signature on document -->
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>รูปแบบช่องเซ็นผู้สั่งซื้อ (Buyer Signature)</label>
-                    <select id="settingSignatureFormat" class="form-control" onchange="applyLivePreview()">
-                        <option value="full">แสดงครบถ้วน (Full)</option>
-                        <option value="line_only">เฉพาะเส้นลงนาม (Line Only)</option>
-                        <option value="hidden">ซ่อนทั้งหมด (Hidden)</option>
-                    </select>
-                </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="settingShowSignatureDate" onchange="applyLivePreview()">
-                    <label for="settingShowSignatureDate" style="margin: 0; cursor: pointer; font-size: 0.9rem;">แสดงวันที่ในช่องลงนาม (Signature Date)</label>
-                </div>
-                <div class="form-group">
-                    <label>ขนาดความสูงพื้นที่เซ็นชื่อ (Signature Box Height)</label>
-                    <select id="settingSignatureSize" class="form-control" onchange="applyLivePreview()">
-                        <option value="30">เล็ก (Small)</option>
-                        <option value="40" selected>ปานกลาง (Medium)</option>
-                        <option value="60">ใหญ่ (Large)</option>
-                        <option value="80">ใหญ่มาก (Extra Large)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>หัวข้อฝ่ายผู้ซื้อ (ซ้าย)</label>
-                    <input type="text" id="settingLeftSignerTitle" class="form-control" value="ผู้สั่งซื้อ" oninput="applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ตำแหน่งฝ่ายผู้ซื้อ (ซ้าย)</label>
-                    <input type="text" id="settingBuyerRole" class="form-control" value="ผู้มีอำนาจลงนาม" oninput="applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>คำลงท้ายฝ่ายผู้เสนอราคา (ขวา)</label>
-                    <input type="text" id="settingSincerelyYours" class="form-control" value="ขอแสดงความนับถือ / Sincerely Yours," oninput="applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ชื่อผู้ลงนามฝ่ายผู้เสนอราคา</label>
-                    <input type="text" id="settingSellerName" class="form-control" value="" placeholder="( ระบุชื่อผู้ลงนาม )" oninput="applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ตำแหน่ง</label>
-                    <input type="text" id="settingSellerRole" class="form-control" value="ผู้เสนอราคา" oninput="applyLivePreview()">
-                </div>
-            </div>
-
-            <div style="padding: 20px; border-top: 1px solid var(--border-color); background: #f8fafc; display: flex; gap: 10px;">
-                <button class="btn btn-outline" style="flex: 1;" onclick="closeTemplateSettingsModal()">ยกเลิก</button>
-                <button class="btn btn-primary" style="flex: 1;" onclick="saveTemplateSettings()">บันทึก</button>
-            </div>
-        </div>
-
-        <!-- Right Area: Preview Canvas -->
-        <div id="livePreviewContainer" style="flex: 1; overflow: auto; padding: 30px 40px; display: flex; justify-content: center; align-items: flex-start; background: #64748b;">
-            <!-- printArea will be moved here dynamically when opened -->
-        </div>
-    </div>
-
-    <!-- Import Project Modal -->
-    <div id="importProjectModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: white; width: 600px; max-width: 95%; max-height: 80vh; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
-            <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button id="importModalBackBtn" onclick="backToInstitutionList()" style="display: none; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); padding: 0 5px;"><i class='bx bx-arrow-back'></i></button>
-                    <h3 id="importModalTitle" style="margin: 0; font-size: 1.1rem; color: var(--primary-color);"><i class='bx bx-import'></i> เลือกโครงการเพื่อดึงรายการวัสดุ</h3>
-                </div>
-                <button onclick="closeImportProjectModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
-            </div>
-            
-            <div id="projectListContainer" style="padding: 24px; overflow-y: auto; flex: 1; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
-                <div style="text-align: center; padding: 20px; color: var(--text-muted);">กำลังโหลดข้อมูลโครงการ...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quotation History Modal -->
-    <div id="quotationHistoryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-        <div style="background: white; width: 800px; max-width: 95%; max-height: 90vh; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
-            <div style="padding: 14px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
-                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                    <h3 style="margin: 0; font-size: 1.05rem; color: #1e293b; font-weight: 700;"><i class='bx bx-history'></i> ประวัติเอกสาร</h3>
-                    <div style="display: flex; background: #e2e8f0; border-radius: 8px; padding: 2px; gap: 2px;">
-                        <button type="button" id="histTabQuotation" onclick="filterHistoryByDocType('quotation')" style="padding: 4px 12px; font-size: 0.8rem; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; background: white; color: #1d4ed8; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s;">📄 ใบเสนอราคา</button>
-                        <button type="button" id="histTabInvoice" onclick="filterHistoryByDocType('invoice')" style="padding: 4px 12px; font-size: 0.8rem; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; background: transparent; color: #64748b; transition: all 0.2s;">📋 ใบแจ้งหนี้</button>
-                        <button type="button" id="histTabReceipt" onclick="filterHistoryByDocType('receipt')" style="padding: 4px 12px; font-size: 0.8rem; font-weight: 600; border: none; border-radius: 6px; cursor: pointer; background: transparent; color: #64748b; transition: all 0.2s;">🧾 ใบเสร็จรับเงิน</button>
-                    </div>
-                </div>
-                <button onclick="closeHistoryModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</button>
-            </div>
-            <div style="padding: 0; overflow-y: auto; flex: 1;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                        <tr>
-                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted);">วันที่</th>
-                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted);">เลขที่อ้างอิง</th>
-                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted);">ลูกค้า</th>
-                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted); text-align: right;">ยอดรวม</th>
-                            <th style="padding: 12px 24px; font-weight: 600; color: var(--text-muted); text-align: center;">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody">
-                        <tr><td colspan="5" style="text-align: center; padding: 24px;">กำลังโหลด...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══ Workflow Confirmation Modal (Step Transition) ══ -->
-    <div id="workflowConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 10000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease;">
-        <div id="wfModalCard" style="background: #ffffff; width: 530px; max-width: 92%; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(226, 232, 240, 0.8); overflow: hidden; transform: scale(0.95); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); font-family: 'Sarabun', sans-serif;">
-            
-            <!-- Header with Gradient Accent -->
-            <div style="background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); padding: 22px 26px 18px 26px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; gap: 14px;">
-                    <div id="wfModalIconBg" style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #10b981, #059669); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.55rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); flex-shrink: 0;">
-                        <i class='bx bx-check-double'></i>
-                    </div>
-                    <div>
-                        <h3 id="wfModalTitle" style="margin: 0; font-size: 1.18rem; font-weight: 800; color: #0f172a;">ยืนยันเอกสารและไปขั้นตอนถัดไป</h3>
-                        <p id="wfModalSubtitle" style="margin: 2px 0 0 0; font-size: 0.82rem; color: #64748b; font-weight: 500;">บันทึกประวัติเอกสารปัจจุบันและเปลี่ยนเป็นขั้นตอนถัดไป</p>
-                    </div>
-                </div>
-                <button type="button" onclick="closeWorkflowConfirmModal()" style="background: transparent; border: none; font-size: 1.45rem; color: #94a3b8; cursor: pointer; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#ef4444';" onmouseout="this.style.background='transparent'; this.style.color='#94a3b8';">&times;</button>
-            </div>
-
-            <!-- Body: Step Transition Visualization -->
-            <div style="padding: 24px 26px 20px 26px;">
-                
-                <!-- Flow Cards (Current -> Next) -->
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px;">
-                    <!-- Left: Current Doc -->
-                    <div style="flex: 1; min-width: 0;">
-                        <span style="display: block; font-size: 0.72rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 3px;">
-                            <i class='bx bx-lock-alt' style="color: #10b981;"></i> เอกสารปัจจุบัน (จะบันทึก)
-                        </span>
-                        <div id="wfModalCurrentDoc" style="font-weight: 800; font-size: 0.95rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            ใบเสนอราคา
-                        </div>
-                        <div id="wfModalCurrentRef" style="font-size: 0.8rem; font-weight: 700; color: #2563eb; font-family: monospace; margin-top: 2px;">
-                            MTQ260926001
-                        </div>
-                    </div>
-
-                    <!-- Arrow -->
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #ffffff; border: 1px solid #cbd5e1; color: #0284c7; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-                        <i class='bx bx-right-arrow-alt' style="font-size: 1.35rem;"></i>
-                    </div>
-
-                    <!-- Right: Next Doc -->
-                    <div style="flex: 1; min-width: 0;">
-                        <span style="display: block; font-size: 0.72rem; font-weight: 700; color: #0284c7; text-transform: uppercase; margin-bottom: 3px;">
-                            <i class='bx bx-sparkles' style="color: #f59e0b;"></i> ขั้นถัดไป (จะสร้างใหม่)
-                        </span>
-                        <div id="wfModalNextDoc" style="font-weight: 800; font-size: 0.95rem; color: #0284c7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            ใบส่งของ/ใบแจ้งหนี้
-                        </div>
-                        <div id="wfModalNextRefHint" style="font-size: 0.78rem; font-weight: 600; color: #059669; margin-top: 2px;">
-                            รันเลขใหม่ (MTI...)
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Info Grid: Customer, Amount -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
-                        <span style="font-size: 0.73rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 2px;">🏢 ลูกค้า / ผู้รับ:</span>
-                        <span id="wfModalCustomer" style="font-weight: 700; font-size: 0.88rem; color: #1e293b; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">-</span>
-                    </div>
-                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
-                        <span style="font-size: 0.73rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 2px;">💰 ยอดสุทธิรวม:</span>
-                        <span id="wfModalAmount" style="font-weight: 800; font-size: 0.95rem; color: #1d4ed8; display: block;">฿0.00</span>
-                    </div>
-                </div>
-
-                <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 8px; font-size: 0.8rem; color: #92400e; line-height: 1.45;">
-                    <i class='bx bx-info-circle' style="font-size: 1.15rem; flex-shrink: 0; margin-top: 1px; color: #d97706;"></i>
-                    <span>ข้อมูลสินค้า รายการ และยอดรวมทั้งหมดจะถูกส่งต่อไปยังเอกสารใหม่อัตโนมัติ โดยไม่ต้องกรอกใหม่</span>
-                </div>
-
-            </div>
-
-            <!-- Footer: Buttons -->
-            <div style="background: #f8fafc; padding: 16px 26px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                <button type="button" onclick="closeWorkflowConfirmModal()" style="padding: 0.55rem 1.15rem; font-size: 0.86rem; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#ffffff'">
-                    ยกเลิก
-                </button>
-                <button type="button" id="wfModalProceedBtn" onclick="executeWorkflowTransition()" style="padding: 0.55rem 1.35rem; font-size: 0.88rem; border: none; background: linear-gradient(135deg, #059669, #10b981); color: #ffffff; border-radius: 10px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 18px rgba(5, 150, 105, 0.45)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 4px 14px rgba(5, 150, 105, 0.35)';">
-                    <i class='bx bx-check-circle' style="font-size: 1.15rem;"></i>
-                    <span id="wfModalProceedBtnText">ยืนยันและออกเอกสารต่อ</span>
-                </button>
-            </div>
-
-        </div>
-    </div>
-
-
-    <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
@@ -3115,100 +26,6 @@
 
         let currentUser = null;
         let liveSyncTimer = null;
-
-        // ── Single Source of Truth for Official Mentra Solution & Signer Sanitization ──
-        const MENTRA_OFFICIAL = {
-            name: "บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)",
-            subName: "",
-            themeColor: "#1A6FBF",
-            signer: "นายวัฒนชัย เตียวแก",
-            signerRole: "ผู้มีอำนาจลงนาม",
-            logo: "../../assets/img/logo.png",
-            taxId: "0115568026644",
-            phone: "089-924-9871",
-            email: "accounts@mentrasolution.com",
-            address: "115/123 หมู่ 12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540"
-        };
-
-        function isEmail(str) {
-            return typeof str === 'string' && str.includes('@');
-        }
-
-        function formatSignerDisplay(signerName) {
-            if (!signerName) return '';
-            let clean = String(signerName).trim();
-            if (isEmail(clean)) return '';
-            clean = clean.replace(/^\s*\(\s*|\s*\)\s*$/g, '').trim();
-            if (!clean || isEmail(clean)) return '';
-            return `( ${clean} )`;
-        }
-
-        function getCleanSignerRaw(signerName) {
-            if (!signerName) return '';
-            let clean = String(signerName).trim();
-            if (isEmail(clean)) return '';
-            clean = clean.replace(/^\s*\(\s*|\s*\)\s*$/g, '').trim();
-            return isEmail(clean) ? '' : clean;
-        }
-
-        function findRegisteredShop(companyName) {
-            const query = String(companyName || '').trim().toLowerCase();
-            const shops = (registeredShopsCache && registeredShopsCache.length > 0)
-                ? registeredShopsCache
-                : [ MENTRA_OFFICIAL ];
-
-            if (!query) {
-                return shops.find(s => {
-                    const n = ((s && (s.name || s)) || '').toLowerCase();
-                    return n.includes('เมนทร้า') || n.includes('mentra');
-                }) || shops[0] || MENTRA_OFFICIAL;
-            }
-
-            // 1. Exact match
-            let found = shops.find(s => {
-                const n = ((s && (s.name || s)) || '').trim().toLowerCase();
-                return n === query;
-            });
-            if (found) return found;
-
-            // 2. Mentra match
-            if (query.includes('เมนทร้า') || query.includes('mentra')) {
-                found = shops.find(s => {
-                    const n = ((s && (s.name || s)) || '').trim().toLowerCase();
-                    return n.includes('เมนทร้า') || n.includes('mentra');
-                });
-                if (found) return found;
-                return MENTRA_OFFICIAL;
-            }
-
-            // 3. Substring match
-            found = shops.find(s => {
-                const n = ((s && (s.name || s)) || '').trim().toLowerCase();
-                return n.includes(query) || query.includes(n);
-            });
-            if (found) return found;
-
-            return null;
-        }
-
-        function getAuthorizedSignerForCompany(companyName) {
-            const shop = findRegisteredShop(companyName);
-            if (shop && shop.signer && !isEmail(shop.signer)) {
-                return getCleanSignerRaw(shop.signer);
-            }
-            const isMentra = !companyName || String(companyName).includes('เมนทร้า') || String(companyName).toLowerCase().includes('mentra');
-            if (isMentra) return MENTRA_OFFICIAL.signer;
-            return (shop && shop.signer && !isEmail(shop.signer)) ? getCleanSignerRaw(shop.signer) : '';
-        }
-
-        function getAuthorizedSignerRoleForCompany(companyName) {
-            const shop = findRegisteredShop(companyName);
-            if (shop && shop.signerRole && shop.signerRole.trim()) {
-                return shop.signerRole.trim();
-            }
-            return MENTRA_OFFICIAL.signerRole;
-        }
-
         let registeredShopsCache = [];
         try {
             const cachedShops = localStorage.getItem('registered_shops');
@@ -3225,7 +42,6 @@
                             name: w.name || 'บริษัทของท่าน',
                             themeColor: w.color || '#1A6FBF',
                             signer: w.signer || '',
-                            signerRole: w.signerRole || 'ผู้มีอำนาจลงนาม',
                             logo: w.logo || '',
                             taxId: w.taxId || '',
                             phone: w.phone || '',
@@ -3235,161 +51,12 @@
                 }
             }
         } catch(e) {}
-
-        // Ensure Mentra has official defaults and purge emails from all shop signers
-        if (!registeredShopsCache || registeredShopsCache.length === 0) {
-            registeredShopsCache = [ MENTRA_OFFICIAL ];
-        } else {
-            let hasMentra = false;
-            registeredShopsCache.forEach(s => {
-                const sName = typeof s === 'string' ? s : (s.name || '');
-                if (sName.includes('เมนทร้า') || sName.toLowerCase().includes('mentra')) {
-                    hasMentra = true;
-                    if (!s.signer || s.signer.trim() === '' || isEmail(s.signer)) s.signer = MENTRA_OFFICIAL.signer;
-                    if (!s.signerRole || s.signerRole.trim() === '') s.signerRole = MENTRA_OFFICIAL.signerRole;
-                } else if (s && isEmail(s.signer)) {
-                    s.signer = '';
-                }
-            });
-            if (!hasMentra) registeredShopsCache.unshift(MENTRA_OFFICIAL);
-        }
         window.registeredShopsCache = registeredShopsCache;
-
-        window.quotationTemplates = {};
-        try {
-            const rawLocalTemplates = localStorage.getItem('quotationTemplates');
-            if (rawLocalTemplates) {
-                const parsed = JSON.parse(rawLocalTemplates) || {};
-                // Immediately sanitize: purge any contaminated email values from sellerName
-                Object.keys(parsed).forEach(k => {
-                    if (parsed[k] && parsed[k].sellerName && isEmail(parsed[k].sellerName)) {
-                        delete parsed[k].sellerName;
-                    }
-                });
-                window.quotationTemplates = parsed;
-                localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
-            }
-        } catch(e) {
-            window.quotationTemplates = {};
-        }
-
-        window.savedSignaturesByCompany = {};
-        try {
-            const rawCompanySigs = localStorage.getItem('saved_signatures_by_company');
-            if (rawCompanySigs) {
-                window.savedSignaturesByCompany = JSON.parse(rawCompanySigs) || {};
-            }
-        } catch(e) {
-            window.savedSignaturesByCompany = {};
-        }
         let loadedHistory = [];
         let materialProjectsCache = [];
         let uniqueInstitutions = [];
         let institutionLogosCache = {};
         let institutionDetailsCache = {};
-
-        // ── Issuer Header Information & Contact Line Break Helpers ──
-        function buildDefaultContactPlainText(phone, email, taxId, mode = '2-lines') {
-            const p = (phone || '').trim();
-            const e = (email || '').trim();
-            const t = (taxId || '').trim();
-
-            if (mode === '3-lines') {
-                const lines = [];
-                if (p) lines.push(`TEL: ${p}`);
-                if (e) lines.push(`EMAIL: ${e}`);
-                if (t) lines.push(`TAX ID: ${t}`);
-                return lines.join('\n');
-            } else if (mode === '1-line') {
-                const parts = [];
-                if (p) parts.push(`TEL: ${p}`);
-                if (e) parts.push(`EMAIL: ${e}`);
-                if (t) parts.push(`TAX ID: ${t}`);
-                return parts.join(' | ');
-            } else {
-                // '2-lines' (Default & Recommended)
-                const line1Parts = [];
-                if (p) line1Parts.push(`TEL: ${p}`);
-                if (e) line1Parts.push(`EMAIL: ${e}`);
-                const lines = [];
-                if (line1Parts.length > 0) lines.push(line1Parts.join(' | '));
-                if (t) lines.push(`TAX ID: ${t}`);
-                return lines.join('\n');
-            }
-        }
-
-        function formatContactHTML(rawText, primaryColor) {
-            if (!rawText) return '';
-            const color = primaryColor || (document.getElementById('settingPrimaryColor')?.value) || '#1A6FBF';
-            const lines = String(rawText).split('\n');
-            const formattedLines = lines.map(line => {
-                let l = line.trim();
-                if (!l) return '';
-                // Highlight common keyword prefixes: TEL:, PHONE:, EMAIL:, TAX ID:, TAX NO:, LINE:, โทร:, อีเมล:, etc.
-                l = l.replace(/(TEL|PHONE|EMAIL|TAX\s*ID|TAX\s*NO|LINE|โทร|เบอร์โทร|อีเมล|เลขประจำตัวผู้เสียภาษี|เลขผู้เสียภาษี|สำนักงานใหญ่|สาขาที่\s*\d+):/gi, function(match) {
-                    return `<span style="color: var(--pdf-primary, ${color}); font-weight: 600;">${match}</span>`;
-                });
-                return l;
-            });
-            return formattedLines.filter((l, idx) => l !== '' || idx < lines.length - 1).join('<br>');
-        }
-
-        function buildDefaultContactHTML(phone, email, taxId, mode = '2-lines', color = '#1A6FBF') {
-            const plain = buildDefaultContactPlainText(phone, email, taxId, mode);
-            return formatContactHTML(plain, color);
-        }
-
-        function applyIssuerInfoSettings() {
-            const nameEl = document.getElementById('settingIssuerName');
-            const addrEl = document.getElementById('settingIssuerAddress');
-            const contactEl = document.getElementById('settingIssuerContact');
-            const color = document.getElementById('settingPrimaryColor')?.value || '#1A6FBF';
-
-            const pName = document.getElementById('pIssuerName');
-            if (pName && nameEl) pName.innerText = nameEl.value;
-
-            const pAddr = document.getElementById('pIssuerAddress');
-            if (pAddr && addrEl) pAddr.innerHTML = (addrEl.value || '').replace(/\n/g, '<br>');
-
-            const pContact = document.getElementById('pIssuerContact');
-            if (pContact && contactEl) pContact.innerHTML = formatContactHTML(contactEl.value, color);
-        }
-
-        function onCustomContactInput() {
-            const modeEl = document.getElementById('settingContactBreakMode');
-            if (modeEl) modeEl.value = 'custom';
-            applyIssuerInfoSettings();
-        }
-
-        function onContactBreakModeChange() {
-            const modeEl = document.getElementById('settingContactBreakMode');
-            const mode = modeEl ? modeEl.value : '2-lines';
-            if (mode === 'custom') {
-                const contactEl = document.getElementById('settingIssuerContact');
-                if (contactEl) contactEl.focus();
-                return;
-            }
-
-            const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-            const shop = findRegisteredShop(currentIssuer);
-            const phone = shop ? (shop.phone || shop.tel) : (MENTRA_OFFICIAL.phone);
-            const email = shop ? shop.email : (MENTRA_OFFICIAL.email);
-            const taxId = shop ? shop.taxId : (MENTRA_OFFICIAL.taxId);
-
-            const newText = buildDefaultContactPlainText(phone, email, taxId, mode);
-            const contactEl = document.getElementById('settingIssuerContact');
-            if (contactEl) {
-                contactEl.value = newText;
-            }
-            applyIssuerInfoSettings();
-        }
-
-        window.buildDefaultContactPlainText = buildDefaultContactPlainText;
-        window.formatContactHTML = formatContactHTML;
-        window.buildDefaultContactHTML = buildDefaultContactHTML;
-        window.applyIssuerInfoSettings = applyIssuerInfoSettings;
-        window.onCustomContactInput = onCustomContactInput;
-        window.onContactBreakModeChange = onContactBreakModeChange;
 
         // ── Document Workflow Configuration & State ──
         const DOC_TYPE_CONFIG = {
@@ -3405,7 +72,6 @@
                 badgeBg: '#eff6ff',
                 badgeBorder: '#bfdbfe',
                 leftSignerTitle: 'ผู้สั่งซื้อ',
-                buyerRole: 'ผู้มีอำนาจลงนาม',
                 rightSignerTitle: 'ขอแสดงความนับถือ / Sincerely Yours,',
                 sellerRole: 'ผู้เสนอราคา',
                 sellerNameLabel: 'ผู้เสนอราคา / ผู้ลงนาม (Prepared By)',
@@ -3429,7 +95,6 @@
                 badgeBg: '#fffbeb',
                 badgeBorder: '#fde68a',
                 leftSignerTitle: 'ผู้รับของ',
-                buyerRole: 'ผู้รับของ / ผู้มีอำนาจลงนาม',
                 rightSignerTitle: 'ผู้ส่งของ',
                 sellerRole: 'ผู้ส่งของ',
                 sellerNameLabel: 'ชื่อผู้ส่งของ (Delivered By)',
@@ -3453,7 +118,6 @@
                 badgeBg: '#f0fdf4',
                 badgeBorder: '#bbf7d0',
                 leftSignerTitle: 'ผู้จ่ายเงิน',
-                buyerRole: 'ผู้จ่ายเงิน',
                 rightSignerTitle: 'ผู้รับเงิน / ผู้มีอำนาจลงนาม',
                 sellerRole: 'ผู้รับเงิน / ผู้มีอำนาจลงนาม',
                 sellerNameLabel: 'ชื่อผู้รับเงิน / ผู้มีอำนาจลงนาม (Authorized Signer)',
@@ -3504,8 +168,6 @@
             // 4. Update Signer Titles & Roles
             const pLeftSigner = document.getElementById('pLeftSignerTitle');
             if (pLeftSigner) pLeftSigner.innerText = config.leftSignerTitle;
-            const pBuyerRole = document.getElementById('pBuyerRole');
-            if (pBuyerRole) pBuyerRole.innerText = config.buyerRole || '';
             const pRightSigner = document.getElementById('pRightSignerTitle');
             if (pRightSigner) pRightSigner.innerText = config.rightSignerTitle;
             const pSellerRole = document.getElementById('pSellerRole');
@@ -3520,8 +182,7 @@
             if (sellerRoleLabel && config.sellerRoleLabel) sellerRoleLabel.innerText = config.sellerRoleLabel;
 
             const pSellerSignatureDate = document.getElementById('pSellerSignatureDate');
-            const showSigDate = document.getElementById('settingShowSignatureDate') ? document.getElementById('settingShowSignatureDate').checked : false;
-            if (pSellerSignatureDate) pSellerSignatureDate.style.display = showSigDate ? 'flex' : 'none';
+            if (pSellerSignatureDate) pSellerSignatureDate.style.display = 'flex';
 
             // 5. Update Status Bar
             const barStatusText = document.getElementById('barStatusText');
@@ -3592,110 +253,12 @@
             }
         }
 
-        /**
-         * Validates required document fields:
-         * 1. เลขที่เอกสาร (Ref No.)
-         * 2. วันที่ / ลงวันที่ (Date)
-         * 3. กำหนดส่งมอบ (Delivery Term)
-         * If missing, displays an alert asking whether to continue or go back to fill in.
-         */
-        async function checkRequiredDocFields(actionType = 'export') {
-            const missing = [];
-            const missingElements = [];
-
-            const refNoEl = document.getElementById('refNo');
-            const docDateEl = document.getElementById('docDate');
-            const termDeliveryEl = document.getElementById('termDelivery');
-
-            const refNoVal = refNoEl ? refNoEl.value.trim() : '';
-            const docDateVal = docDateEl ? docDateEl.value.trim() : '';
-            const termDeliveryVal = termDeliveryEl ? termDeliveryEl.value.trim() : '';
-
-            if (!refNoVal || refNoVal === '-') {
-                missing.push('เลขที่เอกสาร (Ref No.)');
-                if (refNoEl) missingElements.push(refNoEl);
-            }
-            if (!docDateVal || docDateVal === '-') {
-                missing.push('ลงวันที่ (Date)');
-                if (docDateEl) missingElements.push(docDateEl);
-            }
-            if (!termDeliveryVal || termDeliveryVal === '-') {
-                missing.push('กำหนดส่งมอบ (Delivery Term)');
-                if (termDeliveryEl) missingElements.push(termDeliveryEl);
-            }
-
-            if (missing.length === 0) {
-                return true;
-            }
-
-            const actionText = actionType === 'export' ? 'ส่งออก / พิมพ์เอกสาร' : 'ยืนยันและเปลี่ยนสถานะเอกสาร';
-
-            if (typeof Swal !== 'undefined') {
-                const listHtml = missing.map(item => `
-                    <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: #dc2626; font-weight: 600; font-size: 0.92rem;">
-                        <i class='bx bxs-error-circle' style="font-size: 1.15rem; color: #ef4444; flex-shrink: 0;"></i> <span>${item}</span>
-                    </li>
-                `).join('');
-
-                const result = await Swal.fire({
-                    title: 'ข้อมูลสำคัญยังไม่ครบถ้วน',
-                    html: `
-                        <div style="text-align: left; font-size: 0.92rem; color: #475569; line-height: 1.6;">
-                            <p style="margin-bottom: 10px;">พบว่ายังไม่ได้กรอกข้อมูลสำคัญดังต่อไปนี้:</p>
-                            <ul style="list-style: none; padding: 10px 14px; margin-bottom: 14px; background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px;">
-                                ${listHtml}
-                            </ul>
-                            <p style="color: #334155; font-weight: 500; margin-bottom: 0;">คุณต้องการกลับไปกรอกให้ครบถ้วนก่อน หรือต้องการดำเนินการต่อทันที?</p>
-                        </div>
-                    `,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#2563eb',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'ดำเนินการต่อ',
-                    cancelButtonText: 'กลับไปกรอกข้อมูล',
-                    reverseButtons: true,
-                    focusCancel: true
-                });
-
-                if (result.isConfirmed) {
-                    return true;
-                } else {
-                    if (missingElements.length > 0) {
-                        setTimeout(() => {
-                            const firstEl = missingElements[0];
-                            firstEl.focus();
-                            firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            const origBorder = firstEl.style.borderColor;
-                            const origShadow = firstEl.style.boxShadow;
-                            firstEl.style.borderColor = '#ef4444';
-                            firstEl.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.25)';
-                            setTimeout(() => {
-                                firstEl.style.borderColor = origBorder;
-                                firstEl.style.boxShadow = origShadow;
-                            }, 3000);
-                        }, 250);
-                    }
-                    return false;
-                }
-            } else {
-                const proceed = confirm(`⚠️ ข้อมูลสำคัญยังไม่ครบถ้วน:\n- ${missing.join('\n- ')}\n\nต้องการดำเนินการต่อหรือไม่?`);
-                if (!proceed && missingElements.length > 0) {
-                    missingElements[0].focus();
-                }
-                return proceed;
-            }
-        }
-
-        async function openWorkflowConfirmModal() {
+        function openWorkflowConfirmModal() {
             const config = DOC_TYPE_CONFIG[currentDocType];
             if (!config || !config.nextDocType) {
                 showToast('เอกสารนี้อยู่ในขั้นตอนสุดท้าย (ใบเสร็จรับเงิน) เรียบร้อยแล้ว', 'info');
                 return;
             }
-
-            const canProceed = await checkRequiredDocFields('workflow');
-            if (!canProceed) return;
 
             const nextConfig = DOC_TYPE_CONFIG[config.nextDocType];
             const currentRef = document.getElementById('refNo')?.value || '-';
@@ -3819,40 +382,16 @@
             showToast(`สลับมาที่ ${DOC_TYPE_CONFIG[targetDocType].titleTH}`, 'info');
         }
 
-        let isImportingProject = false;
         let hasAutoImported = false;
 
         // --- Initialization ---
-        async function initializePage() {
+        function initializePage() {
             const urlParams = new URLSearchParams(window.location.search);
-            let autoImportId = urlParams.get('projectId');
-            let autoImportSource = urlParams.get('source') || 'school';
-            let urlShop = urlParams.get('shop');
-            const paramDocType = urlParams.get('docType');
-            if (paramDocType && DOC_TYPE_CONFIG[paramDocType]) {
-                currentDocType = paramDocType;
-            }
+            const autoImportId = urlParams.get('projectId');
+            const autoImportSource = urlParams.get('source') || 'school';
+            const urlShop = urlParams.get('shop');
 
-            // Fallback: If not found in URL params, check fresh pending_quotation_project from sessionStorage or localStorage
-            if (!autoImportId || !urlShop) {
-                try {
-                    const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
-                    if (pRaw) {
-                        const pData = JSON.parse(pRaw);
-                        if (pData && (Date.now() - (pData.timestamp || 0) < 600000)) {
-                            if (!autoImportId && pData.projectId) {
-                                autoImportId = pData.projectId;
-                                autoImportSource = pData.source || 'school';
-                            }
-                            if (!urlShop && pData.shop) {
-                                urlShop = pData.shop;
-                            }
-                        }
-                    }
-                } catch(e) {}
-            }
-
-            // Immediately apply issuer from URL/pending project if present so hero bar displays the correct company without delay
+            // Immediately apply issuer from URL if present so hero bar displays the correct company without delay
             if (urlShop && urlShop.trim() !== '') {
                 try {
                     applyIssuerTemplate(urlShop.trim());
@@ -3861,20 +400,16 @@
                 }
             } else {
                 const savedShop = localStorage.getItem('selected_issuer_company');
-                if (savedShop && !savedShop.includes('กรุณาเลือกบริษัท')) {
+                if (savedShop) {
                     try {
                         applyIssuerTemplate(savedShop);
-                    } catch(e) {}
-                } else {
-                    try {
-                        applyIssuerTemplate('บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)');
                     } catch(e) {}
                 }
             }
 
             if (autoImportId) {
-                // If projectId is present, start importing immediately from local cache, pending project or Firestore
-                await autoImportProject(autoImportId, autoImportSource).catch(e => console.error("Early auto-import error:", e));
+                // If projectId is in URL, start importing immediately from local cache or Firestore
+                autoImportProject(autoImportId, autoImportSource).catch(e => console.error("Early auto-import error:", e));
             } else {
                 addTableRow(); // Add 1 empty row by default only if not auto-importing
             }
@@ -3930,34 +465,21 @@
                             document.getElementById('adminMenu').style.display = 'block';
                         }
 
-                        // Populate Authorized Signer from Company Settings into Seller and Signer
-                        const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                        const authorizedSigner = getAuthorizedSignerForCompany(currentIssuer);
-                        const authorizedRole = getAuthorizedSignerRoleForCompany(currentIssuer);
-
-                        const sellerInput = document.getElementById('sellerName');
-                        if (sellerInput && (!sellerInput.value || sellerInput.value.trim() === '' || isEmail(sellerInput.value))) {
-                            sellerInput.value = authorizedSigner;
-                        }
-                        const settingSeller = document.getElementById('settingSellerName');
-                        if (settingSeller && (!settingSeller.value || settingSeller.value.trim() === '' || isEmail(settingSeller.value))) {
-                            settingSeller.value = formatSignerDisplay(authorizedSigner);
-                        }
-                        const pSeller = document.getElementById('pSellerName');
-                        if (pSeller && (!pSeller.innerText || pSeller.innerText.includes('...') || pSeller.innerText === '-' || isEmail(pSeller.innerText))) {
-                            pSeller.innerText = formatSignerDisplay(authorizedSigner);
-                        }
-                        const sellerRoleInput = document.getElementById('sellerRole');
-                        if (sellerRoleInput && (!sellerRoleInput.value || sellerRoleInput.value.trim() === '')) {
-                            sellerRoleInput.value = authorizedRole;
-                        }
-                        const settingRole = document.getElementById('settingSellerRole');
-                        if (settingRole && (!settingRole.value || settingRole.value.trim() === '')) {
-                            settingRole.value = authorizedRole;
-                        }
-                        const pSellerRole = document.getElementById('pSellerRole');
-                        if (pSellerRole && (!pSellerRole.innerText || pSellerRole.innerText.trim() === '')) {
-                            pSellerRole.innerText = authorizedRole;
+                        // Populate Logged-in User's Name into Seller and Signer dynamically (no hardcoded names)
+                        const actualFullName = displayName || (firstName ? `${firstName} ${userData.lastName || ''}`.trim() : '');
+                        if (actualFullName) {
+                            const sellerInput = document.getElementById('sellerName');
+                            if (sellerInput && (!sellerInput.value || sellerInput.value.trim() === '')) {
+                                sellerInput.value = actualFullName;
+                            }
+                            const settingSeller = document.getElementById('settingSellerName');
+                            if (settingSeller && (!settingSeller.value || settingSeller.value.trim() === '')) {
+                                settingSeller.value = `( ${actualFullName} )`;
+                            }
+                            const pSeller = document.getElementById('pSellerName');
+                            if (pSeller && (!pSeller.innerText || pSeller.innerText.includes('...') || pSeller.innerText === '-')) {
+                                pSeller.innerText = `( ${actualFullName} )`;
+                            }
                         }
 
                         // Robust Local & Cloud Sync: Merge data instead of overwriting to prevent data loss
@@ -3995,14 +517,14 @@
                         }
                         
                         window.quotationTemplates = {};
-                        let localTemplates = {};
-                        try {
-                            const rawLocalTpl = localStorage.getItem('quotationTemplates');
-                            if (rawLocalTpl) localTemplates = JSON.parse(rawLocalTpl);
-                        } catch(e) {}
-                        const cloudTemplates = (userData && userData.quotationTemplates) || {};
-                        window.quotationTemplates = Object.assign({}, cloudTemplates, localTemplates);
-                        localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
+                        if (userData && userData.quotationTemplates) {
+                            window.quotationTemplates = userData.quotationTemplates;
+                        } else {
+                            const localTemplates = localStorage.getItem('quotationTemplates');
+                            if (localTemplates) {
+                                window.quotationTemplates = JSON.parse(localTemplates);
+                            }
+                        }
 
                         window.savedSignaturesByCompany = {};
                         if (userData && userData.savedSignaturesByCompany) {
@@ -4041,89 +563,25 @@
                             }
                         }
                         
-                        // Fetch registered shops from Cloud Firestore (company_settings.html)
+                        // Fetch registered shops for the issuer selector
                         try {
                             const shopsSnap = await getDoc(doc(db, 'material_settings', 'registered_shops'));
-                            if (shopsSnap.exists() && shopsSnap.data() && Array.isArray(shopsSnap.data().shops)) {
-                                const cloudShops = shopsSnap.data().shops;
-                                if (cloudShops.length > 0) {
-                                    registeredShopsCache = cloudShops;
-                                }
+                            if (shopsSnap.exists()) {
+                                registeredShopsCache = shopsSnap.data().shops || [];
                             }
-                            // Sanitize Mentra and all shops
-                            let hasMentra = false;
-                            registeredShopsCache.forEach(s => {
-                                const sName = typeof s === 'string' ? s : (s.name || '');
-                                if (sName.includes('เมนทร้า') || sName.toLowerCase().includes('mentra')) {
-                                    hasMentra = true;
-                                    if (!s.signer || s.signer.trim() === '' || isEmail(s.signer)) s.signer = MENTRA_OFFICIAL.signer;
-                                    if (!s.signerRole || s.signerRole.trim() === '') s.signerRole = MENTRA_OFFICIAL.signerRole;
-                                } else if (s && isEmail(s.signer)) {
-                                    s.signer = '';
-                                }
-                            });
-                            if (!hasMentra) registeredShopsCache.unshift(MENTRA_OFFICIAL);
-                            window.registeredShopsCache = registeredShopsCache;
-                            try {
-                                localStorage.setItem('registered_shops', JSON.stringify(registeredShopsCache));
-                            } catch(e) {}
                         } catch (err) {
                             console.error("Error loading registered shops:", err);
                         }
 
-                        // Purge any contaminated emails in quotationTemplates
-                        if (window.quotationTemplates) {
-                            Object.keys(window.quotationTemplates).forEach(k => {
-                                if (window.quotationTemplates[k] && isEmail(window.quotationTemplates[k].sellerName)) {
-                                    delete window.quotationTemplates[k].sellerName;
-                                }
-                            });
-                        }
-
                         // Apply template for the current displayed issuer if selected
                         try {
-                            let currentIssuerDisplay = document.getElementById('currentIssuerDisplay')?.innerText?.trim();
-                            if (!currentIssuerDisplay || currentIssuerDisplay.includes('กรุณาเลือกบริษัท')) {
-                                currentIssuerDisplay = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                            const currentIssuerDisplay = document.getElementById('currentIssuerDisplay')?.innerText?.trim();
+                            if (currentIssuerDisplay && !currentIssuerDisplay.includes('กรุณาเลือกบริษัท')) {
+                                applyIssuerTemplate(currentIssuerDisplay);
                             }
-                            applyIssuerTemplate(currentIssuerDisplay);
                         } catch (e) {
                             console.error("Error applying default issuer template:", e);
                         }
-
-                        function loadQuotationData(data) {
-                            if (!data) return;
-                            const docTypeToSwitch = data.docType || (data.refNo?.startsWith('MTI') ? 'invoice' : (data.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
-                            switchDocType(docTypeToSwitch, { generateNewRef: false });
-
-                            if (data.refNo) document.getElementById('refNo').value = data.refNo;
-                            if (data.toCompany) document.getElementById('toCompany').value = data.toCompany;
-                            if (data.toAddress) document.getElementById('toAddress').value = data.toAddress;
-                            if (data.toAttn) document.getElementById('toAttn').value = data.toAttn;
-                            if (data.toTel) document.getElementById('toTel').value = data.toTel;
-                            if (data.toEmail) document.getElementById('toEmail').value = data.toEmail;
-                            if (data.docDate) document.getElementById('docDate').value = data.docDate;
-                            if (data.termValidity) document.getElementById('termValidity').value = data.termValidity;
-                            if (data.termDelivery) document.getElementById('termDelivery').value = data.termDelivery;
-                            if (data.termPayment) document.getElementById('termPayment').value = data.termPayment;
-                            if (data.remark) document.getElementById('remark').value = data.remark;
-
-                            const tbody = document.getElementById('itemsBody');
-                            if (tbody && data.items && data.items.length > 0) {
-                                tbody.innerHTML = '';
-                                data.items.forEach(item => {
-                                    if (item.isHeader) {
-                                        addHeaderRow(item);
-                                    } else {
-                                        addTableRow(item);
-                                    }
-                                });
-                                updateRowNumbers();
-                                calculateAll();
-                            }
-                            triggerLiveSync();
-                        }
-                        window.loadQuotationData = loadQuotationData;
 
                         // Show body now that the user is fully verified
                         document.body.style.display = 'flex';
@@ -4158,21 +616,19 @@
 
                         const autoImportId = urlParams.get('projectId');
                         const autoImportSource = urlParams.get('source') || 'school';
-                        if (!hasAutoImported && !isImportingProject) {
-                            if (autoImportId) {
-                                autoImportProject(autoImportId, autoImportSource).catch(e => console.error("Auth auto-import error:", e));
-                            } else {
-                                // Fallback: Check if fresh pending_quotation_project exists (within last 10 minutes)
-                                try {
-                                    const pendingRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
-                                    if (pendingRaw) {
-                                        const pData = JSON.parse(pendingRaw);
-                                        if (pData && pData.projectId && pData.timestamp && (Date.now() - pData.timestamp < 600000)) {
-                                            autoImportProject(pData.projectId, pData.source || 'school').catch(e => console.error("Auth fallback auto-import error:", e));
-                                        }
+                        if (autoImportId && !hasAutoImported) {
+                            autoImportProject(autoImportId, autoImportSource).catch(e => console.error("Error auto-importing project:", e));
+                        } else {
+                            // Fallback: Check if fresh pending_quotation_project exists (within last 3 minutes)
+                            try {
+                                const pendingRaw = localStorage.getItem('pending_quotation_project');
+                                if (pendingRaw) {
+                                    const pData = JSON.parse(pendingRaw);
+                                    if (pData && pData.projectId && pData.timestamp && (Date.now() - pData.timestamp < 180000)) {
+                                        autoImportProject(pData.projectId, pData.source || 'school').catch(e => console.error("Error auto-importing project:", e));
                                     }
-                                } catch(e) {}
-                            }
+                                }
+                            } catch(e) {}
                         }
                     } else {
                         // User document deleted!
@@ -4520,9 +976,9 @@
 
         // --- Height-Based Pagination: Measure actual rendered row heights ---
         function measureRowHeights(rowsDataArray, createTableHTML, fontFamily, fontSize, fontWeight, rowPadding, cellBorder, rowBorder) {
-            // Create offscreen container matching pPageWrapper printable content width (794px - 30mm = 681px)
+            // Create offscreen container matching pPageWrapper width
             const offscreen = document.createElement('div');
-            offscreen.style.cssText = `position:absolute; left:-9999px; top:0; width:681px; visibility:hidden; font-family:${fontFamily}; font-size:${fontSize}px; font-weight:${fontWeight}; line-height:1.35; box-sizing:border-box; padding:0; letter-spacing:normal;`;
+            offscreen.style.cssText = `position:absolute; left:-9999px; top:0; width:715px; visibility:hidden; font-family:${fontFamily}; font-size:${fontSize}px; font-weight:${fontWeight}; line-height:1.35; box-sizing:border-box; padding:0 24px; letter-spacing:normal;`;
             document.body.appendChild(offscreen);
 
             // Build a single table with all rows
@@ -4540,7 +996,7 @@
 
             // Also measure thead height
             const theadRow = offscreen.querySelector('thead tr');
-            const theadHeight = theadRow ? (theadRow.offsetHeight || Math.ceil(theadRow.getBoundingClientRect().height)) : 28;
+            const theadHeight = theadRow ? (theadRow.offsetHeight || Math.ceil(theadRow.getBoundingClientRect().height)) : 30;
 
             document.body.removeChild(offscreen);
             return { heights, theadHeight };
@@ -4550,10 +1006,11 @@
         function measureFixedSections(fontSize) {
             // Read actual page dimensions from DOM for accurate measurement
             const pPageWrapperEl = document.getElementById('pPageWrapper');
+            const isAutoFit = pPageWrapperEl && pPageWrapperEl.classList.contains('auto-fit-single-page');
             const pStyle = pPageWrapperEl ? window.getComputedStyle(pPageWrapperEl) : null;
-            const PAGE_PADDING_TOP = pStyle ? parseFloat(pStyle.paddingTop) : 38;
-            const PAGE_PADDING_BOTTOM = pStyle ? parseFloat(pStyle.paddingBottom) : 30;
-            // Use A4 physical height (1123px) as the page boundary
+            const PAGE_PADDING_TOP = pStyle ? parseFloat(pStyle.paddingTop) : (isAutoFit ? 19 : 57);
+            const PAGE_PADDING_BOTTOM = pStyle ? parseFloat(pStyle.paddingBottom) : (isAutoFit ? 15 : 45);
+            // Use A4 physical height (1123px) as the page boundary, not current scrollHeight
             const A4_PX = 1123;
             const usablePageHeight = A4_PX - PAGE_PADDING_TOP - PAGE_PADDING_BOTTOM;
 
@@ -4561,45 +1018,23 @@
             const headerSection = document.getElementById('pHeaderSection');
             const infoRow = document.getElementById('pInfoRow');
             const introText = document.getElementById('pIntroText');
+
+            let headerHeight = 0;
+            if (headerSection) headerHeight += headerSection.offsetHeight || (isAutoFit ? 60 : 80);
+            if (infoRow) headerHeight += infoRow.offsetHeight || (isAutoFit ? 60 : 80);
+            if (introText) headerHeight += introText.offsetHeight || 18;
+            headerHeight += isAutoFit ? 6 : 16; // margins & gap between sections
+            headerHeight = Math.max(headerHeight, isAutoFit ? 125 : 185);
+
+            // Measure summary + remark + signature from DOM
             const summarySection = document.getElementById('pSummarySection') || document.getElementById('pSummaryTotalsBox')?.parentElement;
             const signatureSection = document.getElementById('pSignatureSection');
 
-            let headerHeight = 0;
             let bottomHeight = 0;
-
-            const isVisible = (headerSection && headerSection.offsetHeight > 0);
-
-            if (isVisible) {
-                if (headerSection) headerHeight += headerSection.offsetHeight;
-                if (infoRow) headerHeight += infoRow.offsetHeight;
-                if (introText) headerHeight += introText.offsetHeight;
-                headerHeight += 12; // margins & gap between sections
-
-                if (summarySection) bottomHeight += summarySection.offsetHeight;
-                if (signatureSection) bottomHeight += signatureSection.offsetHeight;
-                bottomHeight += 12; // margins & gap between sections
-            } else {
-                // In editor mode (preview hidden): measure via offscreen clone matching exact A4 printable width
-                const offscreen = document.createElement('div');
-                offscreen.style.cssText = 'position:absolute; left:-9999px; top:0; width:794px; box-sizing:border-box; padding:10mm 15mm 8mm 15mm; visibility:hidden;';
-                document.body.appendChild(offscreen);
-
-                if (headerSection) offscreen.appendChild(headerSection.cloneNode(true));
-                if (infoRow) offscreen.appendChild(infoRow.cloneNode(true));
-                if (introText) offscreen.appendChild(introText.cloneNode(true));
-                headerHeight = offscreen.offsetHeight + 12;
-
-                offscreen.innerHTML = '';
-                if (summarySection) offscreen.appendChild(summarySection.cloneNode(true));
-                if (signatureSection) offscreen.appendChild(signatureSection.cloneNode(true));
-                bottomHeight = offscreen.offsetHeight + 12;
-
-                document.body.removeChild(offscreen);
-            }
-
-            // Calibrated safe minimums (never underestimate)
-            headerHeight = Math.max(headerHeight, 230);
-            bottomHeight = Math.max(bottomHeight, 245);
+            if (summarySection) bottomHeight += summarySection.offsetHeight || (isAutoFit ? 75 : 110);
+            if (signatureSection) bottomHeight += signatureSection.offsetHeight || (isAutoFit ? 85 : 130);
+            bottomHeight += isAutoFit ? 8 : 20; // margins & gap between sections
+            bottomHeight = Math.max(bottomHeight, isAutoFit ? 160 : 225); // safe fallback minimum
 
             return {
                 usablePageHeight,
@@ -4813,11 +1248,10 @@
             calculateAll(); // Recalculate everything
 
             // CRITICAL: Reset auto-fit class BEFORE measuring so DOM elements are at default size.
+            // Without this, elements compacted by a previous sync will give smaller offsetHeights,
+            // causing inconsistent pagination between modal preview and PDF export.
             const pPageWrapperForReset = document.getElementById('pPageWrapper');
-            if (pPageWrapperForReset) {
-                pPageWrapperForReset.style.removeProperty('--print-zoom');
-                pPageWrapperForReset.style.zoom = '';
-            }
+            if (pPageWrapperForReset) pPageWrapperForReset.classList.remove('auto-fit-single-page');
 
             // Copy input values to Print Template
             document.getElementById('pToCompany').innerText = document.getElementById('toCompany').value || '-';
@@ -4850,31 +1284,19 @@
             document.getElementById('pDelivery').innerText = document.getElementById('termDelivery').value || '-';
             document.getElementById('pPayment').innerText = document.getElementById('termPayment').value || '-';
 
-            // Sync Seller Name & Role to Print Area (Authorized Signer from company settings)
+            // Sync Seller Name & Role to Print Area
             const sellerNameInput = document.getElementById('sellerName');
             const pSellerName = document.getElementById('pSellerName');
             if (sellerNameInput && pSellerName) {
-                let sVal = sellerNameInput.value.trim();
-                // Ensure email address is NEVER displayed as signer name
-                if (!sVal || isEmail(sVal)) {
-                    const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                    sVal = getAuthorizedSignerForCompany(currentIssuer);
-                    sellerNameInput.value = sVal;
-                }
-                pSellerName.innerText = sVal ? formatSignerDisplay(sVal) : '';
+                const sVal = sellerNameInput.value.trim();
+                pSellerName.innerText = sVal ? (sVal.startsWith('(') ? sVal : `( ${sVal} )`) : '';
             }
             const sellerRoleInput = document.getElementById('sellerRole');
             const pSellerRole = document.getElementById('pSellerRole');
             if (sellerRoleInput && pSellerRole) {
-                let rVal = sellerRoleInput.value.trim();
-                if (!rVal) {
-                    const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                    rVal = getAuthorizedSignerRoleForCompany(currentIssuer);
-                    sellerRoleInput.value = rVal;
-                }
                 const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
-                const defaultRole = (docConfig && currentDocType !== 'quotation') ? docConfig.sellerRole : rVal;
-                pSellerRole.innerText = defaultRole || 'ผู้เสนอราคา';
+                const defaultRole = docConfig ? docConfig.sellerRole : 'ผู้เสนอราคา';
+                pSellerRole.innerText = sellerRoleInput.value.trim() || defaultRole;
             }
 
             document.getElementById('pRemark').innerHTML = (document.getElementById('remark').value || '-').replace(/\n/g, '<br>');
@@ -4985,7 +1407,39 @@
             let hdrPadding = userHdrPadding;
             let fontSize = userFontSize;
             let headerFontSize = userHeaderFontSize;
-            const curLineHeight = '1.35';
+            const curLineHeight = (useAutoPageBreak && totalItemsCount > 15) ? '1.18' : (useAutoPageBreak && totalItemsCount > 10 ? '1.24' : '1.32');
+
+            // Intelligent Pre-Optimization:
+            // When auto page break is enabled, adaptively tune padding & font sizes
+            // to try fitting everything on 1 page. Works for up to ~32 items.
+            if (useAutoPageBreak) {
+                if (totalItemsCount <= 10) {
+                    rowPadding = userRowPadding;
+                    hdrPadding = userHdrPadding;
+                    fontSize = userFontSize;
+                    headerFontSize = userHeaderFontSize;
+                } else if (totalItemsCount <= 14) {
+                    rowPadding = Math.min(userRowPadding, 2.8);
+                    hdrPadding = Math.min(userHdrPadding, 4.0);
+                    fontSize = Math.min(userFontSize, 10.0);
+                    headerFontSize = Math.min(userHeaderFontSize, 10.0);
+                } else if (totalItemsCount <= 20) {
+                    rowPadding = Math.min(userRowPadding, 1.8);
+                    hdrPadding = Math.min(userHdrPadding, 3.0);
+                    fontSize = Math.min(userFontSize, 9.2);
+                    headerFontSize = Math.min(userHeaderFontSize, 9.4);
+                } else if (totalItemsCount <= 25) {
+                    rowPadding = Math.min(userRowPadding, 1.2);
+                    hdrPadding = Math.min(userHdrPadding, 2.2);
+                    fontSize = Math.min(userFontSize, 8.5);
+                    headerFontSize = Math.min(userHeaderFontSize, 8.8);
+                } else if (totalItemsCount <= 32) {
+                    rowPadding = Math.min(userRowPadding, 0.8);
+                    hdrPadding = Math.min(userHdrPadding, 1.8);
+                    fontSize = Math.min(userFontSize, 8.0);
+                    headerFontSize = Math.min(userHeaderFontSize, 8.2);
+                }
+            }
 
             const createTableHTML = (isFirst = true) => `
                 <table class="pItemsTable" style="width: 100%; border-collapse: collapse; margin-top: ${isFirst ? tableMarginTop + 'px' : '0'}; margin-bottom: 0; font-family: ${fontFamily}; font-size: ${fontSize}px; font-weight: ${fontWeight}; line-height: ${curLineHeight}; letter-spacing: normal; ${tableOuterBorder} ${tableBorderRadius}">
@@ -5071,81 +1525,55 @@
             let pages = []; // array of { rowHTMLs: string[], fillerCount: number }
 
             if (useAutoPageBreak && rowsDataArray.length > 0) {
+                // Try 1-page auto-fit first (candidate for any count, activate compact styles)
+                if (pPageWrapper) pPageWrapper.classList.add('auto-fit-single-page');
+
                 let measured = measureRowHeights(rowsDataArray, createTableHTML, fontFamily, fontSize, fontWeight, rowPadding, cellBorder, rowBorder);
                 let sections = measureFixedSections(fontSize);
                 let theadH = measured.theadHeight;
                 let totalRowsH = measured.heights.reduce((sum, h) => sum + h, 0);
                 let totalEstimatedH = sections.headerHeight + theadH + totalRowsH + sections.bottomHeight + tableMarginTop;
 
-                // ── INTELLIGENT AUTO-COMPACTING FOR 1-PAGE FITTING (12 to 20 items) ──
-                // If items can fit on 1 page with compacting, compact table and margins
-                if (totalEstimatedH > sections.usablePageHeight && rowsDataArray.length <= 20 && rowsDataArray.length >= 12) {
-                    // Level 1 Compact
-                    rowPadding = Math.min(rowPadding, rowsDataArray.length >= 17 ? 3 : 3.5);
-                    hdrPadding = Math.min(hdrPadding, 4);
-                    if (rowsDataArray.length >= 15) {
-                        fontSize = Math.min(fontSize, 10.5);
-                        headerFontSize = Math.min(headerFontSize, 10.5);
-                    }
-                    if (pPageWrapper) pPageWrapper.classList.add('compact-fit-1page');
-
-                    rowsDataArray = buildRowsData(rowPadding, fontSize);
-                    measured = measureRowHeights(rowsDataArray, createTableHTML, fontFamily, fontSize, fontWeight, rowPadding, cellBorder, rowBorder);
-                    theadH = measured.theadHeight;
-                    totalRowsH = measured.heights.reduce((sum, h) => sum + h, 0);
-                    sections = measureFixedSections(fontSize);
-                    totalEstimatedH = sections.headerHeight + theadH + totalRowsH + sections.bottomHeight + tableMarginTop;
-
-                    // If still slightly over (e.g. 18-20 items with longer text), Level 2 Ultra Compact
-                    if (totalEstimatedH > sections.usablePageHeight && rowsDataArray.length <= 20 && rowsDataArray.length >= 15) {
-                        rowPadding = Math.min(rowPadding, 2.5);
-                        hdrPadding = Math.min(hdrPadding, 3);
-                        fontSize = Math.min(fontSize, 10);
-                        headerFontSize = Math.min(headerFontSize, 10);
-
-                        rowsDataArray = buildRowsData(rowPadding, fontSize);
-                        measured = measureRowHeights(rowsDataArray, createTableHTML, fontFamily, fontSize, fontWeight, rowPadding, cellBorder, rowBorder);
-                        theadH = measured.theadHeight;
-                        totalRowsH = measured.heights.reduce((sum, h) => sum + h, 0);
-                        sections = measureFixedSections(fontSize);
-                        totalEstimatedH = sections.headerHeight + theadH + totalRowsH + sections.bottomHeight + tableMarginTop;
-                    }
-                } else if (pPageWrapper && rowsDataArray.length < 12) {
-                    pPageWrapper.classList.remove('compact-fit-1page');
-                }
-
-                // Document fits on 1 standard A4 page if total estimated height is within usable A4 page height
-                const fits1Page = (totalEstimatedH <= sections.usablePageHeight);
+                // ── SMART 1-PAGE DECISION WITH PRINT-ZOOM ──
+                // If total items is <= 22, it is guaranteed to fit on 1 page with compact styles & zoom
+                const pageRatio = totalEstimatedH / sections.usablePageHeight;
+                const fits1Page = (totalItemsCount <= 22) ? true : (pageRatio <= 1.05);
 
                 if (fits1Page) {
+                    // Calculate how much we need to zoom down for print
+                    const printZoom = (totalEstimatedH > sections.usablePageHeight || totalItemsCount >= 16)
+                        ? Math.max(0.78, Math.min(1.0, (sections.usablePageHeight - 12) / Math.max(totalEstimatedH, sections.usablePageHeight * 1.04)))
+                        : 1.0;
+
                     if (pPageWrapper) {
-                        pPageWrapper.style.removeProperty('--print-zoom');
-                        pPageWrapper.style.zoom = '';
+                        pPageWrapper.style.setProperty('--print-zoom', printZoom.toFixed(4));
+                        pPageWrapper.style.zoom = printZoom < 1.0 ? printZoom.toFixed(4) : '';
                     }
 
-                    // ── CASE 1: STANDARD 1-PAGE A4 DOCUMENT ──
-                    const minFillers = (rowsDataArray.length < 5) ? (5 - rowsDataArray.length) : 0;
+                    // ── CASE 1: CONFIRMED 1-PAGE AUTO-FIT ──
+                    if (pPageWrapper) pPageWrapper.classList.add('auto-fit-single-page');
                     pages.push({
                         rowHTMLs: rowsDataArray.map(r => r.html),
-                        fillerCount: minFillers
+                        fillerCount: 0
                     });
                 } else {
                     // ── CASE 2: MULTI-PAGE BALANCED DOCUMENT ──
                     if (pPageWrapper) {
+                        pPageWrapper.classList.remove('auto-fit-single-page');
                         pPageWrapper.style.removeProperty('--print-zoom');
                         pPageWrapper.style.zoom = '';
-                        pPageWrapper.classList.remove('compact-fit-1page');
                     }
 
-                    // Re-measure with standard sizes for multi-page layout.
+                    // Keep compacted padding/font sizes for multi-page layout.
+                    // Re-measure with current sizes (already set above) to get accurate row heights.
                     measured = measureRowHeights(rowsDataArray, createTableHTML, fontFamily, fontSize, fontWeight, rowPadding, cellBorder, rowBorder);
                     sections = measureFixedSections(fontSize);
                     theadH = measured.theadHeight;
 
                     const PAGE_USABLE = sections.usablePageHeight;
-                    const page1Budget = PAGE_USABLE - sections.headerHeight - tableMarginTop - 24;
-                    const middlePageBudget = PAGE_USABLE - page2TopSpacing - theadH - 24;
-                    const lastPageBudget = PAGE_USABLE - page2TopSpacing - theadH - sections.bottomHeight - 24;
+                    const page1Budget = PAGE_USABLE - sections.headerHeight - tableMarginTop - 30;
+                    const middlePageBudget = PAGE_USABLE - page2TopSpacing - theadH - 30;
+                    const lastPageBudget = PAGE_USABLE - page2TopSpacing - theadH - sections.bottomHeight - 30;
 
                     // Calculate maximum rows on Page 1:
                     let maxP1Rows = 0;
@@ -5160,11 +1588,11 @@
                         }
                     }
 
-                    // Anti-Orphan Rule: Allow Page 1 to fill naturally, reserving only 2 rows minimum for the last page so it doesn't leave an orphan single row
+                    // Strict Anti-Orphan Rule: Page 2 MUST have at least 5 rows (or 38% of rows)
                     const totalCount = rowsDataArray.length;
-                    const minLastPageItems = Math.min(totalCount, 2);
+                    const minLastPageItems = Math.min(totalCount, Math.max(5, Math.floor(totalCount * 0.38)));
                     let targetP1Count = Math.min(maxP1Rows, totalCount - minLastPageItems);
-                    if (targetP1Count < 1) targetP1Count = 1;
+                    if (targetP1Count < 1) targetP1Count = Math.max(1, Math.floor(totalCount / 2));
 
                     // Verify if items from targetP1Count to end fit within lastPageBudget
                     let p2CumH = 0;
@@ -5208,7 +1636,7 @@
                                 if (accH + rowH > currentBudget && pageRowHTMLs.length > 0) {
                                     break;
                                 }
-                                if (remainingIndices.length < 2 && pageRowHTMLs.length >= 10) {
+                                if (remainingIndices.length <= 5 && pageRowHTMLs.length >= 8) {
                                     break;
                                 }
                                 pageRowHTMLs.push(rowsDataArray[nextIdx].html);
@@ -5223,6 +1651,7 @@
                 }
             } else {
                 // COUNT-BASED PAGINATION (manual fallback if auto is unchecked)
+                if (pPageWrapper) pPageWrapper.classList.remove('auto-fit-single-page');
                 const ITEMS_PAGE1 = parseInt(document.getElementById('settingItemsPage1')?.value || 14, 10);
                 const ITEMS_PAGE2_PLUS = parseInt(document.getElementById('settingItemsPage2Plus')?.value || 18, 10);
                 let currentPage = 1;
@@ -5246,16 +1675,6 @@
             // Handle empty state (no items)
             if (pages.length === 0) {
                 pages.push({ rowHTMLs: [], fillerCount: 5 });
-            }
-
-            if (pPageWrapper) {
-                if (pages.length <= 1) {
-                    pPageWrapper.classList.add('single-page');
-                    pPageWrapper.classList.remove('multi-page');
-                } else {
-                    pPageWrapper.classList.remove('single-page');
-                    pPageWrapper.classList.add('multi-page');
-                }
             }
 
             // Step 3: Build final HTML from page data
@@ -5310,10 +1729,7 @@
         // --- Native Vector PDF Export via window.print() ---
         // Produces 100% editable, selectable, copy-able Thai text PDF (Chrome Native Vector)
         // Layout matches the live preview exactly - no conversion, no rasterization
-        async function exportToPDF() {
-            const canProceed = await checkRequiredDocFields('export');
-            if (!canProceed) return;
-
+        function exportToPDF() {
             const printArea = document.getElementById('printArea');
             if (!printArea) {
                 window.print();
@@ -5335,8 +1751,8 @@
             // 3. Sync pagination in original DOM context (same as modal preview)
             //    MUST happen before moving printArea to ensure consistent measurements.
             try {
-                syncFormToPrintArea();
                 applyLivePreview();
+                syncFormToPrintArea();
             } catch (e) {
                 console.warn("Pre-move sync warning:", e);
             }
@@ -5845,18 +2261,9 @@
                 rowPadding: document.getElementById('settingTableRowPadding')?.value || '5',
                 hdrPadding: document.getElementById('settingTableHeaderPadding')?.value || '6.5',
                 tableMarginTop: document.getElementById('settingTableMarginTop')?.value || '0',
-                sellerName: (() => {
-                    let s = document.getElementById('settingSellerName')?.value || '';
-                    if (!s || isEmail(s)) {
-                        s = formatSignerDisplay(getAuthorizedSignerForCompany(currentIssuerDisplay));
-                        const el = document.getElementById('settingSellerName');
-                        if (el) el.value = s;
-                    }
-                    return s;
-                })(),
+                sellerName: document.getElementById('settingSellerName')?.value || '',
                 sellerRole: document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา',
                 leftSignerTitle: document.getElementById('settingLeftSignerTitle')?.value || 'ผู้สั่งซื้อ',
-                buyerRole: document.getElementById('settingBuyerRole')?.value || 'ผู้มีอำนาจลงนาม',
                 sincerelyYours: document.getElementById('settingSincerelyYours')?.value || 'ขอแสดงความนับถือ / Sincerely Yours,',
                 headerDirection: document.getElementById('settingHeaderDirection')?.value || 'row',
                 headerRows: document.getElementById('settingHeaderRows')?.value || '3',
@@ -6373,7 +2780,6 @@
                                 name: w.name || 'บริษัทของท่าน',
                                 themeColor: w.color || '#1A6FBF',
                                 signer: w.signer || '',
-                                signerRole: w.signerRole || 'ผู้มีอำนาจลงนาม',
                                 logo: w.logo || '',
                                 taxId: w.taxId || '',
                                 phone: w.phone || '',
@@ -6386,27 +2792,18 @@
 
             // Clean default company fallback without personal names
             if (!registeredShopsCache || registeredShopsCache.length === 0) {
-                registeredShopsCache = [ MENTRA_OFFICIAL ];
-            } else {
-                let hasMentra = false;
-                registeredShopsCache.forEach(s => {
-                    const sName = typeof s === 'string' ? s : (s.name || '');
-                    if (sName.includes('เมนทร้า') || sName.toLowerCase().includes('mentra')) {
-                        hasMentra = true;
-                        if (!s.address || s.address.trim() === '') s.address = MENTRA_OFFICIAL.address;
-                        if (!s.taxId || s.taxId.trim() === '') s.taxId = MENTRA_OFFICIAL.taxId;
-                        if (!s.phone || s.phone.trim() === '') s.phone = MENTRA_OFFICIAL.phone;
-                        if (!s.email || s.email.trim() === '') s.email = MENTRA_OFFICIAL.email;
-                        s.subName = '';
-                        if (!s.signer || s.signer.trim() === '' || isEmail(s.signer)) s.signer = MENTRA_OFFICIAL.signer;
-                        if (!s.signerRole || s.signerRole.trim() === '') s.signerRole = MENTRA_OFFICIAL.signerRole;
-                    } else if (s && isEmail(s.signer)) {
-                        s.signer = '';
+                registeredShopsCache = [
+                    {
+                        name: "บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)",
+                        themeColor: "#1A6FBF",
+                        signer: "",
+                        logo: "../../assets/img/logo.png",
+                        taxId: "",
+                        phone: "",
+                        address: ""
                     }
-                });
-                if (!hasMentra) registeredShopsCache.unshift(MENTRA_OFFICIAL);
+                ];
             }
-            window.registeredShopsCache = registeredShopsCache;
             return registeredShopsCache;
         }
 
@@ -6520,14 +2917,26 @@
             // 1. Apply the static theme (logo, colors, address, etc.)
             applyIssuerTheme(safeCompanyName);
             
-            // 2. Prepare default customizable template settings based on the company's authorized signer
-            const shop = findRegisteredShop(safeCompanyName);
-            let shopTheme = (shop && shop.themeColor) ? shop.themeColor : '#1A6FBF';
-            let shopSignerRaw = getAuthorizedSignerForCompany(safeCompanyName);
-            let shopSigner = formatSignerDisplay(shopSignerRaw);
-            let shopRole = getAuthorizedSignerRoleForCompany(safeCompanyName) || 'ผู้เสนอราคา';
-            let shopHasLogo = (shop && shop.logo) ? true : false;
-            let shopSignature = (shop && (shop.signature || shop.signatureImage)) || '';
+            // 2. Prepare default customizable template settings based on the shop's defaults
+            let shopTheme = '#1A6FBF';
+            let currentUserName = (currentUser ? (currentUser.displayName || currentUser.email) : '') || '';
+            let shopSigner = currentUserName ? `( ${currentUserName} )` : '';
+            let shopHasLogo = true;
+            let shopSignature = '';
+            
+            if (safeCompanyName && registeredShopsCache) {
+                const shop = registeredShopsCache.find(s => {
+                    const sName = typeof s === 'string' ? s : (s.name || '');
+                    return sName.trim() === String(safeCompanyName).trim();
+                });
+                if (shop && typeof shop !== 'string') {
+                    if (shop.themeColor) shopTheme = shop.themeColor;
+                    if (shop.signer) shopSigner = shop.signer;
+                    if (!shop.logo) shopHasLogo = false;
+                    if (shop.signature) shopSignature = shop.signature;
+                    if (shop.signatureImage) shopSignature = shop.signatureImage;
+                }
+            }
 
             if (shopSignature) {
                 const compSigs = getSavedSignatures(safeCompanyName);
@@ -6575,7 +2984,7 @@
                 hdrPadding: preferredHdrPadding,
                 tableMarginTop: primaryTemplate.tableMarginTop || 0,
                 sellerName: shopSigner,
-                sellerRole: shopRole,
+                sellerRole: 'ผู้เสนอราคา',
                 headerDirection: 'row',
                 headerTextAlign: 'auto',
                 headerVAlign: 'flex-start',
@@ -6587,7 +2996,6 @@
                 zebraStripes: preferredZebra,
                 autoPageBreak: preferredAutoBreak,
                 leftSignerTitle: 'ผู้สั่งซื้อ',
-                buyerRole: 'ผู้มีอำนาจลงนาม',
                 sincerelyYours: 'ขอแสดงความนับถือ / Sincerely Yours,',
                 useSignatureImage: !!shopSignature,
                 activeSignatures: shopSignature ? [{
@@ -6603,15 +3011,6 @@
                 signatureOffsetX: 0,
                 signatureOffsetY: 0,
                 issuerName: safeCompanyName,
-                issuerCustomName: safeCompanyName,
-                issuerAddress: (shop && shop.address && shop.address.trim()) ? shop.address : MENTRA_OFFICIAL.address,
-                contactBreakMode: '2-lines',
-                issuerContact: buildDefaultContactPlainText(
-                    shop ? (shop.phone || shop.tel) : MENTRA_OFFICIAL.phone,
-                    shop ? shop.email : MENTRA_OFFICIAL.email,
-                    shop ? shop.taxId : MENTRA_OFFICIAL.taxId,
-                    '2-lines'
-                ),
                 headerLayout: {
                     left: ["block-logo", "block-company"],
                     center: [],
@@ -6622,13 +3021,6 @@
                     botLeft: [],
                     botCenter: [],
                     botRight: []
-                },
-                headerFlex: {
-                    left: '2',
-                    center: '0.2',
-                    right: '1.2',
-                    midLeft: '1', midCenter: '1', midRight: '1',
-                    botLeft: '1', botCenter: '1', botRight: '1'
                 },
                 infoPanelOrder: ['pRecipientPanel', 'pInfoResizer', 'pDocDetailsPanel'],
                 infoPanelLeftFlex: '1.4',
@@ -6654,20 +3046,9 @@
             const savedSettings = (window.quotationTemplates && window.quotationTemplates[safeCompanyName]) 
                                   ? window.quotationTemplates[safeCompanyName] 
                                   : null;
-            if (savedSettings && savedSettings.sellerName && isEmail(savedSettings.sellerName)) {
-                delete savedSettings.sellerName;
-            }
             
             // 4. Merge and apply
             const finalSettings = Object.assign({}, defaultSettings, savedSettings);
-
-            // If template had no signer or an email, enforce the company authorized signer
-            if (!finalSettings.sellerName || isEmail(finalSettings.sellerName)) {
-                finalSettings.sellerName = shopSigner;
-            }
-            if (!finalSettings.sellerRole) {
-                finalSettings.sellerRole = shopRole;
-            }
 
             // If this company's saved settings don't explicitly set a custom font, inherit user's preferred font!
             if (savedSettings) {
@@ -6685,16 +3066,6 @@
             }
             
             applyTemplateSettings(finalSettings);
-
-            // Also keep left form inputs and preview synchronized to company authorized signer
-            const inputSeller = document.getElementById('sellerName');
-            if (inputSeller) inputSeller.value = getCleanSignerRaw(finalSettings.sellerName);
-            const inputRole = document.getElementById('sellerRole');
-            if (inputRole && finalSettings.sellerRole) inputRole.value = finalSettings.sellerRole;
-            const pSeller = document.getElementById('pSellerName');
-            if (pSeller) pSeller.innerText = formatSignerDisplay(finalSettings.sellerName);
-            const pRole = document.getElementById('pSellerRole');
-            if (pRole && finalSettings.sellerRole) pRole.innerText = finalSettings.sellerRole;
         }
 
         let sortables = [];
@@ -6708,8 +3079,6 @@
             
             document.getElementById('livePreviewContainer').appendChild(printArea);
             printArea.style.display = 'block';
-            printArea.style.width = '794px';
-            printArea.style.minHeight = '1123px';
             printArea.style.boxShadow = '0 16px 40px rgba(0,0,0,0.28), 0 4px 12px rgba(0,0,0,0.15)';
             printArea.style.borderRadius = '3px';
             printArea.style.transformOrigin = 'top center';
@@ -6717,49 +3086,6 @@
             printArea.style.marginBottom = '60px';
             
             document.getElementById('templateSettingsModal').style.display = 'flex';
-            
-            // Sync Issuer settings fields with current document preview
-            const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-            const savedTemplate = (window.quotationTemplates && window.quotationTemplates[currentIssuer]) ? window.quotationTemplates[currentIssuer] : null;
-
-            const setIssuerName = document.getElementById('settingIssuerName');
-            const pName = document.getElementById('pIssuerName');
-            if (setIssuerName) {
-                if (savedTemplate && savedTemplate.issuerCustomName) {
-                    setIssuerName.value = savedTemplate.issuerCustomName;
-                } else if (!setIssuerName.value && pName) {
-                    setIssuerName.value = pName.innerText.trim();
-                }
-            }
-
-            const setIssuerAddr = document.getElementById('settingIssuerAddress');
-            const pAddr = document.getElementById('pIssuerAddress');
-            if (setIssuerAddr) {
-                if (savedTemplate && savedTemplate.issuerAddress !== undefined) {
-                    setIssuerAddr.value = savedTemplate.issuerAddress;
-                } else if (!setIssuerAddr.value && pAddr) {
-                    let temp = document.createElement('div');
-                    temp.innerHTML = pAddr.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
-                    setIssuerAddr.value = (temp.textContent || temp.innerText || '').trim();
-                }
-            }
-
-            const setBreakMode = document.getElementById('settingContactBreakMode');
-            if (setBreakMode && savedTemplate && savedTemplate.contactBreakMode) {
-                setBreakMode.value = savedTemplate.contactBreakMode;
-            }
-
-            const setIssuerContact = document.getElementById('settingIssuerContact');
-            const pContact = document.getElementById('pIssuerContact');
-            if (setIssuerContact) {
-                if (savedTemplate && savedTemplate.issuerContact !== undefined) {
-                    setIssuerContact.value = savedTemplate.issuerContact;
-                } else if (!setIssuerContact.value && pContact) {
-                    let temp = document.createElement('div');
-                    temp.innerHTML = pContact.innerHTML.replace(/<br\s*[\/]?>/gi, '\n').replace(/&nbsp;/g, ' ');
-                    setIssuerContact.value = (temp.textContent || temp.innerText || '').trim();
-                }
-            }
             
             // Enable SortableJS for drag-and-drop 3x3 grid header layout
             const zones = [
@@ -6802,6 +3128,7 @@
             sortables.forEach(s => s.destroy());
             sortables = [];
             document.querySelectorAll('.sortable-active-container').forEach(el => el.classList.remove('sortable-active-container'));
+            document.querySelectorAll('.header-resizer').forEach(el => el.remove());
             document.body.classList.remove('modal-open');
 
             if (printAreaOriginalParent) {
@@ -6809,9 +3136,6 @@
             }
             printArea.style.display = 'block';
             printArea.style.boxShadow = '';
-            printArea.style.width = '';
-            printArea.style.minHeight = '';
-            printArea.style.marginBottom = '';
             setPreviewZoom(previewZoomLevel);
 
             document.getElementById('templateSettingsModal').style.display = 'none';
@@ -6821,21 +3145,11 @@
             const primaryColor = document.getElementById('settingPrimaryColor').value;
             const showLogo = document.getElementById('settingShowLogo').checked;
             const logoSize = document.getElementById('settingLogoSize').value;
-            const fontSize = document.getElementById('settingFontSize')?.value || '11';
-            const headerFontSize = document.getElementById('settingHeaderFontSize')?.value || '11';
-            const rowPadding = document.getElementById('settingTableRowPadding')?.value || '5';
-            const hdrPadding = document.getElementById('settingTableHeaderPadding')?.value || '6.5';
-            const tableMarginTop = document.getElementById('settingTableMarginTop')?.value || '0';
-            const sellerNameInput = document.getElementById('settingSellerName');
-            let sellerName = sellerNameInput ? sellerNameInput.value.trim() : '';
-            if (!sellerName || isEmail(sellerName)) {
-                const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                sellerName = formatSignerDisplay(getAuthorizedSignerForCompany(currentIssuer));
-                if (sellerNameInput) sellerNameInput.value = sellerName;
-            }
-            const sellerRole = document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา';
+            const fontSize = document.getElementById('settingFontSize').value;
+            const headerFontSize = document.getElementById('settingHeaderFontSize').value;
+            const sellerName = document.getElementById('settingSellerName').value;
+            const sellerRole = document.getElementById('settingSellerRole').value;
             const leftSignerTitle = document.getElementById('settingLeftSignerTitle') ? document.getElementById('settingLeftSignerTitle').value : 'ผู้สั่งซื้อ';
-            const buyerRole = document.getElementById('settingBuyerRole') ? document.getElementById('settingBuyerRole').value : 'ผู้มีอำนาจลงนาม';
             const sincerelyYours = document.getElementById('settingSincerelyYours') ? document.getElementById('settingSincerelyYours').value : 'ขอแสดงความนับถือ / Sincerely Yours,';
             const introText = document.getElementById('settingIntroText') ? document.getElementById('settingIntroText').value : 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:';
             const fontFamily = document.getElementById('settingFontFamily') ? document.getElementById('settingFontFamily').value : 'Sarabun';
@@ -6858,12 +3172,6 @@
             if (fsLabel) fsLabel.innerText = fontSize;
             const hfsLabel = document.getElementById('hdrFontSizeLabel');
             if (hfsLabel) hfsLabel.innerText = headerFontSize;
-            const rpLabel = document.getElementById('rowPaddingLabel');
-            if (rpLabel) rpLabel.innerText = rowPadding;
-            const hpLabel = document.getElementById('hdrPaddingLabel');
-            if (hpLabel) hpLabel.innerText = hdrPadding;
-            const tmtLabel = document.getElementById('tableMarginTopLabel');
-            if (tmtLabel) tmtLabel.innerText = tableMarginTop;
             const sigImgSizeLbl = document.getElementById('sigImgSizeLabel');
             if (sigImgSizeLbl) sigImgSizeLbl.innerText = sigImgSize;
             const sigOffsetXLabel = document.getElementById('sigOffsetXLabel');
@@ -6982,7 +3290,7 @@
                 #printArea, #printArea *, .print-area, .print-area *, #pPageWrapper, #pPageWrapper *, #__printOnlyWrapper, #__printOnlyWrapper * {
                     font-family: '${fontFamily}', 'Sarabun', 'Tahoma', sans-serif !important;
                 }
-                #pPageWrapper, .print-area > div, #__printOnlyWrapper > div {
+                #pPageWrapper:not(.auto-fit-single-page), .print-area:not(.auto-fit-single-page) > div, #__printOnlyWrapper:not(.auto-fit-single-page) > div {
                     font-size: ${fontSize}px !important;
                     font-weight: ${fontWeight} !important;
                 }
@@ -7004,9 +3312,14 @@
                 .print-area .pTableHeadRow th:last-child {
                     border-right: none !important;
                 }
-                .print-area .pItemsTable td {
+                .print-area:not(.auto-fit-single-page) .pItemsTable td {
                     ${cellBorderCSS}
                     line-height: 1.35 !important;
+                    vertical-align: middle !important;
+                }
+                .print-area.auto-fit-single-page .pItemsTable td, #pPageWrapper.auto-fit-single-page .pItemsTable td {
+                    ${cellBorderCSS}
+                    line-height: 1.18 !important;
                     vertical-align: middle !important;
                 }
                 .print-area .pItemsTable tbody tr {
@@ -7016,7 +3329,7 @@
                 .print-area #pHeaderSection {
                     ${showHeaderLine ? `border-bottom: 2.5px solid ${primaryColor} !important;` : 'border-bottom: none !important;'}
                 }
-                .print-area #pSellerRole, .print-area #pBuyerRole {
+                .print-area #pSellerRole {
                     color: ${primaryColor} !important;
                 }
                 .print-area #pRecipientPanel table tr, 
@@ -7045,13 +3358,6 @@
             if (titleBlock) {
                 const titleText = titleBlock.querySelector('div:first-child');
                 if (titleText) titleText.style.color = primaryColor;
-            }
-
-            // Sync issuer contact keyword highlight color with current primaryColor
-            const pIssuerContact = document.getElementById('pIssuerContact');
-            const settingIssuerContact = document.getElementById('settingIssuerContact');
-            if (pIssuerContact && settingIssuerContact && settingIssuerContact.value) {
-                pIssuerContact.innerHTML = formatContactHTML(settingIssuerContact.value, primaryColor);
             }
 
             const pIntroText = document.getElementById('pIntroText');
@@ -7111,42 +3417,40 @@
             // Apply Signature Settings
             const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
             const pBuyerDots = document.getElementById('pBuyerSignatureDots');
-            const pBuyerRole = document.getElementById('pBuyerRole');
-            const pBuyerSpace = document.getElementById('pBuyerSignatureSpace');
             const pBuyerDate = document.getElementById('pBuyerSignatureDate');
             const pLeftTitle = document.getElementById('pLeftSignerTitle');
             const pSellerSpace = document.getElementById('pSellerSignatureSpace');
             const pSellerSigWrapper = document.getElementById('pSellerSignatureWrapper');
             const pSellerSigImg = document.getElementById('pSellerSignatureImg');
 
-            const showSigDate = document.getElementById('settingShowSignatureDate') ? document.getElementById('settingShowSignatureDate').checked : false;
-            const pSellerDate = document.getElementById('pSellerSignatureDate');
-            if (pSellerDate) {
-                pSellerDate.style.display = showSigDate ? 'flex' : 'none';
-            }
-
-            if (pBuyerBlock) {
+            if (pBuyerBlock && pBuyerDots && pBuyerDate) {
                 if (sigFormat === 'hidden') {
                     pBuyerBlock.style.visibility = 'hidden';
                 } else if (sigFormat === 'line_only') {
                     pBuyerBlock.style.visibility = 'visible';
-                    if (pBuyerDots) pBuyerDots.style.display = 'none';
-                    if (pBuyerRole) pBuyerRole.style.display = 'none';
-                    if (pBuyerDate) pBuyerDate.style.display = 'none';
+                    pBuyerDots.style.display = 'none';
+                    pBuyerDate.style.display = 'none';
                 } else {
                     pBuyerBlock.style.visibility = 'visible';
-                    if (pBuyerDots) pBuyerDots.style.display = 'none';
-                    if (pBuyerRole) pBuyerRole.style.display = buyerRole ? 'block' : 'none';
-                    if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
+                    pBuyerDots.style.display = 'block';
+                    pBuyerDate.style.display = 'flex';
                 }
             }
+            const pPageWrap = document.getElementById('pPageWrapper');
+            const isAutoFit = pPageWrap && pPageWrap.classList.contains('auto-fit-single-page');
             if (pLeftTitle) {
-                pLeftTitle.style.marginBottom = '4px';
-            }
-            if (pBuyerSpace) {
-                pBuyerSpace.style.height = sigSize + 'px';
+                let marginBase = isAutoFit ? 8 : Math.max(10, sigSize - 22);
+                if (sigFormat === 'line_only') {
+                     marginBase += isAutoFit ? 12 : 24;
+                }
+                pLeftTitle.style.marginBottom = marginBase + 'px';
             }
             if (pSellerSpace) {
+                pSellerSpace.style.height = (isAutoFit ? Math.min(sigSize, 26) : sigSize) + 'px';
+            }
+
+            // Apply Multi-Signatures / Stamps & Position (Container height remains fixed; images float above the line)
+            if (pSellerSpace && !isAutoFit) {
                 pSellerSpace.style.height = sigSize + 'px';
             }
             if (pSellerSpace) {
@@ -7171,18 +3475,13 @@
                 pLogo.style.height = `${logoSize}px`;
             }
 
-            // Apply Seller & Buyer Info
+            // Apply Seller Info
             const pSellerName = document.getElementById('pSellerName');
             const pSellerRole = document.getElementById('pSellerRole');
             const pLeftSigner = document.getElementById('pLeftSignerTitle');
             const pRightSigner = document.getElementById('pRightSignerTitle');
-            const pBuyerRoleEl = document.getElementById('pBuyerRole');
             
-            if (pSellerName) pSellerName.innerText = formatSignerDisplay(sellerName);
-            const formSellerName = document.getElementById('sellerName');
-            if (formSellerName && (!formSellerName.value || isEmail(formSellerName.value))) {
-                formSellerName.value = getCleanSignerRaw(sellerName);
-            }
+            if (pSellerName) pSellerName.innerText = sellerName;
 
             const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
 
@@ -7190,12 +3489,10 @@
                 if (pSellerRole) pSellerRole.innerText = docConfig.sellerRole;
                 if (pLeftSigner) pLeftSigner.innerText = docConfig.leftSignerTitle;
                 if (pRightSigner) pRightSigner.innerText = docConfig.rightSignerTitle;
-                if (pBuyerRoleEl) pBuyerRoleEl.innerText = docConfig.buyerRole || '';
             } else {
                 if (pSellerRole) pSellerRole.innerText = sellerRole;
                 if (pLeftSigner) pLeftSigner.innerText = leftSignerTitle;
                 if (pRightSigner) pRightSigner.innerText = sincerelyYours;
-                if (pBuyerRoleEl) pBuyerRoleEl.innerText = buyerRole || '';
             }
 
             // Re-render table data
@@ -7253,18 +3550,9 @@
                     rowPadding: document.getElementById('settingTableRowPadding')?.value || '5',
                     hdrPadding: document.getElementById('settingTableHeaderPadding')?.value || '6.5',
                     tableMarginTop: document.getElementById('settingTableMarginTop')?.value || '0',
-                    sellerName: (() => {
-                        let s = document.getElementById('settingSellerName')?.value || '';
-                        if (!s || isEmail(s)) {
-                            s = formatSignerDisplay(getAuthorizedSignerForCompany(currentIssuerDisplay));
-                            const el = document.getElementById('settingSellerName');
-                            if (el) el.value = s;
-                        }
-                        return s;
-                    })(),
+                    sellerName: document.getElementById('settingSellerName')?.value || '',
                     sellerRole: document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา',
                     leftSignerTitle: document.getElementById('settingLeftSignerTitle')?.value || 'ผู้สั่งซื้อ',
-                    buyerRole: document.getElementById('settingBuyerRole')?.value || 'ผู้มีอำนาจลงนาม',
                     sincerelyYours: document.getElementById('settingSincerelyYours')?.value || 'ขอแสดงความนับถือ / Sincerely Yours,',
                     headerDirection: document.getElementById('settingHeaderDirection')?.value || 'row',
                     headerRows: document.getElementById('settingHeaderRows')?.value || '3',
@@ -7281,7 +3569,6 @@
                     showHeaderLine: document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true,
                     signatureFormat: document.getElementById('settingSignatureFormat')?.value || 'full',
                     signatureSize: document.getElementById('settingSignatureSize')?.value || '40',
-                    showSignatureDate: document.getElementById('settingShowSignatureDate') ? document.getElementById('settingShowSignatureDate').checked : false,
                     useSignatureImage: useSigImg,
                     activeSignatures: JSON.parse(JSON.stringify(window.activeSignatures || [])),
                     signatureImage: primarySigUrl,
@@ -7290,10 +3577,6 @@
                     signatureOffsetY: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].offsetY || 0) : 0,
                     introText: document.getElementById('settingIntroText')?.value || 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:',
                     issuerName: currentIssuerDisplay,
-                    issuerCustomName: document.getElementById('settingIssuerName')?.value || '',
-                    issuerAddress: document.getElementById('settingIssuerAddress')?.value || '',
-                    contactBreakMode: document.getElementById('settingContactBreakMode')?.value || '2-lines',
-                    issuerContact: document.getElementById('settingIssuerContact')?.value || '',
                     headerLayout: typeof getCurrentHeaderLayout === 'function' ? getCurrentHeaderLayout() : null,
                     infoPanelOrder: typeof getInfoPanelOrder === 'function' ? getInfoPanelOrder() : ['pRecipientPanel', 'pInfoResizer', 'pDocDetailsPanel'],
                     infoPanelLeftFlex: typeof getInfoPanelFlex === 'function' ? getInfoPanelFlex('left') : '1.4',
@@ -7547,85 +3830,39 @@
                 if (!resizer || resizer._resizerBound) return;
                 resizer._resizerBound = true;
 
-                const startDrag = (clientX) => {
+                resizer.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const row = resizer.closest('[id^="header-row-"]');
                     const leftZone = document.getElementById(def.left);
                     const rightZone = document.getElementById(def.right);
                     if (!row || !leftZone || !rightZone) return;
 
-                    const rowRect = row.getBoundingClientRect();
-                    const totalWidth = rowRect.width;
-                    if (totalWidth <= 0) return;
-
-                    const rowZones = Array.from(row.querySelectorAll('.header-zone'));
-                    const rowTotalFlex = rowZones.reduce((sum, z) => sum + (parseFloat(z.style.flex) || 1), 0);
-
-                    const startX = clientX;
+                    const startX = e.clientX;
                     const startLeftFlex = parseFloat(leftZone.style.flex) || 1;
                     const startRightFlex = parseFloat(rightZone.style.flex) || 1;
-                    const pairFlexSum = startLeftFlex + startRightFlex;
-
                     resizer.classList.add('resizing');
                     document.body.classList.add('info-resizing');
 
-                    const onMove = (moveClientX) => {
-                        const deltaX = moveClientX - startX;
-                        const deltaFlex = (deltaX / totalWidth) * rowTotalFlex;
-                        let newLeft = Math.max(0.1, startLeftFlex + deltaFlex);
-                        let newRight = Math.max(0.1, pairFlexSum - newLeft);
-                        newLeft = Math.max(0.1, pairFlexSum - newRight);
-
+                    const onMouseMove = (e) => {
+                        const totalWidth = row.offsetWidth;
+                        const deltaX = e.clientX - startX;
+                        const deltaRatio = deltaX / totalWidth;
+                        const totalFlex = startLeftFlex + startRightFlex;
+                        let newLeft = Math.max(0.1, startLeftFlex + deltaRatio * totalFlex);
+                        let newRight = Math.max(0.1, totalFlex - newLeft);
                         leftZone.style.flex = newLeft.toFixed(3);
                         rightZone.style.flex = newRight.toFixed(3);
                     };
-
-                    const onEnd = () => {
+                    const onMouseUp = () => {
                         resizer.classList.remove('resizing');
                         document.body.classList.remove('info-resizing');
-                        window.removeEventListener('mousemove', onMouseMove);
-                        window.removeEventListener('mouseup', onMouseUp);
-                        window.removeEventListener('touchmove', onTouchMove);
-                        window.removeEventListener('touchend', onTouchEnd);
-                        window.removeEventListener('touchcancel', onTouchEnd);
-                        if (typeof applyLivePreview === 'function') {
-                            applyLivePreview();
-                        }
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
                     };
-
-                    const onMouseMove = (e) => {
-                        onMove(e.clientX);
-                    };
-                    const onMouseUp = () => {
-                        onEnd();
-                    };
-                    const onTouchMove = (e) => {
-                        if (e.touches && e.touches.length > 0) {
-                            onMove(e.touches[0].clientX);
-                        }
-                    };
-                    const onTouchEnd = () => {
-                        onEnd();
-                    };
-
-                    window.addEventListener('mousemove', onMouseMove);
-                    window.addEventListener('mouseup', onMouseUp);
-                    window.addEventListener('touchmove', onTouchMove, { passive: true });
-                    window.addEventListener('touchend', onTouchEnd);
-                    window.addEventListener('touchcancel', onTouchEnd);
-                };
-
-                resizer.addEventListener('mousedown', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    startDrag(e.clientX);
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
                 });
-
-                resizer.addEventListener('touchstart', function(e) {
-                    if (e.touches && e.touches.length > 0) {
-                        e.stopPropagation();
-                        startDrag(e.touches[0].clientX);
-                    }
-                }, { passive: true });
             });
         }
 
@@ -7850,30 +4087,17 @@
                 const tmtLbl = document.getElementById('tableMarginTopLabel');
                 if (tmtLbl) tmtLbl.innerText = settings.tableMarginTop;
             }
-            const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-            const companyAuthorizedSigner = getAuthorizedSignerForCompany(currentIssuer);
-            const companyAuthorizedRole = getAuthorizedSignerRoleForCompany(currentIssuer);
-
-            if (settings.sellerName && !isEmail(settings.sellerName)) {
+            if (settings.sellerName) {
                 document.getElementById('settingSellerName').value = settings.sellerName;
                 const formSellerName = document.getElementById('sellerName');
                 if (formSellerName) formSellerName.value = settings.sellerName.replace(/^\(|\)$/g, '').trim();
-            } else {
-                document.getElementById('settingSellerName').value = formatSignerDisplay(companyAuthorizedSigner);
-                const formSellerName = document.getElementById('sellerName');
-                if (formSellerName) formSellerName.value = companyAuthorizedSigner;
             }
-            if (settings.sellerRole && settings.sellerRole.trim()) {
+            if (settings.sellerRole) {
                 document.getElementById('settingSellerRole').value = settings.sellerRole;
                 const formSellerRole = document.getElementById('sellerRole');
                 if (formSellerRole) formSellerRole.value = settings.sellerRole;
-            } else {
-                document.getElementById('settingSellerRole').value = companyAuthorizedRole;
-                const formSellerRole = document.getElementById('sellerRole');
-                if (formSellerRole) formSellerRole.value = companyAuthorizedRole;
             }
             if (settings.leftSignerTitle) document.getElementById('settingLeftSignerTitle').value = settings.leftSignerTitle;
-            if (settings.buyerRole !== undefined) document.getElementById('settingBuyerRole').value = settings.buyerRole;
             if (settings.sincerelyYours) document.getElementById('settingSincerelyYours').value = settings.sincerelyYours;
             
             const hdEl = document.getElementById('settingHeaderDirection');
@@ -7919,9 +4143,6 @@
 
             const sigSizeEl = document.getElementById('settingSignatureSize');
             if (sigSizeEl) sigSizeEl.value = settings.signatureSize || '40';
-
-            const showSigDateEl = document.getElementById('settingShowSignatureDate');
-            if (showSigDateEl) showSigDateEl.checked = settings.showSignatureDate === true;
 
             const useSigEl = document.getElementById('settingUseSignatureImage');
             if (useSigEl) useSigEl.checked = settings.useSignatureImage !== undefined ? settings.useSignatureImage : false;
@@ -7987,36 +4208,6 @@
                 if (document.getElementById('settingLabelPayment')) document.getElementById('settingLabelPayment').value = settings.infoLabels.payment || 'ชำระเงิน / Payment:';
             }
             
-            // Restore Issuer custom details (Name, Address, Contact line breaks)
-            if (settings.issuerCustomName !== undefined && settings.issuerCustomName.trim()) {
-                const el = document.getElementById('settingIssuerName');
-                if (el) el.value = settings.issuerCustomName;
-                const pName = document.getElementById('pIssuerName');
-                if (pName) pName.innerText = settings.issuerCustomName;
-            } else if (settings.issuerName) {
-                const el = document.getElementById('settingIssuerName');
-                if (el && !el.value) el.value = settings.issuerName;
-            }
-
-            if (settings.issuerAddress !== undefined && settings.issuerAddress.trim()) {
-                const el = document.getElementById('settingIssuerAddress');
-                if (el) el.value = settings.issuerAddress;
-                const pAddr = document.getElementById('pIssuerAddress');
-                if (pAddr) pAddr.innerHTML = settings.issuerAddress.replace(/\n/g, '<br>');
-            }
-
-            if (settings.contactBreakMode) {
-                const el = document.getElementById('settingContactBreakMode');
-                if (el) el.value = settings.contactBreakMode;
-            }
-
-            if (settings.issuerContact !== undefined && settings.issuerContact.trim()) {
-                const el = document.getElementById('settingIssuerContact');
-                if (el) el.value = settings.issuerContact;
-                const pContact = document.getElementById('pIssuerContact');
-                if (pContact) pContact.innerHTML = formatContactHTML(settings.issuerContact, settings.primaryColor);
-            }
-
             applyInfoPanelSettings();
 
             // Re-run apply function to update styles silently if modal is closed
@@ -8232,10 +4423,6 @@
         }
 
         async function autoImportProject(projectId, source) {
-            if (isImportingProject || hasAutoImported) {
-                return;
-            }
-            isImportingProject = true;
             try {
                 const collectionName = (source === 'company') ? 'company_material_projects' : 'material_projects';
                 
@@ -8247,10 +4434,10 @@
                     return [];
                 };
 
-                // 1. Check pending_quotation_project from sessionStorage and localStorage first
+                // 1. Check pending_quotation_project from localStorage first (most direct & fresh)
                 let pendingProj = null;
                 try {
-                    const pendingRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
+                    const pendingRaw = localStorage.getItem('pending_quotation_project');
                     if (pendingRaw) {
                         const parsed = JSON.parse(pendingRaw);
                         if (parsed && (String(parsed.projectId) === String(projectId) || !projectId)) {
@@ -8275,18 +4462,10 @@
                     console.warn("Could not read local material_projects cache:", e);
                 }
 
-                // Fast check: do we already have items locally?
-                let finalItems = [];
-                if (pendingProj && toItemsArray(pendingProj.items).length > 0) {
-                    finalItems = toItemsArray(pendingProj.items);
-                } else if (localCacheProj && toItemsArray(localCacheProj.items).length > 0) {
-                    finalItems = toItemsArray(localCacheProj.items);
-                }
-
-                // 3. Fallback to Firestore ONLY if no items found locally and projectId is provided
+                // 3. Check Firestore
                 let firestoreProj = null;
-                if (finalItems.length === 0 && projectId) {
-                    try {
+                try {
+                    if (projectId) {
                         const projSnap = await getDoc(doc(db, collectionName, String(projectId)));
                         if (projSnap.exists()) {
                             firestoreProj = projSnap.data();
@@ -8304,77 +4483,76 @@
                                 console.warn("Collection scan fallback failed:", scanErr);
                             }
                         }
-                    } catch (snapErr) {
-                        console.warn("Could not fetch project from Firestore:", snapErr);
                     }
-
-                    if (firestoreProj && toItemsArray(firestoreProj.items).length > 0) {
-                        finalItems = toItemsArray(firestoreProj.items);
-                    }
+                } catch (snapErr) {
+                    console.warn("Could not fetch project from Firestore:", snapErr);
                 }
 
                 // Combine sources with priority: pendingProj > localCacheProj > firestoreProj
                 const proj = Object.assign({}, firestoreProj || {}, localCacheProj || {}, pendingProj || {});
 
-                if (finalItems.length === 0 && proj && toItemsArray(proj.items).length > 0) {
+                // Determine best items list
+                let finalItems = [];
+                if (pendingProj && toItemsArray(pendingProj.items).length > 0) {
+                    finalItems = toItemsArray(pendingProj.items);
+                } else if (localCacheProj && toItemsArray(localCacheProj.items).length > 0) {
+                    finalItems = toItemsArray(localCacheProj.items);
+                } else if (firestoreProj && toItemsArray(firestoreProj.items).length > 0) {
+                    finalItems = toItemsArray(firestoreProj.items);
+                } else if (proj && toItemsArray(proj.items).length > 0) {
                     finalItems = toItemsArray(proj.items);
+                }
+
+                if (!proj || !finalItems || finalItems.length === 0) {
+                    console.warn("autoImportProject: No project or items found for", projectId);
+                    if (typeof showToast === 'function') {
+                        showToast('ไม่พบรายการวัสดุในโครงการนี้', 'warning');
+                    }
+                    return;
                 }
 
                 // Populate table using standard addHeaderRow / addTableRow
                 const tbody = document.getElementById('itemsBody');
                 if (tbody) tbody.innerHTML = '';
 
-                if (finalItems.length > 0) {
-                    finalItems.forEach(item => {
-                        const price = Number(item.unitPrice) || Number(item.price) || Number(item.targetPrice) || Number(item.foundPrice) || 0;
-                        const qtyVal = Number(item.qty) || 1;
-                        
-                        let displayName = item.desc || item.name || '';
-                        if (item.storeInfo && item.storeInfo.trim() !== '') {
-                            displayName += ` (ร้าน: ${item.storeInfo.trim()})`;
-                        }
-                        
-                        if (item.isHeader) {
-                            addHeaderRow({ customNo: item.customNo || '', desc: displayName });
-                        } else {
-                            addTableRow({
-                                customNo: item.customNo || '',
-                                desc: displayName,
-                                qty: qtyVal,
-                                unit: item.unit || 'ชุด',
-                                price: price
-                            });
-                        }
-                    });
-                } else {
-                    // No items found in project: ensure at least 1 empty row so table is usable
-                    console.warn("autoImportProject: No items found for", projectId);
-                    addTableRow();
-                    if (typeof showToast === 'function') {
-                        showToast('ไม่พบรายการวัสดุในโครงการนี้', 'warning');
+                finalItems.forEach(item => {
+                    const price = Number(item.unitPrice) || Number(item.price) || Number(item.targetPrice) || Number(item.foundPrice) || 0;
+                    const qtyVal = Number(item.qty) || 1;
+                    
+                    let displayName = item.desc || item.name || '';
+                    if (item.storeInfo && item.storeInfo.trim() !== '') {
+                        displayName += ` (ร้าน: ${item.storeInfo.trim()})`;
                     }
-                }
+                    
+                    if (item.isHeader) {
+                        addHeaderRow({ customNo: item.customNo || '', desc: displayName });
+                    } else {
+                        addTableRow({
+                            customNo: item.customNo || '',
+                            desc: displayName,
+                            qty: qtyVal,
+                            unit: item.unit || 'ชุด',
+                            price: price
+                        });
+                    }
+                });
 
                 // Apply Issuer Theme:
                 const urlParams = new URLSearchParams(window.location.search);
                 const paramShop = urlParams.get('shop');
                 let targetIssuer = paramShop;
-
-                // 1. If proj.shop is explicitly set
-                if (!targetIssuer && proj.shop) {
-                    const s = Array.isArray(proj.shop) ? proj.shop[0] : proj.shop;
-                    if (s && String(s).trim()) targetIssuer = String(s).trim();
-                }
-
-                // 2. If proj.company is different from customer institution
-                if (!targetIssuer && proj.company && proj.company !== proj.institution && source !== 'company') {
+                
+                if (!targetIssuer && proj.company && source !== 'company') {
                     const shopName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
-                    if (shopName && String(shopName).trim()) {
-                        targetIssuer = String(shopName).trim();
+                    if (shopName && shopName.trim() !== '') {
+                        targetIssuer = shopName.trim();
                     }
                 }
-
-                // 3. Keep current issuer if already selected and not default placeholder
+                
+                if (!targetIssuer && proj.shop && source === 'company') {
+                    targetIssuer = Array.isArray(proj.shop) ? proj.shop[0] : proj.shop;
+                }
+                
                 if (!targetIssuer) {
                     const currentIssuerText = document.getElementById('currentIssuerDisplay')?.innerText?.trim();
                     if (currentIssuerText && !currentIssuerText.includes('กรุณาเลือกบริษัท')) {
@@ -8397,89 +4575,64 @@
                     if (vatSelect) vatSelect.value = 'exclusive';
                 }
 
-                // Populate Customer Info immediately from proj
+                // Populate Customer Info
+                let instDetails = {};
                 if (source === 'company') {
+                    // In company page: proj.company = company/customer name
                     if (proj.company && proj.company.trim() !== '' && proj.company.trim() !== 'ไม่ระบุบริษัท') {
                         let instName = proj.company.trim();
-                        if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
-                        if (document.getElementById('toAddress')) document.getElementById('toAddress').value = proj.address || '';
-                        if (document.getElementById('toAttn')) document.getElementById('toAttn').value = proj.attn || proj.contactPerson || '';
-                        if (document.getElementById('toTel')) document.getElementById('toTel').value = proj.tel || '';
-                        if (document.getElementById('toEmail')) document.getElementById('toEmail').value = proj.email || '';
-                        if (document.getElementById('toTaxId')) document.getElementById('toTaxId').value = proj.taxId || '';
-
-                        // If address or taxId is missing, try fetching company_details in background without blocking
-                        if (!proj.address || !proj.taxId) {
-                            getDoc(doc(db, 'company_material_settings', 'company_details')).then(compSnap => {
-                                if (compSnap.exists()) {
-                                    const compDetails = compSnap.data()[instName] || {};
-                                    if (compDetails.branchType === 'branch') {
-                                        instName += ` (สาขา: ${compDetails.branchNo || '-'})`;
-                                        if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
-                                    } else if (compDetails.branchType === 'hq') {
-                                        instName += ` (สำนักงานใหญ่)`;
-                                        if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
-                                    }
-                                    if (document.getElementById('toAddress') && !document.getElementById('toAddress').value) {
-                                        document.getElementById('toAddress').value = compDetails.address || '';
-                                    }
-                                    if (document.getElementById('toAttn') && !document.getElementById('toAttn').value) {
-                                        document.getElementById('toAttn').value = compDetails.contact || '';
-                                    }
-                                    if (document.getElementById('toTel') && !document.getElementById('toTel').value) {
-                                        document.getElementById('toTel').value = compDetails.phone || '';
-                                    }
-                                    if (document.getElementById('toEmail') && !document.getElementById('toEmail').value) {
-                                        document.getElementById('toEmail').value = compDetails.email || '';
-                                    }
-                                    if (document.getElementById('toTaxId') && !document.getElementById('toTaxId').value) {
-                                        document.getElementById('toTaxId').value = compDetails.taxId || '';
-                                    }
-                                    triggerLiveSync();
+                        // Fetch company details from company_material_settings
+                        try {
+                            const compSnap = await getDoc(doc(db, 'company_material_settings', 'company_details'));
+                            if (compSnap.exists()) {
+                                const compDetails = compSnap.data()[instName] || {};
+                                
+                                // Append Branch info to Company Name
+                                if (compDetails.branchType === 'branch') {
+                                    instName += ` (สาขา: ${compDetails.branchNo || '-'})`;
+                                } else if (compDetails.branchType === 'hq') {
+                                    instName += ` (สำนักงานใหญ่)`;
                                 }
-                            }).catch(e => console.warn("Failed background company details:", e));
+
+                                if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
+                                if (document.getElementById('toAddress')) document.getElementById('toAddress').value = compDetails.address || proj.address || '';
+                                if (document.getElementById('toAttn')) document.getElementById('toAttn').value = compDetails.contact || proj.attn || proj.teacher || '';
+                                if (document.getElementById('toTel')) document.getElementById('toTel').value = compDetails.phone || proj.tel || '';
+                                if (document.getElementById('toEmail')) document.getElementById('toEmail').value = compDetails.email || proj.email || '';
+                                if (document.getElementById('toTaxId')) {
+                                    document.getElementById('toTaxId').value = compDetails.taxId || '';
+                                }
+                            } else {
+                                if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
+                            }
+                        } catch(e) {
+                            console.warn("Failed to fetch company details:", e);
+                            if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
                         }
                     }
                 } else if (proj.institution && proj.institution.trim() !== '' && proj.institution.trim() !== 'ไม่ระบุสถานศึกษา') {
                     const instName = proj.institution.trim();
                     if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
-                    if (document.getElementById('toAddress')) document.getElementById('toAddress').value = proj.address || '';
-                    if (document.getElementById('toAttn')) document.getElementById('toAttn').value = proj.attn || proj.teacher || '';
-                    if (document.getElementById('toTel')) document.getElementById('toTel').value = proj.tel || '';
-                    if (document.getElementById('toEmail')) document.getElementById('toEmail').value = proj.email || '';
-                    if (document.getElementById('toTaxId')) document.getElementById('toTaxId').value = proj.taxId || '';
-
-                    // If address or taxId is missing, try fetching institution_details in background without blocking
-                    if (!proj.address || !proj.taxId) {
-                        getDoc(doc(db, 'material_settings', 'institution_details')).then(instSnap => {
-                            if (instSnap.exists()) {
-                                const instDetails = instSnap.data()[instName] || {};
-                                if (document.getElementById('toAddress') && !document.getElementById('toAddress').value) {
-                                    document.getElementById('toAddress').value = instDetails.address || '';
-                                }
-                                if (document.getElementById('toAttn') && !document.getElementById('toAttn').value) {
-                                    document.getElementById('toAttn').value = instDetails.contact || '';
-                                }
-                                if (document.getElementById('toTel') && !document.getElementById('toTel').value) {
-                                    document.getElementById('toTel').value = instDetails.phone || '';
-                                }
-                                if (document.getElementById('toEmail') && !document.getElementById('toEmail').value) {
-                                    document.getElementById('toEmail').value = instDetails.email || '';
-                                }
-                                if (document.getElementById('toTaxId') && !document.getElementById('toTaxId').value) {
-                                    document.getElementById('toTaxId').value = instDetails.taxId || '';
-                                }
-                                triggerLiveSync();
-                            }
-                        }).catch(e => console.warn("Failed background inst details:", e));
+                    
+                    try {
+                        const instSnap = await getDoc(doc(db, 'material_settings', 'institution_details'));
+                        if (instSnap.exists()) {
+                            instDetails = instSnap.data()[instName] || {};
+                        }
+                    } catch (e) {
+                        console.warn("Could not fetch institution details:", e);
                     }
+
+                    if (document.getElementById('toAddress')) document.getElementById('toAddress').value = instDetails.address || proj.address || '';
+                    if (document.getElementById('toAttn')) document.getElementById('toAttn').value = instDetails.contact || proj.attn || proj.teacher || '';
+                    if (document.getElementById('toTel')) document.getElementById('toTel').value = instDetails.phone || proj.tel || '';
+                    if (document.getElementById('toEmail')) document.getElementById('toEmail').value = instDetails.email || proj.email || '';
                 } else {
                     if (proj.company && document.getElementById('toCompany')) document.getElementById('toCompany').value = proj.company;
                     if (proj.address && document.getElementById('toAddress')) document.getElementById('toAddress').value = proj.address;
                     if ((proj.attn || proj.teacher) && document.getElementById('toAttn')) document.getElementById('toAttn').value = proj.attn || proj.teacher;
                     if (proj.tel && document.getElementById('toTel')) document.getElementById('toTel').value = proj.tel;
                     if (proj.email && document.getElementById('toEmail')) document.getElementById('toEmail').value = proj.email;
-                    if (proj.taxId && document.getElementById('toTaxId')) document.getElementById('toTaxId').value = proj.taxId;
                 }
 
                 // Import Discount if project has discount
@@ -8515,23 +4668,21 @@
                 calculateAll();
                 triggerLiveSync();
                 
-                // Only delete temporary flag like loadPending, keep projectId, shop, docType, source!
-                try {
-                    const url = new URL(window.location);
-                    if (url.searchParams.has('loadPending')) {
-                        url.searchParams.delete('loadPending');
-                        window.history.replaceState({}, '', url);
-                    }
-                } catch(e) {}
+                // Remove search params after importing
+                const url = new URL(window.location);
+                url.searchParams.delete('projectId');
+                url.searchParams.delete('shop');
+                url.searchParams.delete('docType');
+                url.searchParams.delete('source');
+                url.searchParams.delete('loadPending');
+                window.history.replaceState({}, '', url);
 
-                if (finalItems.length > 0 && typeof showToast === 'function') {
+                if (typeof showToast === 'function') {
                     showToast(`ดึงข้อมูล ${proj.name || 'โครงการ'} เรียบร้อยแล้ว`, 'success');
                 }
 
             } catch (err) {
                 console.error("Error auto-importing project:", err);
-            } finally {
-                isImportingProject = false;
             }
         }
 
@@ -8636,59 +4787,42 @@
             }
         }
 
-        function updateIssuerBannerTheme(themeColor, sName, logoUrl) {
-            const banner = document.getElementById('currentIssuerBanner');
-            const bannerName = document.getElementById('currentIssuerDisplay');
-            const bannerLogo = document.getElementById('currentIssuerLogo');
-            const bannerIcon = document.getElementById('currentIssuerIcon');
-            
-            const color = themeColor || '#1A6FBF';
-            let hex = String(color).replace('#', '').trim();
-            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-            const r = parseInt(hex.slice(0, 2), 16) || 26;
-            const g = parseInt(hex.slice(2, 4), 16) || 111;
-            const b = parseInt(hex.slice(4, 6), 16) || 191;
-
-            if (banner) {
-                banner.style.removeProperty('background');
-                banner.style.removeProperty('box-shadow');
-                banner.style.setProperty('--issuer-color', color);
-                banner.style.setProperty('--issuer-rgb', `${r}, ${g}, ${b}`);
-            }
-            if (bannerName) {
-                bannerName.innerText = sName || '';
-                bannerName.title = sName || '';
-            }
-            if (bannerLogo && logoUrl) {
-                bannerLogo.src = logoUrl;
-                bannerLogo.style.display = 'block';
-                if (bannerIcon) bannerIcon.style.display = 'none';
-            } else {
-                if (bannerLogo) bannerLogo.style.display = 'none';
-                if (bannerIcon) {
-                    bannerIcon.style.display = 'block';
-                    bannerIcon.style.color = color;
-                }
-            }
-        }
-
         function applyIssuerTheme(companyName) {
             const printArea = document.getElementById('printArea');
             if (!printArea) return;
+            
+            let shop = null;
+            if (companyName && registeredShopsCache) {
+                shop = registeredShopsCache.find(s => {
+                    const sName = typeof s === 'string' ? s : (s.name || '');
+                    return sName.trim() === String(companyName).trim();
+                });
+            }
 
-            const shop = findRegisteredShop(companyName);
-            const isMentra = !companyName || 
-                             String(companyName).includes('เมนทร้า') || 
-                             String(companyName).toLowerCase().includes('mentra') ||
-                             (shop && (shop.name.includes('เมนทร้า') || shop.name.toLowerCase().includes('mentra')));
-
-            if ((shop && typeof shop !== 'string' && !isMentra) || (!isMentra && companyName)) {
-                // Custom shop selected (e.g. ร้านเอ็มคอมเมิร์ช, เอ เซเว่น)
-                const sName = (shop && shop.name) ? shop.name : companyName;
-                const themeColor = (shop && shop.themeColor) ? shop.themeColor : '#1A6FBF';
-                const sLogo = (shop && shop.logo) ? shop.logo : '';
-                updateIssuerBannerTheme(themeColor, sName, sLogo);
-                if (shop && shop.themeColor) {
+            if (shop && typeof shop !== 'string') {
+                const banner = document.getElementById('currentIssuerBanner');
+                const bannerName = document.getElementById('currentIssuerDisplay');
+                const bannerLogo = document.getElementById('currentIssuerLogo');
+                const bannerIcon = document.getElementById('currentIssuerIcon');
+                
+                const themeColor = shop.themeColor || '#1A6FBF';
+                if (banner) {
+                    banner.style.background = `linear-gradient(135deg, ${themeColor} 0%, ${themeColor}dd 100%)`;
+                    banner.style.boxShadow = `0 10px 25px -5px ${themeColor}55`;
+                }
+                if (bannerName) bannerName.innerText = shop.name || '';
+                if (bannerLogo && shop.logo) {
+                    bannerLogo.src = shop.logo;
+                    bannerLogo.style.display = 'block';
+                    if (bannerIcon) bannerIcon.style.display = 'none';
+                } else {
+                    if (bannerLogo) bannerLogo.style.display = 'none';
+                    if (bannerIcon) {
+                        bannerIcon.style.display = 'block';
+                        bannerIcon.style.color = themeColor;
+                    }
+                }
+                if (shop.themeColor) {
                     printArea.style.setProperty('--pdf-primary', shop.themeColor);
                     const hex = shop.themeColor.replace('#', '');
                     if(hex.length === 6 || hex.length === 8) {
@@ -8701,86 +4835,50 @@
                     printArea.style.removeProperty('--pdf-primary-light');
                 }
                 
-                document.getElementById('pIssuerName').innerText = sName || '';
-                const pSubName = document.getElementById('pIssuerSubName');
-                if (pSubName) pSubName.remove();
-                document.getElementById('pIssuerAddress').innerHTML = ((shop && shop.address) || '').replace(/\n/g, '<br>');
-                const phone = shop ? (shop.phone || shop.tel) : '';
-                const email = shop ? shop.email : '';
-                const taxId = shop ? shop.taxId : '';
-                document.getElementById('pIssuerContact').innerHTML = buildDefaultContactHTML(phone, email, taxId, '2-lines', themeColor);
+                document.getElementById('pIssuerName').innerText = shop.name || '';
+                document.getElementById('pIssuerSubName').innerText = ''; // Hide subname for custom shops
+                document.getElementById('pIssuerAddress').innerText = shop.address || '';
                 
-                if (shop && shop.logo) {
+                let contactStr = '';
+                if (shop.phone) contactStr += `<span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TEL:</span> ${shop.phone} &nbsp;&nbsp;`;
+                if (shop.taxId) contactStr += `<span style="color: var(--pdf-primary, #1A6FBF); font-weight: 600;">TAX ID:</span> ${shop.taxId}`;
+                document.getElementById('pIssuerContact').innerHTML = contactStr;
+                
+                if (shop.logo) {
                     document.getElementById('pLogoImg').src = shop.logo;
-                    document.getElementById('pLogoImg').style.display = 'block';
                     document.getElementById('settingShowLogo').checked = true;
                 } else {
                     document.getElementById('pLogoImg').style.display = 'none';
                     document.getElementById('settingShowLogo').checked = false;
                 }
                 
-                // Synchronize authorized signer and role for custom shop across form, settings, and PDF
-                const sSigner = getCleanSignerRaw(shop ? shop.signer : '');
-                const sSignerRole = (shop && shop.signerRole && shop.signerRole.trim()) ? shop.signerRole.trim() : 'ผู้เสนอราคา';
-                const formattedSigner = sSigner ? formatSignerDisplay(sSigner) : '';
-
-                const setSeller = document.getElementById('settingSellerName');
-                if (setSeller) setSeller.value = formattedSigner;
-                const formSeller = document.getElementById('sellerName');
-                if (formSeller) formSeller.value = sSigner;
-                const pSeller = document.getElementById('pSellerName');
-                if (pSeller) pSeller.innerText = formattedSigner;
-
-                const setRole = document.getElementById('settingSellerRole');
-                if (setRole) setRole.value = sSignerRole;
-                const formRole = document.getElementById('sellerRole');
-                if (formRole) formRole.value = sSignerRole;
-                const pRole = document.getElementById('pSellerRole');
-                if (pRole) pRole.innerText = sSignerRole;
+                if (shop.signer) {
+                    document.getElementById('settingSellerName').value = shop.signer;
+                }
             } else {
-                // Mentra Solution (Default or matched)
-                const mName = (shop && shop.name) ? shop.name : MENTRA_OFFICIAL.name;
-                const mAddress = (shop && shop.address && shop.address.trim()) ? shop.address : MENTRA_OFFICIAL.address;
-                const mPhone = (shop && (shop.phone || shop.tel)) ? (shop.phone || shop.tel) : MENTRA_OFFICIAL.phone;
-                const mEmail = (shop && shop.email) ? shop.email : MENTRA_OFFICIAL.email;
-                const mTaxId = (shop && shop.taxId) ? shop.taxId : MENTRA_OFFICIAL.taxId;
-                const mLogo = (shop && shop.logo) ? shop.logo : MENTRA_OFFICIAL.logo;
-                const mColor = (shop && shop.themeColor) ? shop.themeColor : MENTRA_OFFICIAL.themeColor;
+                const banner = document.getElementById('currentIssuerBanner');
+                const bannerName = document.getElementById('currentIssuerDisplay');
+                const bannerLogo = document.getElementById('currentIssuerLogo');
+                const bannerIcon = document.getElementById('currentIssuerIcon');
 
-                updateIssuerBannerTheme(mColor, mName, mLogo);
+                if (banner) banner.style.backgroundColor = '#1A6FBF';
+                if (bannerName) bannerName.innerText = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                if (bannerLogo) bannerLogo.style.display = 'none';
+                if (bannerIcon) bannerIcon.style.display = 'block';
 
-                // Default Mentra Solution styling
+                // Default Mentra Solution
                 printArea.style.removeProperty('--pdf-primary');
                 printArea.style.removeProperty('--pdf-primary-light');
-                document.getElementById('settingPrimaryColor').value = mColor;
-                document.getElementById('pIssuerName').innerText = mName;
-                const pSubName = document.getElementById('pIssuerSubName');
-                if (pSubName) pSubName.remove();
-                document.getElementById('pIssuerAddress').innerHTML = (mAddress || '').replace(/\n/g, '<br>');
-                document.getElementById('pIssuerContact').innerHTML = buildDefaultContactHTML(mPhone, mEmail, mTaxId, '2-lines', mColor);
-
-                document.getElementById('pLogoImg').src = mLogo;
-                document.getElementById('pLogoImg').style.display = 'block';
+                document.getElementById('settingPrimaryColor').value = '#1A6FBF';
+                document.getElementById('pIssuerName').innerText = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                document.getElementById('pIssuerAddress').innerText = '';
+                const fallbackSigner = (currentUser ? (currentUser.displayName || currentUser.email) : '') || '';
+                if (fallbackSigner) {
+                    document.getElementById('settingSellerName').value = `( ${fallbackSigner} )`;
+                }
+                document.getElementById('pIssuerContact').innerHTML = '';
+                document.getElementById('pLogoImg').src = '../../assets/img/logo.png';
                 document.getElementById('settingShowLogo').checked = true;
-
-                // Synchronize official Mentra authorized signer and role across form, settings, and PDF
-                const mSigner = getCleanSignerRaw(shop ? shop.signer : '') || MENTRA_OFFICIAL.signer;
-                const mSignerRole = (shop && shop.signerRole && shop.signerRole.trim()) ? shop.signerRole.trim() : MENTRA_OFFICIAL.signerRole;
-                const formattedSigner = formatSignerDisplay(mSigner);
-
-                const setSeller = document.getElementById('settingSellerName');
-                if (setSeller) setSeller.value = formattedSigner;
-                const formSeller = document.getElementById('sellerName');
-                if (formSeller) formSeller.value = mSigner;
-                const pSeller = document.getElementById('pSellerName');
-                if (pSeller) pSeller.innerText = formattedSigner;
-
-                const setRole = document.getElementById('settingSellerRole');
-                if (setRole) setRole.value = mSignerRole;
-                const formRole = document.getElementById('sellerRole');
-                if (formRole) formRole.value = mSignerRole;
-                const pRole = document.getElementById('pSellerRole');
-                if (pRole) pRole.innerText = mSignerRole;
             }
             
             // Re-apply live preview to force all color and logo display updates
@@ -9120,7 +5218,6 @@
         window.saveDocumentToHistory = saveDocumentToHistory;
         window.switchDocType = switchDocType;
         window.confirmAndAdvanceWorkflow = confirmAndAdvanceWorkflow;
-        window.checkRequiredDocFields = checkRequiredDocFields;
         window.openWorkflowConfirmModal = openWorkflowConfirmModal;
         window.closeWorkflowConfirmModal = closeWorkflowConfirmModal;
         window.executeWorkflowTransition = executeWorkflowTransition;
@@ -9255,140 +5352,4 @@
         } else {
             startApp();
         }
-    </script>
-    <!-- Recipient Modal -->
-    <div id="recipientModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-        <div style="background: white; width: 600px; max-width: 95%; max-height: 80vh; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column; overflow: hidden; font-family: 'Sarabun', sans-serif;">
-            <div style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
-                <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                    <i class='bx bx-book-content' style="color: var(--primary-color, #1A6FBF);"></i> เลือกผู้รับที่บันทึกไว้
-                </h3>
-                <button onclick="closeRecipientModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">&times;</button>
-            </div>
-            <div style="padding: 16px 24px; border-bottom: 1px solid #e5e7eb; background: white;">
-                <div style="position: relative;">
-                    <i class='bx bx-search' style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem;"></i>
-                    <input type="text" id="recipientSearchInput" onkeyup="filterRecipientCards()" placeholder="ค้นหาชื่อบริษัท..." style="width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; font-family: 'Sarabun', sans-serif; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary-color, #1A6FBF)'" onblur="this.style.borderColor='#d1d5db'">
-                </div>
-            </div>
-            <div id="recipientCardsContainer" style="padding: 20px 24px; overflow-y: auto; flex: 1; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
-                <!-- Cards will be injected here -->
-            </div>
-        </div>
-    </div>
-    <!-- Issuer Selection Modal -->
-    <div id="issuerSelectionModal" onclick="if(event.target === this) closeIssuerSelectionModal()" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-        <div style="background: white; width: 600px; max-width: 95%; max-height: 80vh; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); display: flex; flex-direction: column; overflow: hidden; font-family: 'Sarabun', sans-serif;">
-            <div style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
-                <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                    <i class='bx bx-buildings' style="color: var(--primary-color, #1A6FBF);"></i> เลือกบริษัท / ร้านค้า ที่ออกใบเสนอราคา
-                </h3>
-                <button onclick="closeIssuerSelectionModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8; transition: color 0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">&times;</button>
-            </div>
-            <div id="issuerCardsContainer" style="padding: 20px 24px; overflow-y: auto; flex: 1; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
-                <!-- Cards will be injected here -->
-            </div>
-            <div style="padding: 16px 24px; border-top: 1px solid #e5e7eb; background: white; display: flex; justify-content: space-between; align-items: center;">
-                <a href="../admin/company_settings.html" style="font-size: 0.88rem; color: var(--primary-color, #1A6FBF); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;" title="ไปยังหน้าจัดการข้อมูลร้านค้า/บริษัท">
-                    <i class='bx bx-cog' style="font-size: 1.15rem;"></i> จัดการข้อมูลบริษัท / ร้านค้าในฐานข้อมูล
-                </a>
-                <button onclick="closeIssuerSelectionModal(); openTemplateSettingsModal();" style="background: none; border: none; font-size: 0.88rem; color: #64748b; cursor: pointer; text-decoration: underline;">
-                    ปรับแต่งเทมเพลตและสี
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== MODAL: จัดการข้อมูลร้านค้า & อัปโหลดโลโก้ ===== -->
-    <div class="modal-overlay" id="shopManageModal" style="display:none;">
-        <div class="modal" style="max-width: 580px; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(7, 37, 66, 0.25);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #072542 0%, #0d4b85 100%); color: #ffffff; padding: 18px 24px;">
-                <div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 20px;">🏪</span>
-                        <h3 id="shopModalTitle" style="color: #ffffff; font-size: 18px; font-weight: 700; margin: 0; font-family: var(--sidebar-font);">เพิ่มร้านค้าใหม่</h3>
-                    </div>
-                    <div style="font-size: 12px; color: rgba(255, 255, 255, 0.82); margin-top: 3px; font-family: var(--sidebar-font);">กรอกข้อมูลร้านค้าและอัปโหลดโลโก้ เพื่อแยกพื้นที่จัดเก็บข้อมูลอิสระ</div>
-                </div>
-                <button class="modal-close" style="color: rgba(255, 255, 255, 0.85); font-size: 18px;" onclick="closeShopModal()">✕</button>
-            </div>
-            <div class="modal-body" style="padding: 22px; max-height: 72vh; overflow-y: auto;">
-                <!-- Logo Upload Section -->
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 14px; margin-bottom: 18px; transition: all 0.2s;" id="shopLogoDropzone">
-                    <div style="position: relative; margin-bottom: 10px;">
-                        <div id="shopLogoPreviewContainer" style="width: 84px; height: 84px; border-radius: 18px; background: #ffffff; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
-                            <img id="shopLogoPreview" src="" style="width: 100%; height: 100%; object-fit: contain; display: none;" alt="Logo Preview">
-                            <div id="shopLogoPlaceholder" style="text-align: center; color: #94a3b8;">
-                                <i class='bx bx-image-add' style="font-size: 32px; display: block; line-height: 1;"></i>
-                                <span style="font-size: 11px; font-weight: 600; margin-top: 4px; display: block;">โลโก้ร้าน</span>
-                            </div>
-                        </div>
-                        <button type="button" id="shopRemoveLogoBtn" onclick="removeShopLogoPreview()" style="display: none; position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: #fff; border: 2px solid #fff; font-size: 11px; cursor: pointer; align-items: center; justify-content: center;" title="ลบโลโก้">✕</button>
-                    </div>
-                    <div style="text-align: center;">
-                        <label for="shopLogoFileInput" class="btn btn-outline btn-sm" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; font-weight: 600; font-size: 12.5px; padding: 6px 14px; background: #ffffff;">
-                            <i class='bx bx-cloud-upload'></i> <span>เลือกรูปโลโก้ร้านค้า</span>
-                        </label>
-                        <input type="file" id="shopLogoFileInput" accept="image/*" style="display: none;" onchange="handleShopLogoSelect(this)">
-                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">รองรับไฟล์ PNG, JPG, WebP หรือ SVG (ขนาดไม่เกิน 2MB)</div>
-                    </div>
-                </div>
-
-                <!-- Form Fields -->
-                <input type="hidden" id="editingShopId" value="">
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div class="field-group" style="grid-column: 1 / -1;">
-                        <label for="shopNameInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">ชื่อร้านค้า / บริษัท <span style="color: #ef4444;">*</span></label>
-                        <input type="text" id="shopNameInput" placeholder="เช่น Point Studio, โรงพิมพ์มิตรภาพ, บริษัท ทีพี มีเดีย จำกัด" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); outline: none; transition: border-color 0.2s;" required>
-                    </div>
-
-                    <div class="field-group">
-                        <label for="shopShortCodeInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">รหัสย่อร้าน (Short Code)</label>
-                        <input type="text" id="shopShortCodeInput" placeholder="เช่น PS, TP, MTR" maxlength="6" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); text-transform: uppercase;">
-                    </div>
-
-                    <div class="field-group">
-                        <label for="shopCategoryInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">หมวดหมู่ / ประเภทธุรกิจ</label>
-                        <select id="shopCategoryInput" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); background: #ffffff;">
-                            <option value="สตูดิโอ & มีเดีย">สตูดิโอ & มีเดีย</option>
-                            <option value="สิ่งพิมพ์ & โฆษณา">สิ่งพิมพ์ & โฆษณา</option>
-                            <option value="ไอที & ซอฟต์แวร์">ไอที & ซอฟต์แวร์</option>
-                            <option value="ค้าปลีก & จัดจำหน่าย">ค้าปลีก & จัดจำหน่าย</option>
-                            <option value="บริการ & ก่อสร้าง">บริการ & ก่อสร้าง</option>
-                            <option value="ร้านค้าทั่วไป">ร้านค้าทั่วไป</option>
-                        </select>
-                    </div>
-
-                    <div class="field-group">
-                        <label for="shopPhoneInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">เบอร์โทรศัพท์ติดต่อ</label>
-                        <input type="tel" id="shopPhoneInput" placeholder="เช่น 02-123-4567, 081-xxx-xxxx" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font);">
-                    </div>
-
-                    <div class="field-group">
-                        <label for="shopEmailInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">อีเมลร้านค้า</label>
-                        <input type="email" id="shopEmailInput" placeholder="shop@example.com" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font);">
-                    </div>
-
-                    <div class="field-group" style="grid-column: 1 / -1;">
-                        <label for="shopTaxIdInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">เลขประจำตัวผู้เสียภาษี (Tax ID)</label>
-                        <input type="text" id="shopTaxIdInput" placeholder="เลขประจำตัว 13 หลัก (ใช้สำหรับเปิดบิล/ออกเอกสาร)" maxlength="20" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font);">
-                    </div>
-
-                    <div class="field-group" style="grid-column: 1 / -1;">
-                        <label for="shopAddressInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">ที่อยู่ / ที่ตั้งร้าน</label>
-                        <textarea id="shopAddressInput" rows="2" placeholder="ระบุเลขที่ตั้ง อาคาร ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); resize: vertical;"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer" style="padding: 14px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn btn-outline" onclick="closeShopModal()" style="padding: 8px 16px; border-radius: 9px; font-weight: 600; font-size: 13px;">ยกเลิก</button>
-                <button type="button" class="btn btn-primary" onclick="saveShopModalData()" style="padding: 8px 20px; border-radius: 9px; font-weight: 600; font-size: 13px; background: linear-gradient(135deg, #072542 0%, #0d4b85 100%); border: none; color: #ffffff; display: flex; align-items: center; gap: 6px;">
-                    <i class='bx bx-check-circle'></i> <span>บันทึกและสลับไปใช้งาน</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-</body>
-
-</html>
+    

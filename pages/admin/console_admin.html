@@ -1215,6 +1215,9 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn-hdr-action" onclick="openTelegramModal()">
+                    <span>✈️</span> ตั้งค่า Telegram
+                </button>
                 <button class="btn-hdr-action" onclick="exportFullBackup()">
                     <span>💾</span> Backup
                 </button>
@@ -1382,6 +1385,9 @@
                     </span>
                     <button class="btn-action-pill cyan" onclick="openFirebaseSwitcherModal()">
                         <span>🔄</span> สลับบัญชี Firebase
+                    </button>
+                    <button class="btn-action-pill" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);" onclick="openTelegramModal()">
+                        <span>✈️</span> แจ้งเตือน Telegram
                     </button>
                     <button class="btn-action-pill menu-trigger" onclick="resetToDefaultConfig()" title="รีเซ็ตกลับค่า default">
                         <span>↩️</span> ค่าเริ่มต้น
@@ -1569,6 +1575,8 @@
                     </div>
                 </div>
 
+                <div id="permAdminNotice" style="display:none; background:rgba(26,111,191,0.15); border:1px solid rgba(26,111,191,0.3); color:#93c5fd; padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:14px; line-height:1.5;">⚡ <strong>บัญชีระดับ Admin:</strong> มีสิทธิ์เข้าถึงทุกหน้าในระบบตลอดเวลาโดยอัตโนมัติ (การเปิด-ปิดสิทธิ์นี้จะมีผลบังคับใช้เมื่อผู้ใช้มีระดับสิทธิ์เป็น User ทั่วไป)</div>
+
                 <div class="perm-grid" id="permissionsGrid">
                     <!-- Dynamic switches -->
                 </div>
@@ -1655,6 +1663,95 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL: TELEGRAM NOTIFICATION SETTINGS -->
+    <div id="telegramSettingsModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3><span>✈️</span> ตั้งค่าการแจ้งเตือน Telegram</h3>
+                <button class="modal-close" onclick="closeTelegramModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- HELP GUIDE TOGGLE -->
+                <button type="button" class="guide-toggle-btn" onclick="toggleTelegramHelpGuide()">
+                    <span>📖 ดูวิธีสร้าง Bot และรับ Bot Token / Chat ID (คำแนะนำทีละขั้นตอน)</span>
+                    <span id="tgGuideArrow">▼</span>
+                </button>
+
+                <!-- COLLAPSIBLE GUIDE CONTENT -->
+                <div id="telegramHelpGuide" class="guide-content-box">
+                    <div class="guide-step">
+                        <div class="guide-step-title"><span>1️⃣</span> วิธีสร้างบอทและรับ <strong>Bot Token</strong>:</div>
+                        <div>1. เข้าแอป Telegram แล้วค้นหา <code>@BotFather</code> (บอททางการมีติ๊กถูกสีฟ้า)</div>
+                        <div>2. กด Start หรือพิมพ์ <code>/newbot</code> แล้วตั้งชื่อและ Username ของบอท (ลงท้ายด้วย _bot เช่น <code>my_quotation_bot</code>)</div>
+                        <div>3. @BotFather จะส่ง <strong>HTTP API Token</strong> ให้ (เช่น <code>7123456789:AAHk...</code>) ให้นำมากรอกในช่อง Bot Token</div>
+                    </div>
+                    <div class="guide-step" style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 8px;">
+                        <div class="guide-step-title"><span>2️⃣</span> วิธีหา <strong>Chat ID</strong>:</div>
+                        <div>• <strong>แชทส่วนตัว:</strong> กดเข้าแชทบอทของคุณแล้วกด <strong>Start</strong> ➔ จากนั้นค้นหาบอท <code>@userinfobot</code> กด Start เพื่อดู User ID ของคุณ แล้วนำเลขมากรอก (เช่น <code>123456789</code>)</div>
+                        <div>• <strong>ส่งเข้ากลุ่มทำงาน (Group):</strong> เชิญบอทของคุณเข้ากลุ่ม ➔ ตั้งบอทเป็น <strong>Admin</strong> ในกลุ่ม ➔ ค้นหาบอท <code>@RawDataBot</code> เชิญเข้ากลุ่มชั่วคราวเพื่อดู Chat ID ของกลุ่ม (เลขติดลบ เช่น <code>-100123456789</code>)</div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: var(--text-muted); background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 8px;">
+                        💡 <em>Tip: กรอกข้อมูลเสร็จแล้ว สามารถกดปุ่ม "ทดสอบส่งข้อความ" ด้านล่างเพื่อตรวจสอบว่าบอทส่งเข้า Telegram สำเร็จหรือไม่</em>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin: 14px 0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600; color: #ffffff;">เปิดใช้งานระบบแจ้งเตือน Telegram</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">ส่งข้อความแจ้งเตือนอัตโนมัติเมื่อมีการออกใบเสนอราคา</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="tgEnabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="fb-form-grid" style="grid-template-columns: 1fr;">
+                    <div class="fb-field">
+                        <label>Telegram Bot Token <span style="color:var(--danger);">*</span></label>
+                        <div style="position: relative;">
+                            <input type="password" id="tgBotToken" placeholder="เช่น 7123456789:AAHk..." style="width: 100%; padding-right: 40px;">
+                            <button type="button" onclick="togglePasswordVisibility('tgBotToken', this)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px;" title="แสดง/ซ่อน Token">👁️</button>
+                        </div>
+                    </div>
+                    <div class="fb-field">
+                        <label>Telegram Chat ID <span style="color:var(--danger);">*</span></label>
+                        <input type="text" id="tgChatId" placeholder="เช่น -100123456789 หรือ 123456789">
+                    </div>
+                </div>
+
+                <div style="margin-top: 14px; display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="tgNotifyOnQuotation" checked style="accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer;">
+                    <label for="tgNotifyOnQuotation" style="font-size: 13px; color: var(--text-secondary); cursor: pointer;">
+                        แจ้งเตือนเมื่อกดออกใบเสนอราคา (Export PDF / พิมพ์ใบเสนอราคา)
+                    </label>
+                </div>
+
+                <!-- Test feedback banner -->
+                <div id="tgTestStatusBox" style="display: none; margin-top: 14px; padding: 10px 14px; border-radius: 8px; font-size: 13px;"></div>
+
+                <div style="margin-top: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--border); padding-top: 16px; flex-wrap: wrap;">
+                    <button type="button" class="btn-data-action" id="btnTgTest" onclick="testTelegramSetting()" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); width: auto; padding: 8px 16px;">
+                        <span>🧪</span> ทดสอบส่งข้อความ
+                    </button>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn-data-action" onclick="closeTelegramModal()" style="background: var(--input-bg); color: var(--text-secondary); width: auto; padding: 8px 16px;">
+                            ยกเลิก
+                        </button>
+                        <button type="button" class="btn-data-action import-btn" id="btnTgSave" onclick="saveTelegramSetting()" style="background: var(--primary); color: #fff; width: auto; padding: 8px 16px;">
+                            <span>💾</span> บันทึกการตั้งค่า
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telegram Service -->
+    <script src="../../assets/js/telegram-service.js"></script>
 
     <!-- Firebase SDK Modules -->
     <script type="module">
@@ -2464,16 +2561,17 @@
 
         const MANAGED_PAGES = [
             { key: 'dashboard.html', name: 'หน้าหลัก / แดชบอร์ด', icon: '📊', desc: 'หน้าหลักแสดงภาพรวมระบบ และสถิติ' },
+            { key: 'company_settings.html', name: 'ข้อมูลบริษัท & ร้านค้า', icon: '🏢', desc: 'ระบบจัดการข้อมูลบริษัทและร้านค้า' },
             { key: 'materials_purchasing.html', name: 'จัดซื้อ/วัสดุ (สถานศึกษา)', icon: '🏫', desc: 'ระบบจัดการโครงการจัดซื้อวัสดุของสถานศึกษา' },
             { key: 'materials_purchasing_company.html', name: 'จัดซื้อ/วัสดุ (บริษัท)', icon: '🏢', desc: 'ระบบจัดการโครงการจัดซื้อวัสดุของบริษัทเอกชน' },
-            { key: 'quotation.html', name: 'ออกใบเสนอราคา', icon: '📄', desc: 'ระบบสร้าง พิมพ์ และส่งออกใบเสนอราคา' },
+            { key: 'quotation.html', name: 'ออกใบเสนอราคา / ออกเอกสารงานขาย', icon: '📄', desc: 'ระบบสร้าง พิมพ์ และส่งออกใบเสนอราคา' },
+            { key: 'sales_documents.html', name: 'ประวัติเอกสารที่ออก', icon: '📂', desc: 'ประวัติและคลังจัดเก็บเอกสารงานขาย' },
+            { key: 'sales_dashboard.html', name: 'ระบบเอกสารงานขาย', icon: '📊', desc: 'แดชบอร์ดสรุปภาพรวมเอกสารงานขาย' },
             { key: 'products.html', name: 'คลังสินค้า / สเปกสินค้า', icon: '📦', desc: 'คลังข้อมูลสินค้าและรายละเอียดสเปก' },
-            { key: 'equipments.html', name: 'ข้อมูลร้านสำหรับสั่งวัสดุ', icon: '💻', desc: 'ระบบลงทะเบียนและจัดการครุภัณฑ์' },
-            { key: 'external_training.html', name: 'อบรมภายนอก', icon: '🎓', desc: 'จัดการข้อมูลการฝึกอบรมภายนอก' },
+            { key: 'tasks.html', name: 'งานที่ได้รับมอบหมาย', icon: '📋', desc: 'ระบบจัดการงานและมอบหมายภารกิจ' },
             { key: 'calendar.html', name: 'ปฏิทินตารางงาน', icon: '📅', desc: 'ระบบตารางงานและปฏิทินงานส่วนบุคคลประจำวัน' },
-            { key: 'crm.html', name: 'ระบบบริหารความสัมพันธ์ลูกค้า (A-CRM)', icon: '📊', desc: 'ระบบวิเคราะห์ผู้มุ่งหวัง ช่องทางการขาย Kanban และลูกค้า' },
+            { key: 'external_training.html', name: 'อบรมภายนอก', icon: '🎓', desc: 'จัดการข้อมูลการฝึกอบรมภายนอก' },
             { key: 'register_training.html', name: 'ลงทะเบียนอบรม', icon: '📝', desc: 'ฟอร์มลงทะเบียนเข้าร่วมการอบรม' },
-            { key: 'ocr_table.html', name: 'อ่านเอกสาร / OCR ตาราง', icon: '🔍', desc: 'ระบบแปลงภาพถ่ายเอกสารเป็นข้อมูล' },
             { key: 'certificate_template.html', name: 'แม่แบบเกียรติบัตร', icon: '📜', desc: 'สร้างและออกแบบวุฒิบัตร/เกียรติบัตร' },
             { key: 'internship_journal.html', name: 'บันทึกการฝึกงาน', icon: '📓', desc: 'ระบบบันทึกการฝึกงานรายบุคคลและบันทึกประจำวัน' },
             { key: 'business_card.html', name: 'นามบัตรดิจิทัล', icon: '🪪', desc: 'สร้าง ออกแบบ และดาวน์โหลดนามบัตรดิจิทัล หน้า-หลัง' }
@@ -2486,8 +2584,14 @@
             if (!user) return;
 
             activePermUserId = userId;
+            const isAdminUser = user.role === 'admin';
             document.getElementById('permUserName').textContent = user.displayName || `${user.firstName || ''} ${user.lastName || ''}`;
-            document.getElementById('permUserSub').textContent = `@${user.username || '-'} (${user.email || '-'}) • ระดับสิทธิ์: ${user.role === 'admin' ? 'Admin' : 'User'}`;
+            document.getElementById('permUserSub').textContent = `@${user.username || '-'} (${user.email || '-'}) • ระดับสิทธิ์: ${isAdminUser ? 'Admin (สิทธิ์สูงสุด)' : 'User'}`;
+
+            const adminNotice = document.getElementById('permAdminNotice');
+            if (adminNotice) {
+                adminNotice.style.display = isAdminUser ? 'block' : 'none';
+            }
 
             const allowedPages = user.allowedPages || {};
             const grid = document.getElementById('permissionsGrid');
@@ -2536,6 +2640,9 @@
 
             try {
                 await updateDoc(doc(db, 'users', activePermUserId), { allowedPages: allowedPages });
+                if (user) {
+                    user.allowedPages = allowedPages;
+                }
                 addLog('sec', `บันทึกสิทธิ์การเข้าถึงหน้าของ @${uname}`);
                 showNotification(`บันทึกสิทธิ์การเข้าถึงหน้าของ @${uname} เรียบร้อยแล้ว!`, 'success');
                 closePermissionsModal();
@@ -2731,6 +2838,158 @@
             localStorage.removeItem('mentra_firebase_override');
             showNotification('กำลัง reload เพื่อกลับค่าเริ่มต้น...', 'info');
             setTimeout(() => window.location.reload(), 1000);
+        };
+
+        // ==========================================
+        // TELEGRAM NOTIFICATION SETTINGS CONTROLLER
+        // ==========================================
+        window.openTelegramModal = async function() {
+            const modal = document.getElementById('telegramSettingsModal');
+            if (!modal) return;
+
+            const statusBox = document.getElementById('tgTestStatusBox');
+            if (statusBox) statusBox.style.display = 'none';
+
+            // Load latest from Firestore or local cache
+            let config = window.TelegramService ? window.TelegramService.getLocalConfig() : {};
+            try {
+                if (window.TelegramService) {
+                    config = await window.TelegramService.getRemoteConfig(db, { doc, getDoc });
+                }
+            } catch (e) {
+                console.warn('Error loading telegram settings from Firestore:', e);
+            }
+
+            document.getElementById('tgEnabled').checked = Boolean(config.enabled);
+            document.getElementById('tgBotToken').value = config.botToken || '';
+            document.getElementById('tgChatId').value = config.chatId || '';
+            document.getElementById('tgNotifyOnQuotation').checked = config.notifyOnQuotation !== false;
+
+            modal.classList.add('active');
+        };
+
+        window.closeTelegramModal = function() {
+            const modal = document.getElementById('telegramSettingsModal');
+            if (modal) modal.classList.remove('active');
+        };
+
+        window.toggleTelegramHelpGuide = function() {
+            const guide = document.getElementById('telegramHelpGuide');
+            const arrow = document.getElementById('tgGuideArrow');
+            if (guide) {
+                const isOpen = guide.classList.toggle('show');
+                if (arrow) arrow.textContent = isOpen ? '▲' : '▼';
+            }
+        };
+
+        window.togglePasswordVisibility = function(fieldId, btn) {
+            const input = document.getElementById(fieldId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        };
+
+        window.testTelegramSetting = async function() {
+            const botToken = document.getElementById('tgBotToken').value.trim();
+            const chatId = document.getElementById('tgChatId').value.trim();
+            const statusBox = document.getElementById('tgTestStatusBox');
+            const testBtn = document.getElementById('btnTgTest');
+
+            if (!botToken || !chatId) {
+                showNotification('กรุณากรอกทั้ง Bot Token และ Chat ID ก่อนทดสอบ', 'warning');
+                if (statusBox) {
+                    statusBox.style.display = 'block';
+                    statusBox.style.background = 'rgba(239, 68, 68, 0.15)';
+                    statusBox.style.color = '#ef4444';
+                    statusBox.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    statusBox.innerHTML = '❌ กรุณากรอกทั้ง Bot Token และ Chat ID ก่อนทดสอบ';
+                }
+                return;
+            }
+
+            const originalBtnText = testBtn.innerHTML;
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<span>⏳</span> กำลังทดสอบ...';
+            if (statusBox) {
+                statusBox.style.display = 'block';
+                statusBox.style.background = 'rgba(56, 189, 248, 0.1)';
+                statusBox.style.color = '#38bdf8';
+                statusBox.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+                statusBox.innerHTML = '⏳ กำลังส่งข้อความทดสอบไปยัง Telegram...';
+            }
+
+            try {
+                const res = await window.TelegramService.testConnection(botToken, chatId);
+                if (res.success) {
+                    showNotification('ส่งข้อความทดสอบสำเร็จ! ตรวจสอบใน Telegram ได้เลย', 'success');
+                    if (statusBox) {
+                        statusBox.style.background = 'rgba(16, 185, 129, 0.15)';
+                        statusBox.style.color = '#10b981';
+                        statusBox.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                        statusBox.innerHTML = '✅ <b>ทดสอบสำเร็จ!</b> บอทส่งข้อความเข้า Telegram เรียบร้อยแล้ว';
+                    }
+                    addLog('telegram', 'ทดสอบการส่งข้อความ Telegram สำเร็จ');
+                } else {
+                    showNotification(`ทดสอบล้มเหลว: ${res.error}`, 'error');
+                    if (statusBox) {
+                        statusBox.style.background = 'rgba(239, 68, 68, 0.15)';
+                        statusBox.style.color = '#ef4444';
+                        statusBox.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                        statusBox.innerHTML = `❌ <b>ทดสอบล้มเหลว:</b> ${res.error}`;
+                    }
+                }
+            } catch (err) {
+                showNotification(`เกิดข้อผิดพลาด: ${err.message}`, 'error');
+                if (statusBox) {
+                    statusBox.style.background = 'rgba(239, 68, 68, 0.15)';
+                    statusBox.style.color = '#ef4444';
+                    statusBox.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                    statusBox.innerHTML = `❌ <b>เกิดข้อผิดพลาด:</b> ${err.message}`;
+                }
+            } finally {
+                testBtn.disabled = false;
+                testBtn.innerHTML = originalBtnText;
+            }
+        };
+
+        window.saveTelegramSetting = async function() {
+            const enabled = document.getElementById('tgEnabled').checked;
+            const botToken = document.getElementById('tgBotToken').value.trim();
+            const chatId = document.getElementById('tgChatId').value.trim();
+            const notifyOnQuotation = document.getElementById('tgNotifyOnQuotation').checked;
+            const saveBtn = document.getElementById('btnTgSave');
+
+            if (enabled && (!botToken || !chatId)) {
+                showNotification('หากเปิดใช้งาน กรุณากรอก Bot Token และ Chat ID ให้ครบถ้วน', 'warning');
+                return;
+            }
+
+            const originalBtnText = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span>⏳</span> กำลังบันทึก...';
+
+            try {
+                const config = {
+                    enabled,
+                    botToken,
+                    chatId,
+                    notifyOnQuotation
+                };
+                await window.TelegramService.saveConfig(db, config, auth.currentUser, { doc, setDoc });
+                showNotification('บันทึกการตั้งค่า Telegram สำเร็จเรียบร้อย!', 'success');
+                addLog('telegram', `อัปเดตการตั้งค่า Telegram (${enabled ? 'เปิดใช้งาน' : 'ปิดการใช้งาน'})`);
+                closeTelegramModal();
+            } catch (err) {
+                showNotification(`บันทึกไม่สำเร็จ: ${err.message}`, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnText;
+            }
         };
 
     </script>

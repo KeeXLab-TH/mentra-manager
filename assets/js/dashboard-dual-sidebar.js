@@ -756,6 +756,9 @@
     if (!window.handleLogout) {
         window.handleLogout = async function () {
             try {
+                localStorage.removeItem('mentra_user_permissions');
+            } catch (e) {}
+            try {
                 if (typeof window.auth !== 'undefined' && typeof window.signOut === 'function') {
                     await window.signOut(window.auth);
                 }
@@ -813,8 +816,8 @@
             } else {
                 setNavActive('nav-dashboard', 'railBtnDashboard');
             }
-        } else if (path.includes('crm.html')) {
-            setNavActive('nav-crm', 'railBtnDashboard');
+        } else if (path.includes('company_settings.html')) {
+            setNavActive('nav-company-settings', 'railBtnDashboard');
         } else if (path.includes('business_card.html')) {
             setNavActive('nav-business-card', 'railBtnDashboard');
         } else if (path.includes('materials_purchasing.html') && !path.includes('company')) {
@@ -823,18 +826,16 @@
             setNavActive('nav-purchasing-company', 'railBtnPurchasing');
         } else if (path.includes('products.html')) {
             setNavActive('nav-products', 'railBtnPurchasing');
-        } else if (path.includes('equipments.html')) {
-            setNavActive('nav-equipments', 'railBtnPurchasing');
         } else if (path.includes('quotation.html')) {
             setNavActive('nav-quotation', 'railBtnAccounting');
+        } else if (path.includes('sales_documents.html')) {
+            setNavActive('nav-sales-documents', 'railBtnAccounting');
         } else if (path.includes('sales_dashboard.html')) {
             setNavActive('nav-sales-dashboard', 'railBtnAccounting');
         } else if (path.includes('sales_invoice.html')) {
             setNavActive('nav-sales-invoice', 'railBtnAccounting');
         } else if (path.includes('sales_receipt.html')) {
             setNavActive('nav-sales-receipt', 'railBtnAccounting');
-        } else if (path.includes('ocr_table.html')) {
-            setNavActive('nav-ocr', 'railBtnAccounting');
         } else if (path.includes('tasks.html')) {
             setNavActive('nav-tasks', 'railBtnSchedule');
         } else if (path.includes('calendar.html')) {
@@ -846,6 +847,32 @@
         }
     }
 
+    // Fast cached permissions check to hide denied menu items instantly before async auth resolves
+    function applyCachedPermissions() {
+        try {
+            const raw = localStorage.getItem('mentra_user_permissions');
+            if (raw) {
+                const data = JSON.parse(raw);
+                // Admins always have full unrestricted access to all menus
+                if (data.role === 'admin') {
+                    return;
+                }
+                if (typeof window.applySidebarPermissions === 'function') {
+                    window.applySidebarPermissions(data);
+                } else if (data && data.allowedPages) {
+                    Object.keys(data.allowedPages).forEach(pageKey => {
+                        if (data.allowedPages[pageKey] === false) {
+                            const name = pageKey.replace('.html', '');
+                            document.querySelectorAll(`[id*="${name}"], [href*="${pageKey}"], [onclick*="${pageKey}"]`).forEach(el => {
+                                el.style.setProperty('display', 'none', 'important');
+                            });
+                        }
+                    });
+                }
+            }
+        } catch (e) {}
+    }
+
     // ===== 5. INITIALIZATION =====
     function initSidebar() {
         // Sync saved collapse state from all legacy keys
@@ -855,6 +882,7 @@
 
         applySidebarState(isCollapsed);
 
+        applyCachedPermissions();
         renderWorkspacePopoverList();
         updateSidebarShopDisplay();
         setupShopLogoDropzone();
