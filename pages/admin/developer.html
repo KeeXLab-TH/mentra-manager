@@ -881,7 +881,7 @@ textarea.form-control{resize:vertical;min-height:90px;line-height:1.5}
 
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import{getFirestore,collection,getDocs,doc,setDoc,deleteDoc,query,where,limit}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import{getFirestore,collection,getDocs,doc,getDoc,setDoc,deleteDoc,query,where,limit}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import{getAuth,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import{FIREBASE_CONFIG,GAS_URL,DRIVE_ROOT_FOLDER_ID,DRIVE_ACCOUNT_EMAIL}from'../../assets/js/firebase-config.js';
 const app=initializeApp(FIREBASE_CONFIG);
@@ -889,14 +889,96 @@ const db=getFirestore(app);
 const auth=getAuth(app);
 window._db=db;window._auth=auth;window._cfg=FIREBASE_CONFIG;
 window._gasUrl=GAS_URL;window._rootFolder=DRIVE_ROOT_FOLDER_ID;window._driveEmail=DRIVE_ACCOUNT_EMAIL;
-window._fsModules={collection,getDocs,doc,setDoc,deleteDoc,query,where,limit};
-onAuthStateChanged(auth,user=>{
-const el=document.getElementById('sc-user');
-if(el)el.textContent=user?user.email:'Not signed in';
-window._currentUser=user;
+window._fsModules={collection,getDocs,doc,getDoc,setDoc,deleteDoc,query,where,limit};
+
+onAuthStateChanged(auth, async user => {
+  if (!user) {
+    window.location.href = '../../index.html';
+    return;
+  }
+  const el = document.getElementById('sc-user');
+  if (el) el.textContent = user.email || 'User';
+  window._currentUser = user;
+
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (!snap.exists()) {
+      alert('ไม่พบบัญชีผู้ใช้งานในระบบ หรือบัญชีของคุณถูกลบแล้ว');
+      window.location.href = '../../index.html';
+      return;
+    }
+    const userData = snap.data();
+    if (userData.status === 'pending') {
+      alert('บัญชีของคุณอยู่ระหว่างการรออนุมัติสิทธิ์เข้าใช้งานจากผู้ดูแลระบบ');
+      window.location.href = '../../index.html?msg=pending';
+      return;
+    } else if (userData.status === 'rejected') {
+      alert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ');
+      window.location.href = '../../index.html?msg=rejected';
+      return;
+    }
+
+    const isAdmin = userData.role === 'admin';
+    const isExplicitlyDenied = userData.allowedPages && userData.allowedPages['developer.html'] === false;
+    const isNonAdminNotAllowed = !isAdmin && (!userData.allowedPages || userData.allowedPages['developer.html'] !== true);
+
+    if (isExplicitlyDenied || isNonAdminNotAllowed) {
+      // 1. Immediately replace page content with a sleek dark locked screen
+      document.body.innerHTML = `
+        <div style="position:fixed;inset:0;background:#050c17;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999999;font-family:'Kanit','Plus Jakarta Sans',sans-serif;color:#e2e8f0;text-align:center;padding:24px;">
+          <style>
+            @keyframes pulseLock {
+              0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(248,113,113,0.3); }
+              50% { transform: scale(1.06); box-shadow: 0 0 45px rgba(248,113,113,0.65); }
+            }
+          </style>
+          <div style="width:88px;height:88px;border-radius:50%;background:rgba(248,113,113,0.12);border:2px solid rgba(248,113,113,0.45);display:flex;align-items:center;justify-content:center;font-size:40px;color:#f87171;margin-bottom:20px;animation:pulseLock 2s infinite ease-in-out;">
+            <i class="fas fa-lock"></i>
+          </div>
+          <h2 style="font-size:24px;font-weight:700;color:#f87171;margin-bottom:8px;letter-spacing:0.5px;">หน้านี้ถูกล็อคการเข้าถึง</h2>
+          <p style="font-size:14.5px;color:#94a3b8;max-width:460px;line-height:1.6;margin-bottom:22px;">
+            ขออภัย บัญชีของคุณไม่มีสิทธิ์เข้าถึง <strong>ศูนย์เครื่องมือผู้พัฒนา (Developer Console)</strong><br>สิทธิ์นี้ถูกปิดไว้โดยผู้ดูแลระบบ
+          </p>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#64748b;margin-bottom:22px;">
+            <i class="fas fa-circle-notch fa-spin" style="color:#38bdf8;"></i> กำลังนำท่านกลับสู่หน้าหลักแดชบอร์ด...
+          </div>
+          <button onclick="window.location.replace('dashboard.html')" style="background:linear-gradient(135deg,#1A6FBF,#145999);color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:8px;cursor:pointer;box-shadow:0 4px 15px rgba(26,111,191,0.4);">
+            <i class="fas fa-arrow-left"></i> กลับสู่หน้าหลักทันที
+          </button>
+        </div>
+      `;
+
+      // 2. Trigger sleek SweetAlert2 popup
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          icon: 'error',
+          title: '<span style="font-family:Kanit,sans-serif;color:#f87171;font-weight:700;font-size:20px;"><i class="fas fa-lock" style="margin-right:8px;"></i>หน้านี้ถูกล็อคการเข้าถึง</span>',
+          html: '<div style="font-family:Kanit,sans-serif;color:#cbd5e1;font-size:14px;line-height:1.6;margin-top:6px;">ขออภัย บัญชีของคุณไม่มีสิทธิ์เข้าถึง <strong>ศูนย์เครื่องมือผู้พัฒนา (Dev Console)</strong><br><span style="color:#94a3b8;font-size:12.5px;">ระบบกำลังนำท่านกลับสู่หน้าหลักแดชบอร์ดอัตโนมัติ...</span></div>',
+          background: '#0a1628',
+          color: '#e2e8f0',
+          confirmButtonText: '<i class="fas fa-arrow-left"></i> กลับสู่แดชบอร์ด',
+          confirmButtonColor: '#1A6FBF',
+          timer: 2400,
+          timerProgressBar: true,
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        }).then(() => {
+          window.location.replace('dashboard.html');
+        });
+      } else {
+        setTimeout(() => {
+          window.location.replace('dashboard.html');
+        }, 1800);
+      }
+      return;
+    }
+
+    window._fsReady = true;
+    document.dispatchEvent(new Event('fsReady'));
+  } catch (err) {
+    console.warn("Dev access validation error:", err);
+  }
 });
-window._fsReady=true;
-document.dispatchEvent(new Event('fsReady'));
 </script>
 <script>
 /* ===== GLOBALS ===== */

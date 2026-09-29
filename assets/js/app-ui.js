@@ -776,8 +776,42 @@ function initAccountDropdown(userData) {
     const topbarRight = document.querySelector('.topbar-right-menu');
     if (!topbarRight) return;
 
-    // Avoid duplicate initialization
-    if (document.querySelector('.user-dropdown-wrapper')) return;
+    const isAdmin = userData && userData.role === 'admin';
+    const allowedPages = (userData && userData.allowedPages) || {};
+    const canAccessConsole = isAdmin 
+        ? (allowedPages['console_admin.html'] !== false)
+        : (allowedPages['console_admin.html'] === true);
+    const canAccessDashboard = allowedPages['dashboard.html'] !== false;
+
+    // Avoid duplicate initialization, but update existing items if permissions changed
+    const existingWrapper = document.querySelector('.user-dropdown-wrapper');
+    if (existingWrapper) {
+        const consoleBtn = existingWrapper.querySelector('#dropdownAdminConsole, [data-page="console_admin.html"]');
+        if (consoleBtn) {
+            if (canAccessConsole) {
+                consoleBtn.style.removeProperty('display');
+            } else {
+                consoleBtn.style.setProperty('display', 'none', 'important');
+            }
+        }
+        const userBtn = existingWrapper.querySelector('#dropdownManageUsers');
+        if (userBtn) {
+            if (canAccessDashboard) {
+                userBtn.style.removeProperty('display');
+            } else {
+                userBtn.style.setProperty('display', 'none', 'important');
+            }
+        }
+        const addBtn = existingWrapper.querySelector('#dropdownAddProject');
+        if (addBtn) {
+            if (canAccessDashboard) {
+                addBtn.style.removeProperty('display');
+            } else {
+                addBtn.style.setProperty('display', 'none', 'important');
+            }
+        }
+        return;
+    }
 
     const sidebarUser = topbarRight.querySelector('.sidebar-user');
     if (!sidebarUser) return;
@@ -842,40 +876,51 @@ function initAccountDropdown(userData) {
     dropdown.appendChild(headerDivider);
 
     // Add Admin items if user is admin
-    const isAdmin = userData && userData.role === 'admin';
-
     if (isAdmin) {
         // 1. Manage Users
-        const itemUsers = document.createElement('button');
-        itemUsers.className = 'user-dropdown-item';
-        itemUsers.innerHTML = `
-            <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <span>จัดการผู้ใช้งาน</span>
-        `;
-        itemUsers.onclick = () => window.location.href = window.getDeptUrl('dashboard.html?view=users');
-        dropdown.appendChild(itemUsers);
+        if (canAccessDashboard) {
+            const itemUsers = document.createElement('button');
+            itemUsers.id = 'dropdownManageUsers';
+            itemUsers.setAttribute('data-page', 'dashboard.html');
+            itemUsers.className = 'user-dropdown-item';
+            itemUsers.innerHTML = `
+                <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>จัดการผู้ใช้งาน</span>
+            `;
+            itemUsers.onclick = () => window.location.href = window.getDeptUrl('dashboard.html?view=users');
+            dropdown.appendChild(itemUsers);
+        }
 
         // 2. Add New Project
-        const itemAdd = document.createElement('button');
-        itemAdd.className = 'user-dropdown-item';
-        itemAdd.innerHTML = `
-            <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                <line x1="12" y1="11" x2="12" y2="17"></line>
-                <line x1="9" y1="14" x2="15" y2="14"></line>
-            </svg>
-            <span>เพิ่มโครงการใหม่</span>
-        `;
-        itemAdd.onclick = () => window.location.href = window.getDeptUrl('dashboard.html');
-        dropdown.appendChild(itemAdd);
+        if (canAccessDashboard) {
+            const itemAdd = document.createElement('button');
+            itemAdd.id = 'dropdownAddProject';
+            itemAdd.setAttribute('data-page', 'dashboard.html');
+            itemAdd.className = 'user-dropdown-item';
+            itemAdd.innerHTML = `
+                <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    <line x1="12" y1="11" x2="12" y2="17"></line>
+                    <line x1="9" y1="14" x2="15" y2="14"></line>
+                </svg>
+                <span>เพิ่มโครงการใหม่</span>
+            `;
+            itemAdd.onclick = () => window.location.href = window.getDeptUrl('dashboard.html');
+            dropdown.appendChild(itemAdd);
+        }
+    }
 
-        // 3. Admin Console
+    // 3. Admin Console (Strictly checks allowedPages: hidden if false for Admin, required true for non-admin)
+    if (canAccessConsole) {
         const itemConsole = document.createElement('button');
+        itemConsole.id = 'dropdownAdminConsole';
+        itemConsole.setAttribute('data-page', 'console_admin.html');
+        itemConsole.setAttribute('data-href', 'console_admin.html');
         itemConsole.className = 'user-dropdown-item';
         itemConsole.innerHTML = `
             <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -889,7 +934,9 @@ function initAccountDropdown(userData) {
         `;
         itemConsole.onclick = () => window.location.href = window.getDeptUrl('console_admin.html');
         dropdown.appendChild(itemConsole);
+    }
 
+    if (isAdmin || canAccessConsole) {
         // Divider
         const divider = document.createElement('div');
         divider.className = 'user-dropdown-divider';
@@ -955,20 +1002,25 @@ window.applySidebarPermissions = function(userData) {
     }
 
     const isAdmin = userData.role === 'admin';
+    const allowedPages = userData.allowedPages || {};
 
-    // 1. Hide/Show Admin Console menu based on Role
-    const adminMenus = document.querySelectorAll('#adminMenu, a[href*="console_admin.html"], button[onclick*="console_admin.html"], [data-page*="console_admin.html"]');
+    const canAccessConsole = isAdmin 
+        ? (allowedPages['console_admin.html'] !== false)
+        : (allowedPages['console_admin.html'] === true);
+
+    // 1. Hide/Show Admin Console menu based on Role AND allowedPages
+    const adminMenus = document.querySelectorAll('#adminMenu, #dropdownAdminConsole, a[href*="console_admin.html"], button[onclick*="console_admin.html"], [data-page*="console_admin.html"], [data-href*="console_admin.html"]');
     adminMenus.forEach(el => {
-        if (isAdmin) {
-            el.style.display = '';
+        if (canAccessConsole) {
+            el.style.removeProperty('display');
         } else {
-            el.style.display = 'none';
+            el.style.setProperty('display', 'none', 'important');
         }
     });
 
     const PAGE_SELECTOR_MAP = {
         'dashboard.html': [
-            '#nav-dashboard', '#nav-projects', '#nav-items', 
+            '#nav-dashboard', '#nav-projects', '#nav-items', '#dropdownManageUsers', '#dropdownAddProject',
             'a[href*="dashboard.html"]', 'button[onclick*="dashboard"]',
             'button[onclick*="navigateTo(\'dashboard\')"]', 'button[onclick*="navigateTo(\'projects\')"]', 'button[onclick*="navigateTo(\'items\')"]',
             '[data-page*="dashboard.html"]'
@@ -1030,43 +1082,17 @@ window.applySidebarPermissions = function(userData) {
         'business_card.html': [
             '#nav-business-card', 'a[href*="business_card.html"]', 'button[onclick*="business_card.html"]',
             '[data-page*="business_card.html"]'
+        ],
+        'console_admin.html': [
+            '#adminMenu', '#dropdownAdminConsole', 'a[href*="console_admin.html"]', 'button[onclick*="console_admin.html"]',
+            '[data-page*="console_admin.html"]', '[data-href*="console_admin.html"]', '.user-dropdown-item[data-page*="console_admin.html"]'
+        ],
+        'developer.html': [
+            '#nav-developer', '#railBtnDev', '#dropdownDeveloper', 'a[href*="developer.html"]', 'button[onclick*="developer.html"]',
+            '[data-page*="developer.html"]', '[data-href*="developer.html"]', '.user-dropdown-item[data-page*="developer.html"]'
         ]
     };
 
-    if (isAdmin) {
-        // ADMIN: Always display ALL menus and pages without any restrictions!
-        Object.keys(PAGE_SELECTOR_MAP).forEach(pageKey => {
-            const selectors = PAGE_SELECTOR_MAP[pageKey] || [];
-            selectors.forEach(sel => {
-                document.querySelectorAll(sel).forEach(el => {
-                    if (el.style.display === 'none') {
-                        el.style.removeProperty('display');
-                    }
-                });
-            });
-        });
-        document.querySelectorAll('#nav-purchasing-group').forEach(el => {
-            if (el.style.display === 'none') {
-                el.style.removeProperty('display');
-            }
-        });
-
-        try {
-            localStorage.setItem('mentra_user_permissions', JSON.stringify({
-                uid: userData.uid || userData.id,
-                role: 'admin',
-                allowedPages: {}
-            }));
-        } catch(e) {}
-
-        try {
-            window.highlightActiveSidebar();
-        } catch(e) {}
-        return;
-    }
-
-    // 2. Hide navigation items for pages that are disabled for REGULAR USERS
-    const allowedPages = userData.allowedPages || {};
     try {
         localStorage.setItem('mentra_user_permissions', JSON.stringify({
             uid: userData.uid || userData.id,
@@ -1076,7 +1102,17 @@ window.applySidebarPermissions = function(userData) {
     } catch(e) {}
 
     Object.keys(PAGE_SELECTOR_MAP).forEach(pageKey => {
-        const isDenied = allowedPages[pageKey] === false;
+        let isDenied;
+        if (isAdmin) {
+            // For admins: all pages are allowed EXCEPT those explicitly turned off (false)
+            isDenied = allowedPages[pageKey] === false;
+        } else {
+            // For regular users: developer.html & console_admin.html require explicit true; others denied if false
+            isDenied = (pageKey === 'developer.html' || pageKey === 'console_admin.html')
+                ? (allowedPages[pageKey] !== true)
+                : (allowedPages[pageKey] === false);
+        }
+
         const selectors = PAGE_SELECTOR_MAP[pageKey] || [];
         selectors.forEach(sel => {
             document.querySelectorAll(sel).forEach(el => {
@@ -1193,21 +1229,45 @@ window.highlightActiveSidebar = function() {
 window.checkPageAccess = function(userData) {
     if (!userData) return true;
 
-    // Admin has 100% full access to all pages
-    if (userData.role === 'admin') {
-        window.applySidebarPermissions(userData);
-        return true;
-    }
-
     let currentFile = window.location.pathname.split('/').pop() || '../../index.html';
     if (!currentFile || currentFile === '' || currentFile === '/') currentFile = 'dashboard.html';
     currentFile = currentFile.split('?')[0].split('#')[0];
 
-    // If current page is explicitly set to false in allowedPages for regular users
-    if (userData.allowedPages && userData.allowedPages[currentFile] === false) {
-        alert('ขออภัย บัญชีของคุณไม่มีสิทธิ์เข้าถึงหน้าเว็บนี้ กรุณาติดต่อผู้ดูแลระบบ');
+    const isAdmin = userData.role === 'admin';
+    const allowedPages = userData.allowedPages || {};
+
+    // 1. If any page is explicitly set to false in allowedPages, DENY ACCESS even for Admin!
+    // 2. If non-admin visits developer.html or console_admin.html, requires explicit true
+    let isCurrentPageDenied = false;
+    if (allowedPages[currentFile] === false) {
+        isCurrentPageDenied = true;
+    } else if (!isAdmin && (currentFile === 'developer.html' || currentFile === 'console_admin.html') && allowedPages[currentFile] !== true) {
+        isCurrentPageDenied = true;
+    }
+
+    if (isCurrentPageDenied) {
         const target = typeof window.getDeptUrl === 'function' ? window.getDeptUrl('dashboard.html') : 'dashboard.html';
-        window.location.href = target;
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: '<span style="font-family:Kanit,sans-serif;color:#f87171;font-weight:700;font-size:20px;"><i class="fas fa-lock" style="margin-right:8px;"></i>หน้านี้ถูกล็อคการเข้าถึง</span>',
+                html: '<div style="font-family:Kanit,sans-serif;color:#cbd5e1;font-size:14px;line-height:1.6;margin-top:6px;">ขออภัย บัญชีของคุณไม่มีสิทธิ์เข้าถึงหน้านี้ หรือสิทธิ์ถูกปิดไว้<br><span style="color:#94a3b8;font-size:12.5px;">ระบบกำลังนำท่านกลับสู่หน้าหลักแดชบอร์ดอัตโนมัติ...</span></div>',
+                background: '#0a1628',
+                color: '#e2e8f0',
+                confirmButtonText: 'กลับสู่แดชบอร์ด',
+                confirmButtonColor: '#1A6FBF',
+                timer: 2400,
+                timerProgressBar: true,
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(() => {
+                window.location.replace(target);
+            });
+        } else {
+            alert('ขออภัย บัญชีของคุณไม่มีสิทธิ์เข้าถึงหน้านี้ กรุณาติดต่อผู้ดูแลระบบ');
+            window.location.replace(target);
+        }
         return false;
     }
 

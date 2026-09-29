@@ -1338,7 +1338,7 @@
         #pPageWrapper.compact-fit-1page #pBuyerSignatureSpace,
         #pInvPageWrapper.compact-fit-1page #pSellerSignatureSpace,
         #pInvPageWrapper.compact-fit-1page #pBuyerSignatureSpace {
-            height: 24px !important;
+            height: 45px !important;
         }
         #pPageWrapper.compact-fit-1page #pLeftSignerTitle,
         #pPageWrapper.compact-fit-1page #pRightSignerTitle {
@@ -2494,14 +2494,12 @@
                                         ผู้สั่งซื้อ</div>
                                     <!-- Buyer Signature Space (exact mirror of Seller space) -->
                                     <div id="pBuyerSignatureSpace"
-                                        style="height: 30px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 2px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: visible;"></div>
+                                        style="height: 55px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 2px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: visible;"></div>
                                     <div id="pBuyerSignatureDots" style="display: none;"></div>
                                     <div id="pBuyerName"
-                                        style="font-size: 10.5px; color: #374151; margin-top: 4px; height: 16px; line-height: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-family: 'Sarabun', sans-serif;">
-                                        ( .................................................... )</div>
+                                        style="display: none; font-size: 10.5px; color: #374151; margin-top: 4px; height: 16px; line-height: 16px; font-weight: 600; align-items: center; justify-content: center; font-family: 'Sarabun', sans-serif;"></div>
                                     <div id="pBuyerRole"
-                                        style="font-size: 11px; color: var(--pdf-primary, #1A6FBF); margin-top: 2px; height: 16px; line-height: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: 'Sarabun', sans-serif;">
-                                        ผู้มีอำนาจลงนาม</div>
+                                        style="display: none; font-size: 11px; color: var(--pdf-primary, #1A6FBF); margin-top: 2px; height: 16px; line-height: 16px; font-weight: 700; align-items: center; justify-content: center; font-family: 'Sarabun', sans-serif;"></div>
                                     <!-- Left Date Line -->
                                     <div id="pBuyerSignatureDate"
                                         style="display: none; align-items: flex-end; font-size: 10.5px; color: #374151; width: 100%; margin-top: 4px;">
@@ -2521,7 +2519,7 @@
                                         ขอแสดงความนับถือ / Sincerely Yours,</div>
                                     <!-- Signature Space -->
                                     <div id="pSellerSignatureSpace"
-                                        style="height: 30px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 2px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: visible;">
+                                        style="height: 55px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 2px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: visible;">
                                         <div id="pSellerSignatureWrapper" style="position: absolute; bottom: -4px; left: 50%; transform: translate(-50%, 0); cursor: grab; user-select: none; display: inline-flex; align-items: center; justify-content: center; z-index: 5; transition: transform 0.05s linear;" title="คลิกลากเพื่อปรับตำแหน่งลายเซ็น">
                                             <img id="pSellerSignatureImg" src="" style="display: none; max-height: 45px; max-width: 220px; object-fit: contain; pointer-events: none;" alt="Digital Signature">
                                         </div>
@@ -2959,10 +2957,10 @@
                 <div class="form-group">
                     <label>ขนาดความสูงพื้นที่เซ็นชื่อ (Signature Box Height)</label>
                     <select id="settingSignatureSize" class="form-control" onchange="applyLivePreview()">
-                        <option value="30">เล็ก (Small)</option>
-                        <option value="40" selected>ปานกลาง (Medium)</option>
-                        <option value="60">ใหญ่ (Large)</option>
-                        <option value="80">ใหญ่มาก (Extra Large)</option>
+                        <option value="40">เล็ก (Small - 40px)</option>
+                        <option value="55" selected>ปานกลาง (Medium - 55px)</option>
+                        <option value="75">ใหญ่ (Large - 75px)</option>
+                        <option value="95">ใหญ่มาก (Extra Large - 95px)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -2971,11 +2969,11 @@
                 </div>
                 <div class="form-group">
                     <label>ชื่อผู้ลงนามฝ่ายผู้ซื้อ (ซ้าย)</label>
-                    <input type="text" id="settingBuyerName" class="form-control" value="" placeholder="( .................................................... )" oninput="applyLivePreview()">
+                    <input type="text" id="settingBuyerName" class="form-control" value="" placeholder="(เว้นว่างหากไม่ต้องการแสดง)" oninput="applyLivePreview()">
                 </div>
                 <div class="form-group">
                     <label>ตำแหน่งฝ่ายผู้ซื้อ (ซ้าย)</label>
-                    <input type="text" id="settingBuyerRole" class="form-control" value="ผู้มีอำนาจลงนาม" oninput="applyLivePreview()">
+                    <input type="text" id="settingBuyerRole" class="form-control" value="" placeholder="(เว้นว่างหากไม่ต้องการแสดง)" oninput="applyLivePreview()">
                 </div>
                 <div class="form-group">
                     <label>คำลงท้ายฝ่ายผู้เสนอราคา (ขวา)</label>
@@ -3470,7 +3468,7 @@
                 badgeBg: '#eff6ff',
                 badgeBorder: '#bfdbfe',
                 leftSignerTitle: 'ผู้สั่งซื้อ',
-                buyerRole: 'ผู้มีอำนาจลงนาม',
+                buyerRole: '',
                 rightSignerTitle: 'ขอแสดงความนับถือ / Sincerely Yours,',
                 sellerRole: 'ผู้เสนอราคา',
                 sellerNameLabel: 'ผู้เสนอราคา / ผู้ลงนาม (Prepared By)',
@@ -3498,9 +3496,9 @@
                 badgeBg: '#fffbeb',
                 badgeBorder: '#fde68a',
                 leftSignerTitle: 'ผู้รับของ',
-                buyerRole: 'ผู้รับของ / ผู้มีอำนาจลงนาม',
+                buyerRole: '',
                 rightSignerTitle: 'ผู้ส่งของ',
-                sellerRole: 'ผู้ส่งของ',
+                sellerRole: '',
                 sellerNameLabel: 'ชื่อผู้ส่งของ (Delivered By)',
                 sellerRoleLabel: 'ตำแหน่ง / หน้าที่ (Position)',
                 firestoreCollection: 'invoices_history',
@@ -3526,9 +3524,9 @@
                 badgeBg: '#f0fdf4',
                 badgeBorder: '#bbf7d0',
                 leftSignerTitle: 'ผู้จ่ายเงิน',
-                buyerRole: 'ผู้จ่ายเงิน',
+                buyerRole: '',
                 rightSignerTitle: 'ผู้รับเงิน / ผู้มีอำนาจลงนาม',
-                sellerRole: 'ผู้รับเงิน / ผู้มีอำนาจลงนาม',
+                sellerRole: '',
                 sellerNameLabel: 'ชื่อผู้รับเงิน / ผู้มีอำนาจลงนาม (Authorized Signer)',
                 sellerRoleLabel: 'ตำแหน่ง / หน้าที่ (Position)',
                 firestoreCollection: 'receipts_history',
@@ -4117,11 +4115,31 @@
             const pLeftSigner = document.getElementById('pLeftSignerTitle');
             if (pLeftSigner) pLeftSigner.innerText = config.leftSignerTitle;
             const pBuyerRole = document.getElementById('pBuyerRole');
-            if (pBuyerRole) pBuyerRole.innerText = config.buyerRole || '';
+            if (pBuyerRole) {
+                pBuyerRole.innerText = config.buyerRole || '';
+                pBuyerRole.style.display = config.buyerRole ? 'flex' : 'none';
+            }
             const pRightSigner = document.getElementById('pRightSignerTitle');
             if (pRightSigner) pRightSigner.innerText = config.rightSignerTitle;
             const pSellerRole = document.getElementById('pSellerRole');
-            if (pSellerRole) pSellerRole.innerText = config.sellerRole;
+            if (pSellerRole) {
+                if (type === 'invoice' || type === 'receipt') {
+                    pSellerRole.innerText = '';
+                    pSellerRole.style.display = 'none';
+                } else {
+                    pSellerRole.innerText = config.sellerRole || '';
+                    pSellerRole.style.display = config.sellerRole ? 'flex' : 'none';
+                }
+            }
+            const pSellerName = document.getElementById('pSellerName');
+            if (pSellerName && (type === 'invoice' || type === 'receipt')) {
+                pSellerName.innerText = '';
+                pSellerName.style.display = 'none';
+            }
+            const pSellerSpaceEl = document.getElementById('pSellerSignatureSpace');
+            if (pSellerSpaceEl && (type === 'invoice' || type === 'receipt')) {
+                pSellerSpaceEl.innerHTML = '';
+            }
 
             // Form inputs on left panel
             const sellerRoleInput = document.getElementById('sellerRole');
@@ -5726,27 +5744,43 @@
             const sellerNameInput = document.getElementById('sellerName');
             const pSellerName = document.getElementById('pSellerName');
             if (sellerNameInput && pSellerName) {
-                let sVal = sellerNameInput.value.trim();
-                // Ensure email address is NEVER displayed as signer name
-                if (!sVal || isEmail(sVal)) {
-                    const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                    sVal = getAuthorizedSignerForCompany(currentIssuer);
-                    sellerNameInput.value = sVal;
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                    pSellerName.innerText = '';
+                    pSellerName.style.display = 'none';
+                } else {
+                    let sVal = sellerNameInput.value.trim();
+                    // Ensure email address is NEVER displayed as signer name
+                    if (!sVal || isEmail(sVal)) {
+                        const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                        sVal = getAuthorizedSignerForCompany(currentIssuer);
+                        sellerNameInput.value = sVal;
+                    }
+                    pSellerName.innerText = sVal ? formatSignerDisplay(sVal) : '';
+                    if (document.getElementById('settingSignatureFormat')?.value !== 'line_only') {
+                        pSellerName.style.display = 'flex';
+                    }
                 }
-                pSellerName.innerText = sVal ? formatSignerDisplay(sVal) : '';
             }
             const sellerRoleInput = document.getElementById('sellerRole');
             const pSellerRole = document.getElementById('pSellerRole');
             if (sellerRoleInput && pSellerRole) {
-                let rVal = sellerRoleInput.value.trim();
-                if (!rVal) {
-                    const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                    rVal = getAuthorizedSignerRoleForCompany(currentIssuer);
-                    sellerRoleInput.value = rVal;
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                    pSellerRole.innerText = '';
+                    pSellerRole.style.display = 'none';
+                } else {
+                    let rVal = sellerRoleInput.value.trim();
+                    if (!rVal) {
+                        const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                        rVal = getAuthorizedSignerRoleForCompany(currentIssuer);
+                        sellerRoleInput.value = rVal;
+                    }
+                    const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
+                    const defaultRole = (docConfig && currentDocType !== 'quotation') ? docConfig.sellerRole : rVal;
+                    pSellerRole.innerText = defaultRole || 'ผู้เสนอราคา';
+                    if (document.getElementById('settingSignatureFormat')?.value !== 'line_only') {
+                        pSellerRole.style.display = 'flex';
+                    }
                 }
-                const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
-                const defaultRole = (docConfig && currentDocType !== 'quotation') ? docConfig.sellerRole : rVal;
-                pSellerRole.innerText = defaultRole || 'ผู้เสนอราคา';
             }
 
             document.getElementById('pRemark').innerHTML = (document.getElementById('remark').value || '-').replace(/\n/g, '<br>');
@@ -6728,7 +6762,7 @@
                 })(),
                 sellerRole: document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา',
                 leftSignerTitle: document.getElementById('settingLeftSignerTitle')?.value || 'ผู้สั่งซื้อ',
-                buyerRole: document.getElementById('settingBuyerRole')?.value || 'ผู้มีอำนาจลงนาม',
+                buyerRole: document.getElementById('settingBuyerRole')?.value || '',
                 sincerelyYours: document.getElementById('settingSincerelyYours')?.value || 'ขอแสดงความนับถือ / Sincerely Yours,',
                 headerDirection: document.getElementById('settingHeaderDirection')?.value || 'row',
                 headerRows: document.getElementById('settingHeaderRows')?.value || '3',
@@ -6744,7 +6778,7 @@
                 bahtTextPosition: document.getElementById('settingBahtTextPosition')?.value || 'right',
                 showHeaderLine: document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true,
                 signatureFormat: document.getElementById('settingSignatureFormat')?.value || 'full',
-                signatureSize: document.getElementById('settingSignatureSize')?.value || '40',
+                signatureSize: document.getElementById('settingSignatureSize')?.value || '55',
                 useSignatureImage: useSigImg,
                 activeSignatures: JSON.parse(JSON.stringify(window.activeSignatures || [])),
                 signatureImage: (window.activeSignatures && window.activeSignatures[0]) ? window.activeSignatures[0].dataUrl : '',
@@ -7508,7 +7542,7 @@
                 zebraStripes: preferredZebra,
                 autoPageBreak: preferredAutoBreak,
                 leftSignerTitle: 'ผู้สั่งซื้อ',
-                buyerRole: 'ผู้มีอำนาจลงนาม',
+                buyerRole: '',
                 sincerelyYours: 'ขอแสดงความนับถือ / Sincerely Yours,',
                 useSignatureImage: !!shopSignature,
                 activeSignatures: shopSignature ? [{
@@ -7613,9 +7647,23 @@
             const inputRole = document.getElementById('sellerRole');
             if (inputRole && finalSettings.sellerRole) inputRole.value = finalSettings.sellerRole;
             const pSeller = document.getElementById('pSellerName');
-            if (pSeller) pSeller.innerText = formatSignerDisplay(finalSettings.sellerName);
+            if (pSeller) {
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                    pSeller.innerText = '';
+                    pSeller.style.display = 'none';
+                } else {
+                    pSeller.innerText = formatSignerDisplay(finalSettings.sellerName);
+                }
+            }
             const pRole = document.getElementById('pSellerRole');
-            if (pRole && finalSettings.sellerRole) pRole.innerText = finalSettings.sellerRole;
+            if (pRole) {
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                    pRole.innerText = '';
+                    pRole.style.display = 'none';
+                } else if (finalSettings.sellerRole) {
+                    pRole.innerText = finalSettings.sellerRole;
+                }
+            }
         }
 
         let sortables = [];
@@ -7756,7 +7804,7 @@
             }
             const sellerRole = document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา';
             const leftSignerTitle = document.getElementById('settingLeftSignerTitle') ? document.getElementById('settingLeftSignerTitle').value : 'ผู้สั่งซื้อ';
-            const buyerRole = document.getElementById('settingBuyerRole') ? document.getElementById('settingBuyerRole').value : 'ผู้มีอำนาจลงนาม';
+            const buyerRole = document.getElementById('settingBuyerRole') ? document.getElementById('settingBuyerRole').value : '';
             const sincerelyYours = document.getElementById('settingSincerelyYours') ? document.getElementById('settingSincerelyYours').value : 'ขอแสดงความนับถือ / Sincerely Yours,';
             const introText = document.getElementById('settingIntroText') ? document.getElementById('settingIntroText').value : 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:';
             const fontFamily = document.getElementById('settingFontFamily') ? document.getElementById('settingFontFamily').value : 'Sarabun';
@@ -7768,7 +7816,7 @@
             const bahtTextPos = document.getElementById('settingBahtTextPosition') ? document.getElementById('settingBahtTextPosition').value : 'right';
             const showHeaderLine = document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true;
             const sigFormat = document.getElementById('settingSignatureFormat') ? document.getElementById('settingSignatureFormat').value : 'full';
-            const sigSize = document.getElementById('settingSignatureSize') ? parseInt(document.getElementById('settingSignatureSize').value) : 40;
+            const sigSize = document.getElementById('settingSignatureSize') ? parseInt(document.getElementById('settingSignatureSize').value) : 55;
             const useSigImg = document.getElementById('settingUseSignatureImage') ? document.getElementById('settingUseSignatureImage').checked : false;
             const sigImgSize = document.getElementById('settingSignatureImageSize') ? parseInt(document.getElementById('settingSignatureImageSize').value) : 45;
             const sigOffsetX = document.getElementById('settingSignatureOffsetX') ? parseInt(document.getElementById('settingSignatureOffsetX').value) : 0;
@@ -8050,11 +8098,12 @@
             const buyerNameInput = document.getElementById('settingBuyerName');
             let buyerNameVal = buyerNameInput ? buyerNameInput.value.trim() : '';
             if (pBuyerName) {
-                if (sigFormat === 'line_only') {
+                if (sigFormat === 'line_only' || !buyerNameVal) {
                     pBuyerName.style.display = 'none';
+                    pBuyerName.innerText = '';
                 } else {
                     pBuyerName.style.display = 'flex';
-                    pBuyerName.innerText = buyerNameVal ? formatSignerDisplay(buyerNameVal) : '( .................................................... )';
+                    pBuyerName.innerText = formatSignerDisplay(buyerNameVal);
                 }
             }
 
@@ -8070,7 +8119,7 @@
                 } else {
                     pBuyerBlock.style.visibility = 'visible';
                     if (pBuyerDots) pBuyerDots.style.display = 'none';
-                    if (pBuyerName) pBuyerName.style.display = 'flex';
+                    if (pBuyerName) pBuyerName.style.display = buyerNameVal ? 'flex' : 'none';
                     if (pBuyerRole) pBuyerRole.style.display = buyerRole ? 'flex' : 'none';
                     if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
                 }
@@ -8085,7 +8134,10 @@
                 pSellerSpace.style.height = sigSize + 'px';
             }
             if (pSellerSpace) {
-                if (useSigImg && window.activeSignatures && window.activeSignatures.length > 0) {
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                    // ในหน้าใบส่งของ/ใบแจ้งหนี้ และ ใบเสร็จรับเงิน เป็นช่องให้เซ็นสด ไม่ใส่ลายเซ็นและไม่ใส่ตราประทับ
+                    pSellerSpace.innerHTML = '';
+                } else if (useSigImg && window.activeSignatures && window.activeSignatures.length > 0) {
                     pSellerSpace.innerHTML = window.activeSignatures.map((item, idx) => {
                         const itemSize = item.size || 45;
                         return `
@@ -8114,16 +8166,18 @@
             const pBuyerRoleEl = document.getElementById('pBuyerRole');
             
             if (pSellerName) {
-                if (sigFormat === 'line_only') {
+                if (currentDocType === 'invoice' || currentDocType === 'receipt' || sigFormat === 'line_only') {
                     pSellerName.style.display = 'none';
+                    pSellerName.innerText = '';
                 } else {
                     pSellerName.style.display = 'flex';
                     pSellerName.innerText = formatSignerDisplay(sellerName);
                 }
             }
             if (pSellerRole) {
-                if (sigFormat === 'line_only') {
+                if (currentDocType === 'invoice' || currentDocType === 'receipt' || sigFormat === 'line_only') {
                     pSellerRole.style.display = 'none';
+                    pSellerRole.innerText = '';
                 } else {
                     pSellerRole.style.display = 'flex';
                 }
@@ -8136,10 +8190,21 @@
             const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
 
             if (docConfig && currentDocType !== 'quotation') {
-                if (pSellerRole) pSellerRole.innerText = docConfig.sellerRole;
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                    if (pSellerRole) {
+                        pSellerRole.innerText = '';
+                        pSellerRole.style.display = 'none';
+                    }
+                    if (pBuyerRoleEl) {
+                        pBuyerRoleEl.innerText = '';
+                        pBuyerRoleEl.style.display = 'none';
+                    }
+                } else {
+                    if (pSellerRole) pSellerRole.innerText = docConfig.sellerRole;
+                    if (pBuyerRoleEl) pBuyerRoleEl.innerText = docConfig.buyerRole || '';
+                }
                 if (pLeftSigner) pLeftSigner.innerText = docConfig.leftSignerTitle;
                 if (pRightSigner) pRightSigner.innerText = docConfig.rightSignerTitle;
-                if (pBuyerRoleEl) pBuyerRoleEl.innerText = docConfig.buyerRole || '';
             } else {
                 if (pSellerRole) pSellerRole.innerText = sellerRole;
                 if (pLeftSigner) pLeftSigner.innerText = leftSignerTitle;
@@ -8214,7 +8279,7 @@
                     sellerRole: document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา',
                     leftSignerTitle: document.getElementById('settingLeftSignerTitle')?.value || 'ผู้สั่งซื้อ',
                     buyerName: document.getElementById('settingBuyerName')?.value || '',
-                    buyerRole: document.getElementById('settingBuyerRole')?.value || 'ผู้มีอำนาจลงนาม',
+                    buyerRole: document.getElementById('settingBuyerRole')?.value || '',
                     sincerelyYours: document.getElementById('settingSincerelyYours')?.value || 'ขอแสดงความนับถือ / Sincerely Yours,',
                     headerDirection: document.getElementById('settingHeaderDirection')?.value || 'row',
                     headerRows: document.getElementById('settingHeaderRows')?.value || '3',
@@ -8230,7 +8295,7 @@
                     bahtTextPosition: document.getElementById('settingBahtTextPosition')?.value || 'right',
                     showHeaderLine: document.getElementById('settingShowHeaderLine') ? document.getElementById('settingShowHeaderLine').checked : true,
                     signatureFormat: document.getElementById('settingSignatureFormat')?.value || 'full',
-                    signatureSize: document.getElementById('settingSignatureSize')?.value || '40',
+                    signatureSize: document.getElementById('settingSignatureSize')?.value || '55',
                     showSignatureDate: document.getElementById('settingShowSignatureDate') ? document.getElementById('settingShowSignatureDate').checked : false,
                     useSignatureImage: useSigImg,
                     activeSignatures: JSON.parse(JSON.stringify(window.activeSignatures || [])),
@@ -8824,7 +8889,11 @@
             }
             if (settings.leftSignerTitle) document.getElementById('settingLeftSignerTitle').value = settings.leftSignerTitle;
             if (settings.buyerName !== undefined && document.getElementById('settingBuyerName')) document.getElementById('settingBuyerName').value = settings.buyerName;
-            if (settings.buyerRole !== undefined) document.getElementById('settingBuyerRole').value = settings.buyerRole;
+            if (settings.buyerRole !== undefined && settings.buyerRole !== 'ผู้มีอำนาจลงนาม') {
+                document.getElementById('settingBuyerRole').value = settings.buyerRole;
+            } else {
+                document.getElementById('settingBuyerRole').value = '';
+            }
             if (settings.sincerelyYours) document.getElementById('settingSincerelyYours').value = settings.sincerelyYours;
             
             const hdEl = document.getElementById('settingHeaderDirection');
@@ -8869,7 +8938,13 @@
             if (sigFormatEl) sigFormatEl.value = settings.signatureFormat || 'full';
 
             const sigSizeEl = document.getElementById('settingSignatureSize');
-            if (sigSizeEl) sigSizeEl.value = settings.signatureSize || '40';
+            if (sigSizeEl) {
+                if (settings.signatureSize && settings.signatureSize !== '30' && settings.signatureSize !== '40') {
+                    sigSizeEl.value = settings.signatureSize;
+                } else {
+                    sigSizeEl.value = '55';
+                }
+            }
 
             const showSigDateEl = document.getElementById('settingShowSignatureDate');
             if (showSigDateEl) showSigDateEl.checked = settings.showSignatureDate === true;
@@ -9722,14 +9797,28 @@
                 const formSeller = document.getElementById('sellerName');
                 if (formSeller) formSeller.value = sSigner;
                 const pSeller = document.getElementById('pSellerName');
-                if (pSeller) pSeller.innerText = formattedSigner;
+                if (pSeller) {
+                    if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                        pSeller.innerText = '';
+                        pSeller.style.display = 'none';
+                    } else {
+                        pSeller.innerText = formattedSigner;
+                    }
+                }
 
                 const setRole = document.getElementById('settingSellerRole');
                 if (setRole) setRole.value = sSignerRole;
                 const formRole = document.getElementById('sellerRole');
                 if (formRole) formRole.value = sSignerRole;
                 const pRole = document.getElementById('pSellerRole');
-                if (pRole) pRole.innerText = sSignerRole;
+                if (pRole) {
+                    if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                        pRole.innerText = '';
+                        pRole.style.display = 'none';
+                    } else {
+                        pRole.innerText = sSignerRole;
+                    }
+                }
             } else {
                 // Mentra Solution (Default or matched)
                 const mName = (shop && shop.name) ? shop.name : MENTRA_OFFICIAL.name;
@@ -9766,14 +9855,28 @@
                 const formSeller = document.getElementById('sellerName');
                 if (formSeller) formSeller.value = mSigner;
                 const pSeller = document.getElementById('pSellerName');
-                if (pSeller) pSeller.innerText = formattedSigner;
+                if (pSeller) {
+                    if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                        pSeller.innerText = '';
+                        pSeller.style.display = 'none';
+                    } else {
+                        pSeller.innerText = formattedSigner;
+                    }
+                }
 
                 const setRole = document.getElementById('settingSellerRole');
                 if (setRole) setRole.value = mSignerRole;
                 const formRole = document.getElementById('sellerRole');
                 if (formRole) formRole.value = mSignerRole;
                 const pRole = document.getElementById('pSellerRole');
-                if (pRole) pRole.innerText = mSignerRole;
+                if (pRole) {
+                    if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                        pRole.innerText = '';
+                        pRole.style.display = 'none';
+                    } else {
+                        pRole.innerText = mSignerRole;
+                    }
+                }
             }
             
             // Re-apply live preview to force all color and logo display updates

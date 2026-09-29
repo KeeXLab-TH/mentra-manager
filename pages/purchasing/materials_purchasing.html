@@ -5383,6 +5383,7 @@
                     }
 
                     let shopParam = '';
+                    let parentRefParam = '';
                     if (proj) {
                         const shopName = this.getProjectShopName(proj);
                         if (shopName) {
@@ -5403,7 +5404,9 @@
                         }));
 
                         const parentRef = proj.docWorkflow?.invoice?.parentRef || proj.docWorkflow?.quotation?.docNumber || '';
-                        let parentRefParam = parentRef ? `&parentRef=${encodeURIComponent(parentRef)}` : '';
+                        if (parentRef) {
+                            parentRefParam = `&parentRef=${encodeURIComponent(parentRef)}`;
+                        }
 
                         const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const pendingData = {
@@ -5432,6 +5435,22 @@
                         try {
                             localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
                         } catch(e) {}
+
+                        // Also cache full projects list without heavy images
+                        try {
+                            const lightProjects = this.projects.map(p => {
+                                const pCopy = { ...p };
+                                if (Array.isArray(pCopy.items)) {
+                                    pCopy.items = pCopy.items.map(it => {
+                                        const { images, ...lightItem } = it;
+                                        return lightItem;
+                                    });
+                                }
+                                return pCopy;
+                            });
+                            localStorage.setItem('material_projects', JSON.stringify(lightProjects));
+                        } catch(e) {}
+
                         if (window.saveProjectToFirestore) {
                             window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToInvoice error:', e));
                         }

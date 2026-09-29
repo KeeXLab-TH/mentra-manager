@@ -853,21 +853,35 @@
             const raw = localStorage.getItem('mentra_user_permissions');
             if (raw) {
                 const data = JSON.parse(raw);
-                // Admins always have full unrestricted access to all menus
-                if (data.role === 'admin') {
-                    return;
-                }
                 if (typeof window.applySidebarPermissions === 'function') {
                     window.applySidebarPermissions(data);
                 } else if (data && data.allowedPages) {
+                    const isAdmin = data.role === 'admin';
                     Object.keys(data.allowedPages).forEach(pageKey => {
                         if (data.allowedPages[pageKey] === false) {
                             const name = pageKey.replace('.html', '');
-                            document.querySelectorAll(`[id*="${name}"], [href*="${pageKey}"], [onclick*="${pageKey}"]`).forEach(el => {
+                            document.querySelectorAll(`[id*="${name}"], #dropdownAdminConsole, [href*="${pageKey}"], [onclick*="${pageKey}"], [data-page*="${pageKey}"]`).forEach(el => {
+                                el.style.setProperty('display', 'none', 'important');
+                            });
+                            if (pageKey === 'developer.html') {
+                                document.querySelectorAll('#railBtnDev').forEach(el => {
+                                    el.style.setProperty('display', 'none', 'important');
+                                });
+                            }
+                        }
+                    });
+                    if (!isAdmin) {
+                        if (data.allowedPages['developer.html'] !== true) {
+                            document.querySelectorAll('[id*="developer"], #railBtnDev, [href*="developer.html"], [onclick*="developer.html"], [data-page*="developer.html"]').forEach(el => {
                                 el.style.setProperty('display', 'none', 'important');
                             });
                         }
-                    });
+                        if (data.allowedPages['console_admin.html'] !== true) {
+                            document.querySelectorAll('[href*="console_admin.html"], #dropdownAdminConsole, [onclick*="console_admin.html"], [data-page*="console_admin.html"]').forEach(el => {
+                                el.style.setProperty('display', 'none', 'important');
+                            });
+                        }
+                    }
                 }
             }
         } catch (e) {}

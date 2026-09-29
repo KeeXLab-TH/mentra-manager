@@ -1566,7 +1566,7 @@
                             localStorage.setItem('mentra_user_permissions', JSON.stringify({
                                 uid: user.uid,
                                 role: userData.role || 'user',
-                                allowedPages: userData.role === 'admin' ? {} : (userData.allowedPages || {})
+                                allowedPages: userData.allowedPages || {}
                             }));
                         } catch(e) {}
                         window.location.href = 'pages/admin/dashboard.html';

@@ -4965,6 +4965,7 @@
                     }
 
                     let shopParam = '';
+                    let parentRefParam = '';
                     if (proj) {
                         const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : '';
                         if (shopName) {
@@ -4986,7 +4987,9 @@
                         }));
 
                         const parentRef = proj.docWorkflow?.invoice?.parentRef || proj.docWorkflow?.quotation?.docNumber || '';
-                        let parentRefParam = parentRef ? `&parentRef=${encodeURIComponent(parentRef)}` : '';
+                        if (parentRef) {
+                            parentRefParam = `&parentRef=${encodeURIComponent(parentRef)}`;
+                        }
 
                         const compDetails = (this.companyDetails && proj.company) ? (this.companyDetails[proj.company] || {}) : {};
                         let compNameWithBranch = proj.company || '';
