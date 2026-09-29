@@ -4039,7 +4039,7 @@
                             if (rawLocalTpl) localTemplates = JSON.parse(rawLocalTpl);
                         } catch(e) {}
                         const cloudTemplates = (userData && userData.quotationTemplates) || {};
-                        window.quotationTemplates = Object.assign({}, cloudTemplates, localTemplates);
+                        window.quotationTemplates = Object.assign({}, window.MENTRA_DEFAULT_TEMPLATES || {}, cloudTemplates, localTemplates);
                         localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
 
                         window.savedSignaturesByCompany = {};
@@ -5919,7 +5919,40 @@
                 signatureOffsetY: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].offsetY || 0) : 0,
                 introText: document.getElementById('settingIntroText')?.value || 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:',
                 issuerName: currentIssuerDisplay,
-                headerLayout: typeof getCurrentHeaderLayout === 'function' ? getCurrentHeaderLayout() : null
+                issuerCustomName: document.getElementById('settingIssuerName')?.value || '',
+                issuerAddress: document.getElementById('settingIssuerAddress')?.value || '',
+                contactBreakMode: document.getElementById('settingContactBreakMode')?.value || '2-lines',
+                issuerContact: document.getElementById('settingIssuerContact')?.value || '',
+                headerLayout: typeof getCurrentHeaderLayout === 'function' ? getCurrentHeaderLayout() : null,
+                infoPanelOrder: typeof getInfoPanelOrder === 'function' ? getInfoPanelOrder() : ['pRecipientPanel', 'pInfoResizer', 'pDocDetailsPanel'],
+                infoPanelLeftFlex: typeof getInfoPanelFlex === 'function' ? getInfoPanelFlex('left') : '1.4',
+                infoPanelRightFlex: typeof getInfoPanelFlex === 'function' ? getInfoPanelFlex('right') : '0.6',
+                infoDivider: document.getElementById('settingInfoDivider') ? document.getElementById('settingInfoDivider').checked : true,
+                headerFlex: {
+                    left: document.getElementById('zone-left') ? document.getElementById('zone-left').style.flex || '1' : '1',
+                    center: document.getElementById('zone-center') ? document.getElementById('zone-center').style.flex || '1' : '1',
+                    right: document.getElementById('zone-right') ? document.getElementById('zone-right').style.flex || '1' : '1',
+                    midLeft: document.getElementById('zone-mid-left') ? document.getElementById('zone-mid-left').style.flex || '1' : '1',
+                    midCenter: document.getElementById('zone-mid-center') ? document.getElementById('zone-mid-center').style.flex || '1' : '1',
+                    midRight: document.getElementById('zone-mid-right') ? document.getElementById('zone-mid-right').style.flex || '1' : '1',
+                    botLeft: document.getElementById('zone-bot-left') ? document.getElementById('zone-bot-left').style.flex || '1' : '1',
+                    botCenter: document.getElementById('zone-bot-center') ? document.getElementById('zone-bot-center').style.flex || '1' : '1',
+                    botRight: document.getElementById('zone-bot-right') ? document.getElementById('zone-bot-right').style.flex || '1' : '1'
+                },
+                recipientTitle: document.getElementById('settingRecipientTitle')?.value || 'RECIPIENT INFORMATION',
+                docDetailsTitle: document.getElementById('settingDocDetailsTitle')?.value || 'DOCUMENT DETAILS',
+                infoLabels: {
+                    to: document.getElementById('settingLabelTo')?.value || 'ชื่อ / To:',
+                    address: document.getElementById('settingLabelAddress')?.value || 'ที่อยู่:',
+                    attn: document.getElementById('settingLabelAttn')?.value || 'ติดต่อ / Attn:',
+                    tel: document.getElementById('settingLabelTel')?.value || 'โทร / Tel:',
+                    email: document.getElementById('settingLabelEmail')?.value || 'อีเมล:',
+                    refNo: document.getElementById('settingLabelRefNo')?.value || 'เลขที่ / Ref. No:',
+                    date: document.getElementById('settingLabelDate')?.value || 'วันที่ / Date:',
+                    validity: document.getElementById('settingLabelValidity')?.value || 'ยืนราคา / Validity:',
+                    delivery: document.getElementById('settingLabelDelivery')?.value || 'ส่งมอบ / Delivery:',
+                    payment: document.getElementById('settingLabelPayment')?.value || 'ชำระเงิน / Payment:'
+                }
             };
 
             window.quotationTemplates[currentIssuerDisplay] = templateSettings;
@@ -9404,8 +9437,10 @@
 
                 // Reload issuer template into UI
                 const currentIssuer = (typeof getCurrentIssuerName === 'function') ? getCurrentIssuerName() : 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                if (typeof loadIssuerTemplateSettings === 'function') {
-                    loadIssuerTemplateSettings(currentIssuer);
+                if (typeof applyIssuerTemplate === 'function') {
+                    applyIssuerTemplate(currentIssuer);
+                } else if (typeof applyTemplateSettings === 'function' && window.quotationTemplates[currentIssuer]) {
+                    applyTemplateSettings(window.quotationTemplates[currentIssuer]);
                 }
                 if (typeof applyLivePreview === 'function') {
                     applyLivePreview();
