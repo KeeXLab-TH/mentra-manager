@@ -40,6 +40,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
     <!-- Telegram Notification Service -->
     <script src="../../assets/js/telegram-service.js"></script>
+    <!-- Default Form & Paper Settings Template (for Cross-domain / Vercel persistence) -->
+    <script src="../../assets/js/default-form-template.js"></script>
     <!-- SweetAlert2 for Modern Popups -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -2594,6 +2596,36 @@
             </div>
             
             <div style="flex: 1; overflow-y: auto; padding: 20px;">
+                <!-- Sync & Backup Section for Vercel / Cross-Domain -->
+                <div style="margin-bottom: 20px; padding: 12px 14px; background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="font-size: 0.82rem; font-weight: 700; color: #0369a1; display: flex; align-items: center; gap: 5px;">
+                            <i class='bx bx-sync' style="font-size: 1.05rem;"></i> ซิงค์การตั้งค่าข้ามเว็บ (Vercel)
+                        </span>
+                        <span style="font-size: 0.68rem; background: #0284c7; color: white; border-radius: 4px; padding: 1px 5px; font-weight: 600;">Cross-Domain</span>
+                    </div>
+                    <div style="font-size: 0.73rem; color: #475569; margin-bottom: 10px; line-height: 1.35;">
+                        คัดลอกจาก Live Server ไปกดวางบนลิงก์ Vercel ได้ใน 1 วินาที
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px;">
+                        <button type="button" class="btn" onclick="exportQuotationSettingsClip()" title="คัดลอกการตั้งค่าทั้งหมดลง Clipboard เพื่อนำไปวางบน Vercel" style="padding: 6px 8px; font-size: 0.74rem; font-weight: 600; background: #0284c7; color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='#0369a1'" onmouseout="this.style.background='#0284c7'">
+                            <i class='bx bx-copy'></i> <span>คัดลอกการตั้งค่า</span>
+                        </button>
+                        <button type="button" class="btn" onclick="importQuotationSettingsPrompt()" title="นำเข้าการตั้งค่าที่คัดลอกมาจากเครื่องอื่นหรือ Local" style="padding: 6px 8px; font-size: 0.74rem; font-weight: 600; background: #ffffff; color: #0284c7; border: 1px solid #7dd3fc; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='#ffffff'">
+                            <i class='bx bx-paste'></i> <span>วางการตั้งค่า</span>
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <button type="button" onclick="exportQuotationSettingsJSONFile()" title="บันทึกเป็นไฟล์ .json สำรองไว้ในเครื่อง" style="flex: 1; padding: 4px 6px; font-size: 0.7rem; color: #475569; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+                            <i class='bx bx-download'></i> โหลดไฟล์ JSON
+                        </button>
+                        <label title="เลือกไฟล์ .json เพื่อกู้คืนการตั้งค่า" style="flex: 1; margin: 0; padding: 4px 6px; font-size: 0.7rem; color: #475569; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;">
+                            <i class='bx bx-upload'></i> นำเข้าไฟล์
+                            <input type="file" accept=".json" style="display: none;" onchange="importQuotationSettingsFromFile(event)">
+                        </label>
+                    </div>
+                </div>
+
                 <h4 style="font-size: 0.95rem; color: #64748b; margin-bottom: 15px; font-weight: 600; text-transform: uppercase;">รูปแบบส่วนหัว</h4>
                 <div class="form-group">
                     <label>การเรียงตัว (Layout Direction)</label>
@@ -3256,6 +3288,9 @@
         window.registeredShopsCache = registeredShopsCache;
 
         window.quotationTemplates = {};
+        if (window.MENTRA_DEFAULT_TEMPLATES && typeof window.MENTRA_DEFAULT_TEMPLATES === 'object') {
+            window.quotationTemplates = JSON.parse(JSON.stringify(window.MENTRA_DEFAULT_TEMPLATES));
+        }
         try {
             const rawLocalTemplates = localStorage.getItem('quotationTemplates');
             if (rawLocalTemplates) {
@@ -3266,11 +3301,14 @@
                         delete parsed[k].sellerName;
                     }
                 });
-                window.quotationTemplates = parsed;
+                window.quotationTemplates = Object.assign({}, window.quotationTemplates, parsed);
+                localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
+            } else if (Object.keys(window.quotationTemplates).length > 0) {
+                // Seed local storage with default templates so it persists immediately
                 localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
             }
         } catch(e) {
-            window.quotationTemplates = {};
+            // Keep MENTRA_DEFAULT_TEMPLATES if local parse fails
         }
 
         window.savedSignaturesByCompany = {};
@@ -6545,9 +6583,12 @@
 
             // Load global user typography preferences and main template
             let globalTypo = {};
+            if (window.MENTRA_DEFAULT_GLOBAL_TYPOGRAPHY && typeof window.MENTRA_DEFAULT_GLOBAL_TYPOGRAPHY === 'object') {
+                globalTypo = Object.assign({}, window.MENTRA_DEFAULT_GLOBAL_TYPOGRAPHY);
+            }
             try {
                 const raw = localStorage.getItem('quotation_global_typography');
-                if (raw) globalTypo = JSON.parse(raw);
+                if (raw) globalTypo = Object.assign(globalTypo, JSON.parse(raw));
             } catch(e) {}
 
             const mainCompanyName = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
@@ -9243,6 +9284,192 @@
 
             triggerLiveSync();
         };
+
+        // ── Cross-Domain / Vercel Settings Sync & Backup Helpers ──
+        function getCompleteQuotationSettingsPayload() {
+            if (typeof autoSaveCurrentIssuerTemplate === 'function') {
+                autoSaveCurrentIssuerTemplate();
+            }
+            return {
+                version: '1.0',
+                exportedAt: new Date().toISOString(),
+                currentIssuer: (typeof getCurrentIssuerName === 'function') ? getCurrentIssuerName() : '',
+                quotationTemplates: window.quotationTemplates || {},
+                quotation_global_typography: JSON.parse(localStorage.getItem('quotation_global_typography') || '{}'),
+                quotation_preferred_font: localStorage.getItem('quotation_preferred_font') || 'Sarabun',
+                saved_signatures_by_company: window.savedSignaturesByCompany || {}
+            };
+        }
+
+        async function exportQuotationSettingsClip() {
+            try {
+                const payload = getCompleteQuotationSettingsPayload();
+                const jsonStr = JSON.stringify(payload, null, 2);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(jsonStr);
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'คัดลอกการตั้งค่าแล้ว!',
+                            html: 'นำข้อมูลนี้ไปเปิดเว็บเวอร์ชัน <b>Vercel</b> แล้วกดปุ่ม <b>"วางการตั้งค่า"</b> ได้ทันที',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert('คัดลอกการตั้งค่าเรียบร้อยแล้ว! นำไปกด "วางการตั้งค่า" บน Vercel ได้ทันที');
+                    }
+                } else {
+                    prompt('กรุณาคัดลอก JSON ด้านล่างนี้:', jsonStr);
+                }
+            } catch (err) {
+                console.error('Export clipboard failed:', err);
+                alert('ไม่สามารถคัดลอกอัตโนมัติได้: ' + err.message);
+            }
+        }
+
+        async function importQuotationSettingsPrompt() {
+            let jsonText = '';
+            if (navigator.clipboard && navigator.clipboard.readText) {
+                try {
+                    const clip = await navigator.clipboard.readText();
+                    if (clip && (clip.includes('quotationTemplates') || clip.includes('primaryColor'))) {
+                        jsonText = clip;
+                    }
+                } catch(e) {}
+            }
+
+            if (typeof Swal !== 'undefined') {
+                const { value: text } = await Swal.fire({
+                    title: '📥 นำเข้าการตั้งค่าหน้ากระดาษ',
+                    input: 'textarea',
+                    inputLabel: 'วางข้อความ JSON ที่คัดลอกมาจาก Local ที่นี่:',
+                    inputValue: jsonText,
+                    inputPlaceholder: '{"version": "1.0", "quotationTemplates": {...}}',
+                    showCancelButton: true,
+                    confirmButtonText: 'นำเข้าและปรับใช้ทันที',
+                    cancelButtonText: 'ยกเลิก',
+                    inputValidator: (value) => {
+                        if (!value || !value.trim()) {
+                            return 'กรุณาวางข้อความ JSON ก่อนครับ';
+                        }
+                        try {
+                            JSON.parse(value);
+                        } catch(e) {
+                            return 'รูปแบบ JSON ไม่ถูกต้อง: ' + e.message;
+                        }
+                    }
+                });
+
+                if (text) {
+                    applyImportedSettingsJSON(text);
+                }
+            } else {
+                const text = prompt('วางข้อความ JSON การตั้งค่าที่นี่:');
+                if (text) applyImportedSettingsJSON(text);
+            }
+        }
+
+        function applyImportedSettingsJSON(jsonString) {
+            try {
+                const data = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+                if (!data) throw new Error('ข้อมูลว่างเปล่า');
+
+                const tpls = data.quotationTemplates || (data.primaryColor ? { [(typeof getCurrentIssuerName === 'function') ? getCurrentIssuerName() : 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)']: data } : null);
+                if (!tpls) throw new Error('ไม่พบข้อมูล templates ใน JSON');
+
+                window.quotationTemplates = Object.assign({}, window.quotationTemplates || {}, tpls);
+                localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
+
+                if (data.saved_signatures_by_company) {
+                    window.savedSignaturesByCompany = Object.assign({}, window.savedSignaturesByCompany || {}, data.saved_signatures_by_company);
+                    localStorage.setItem('saved_signatures_by_company', JSON.stringify(window.savedSignaturesByCompany));
+                }
+
+                if (data.quotation_global_typography) {
+                    localStorage.setItem('quotation_global_typography', JSON.stringify(data.quotation_global_typography));
+                }
+                if (data.quotation_preferred_font) {
+                    localStorage.setItem('quotation_preferred_font', data.quotation_preferred_font);
+                }
+
+                // Cloud backup if currentUser available
+                if (typeof currentUser !== 'undefined' && currentUser) {
+                    try {
+                        setDoc(doc(db, 'users', currentUser.uid), {
+                            quotationTemplates: window.quotationTemplates,
+                            savedSignaturesByCompany: window.savedSignaturesByCompany
+                        }, { merge: true }).catch(err => console.error("Cloud sync on import error:", err));
+                    } catch(e) {}
+                }
+
+                // Reload issuer template into UI
+                const currentIssuer = (typeof getCurrentIssuerName === 'function') ? getCurrentIssuerName() : 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                if (typeof loadIssuerTemplateSettings === 'function') {
+                    loadIssuerTemplateSettings(currentIssuer);
+                }
+                if (typeof applyLivePreview === 'function') {
+                    applyLivePreview();
+                }
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'นำเข้าสำเร็จ!',
+                        text: 'การตั้งค่าหน้ากระดาษและฟอร์มถูกอัปเดตเรียบร้อยแล้ว',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    alert('นำเข้าการตั้งค่าสำเร็จ!');
+                }
+            } catch(err) {
+                console.error('Apply imported settings error:', err);
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'นำเข้าไม่สำเร็จ',
+                        text: err.message
+                    });
+                } else {
+                    alert('นำเข้าไม่สำเร็จ: ' + err.message);
+                }
+            }
+        }
+
+        function exportQuotationSettingsJSONFile() {
+            try {
+                const payload = getCompleteQuotationSettingsPayload();
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `mentra_quotation_settings_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                alert('เกิดข้อผิดพลาดในการดาวน์โหลดไฟล์: ' + err.message);
+            }
+        }
+
+        function importQuotationSettingsFromFile(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                applyImportedSettingsJSON(e.target.result);
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        window.exportQuotationSettingsClip = exportQuotationSettingsClip;
+        window.importQuotationSettingsPrompt = importQuotationSettingsPrompt;
+        window.exportQuotationSettingsJSONFile = exportQuotationSettingsJSONFile;
+        window.importQuotationSettingsFromFile = importQuotationSettingsFromFile;
+        window.applyImportedSettingsJSON = applyImportedSettingsJSON;
+        window.getCompleteQuotationSettingsPayload = getCompleteQuotationSettingsPayload;
 
         function startApp() {
             fetchRegisteredShops();
