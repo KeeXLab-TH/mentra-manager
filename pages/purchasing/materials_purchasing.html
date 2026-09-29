@@ -3256,7 +3256,7 @@
                 
                 const companyContainer = document.getElementById('detail-project-company-container');
                 if (companyContainer) {
-                    const dispCompany = this.getCompanyDisplayString(proj.company);
+                    const dispCompany = this.getCompanyDisplayString(proj.company, proj.institution);
                     if (dispCompany) {
                         document.getElementById('detail-project-company').innerText = dispCompany;
                         companyContainer.style.display = 'flex';
@@ -3491,7 +3491,7 @@
                     }
                 }
 
-                const dispCompany = this.getCompanyDisplayString ? this.getCompanyDisplayString(proj.company) : (proj.company || '-');
+                const dispCompany = this.getCompanyDisplayString ? this.getCompanyDisplayString(proj.company, proj.institution) : ((proj.company && proj.company !== proj.institution) ? proj.company : '-');
                 const instLogo = (this.institutionLogos && proj.institution && this.institutionLogos[proj.institution]) ? this.institutionLogos[proj.institution] : '';
                 const totalQty = itemsList.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
                 const printTimestamp = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -4474,7 +4474,8 @@
                 document.getElementById('modal-proj-date').value = proj.date || new Date().toISOString().split('T')[0];
                 document.getElementById('modal-proj-dept').value = proj.department || '';
                 document.getElementById('modal-proj-inst').value = proj.institution || '';
-                this.selectedShopsForForm = Array.isArray(proj.company) ? [...proj.company] : (proj.company ? [proj.company] : []);
+                const validCompany = (proj.company && proj.company !== proj.institution) ? proj.company : '';
+                this.selectedShopsForForm = Array.isArray(validCompany) ? [...validCompany] : (validCompany ? [validCompany] : []);
                 this.updateShopDisplay();
                 this.populateShopDropdown();
                 document.getElementById('modal-proj-teacher').value = proj.teacher || '';
@@ -4575,6 +4576,40 @@
                 this.closeAddProjectModal();
             },
             
+            getProjectShopName(proj) {
+                if (!proj) return '';
+                let shop = '';
+                const instStr = (proj.institution || '').trim();
+                // 1. Try proj.shop
+                if (proj.shop) {
+                    const s = Array.isArray(proj.shop) ? proj.shop[0] : proj.shop;
+                    if (s && String(s).trim() && String(s).trim() !== instStr) {
+                        shop = String(s).trim();
+                    }
+                }
+                // 2. If no valid proj.shop, try proj.company
+                if (!shop && proj.company) {
+                    const c = Array.isArray(proj.company) ? proj.company[0] : proj.company;
+                    if (c && String(c).trim() && String(c).trim() !== instStr) {
+                        shop = String(c).trim();
+                    }
+                }
+                // 3. Fallback to active workspace or saved issuer company
+                if (!shop) {
+                    try {
+                        const saved = localStorage.getItem('selected_issuer_company') || localStorage.getItem('mentra_active_workspace') || '';
+                        if (saved && !saved.includes('กรุณาเลือกบริษัท') && saved.trim() !== instStr) {
+                            shop = saved.trim();
+                        }
+                    } catch(e) {}
+                }
+                // 4. Final fallback
+                if (!shop) {
+                    shop = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                }
+                return String(shop).trim();
+            },
+            
             openQuotationForProject() {
                 if (this.currentProjectId) {
                     let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
@@ -4590,7 +4625,7 @@
 
                     let shopParam = '';
                     if (proj) {
-                        const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                        const shopName = this.getProjectShopName(proj);
                         if (shopName) {
                             shopParam = `&shop=${encodeURIComponent(shopName)}`;
                         }
@@ -4616,7 +4651,7 @@
                             projectId: this.currentProjectId,
                             institution: proj.institution || '',
                             items: cleanItems,
-                            company: proj.institution || '',
+                            company: (proj.company && proj.company !== proj.institution) ? proj.company : (shopName || ''),
                             shop: shopName,
                             name: proj.name || '',
                             code: proj.code || '',
@@ -4874,7 +4909,7 @@
                 const step = proj.docWorkflow.currentStep || 1;
                 const dt = step === 2 ? 'quotation' : 'invoice';
                 let shopParam = '';
-                const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                const shopName = this.getProjectShopName(proj);
                 if (shopName) shopParam = `&shop=${encodeURIComponent(shopName)}`;
 
                 window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=${dt}&viewOnly=true${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=${dt}&viewOnly=true${shopParam}`;
@@ -5106,7 +5141,7 @@
                                 window.TelegramService.sendQuotationAlert({
                                     refNo: proj.docWorkflow.quotation.docNumber,
                                     toCompany: proj.institution || proj.name || 'โครงการ',
-                                    issuer: proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : 'Mentra Manager',
+                                    issuer: this.getProjectShopName(proj),
                                     grandTotal: totalAmt.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
                                     itemsCount: (proj.items || []).length,
                                     signer: userEl ? userEl.innerText : 'ระบบ'
@@ -5295,7 +5330,7 @@
                     }).then(async (result) => {
                         if (result.isConfirmed) {
                             let shopParam = '';
-                            const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                            const shopName = this.getProjectShopName(proj);
                             if (shopName) shopParam = `&shop=${encodeURIComponent(shopName)}`;
                             window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=${dtNames[stepNum]}&viewOnly=true${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=${dtNames[stepNum]}&viewOnly=true${shopParam}`;
                         } else if (result.isDenied) {
@@ -5349,7 +5384,7 @@
 
                     let shopParam = '';
                     if (proj) {
-                        const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                        const shopName = this.getProjectShopName(proj);
                         if (shopName) {
                             shopParam = `&shop=${encodeURIComponent(shopName)}`;
                         }
@@ -5376,7 +5411,7 @@
                             projectId: this.currentProjectId,
                             institution: proj.institution || '',
                             items: cleanItems,
-                            company: proj.institution || '',
+                            company: (proj.company && proj.company !== proj.institution) ? proj.company : (shopName || ''),
                             shop: shopName,
                             name: proj.name || '',
                             code: proj.code || '',
@@ -5421,7 +5456,7 @@
                     let shopParam = '';
                     let parentRefParam = '';
                     if (proj) {
-                        const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                        const shopName = this.getProjectShopName(proj);
                         if (shopName) {
                             shopParam = `&shop=${encodeURIComponent(shopName)}`;
                         }
@@ -5449,7 +5484,7 @@
                             projectId: this.currentProjectId,
                             institution: proj.institution || '',
                             items: cleanItems,
-                            company: proj.institution || '',
+                            company: (proj.company && proj.company !== proj.institution) ? proj.company : (shopName || ''),
                             shop: shopName,
                             name: proj.name || '',
                             code: proj.code || '',
@@ -5690,10 +5725,11 @@
 
             shopSet: new Set(),
             
-            getCompanyDisplayString(companyField) {
+            getCompanyDisplayString(companyField, institution = '') {
                 if (!companyField) return null;
+                const instStr = (institution || '').trim();
                 const arr = Array.isArray(companyField) ? companyField : [companyField];
-                const filtered = arr.filter(s => s && s.trim() !== '');
+                const filtered = arr.filter(s => s && s.trim() !== '' && s.trim() !== instStr);
                 return filtered.length > 0 ? filtered.join(', ') : null;
             },
             
@@ -5753,8 +5789,9 @@
                 this.projects.forEach(p => {
                     if (p.company) {
                         const comps = Array.isArray(p.company) ? p.company : [p.company];
+                        const instStr = (p.institution || '').trim();
                         comps.forEach(c => {
-                            if (c && c.trim() !== '') this.shopSet.add(c.trim());
+                            if (c && c.trim() !== '' && c.trim() !== instStr) this.shopSet.add(c.trim());
                         });
                     }
                 });
@@ -5897,9 +5934,9 @@
                                     <span class="text-sm text-slate-500 flex items-center gap-1.5 border-l border-slate-200 pl-3">
                                         <i class="fa-solid fa-user-tie text-slate-400"></i> ${teacherText}
                                     </span>
-                                    ${this.getCompanyDisplayString(proj.company) ? `
+                                    ${this.getCompanyDisplayString(proj.company, proj.institution) ? `
                                     <span class="text-sm text-slate-500 flex items-center gap-1.5 border-l border-slate-200 pl-3">
-                                        <i class="fa-solid fa-shop text-slate-400"></i> ${this.getCompanyDisplayString(proj.company)}
+                                        <i class="fa-solid fa-shop text-slate-400"></i> ${this.getCompanyDisplayString(proj.company, proj.institution)}
                                     </span>
                                     ` : ''}
                                 </div>
@@ -7083,7 +7120,15 @@
             onSnapshot(collection(db, 'material_projects'), (querySnapshot) => {
                 const docs = [];
                 querySnapshot.forEach(doc => {
-                    docs.push({ id: doc.id, ...doc.data() });
+                    const data = doc.data() || {};
+                    // Sanitize corrupted project data where school was mistakenly set as company/shop
+                    if (data.company && data.institution && data.company === data.institution) {
+                        data.company = '';
+                    }
+                    if (data.shop && data.institution && data.shop === data.institution) {
+                        data.shop = '';
+                    }
+                    docs.push({ id: doc.id, ...data });
                 });
                 
                 // Sort by date or created descending
@@ -7304,6 +7349,12 @@
             window.saveProjectToFirestore = async function(projData) {
                 try {
                     let cleanedData = JSON.parse(JSON.stringify(projData)); // Ensure no undefined or proxies
+                    if (cleanedData.company && cleanedData.institution && cleanedData.company === cleanedData.institution) {
+                        cleanedData.company = '';
+                    }
+                    if (cleanedData.shop && cleanedData.institution && cleanedData.shop === cleanedData.institution) {
+                        cleanedData.shop = '';
+                    }
 
                     // Clean any temporary/optimistic blob: or data: URLs before saving to Firebase
                     if (cleanedData.items) {

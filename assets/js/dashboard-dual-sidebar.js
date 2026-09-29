@@ -816,6 +816,8 @@
             } else {
                 setNavActive('nav-dashboard', 'railBtnDashboard');
             }
+        } else if (path.includes('developer.html')) {
+            setNavActive('nav-developer', 'railBtnDev');
         } else if (path.includes('company_settings.html')) {
             setNavActive('nav-company-settings', 'railBtnDashboard');
         } else if (path.includes('business_card.html')) {

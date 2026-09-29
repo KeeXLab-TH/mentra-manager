@@ -1334,7 +1334,10 @@
             padding-top: 4px !important;
             margin-top: auto !important;
         }
-        #pPageWrapper.compact-fit-1page #pSellerSignatureSpace {
+        #pPageWrapper.compact-fit-1page #pSellerSignatureSpace,
+        #pPageWrapper.compact-fit-1page #pBuyerSignatureSpace,
+        #pInvPageWrapper.compact-fit-1page #pSellerSignatureSpace,
+        #pInvPageWrapper.compact-fit-1page #pBuyerSignatureSpace {
             height: 24px !important;
         }
         #pPageWrapper.compact-fit-1page #pLeftSignerTitle,
@@ -2485,16 +2488,19 @@
                                 style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px;">
                                 <!-- Left Signer Box -->
                                 <div id="pBuyerSignatureBlock"
-                                    style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+                                    style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
                                     <div id="pLeftSignerTitle"
-                                        style="font-weight: 700; font-size: 11px; color: #1e1b4b; margin-bottom: 4px; text-align: center; font-family: 'Sarabun', sans-serif;">
+                                        style="font-weight: 700; font-size: 11px; color: #1e1b4b; margin-bottom: 4px; height: 16px; line-height: 16px; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Sarabun', sans-serif;">
                                         ผู้สั่งซื้อ</div>
                                     <!-- Buyer Signature Space (exact mirror of Seller space) -->
                                     <div id="pBuyerSignatureSpace"
                                         style="height: 30px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 2px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: visible;"></div>
                                     <div id="pBuyerSignatureDots" style="display: none;"></div>
+                                    <div id="pBuyerName"
+                                        style="font-size: 10.5px; color: #374151; margin-top: 4px; height: 16px; line-height: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-family: 'Sarabun', sans-serif;">
+                                        ( .................................................... )</div>
                                     <div id="pBuyerRole"
-                                        style="font-size: 11px; color: var(--pdf-primary, #1A6FBF); margin-top: 4px; font-weight: 700; font-family: 'Sarabun', sans-serif;">
+                                        style="font-size: 11px; color: var(--pdf-primary, #1A6FBF); margin-top: 2px; height: 16px; line-height: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: 'Sarabun', sans-serif;">
                                         ผู้มีอำนาจลงนาม</div>
                                     <!-- Left Date Line -->
                                     <div id="pBuyerSignatureDate"
@@ -2509,9 +2515,9 @@
 
                                 <!-- Right Signer Box -->
                                 <div id="pSellerSignatureBlock"
-                                    style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+                                    style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
                                     <div id="pRightSignerTitle"
-                                        style="font-weight: 700; font-size: 11px; color: #1e1b4b; margin-bottom: 4px; font-family: 'Sarabun', sans-serif;">
+                                        style="font-weight: 700; font-size: 11px; color: #1e1b4b; margin-bottom: 4px; height: 16px; line-height: 16px; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Sarabun', sans-serif;">
                                         ขอแสดงความนับถือ / Sincerely Yours,</div>
                                     <!-- Signature Space -->
                                     <div id="pSellerSignatureSpace"
@@ -2521,10 +2527,10 @@
                                         </div>
                                     </div>
                                     <div id="pSellerName"
-                                        style="font-size: 10.5px; color: #374151; margin-top: 4px; font-weight: 600; font-family: 'Sarabun', sans-serif;">
+                                        style="font-size: 10.5px; color: #374151; margin-top: 4px; height: 16px; line-height: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-family: 'Sarabun', sans-serif;">
                                         ( .................................................... )</div>
                                     <div id="pSellerRole"
-                                        style="font-size: 11px; color: var(--pdf-primary, #1A6FBF); margin-top: 2px; font-weight: 700; font-family: 'Sarabun', sans-serif;">
+                                        style="font-size: 11px; color: var(--pdf-primary, #1A6FBF); margin-top: 2px; height: 16px; line-height: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: 'Sarabun', sans-serif;">
                                         ผู้เสนอราคา</div>
                                     <!-- Right Date Line -->
                                     <div id="pSellerSignatureDate"
@@ -2962,6 +2968,10 @@
                 <div class="form-group">
                     <label>หัวข้อฝ่ายผู้ซื้อ (ซ้าย)</label>
                     <input type="text" id="settingLeftSignerTitle" class="form-control" value="ผู้สั่งซื้อ" oninput="applyLivePreview()">
+                </div>
+                <div class="form-group">
+                    <label>ชื่อผู้ลงนามฝ่ายผู้ซื้อ (ซ้าย)</label>
+                    <input type="text" id="settingBuyerName" class="form-control" value="" placeholder="( .................................................... )" oninput="applyLivePreview()">
                 </div>
                 <div class="form-group">
                     <label>ตำแหน่งฝ่ายผู้ซื้อ (ซ้าย)</label>
@@ -3700,6 +3710,12 @@
 
                 if (db) {
                     try {
+                        if (source !== 'company' && proj.company && proj.institution && proj.company === proj.institution) {
+                            proj.company = '';
+                        }
+                        if (source !== 'company' && proj.shop && proj.institution && proj.shop === proj.institution) {
+                            proj.shop = '';
+                        }
                         await setDoc(doc(db, collectionName, projectId), proj, { merge: true });
                         console.log(`[Workflow] Synced rollback/reset project ${projectId} to ${collectionName}`);
                     } catch(dbErr) {
@@ -4055,6 +4071,12 @@
                 // Save to Firestore
                 if (db) {
                     try {
+                        if (source !== 'company' && proj.company && proj.institution && proj.company === proj.institution) {
+                            proj.company = '';
+                        }
+                        if (source !== 'company' && proj.shop && proj.institution && proj.shop === proj.institution) {
+                            proj.shop = '';
+                        }
                         await setDoc(doc(db, collectionName, projectId), proj, { merge: true });
                         console.log(`[Workflow] Synced project ${projectId} to ${collectionName}`);
                     } catch(dbErr) {
@@ -4626,12 +4648,16 @@
             }
 
             // Fallback: If not found in URL params, check fresh pending_quotation_project from sessionStorage or localStorage
+            let pendingProjInstitution = '';
             if (!autoImportId || !urlShop) {
                 try {
                     const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
                     if (pRaw) {
                         const pData = JSON.parse(pRaw);
                         if (pData && (Date.now() - (pData.timestamp || 0) < 600000)) {
+                            if (pData.institution) {
+                                pendingProjInstitution = String(pData.institution).trim();
+                            }
                             if (!autoImportId && pData.projectId) {
                                 autoImportId = pData.projectId;
                                 autoImportSource = pData.source || 'school';
@@ -4644,18 +4670,23 @@
                 } catch(e) {}
             }
 
+            // Guard: urlShop must NEVER be equal to the school / recipient institution
+            if (urlShop && pendingProjInstitution && urlShop.trim() === pendingProjInstitution) {
+                urlShop = '';
+            }
+
             // Immediately apply issuer from URL/pending project if present so hero bar displays the correct company without delay
-            if (urlShop && urlShop.trim() !== '') {
+            if (urlShop && urlShop.trim() !== '' && (!pendingProjInstitution || urlShop.trim() !== pendingProjInstitution)) {
                 try {
                     applyIssuerTemplate(urlShop.trim());
                 } catch(e) {
                     console.warn("Could not apply URL shop immediately:", e);
                 }
             } else {
-                const savedShop = localStorage.getItem('selected_issuer_company');
-                if (savedShop && !savedShop.includes('กรุณาเลือกบริษัท')) {
+                const savedShop = localStorage.getItem('selected_issuer_company') || localStorage.getItem('mentra_active_workspace');
+                if (savedShop && !savedShop.includes('กรุณาเลือกบริษัท') && (!pendingProjInstitution || savedShop.trim() !== pendingProjInstitution)) {
                     try {
-                        applyIssuerTemplate(savedShop);
+                        applyIssuerTemplate(savedShop.trim());
                     } catch(e) {}
                 } else {
                     try {
@@ -7389,7 +7420,20 @@
         window.selectIssuerFromModal = selectIssuerFromModal;
 
         function applyIssuerTemplate(companyName) {
-            const safeCompanyName = companyName || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+            let safeCompanyName = (companyName || '').trim();
+            const currentRecipient = (document.getElementById('toCompany')?.value || linkedProjectData?.institution || '').trim();
+            if (safeCompanyName && currentRecipient && safeCompanyName === currentRecipient) {
+                console.warn(`[Issuer Guard] Blocked attempt to set Issuer equal to Recipient: "${safeCompanyName}"`);
+                safeCompanyName = '';
+            }
+            if (!safeCompanyName) {
+                const saved = localStorage.getItem('selected_issuer_company') || localStorage.getItem('mentra_active_workspace');
+                if (saved && !saved.includes('กรุณาเลือกบริษัท') && (!currentRecipient || saved.trim() !== currentRecipient)) {
+                    safeCompanyName = saved.trim();
+                } else {
+                    safeCompanyName = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                }
+            }
             
             // 1. Apply the static theme (logo, colors, address, etc.)
             applyIssuerTheme(safeCompanyName);
@@ -7988,6 +8032,7 @@
             // Apply Signature Settings
             const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
             const pBuyerDots = document.getElementById('pBuyerSignatureDots');
+            const pBuyerName = document.getElementById('pBuyerName');
             const pBuyerRole = document.getElementById('pBuyerRole');
             const pBuyerSpace = document.getElementById('pBuyerSignatureSpace');
             const pBuyerDate = document.getElementById('pBuyerSignatureDate');
@@ -8002,18 +8047,31 @@
                 pSellerDate.style.display = showSigDate ? 'flex' : 'none';
             }
 
+            const buyerNameInput = document.getElementById('settingBuyerName');
+            let buyerNameVal = buyerNameInput ? buyerNameInput.value.trim() : '';
+            if (pBuyerName) {
+                if (sigFormat === 'line_only') {
+                    pBuyerName.style.display = 'none';
+                } else {
+                    pBuyerName.style.display = 'flex';
+                    pBuyerName.innerText = buyerNameVal ? formatSignerDisplay(buyerNameVal) : '( .................................................... )';
+                }
+            }
+
             if (pBuyerBlock) {
                 if (sigFormat === 'hidden') {
                     pBuyerBlock.style.visibility = 'hidden';
                 } else if (sigFormat === 'line_only') {
                     pBuyerBlock.style.visibility = 'visible';
                     if (pBuyerDots) pBuyerDots.style.display = 'none';
+                    if (pBuyerName) pBuyerName.style.display = 'none';
                     if (pBuyerRole) pBuyerRole.style.display = 'none';
                     if (pBuyerDate) pBuyerDate.style.display = 'none';
                 } else {
                     pBuyerBlock.style.visibility = 'visible';
                     if (pBuyerDots) pBuyerDots.style.display = 'none';
-                    if (pBuyerRole) pBuyerRole.style.display = buyerRole ? 'block' : 'none';
+                    if (pBuyerName) pBuyerName.style.display = 'flex';
+                    if (pBuyerRole) pBuyerRole.style.display = buyerRole ? 'flex' : 'none';
                     if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
                 }
             }
@@ -8055,7 +8113,21 @@
             const pRightSigner = document.getElementById('pRightSignerTitle');
             const pBuyerRoleEl = document.getElementById('pBuyerRole');
             
-            if (pSellerName) pSellerName.innerText = formatSignerDisplay(sellerName);
+            if (pSellerName) {
+                if (sigFormat === 'line_only') {
+                    pSellerName.style.display = 'none';
+                } else {
+                    pSellerName.style.display = 'flex';
+                    pSellerName.innerText = formatSignerDisplay(sellerName);
+                }
+            }
+            if (pSellerRole) {
+                if (sigFormat === 'line_only') {
+                    pSellerRole.style.display = 'none';
+                } else {
+                    pSellerRole.style.display = 'flex';
+                }
+            }
             const formSellerName = document.getElementById('sellerName');
             if (formSellerName && (!formSellerName.value || isEmail(formSellerName.value))) {
                 formSellerName.value = getCleanSignerRaw(sellerName);
@@ -8141,6 +8213,7 @@
                     })(),
                     sellerRole: document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา',
                     leftSignerTitle: document.getElementById('settingLeftSignerTitle')?.value || 'ผู้สั่งซื้อ',
+                    buyerName: document.getElementById('settingBuyerName')?.value || '',
                     buyerRole: document.getElementById('settingBuyerRole')?.value || 'ผู้มีอำนาจลงนาม',
                     sincerelyYours: document.getElementById('settingSincerelyYours')?.value || 'ขอแสดงความนับถือ / Sincerely Yours,',
                     headerDirection: document.getElementById('settingHeaderDirection')?.value || 'row',
@@ -8750,6 +8823,7 @@
                 if (formSellerRole) formSellerRole.value = companyAuthorizedRole;
             }
             if (settings.leftSignerTitle) document.getElementById('settingLeftSignerTitle').value = settings.leftSignerTitle;
+            if (settings.buyerName !== undefined && document.getElementById('settingBuyerName')) document.getElementById('settingBuyerName').value = settings.buyerName;
             if (settings.buyerRole !== undefined) document.getElementById('settingBuyerRole').value = settings.buyerRole;
             if (settings.sincerelyYours) document.getElementById('settingSincerelyYours').value = settings.sincerelyYours;
             
@@ -9192,6 +9266,14 @@
 
                 // Combine sources with priority: pendingProj > localCacheProj > firestoreProj
                 const proj = Object.assign({}, firestoreProj || {}, localCacheProj || {}, pendingProj || {});
+                if (source !== 'company') {
+                    if (proj.company && proj.institution && proj.company === proj.institution) {
+                        proj.company = '';
+                    }
+                    if (proj.shop && proj.institution && proj.shop === proj.institution) {
+                        proj.shop = '';
+                    }
+                }
                 linkedProjectData = proj;
 
                 if (finalItems.length === 0 && proj && toItemsArray(proj.items).length > 0) {
@@ -9236,28 +9318,49 @@
                 // Apply Issuer Theme:
                 const urlParams = new URLSearchParams(window.location.search);
                 const paramShop = urlParams.get('shop');
-                let targetIssuer = paramShop;
+                let targetIssuer = '';
+                const instName = (proj.institution || '').trim();
+
+                // Check paramShop (must not match customer institution)
+                if (paramShop && paramShop.trim() && paramShop.trim() !== instName) {
+                    targetIssuer = paramShop.trim();
+                }
 
                 // 1. If proj.shop is explicitly set
                 if (!targetIssuer && proj.shop) {
                     const s = Array.isArray(proj.shop) ? proj.shop[0] : proj.shop;
-                    if (s && String(s).trim()) targetIssuer = String(s).trim();
+                    if (s && String(s).trim() && String(s).trim() !== instName) {
+                        targetIssuer = String(s).trim();
+                    }
                 }
 
                 // 2. If proj.company is different from customer institution
                 if (!targetIssuer && proj.company && proj.company !== proj.institution && source !== 'company') {
                     const shopName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
-                    if (shopName && String(shopName).trim()) {
+                    if (shopName && String(shopName).trim() && String(shopName).trim() !== instName) {
                         targetIssuer = String(shopName).trim();
                     }
                 }
 
-                // 3. Keep current issuer if already selected and not default placeholder
+                // 3. Keep current issuer if already selected and not default placeholder and not matching institution
                 if (!targetIssuer) {
                     const currentIssuerText = document.getElementById('currentIssuerDisplay')?.innerText?.trim();
-                    if (currentIssuerText && !currentIssuerText.includes('กรุณาเลือกบริษัท')) {
+                    if (currentIssuerText && !currentIssuerText.includes('กรุณาเลือกบริษัท') && currentIssuerText !== instName) {
                         targetIssuer = currentIssuerText;
                     }
+                }
+
+                // 4. Fallback to active workspace / saved issuer company
+                if (!targetIssuer) {
+                    const savedShop = localStorage.getItem('selected_issuer_company') || localStorage.getItem('mentra_active_workspace');
+                    if (savedShop && !savedShop.includes('กรุณาเลือกบริษัท') && savedShop.trim() !== instName) {
+                        targetIssuer = savedShop.trim();
+                    }
+                }
+
+                // 5. Final fallback
+                if (!targetIssuer) {
+                    targetIssuer = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
                 }
 
                 if (targetIssuer) {

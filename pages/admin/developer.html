@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+<meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mentra Manager — Developer Console ∞</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Dual-Rail Sidebar Styles & Controller -->
+<link rel="stylesheet" href="../../assets/css/dashboard-dual-sidebar.css?v=2.5">
+<script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5"></script>
+<link rel="stylesheet" href="../../assets/css/app-theme.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg-base:#050c17;--bg-surface:#0a1628;--bg-panel:#0f1e35;--bg-card:#142040;--bg-hover:#1a2d55;
+--border:rgba(56,189,248,0.12);--border-bright:rgba(56,189,248,0.35);
+--neon-cyan:#38bdf8;--neon-blue:#60a5fa;--neon-green:#34d399;--neon-amber:#fbbf24;
+--neon-red:#f87171;--neon-purple:#a78bfa;--neon-orange:#fb923c;
+--text-primary:#e2e8f0;--text-secondary:#94a3b8;--text-muted:#64748b;
+--accent:#1A6FBF;
+--glow-cyan:0 0 20px rgba(56,189,248,.25),0 0 60px rgba(56,189,248,.08);
+--glow-green:0 0 20px rgba(52,211,153,.25),0 0 60px rgba(52,211,153,.08);
+--glow-red:0 0 20px rgba(248,113,113,.25),0 0 60px rgba(248,113,113,.08);
+--r:12px;--rl:18px;--rs:8px;
+--mono:'JetBrains Mono','Consolas',monospace;
+--ui:'Kanit','Plus Jakarta Sans',sans-serif;
+}
+html{background:#050c17 !important;}
+body{font-family:var(--ui);background:var(--bg-base);color:var(--text-primary);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.4}
+
+/* MAIN WRAPPER - Dual-Rail Sidebar Aware */
+.main-wrapper{
+  margin-left:var(--sidebar-total-w, 328px);
+  width:calc(100% - var(--sidebar-total-w, 328px));
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  z-index:1;
+  transition:margin-left .3s cubic-bezier(0.4,0,0.2,1), width .3s cubic-bezier(0.4,0,0.2,1);
+}
+.sidebar.collapsed + .main-wrapper,
+body.sidebar-collapsed .main-wrapper{
+  margin-left:var(--rail-primary-w, 68px);
+  width:calc(100% - var(--rail-primary-w, 68px));
+}
+@media(max-width:1024px){
+  .main-wrapper{margin-left:0 !important;width:100% !important;}
+}
+
+/* TOPBAR - Override app-theme.css light gradient */
+.topbar, header.topbar, [data-theme="dark"] .topbar {
+  height:64px !important;
+  background:#0a1628 !important;
+  backdrop-filter:blur(20px) !important;
+  -webkit-backdrop-filter:blur(20px) !important;
+  border-bottom:1px solid rgba(56,189,248,0.2) !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  padding:0 24px !important;
+  position:sticky !important;
+  top:0 !important;
+  z-index:50 !important;
+  box-shadow:0 4px 20px rgba(0,0,0,0.4) !important;
+}
+.topbar::after{display:none !important;}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.hamburger{background:transparent !important;border:1px solid var(--border) !important;border-radius:var(--rs) !important;width:36px;height:36px;display:flex !important;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary) !important;transition:all .2s}
+.hamburger:hover{background:var(--bg-hover) !important;color:var(--neon-cyan) !important;border-color:var(--border-bright) !important;}
+.breadcrumb-title{font-size:17px;font-weight:700;color:#f1f5f9 !important;display:flex;align-items:center;gap:10px}
+.badge-dev{background:linear-gradient(135deg,#0f172a,#1e293b);color:var(--neon-cyan);font-size:10px;font-weight:700;font-family:var(--mono);padding:3px 10px;border-radius:6px;border:1px solid rgba(56,189,248,.4);letter-spacing:1px;animation:badgePulse 3s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 8px rgba(56,189,248,.3)}50%{box-shadow:0 0 20px rgba(56,189,248,.6)}}
+.breadcrumb-sub{font-size:12px;color:#94a3b8 !important;margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.sys-status{display:flex;align-items:center;gap:8px;background:var(--bg-panel);border:1px solid var(--border);border-radius:30px;padding:6px 14px;font-size:12px;font-family:var(--mono);color:var(--text-secondary)}
+.sys-dot{width:8px;height:8px;border-radius:50%;background:var(--neon-green);box-shadow:0 0 8px var(--neon-green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--rs);font-size:13px;font-weight:600;font-family:var(--ui);cursor:pointer;transition:all .2s;border:none;text-decoration:none}
+.btn-cyan{background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(96,165,250,.1));color:var(--neon-cyan);border:1px solid rgba(56,189,248,.35)}
+.btn-cyan:hover{background:linear-gradient(135deg,rgba(56,189,248,.25),rgba(96,165,250,.2));box-shadow:var(--glow-cyan);transform:translateY(-1px)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#145999);color:#fff;box-shadow:0 2px 12px rgba(26,111,191,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(26,111,191,.5)}
+.btn-danger{background:rgba(248,113,113,.1);color:var(--neon-red);border:1px solid rgba(248,113,113,.3)}
+.btn-danger:hover{background:rgba(248,113,113,.2);box-shadow:var(--glow-red)}
+.btn-success{background:rgba(52,211,153,.1);color:var(--neon-green);border:1px solid rgba(52,211,153,.3)}
+.btn-success:hover{background:rgba(52,211,153,.2);box-shadow:var(--glow-green)}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text-primary);background:var(--bg-hover)}
+.w-full{width:100%}
+
+/* CONTAINER */
+.dev-container{padding:24px;flex:1;display:flex;flex-direction:column;gap:20px;max-width:1800px;margin:0 auto;width:100%}
+
+/* STATUS STRIP */
+.status-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.stat-card{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--r);padding:18px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;transition:all .25s;cursor:default}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.c-cyan::before{background:linear-gradient(90deg,transparent,var(--neon-cyan),transparent)}
+.stat-card.c-green::before{background:linear-gradient(90deg,transparent,var(--neon-green),transparent)}
+.stat-card.c-amber::before{background:linear-gradient(90deg,transparent,var(--neon-amber),transparent)}
+.stat-card.c-purple::before{background:linear-gradient(90deg,transparent,var(--neon-purple),transparent)}
+.stat-card.c-orange::before{background:linear-gradient(90deg,transparent,var(--neon-orange),transparent)}
+.stat-card.c-red::before{background:linear-gradient(90deg,transparent,var(--neon-red),transparent)}
+.stat-card:hover{background:var(--bg-card);border-color:var(--border-bright);transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.stat-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.si-cyan{background:rgba(56,189,248,.12);color:var(--neon-cyan)}
+.si-green{background:rgba(52,211,153,.12);color:var(--neon-green)}
+.si-amber{background:rgba(251,191,36,.12);color:var(--neon-amber)}
+.si-purple{background:rgba(167,139,250,.12);color:var(--neon-purple)}
+.si-orange{background:rgba(251,146,60,.12);color:var(--neon-orange)}
+.si-red{background:rgba(248,113,113,.12);color:var(--neon-red)}
+.stat-meta{overflow:hidden;flex:1}
+.stat-label{font-size:10.5px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px}
+.stat-value{font-size:15px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-sub{font-size:11px;display:flex;align-items:center;gap:4px;margin-top:3px}
+.sub-ok{color:var(--neon-green)}.sub-warn{color:var(--neon-amber)}.sub-error{color:var(--neon-red)}
+
+/* TABS */
+.dev-tabs-bar{display:flex;align-items:center;gap:4px;background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--r);padding:6px;overflow-x:auto;scrollbar-width:none}
+.dev-tabs-bar::-webkit-scrollbar{display:none}
+.tab-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--rs);border:none;background:transparent;color:var(--text-secondary);font-size:13px;font-weight:600;font-family:var(--ui);cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab-btn:hover{color:var(--text-primary);background:var(--bg-hover)}
+.tab-btn.active{background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(96,165,250,.08));color:var(--neon-cyan);border:1px solid rgba(56,189,248,.3);box-shadow:var(--glow-cyan)}
+.tab-badge{background:rgba(56,189,248,.15);color:var(--neon-cyan);font-size:10px;font-weight:700;padding:1px 6px;border-radius:30px;font-family:var(--mono)}
+.tab-pane{display:none;flex-direction:column;gap:18px}
+.tab-pane.active{display:flex}
+
+/* PANELS */
+.panel{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.panel-title{font-size:15px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px}
+.panel-title i{color:var(--neon-cyan)}
+.panel-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
+.panel-body{padding:22px}
+
+/* GRIDS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+
+/* TERMINAL */
+.terminal{background:#02080f;border:1px solid rgba(56,189,248,.15);border-radius:var(--r);font-family:var(--mono);font-size:12.5px;line-height:1.7;position:relative}
+.terminal-header{background:linear-gradient(90deg,#0a1628,#0f1e35);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(56,189,248,.1)}
+.term-dot{width:12px;height:12px;border-radius:50%}
+.terminal-body{padding:14px 16px;max-height:320px;overflow-y:auto}
+.terminal-body::-webkit-scrollbar{width:4px}
+.terminal-body::-webkit-scrollbar-thumb{background:rgba(56,189,248,.2);border-radius:2px}
+.t-line{display:flex;gap:10px;margin-bottom:2px;word-break:break-all}
+.t-time{color:#334155;flex-shrink:0}
+.t-ok{color:#34d399}.t-warn{color:#fbbf24}.t-err{color:#f87171}.t-info{color:#94a3b8}.t-cyan{color:#38bdf8}
+.terminal-input-row{display:flex;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid rgba(56,189,248,.1);background:#02080f}
+.term-input-prompt{color:var(--neon-cyan);font-family:var(--mono);font-size:13px}
+.term-input{flex:1;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:var(--mono);font-size:12.5px;caret-color:var(--neon-cyan)}
+
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px}
+.form-control{width:100%;padding:10px 14px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg-surface);color:var(--text-primary);font-size:13.5px;font-family:var(--ui);transition:border-color .2s,box-shadow .2s}
+.form-control:focus{outline:none;border-color:var(--neon-cyan);box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+.form-control.mono{font-family:var(--mono);font-size:12.5px}
+.form-control option{background:var(--bg-panel)}
+textarea.form-control{resize:vertical;min-height:90px;line-height:1.5}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{background:rgba(56,189,248,.05);padding:11px 16px;font-weight:700;font-size:11.5px;color:var(--neon-cyan);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.data-table td{padding:11px 16px;border-bottom:1px solid rgba(56,189,248,.05);color:var(--text-secondary);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tbody tr{transition:background .15s}
+.data-table tbody tr:hover td{background:rgba(56,189,248,.04);color:var(--text-primary)}
+
+/* PILLS */
+.pill{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:5px;font-weight:600}
+.pill-cyan{background:rgba(56,189,248,.12);color:var(--neon-cyan)}
+.pill-green{background:rgba(52,211,153,.12);color:var(--neon-green)}
+.pill-amber{background:rgba(251,191,36,.12);color:var(--neon-amber)}
+.pill-red{background:rgba(248,113,113,.12);color:var(--neon-red)}
+.pill-purple{background:rgba(167,139,250,.12);color:var(--neon-purple)}
+.pill-orange{background:rgba(251,146,60,.12);color:var(--neon-orange)}
+
+/* ICON BTNS */
+.icon-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.icon-btn:hover{background:var(--bg-hover);color:var(--text-primary);border-color:var(--border-bright)}
+
+/* METRICS */
+.metric-bar-wrap{display:flex;flex-direction:column;gap:12px}
+.metric-row{display:flex;flex-direction:column;gap:6px}
+.metric-label-row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text-secondary)}
+.metric-label-row span:last-child{font-family:var(--mono);color:var(--text-primary);font-weight:600}
+.metric-bar-bg{height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+.metric-bar-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.23,1,.32,1)}
+.bar-cyan{background:linear-gradient(90deg,var(--neon-blue),var(--neon-cyan))}
+.bar-green{background:linear-gradient(90deg,#10b981,var(--neon-green))}
+.bar-amber{background:linear-gradient(90deg,#d97706,var(--neon-amber))}
+.bar-purple{background:linear-gradient(90deg,#7c3aed,var(--neon-purple))}
+.bar-orange{background:linear-gradient(90deg,#c2410c,var(--neon-orange))}
+
+/* CONFIG ROWS */
+.config-row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:14px}
+.config-row:last-child{border-bottom:none}
+.config-key{font-family:var(--mono);font-size:13px;color:var(--neon-cyan);min-width:200px;flex-shrink:0}
+.config-val{flex:1}
+.config-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;flex-shrink:0}
+.cfg-env{background:rgba(52,211,153,.12);color:var(--neon-green)}
+.cfg-sec{background:rgba(248,113,113,.12);color:var(--neon-red)}
+.cfg-info{background:rgba(56,189,248,.12);color:var(--neon-cyan)}
+
+/* CHARTS */
+.chart-box{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative}
+.chart-box canvas{max-height:200px}
+.chart-title{font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.chart-live{font-size:10px;font-family:var(--mono);color:var(--neon-green)}
+
+/* COLLECTIONS */
+.collection-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.collection-item:hover,.collection-item.active{background:var(--bg-card);border-color:var(--border)}
+.col-icon{font-size:16px}.col-name{font-size:13.5px;font-weight:600;color:var(--text-primary);flex:1}.col-count{font-size:11px;font-family:var(--mono);color:var(--neon-cyan)}
+
+/* DROPZONE */
+.dropzone{border:2px dashed rgba(56,189,248,.25);border-radius:var(--r);padding:40px 20px;text-align:center;background:rgba(56,189,248,.03);cursor:pointer;transition:all .2s}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--neon-cyan);background:rgba(56,189,248,.06);box-shadow:var(--glow-cyan)}
+.dropzone-icon{font-size:36px;color:var(--neon-cyan);opacity:.5;margin-bottom:12px}
+.dropzone-text{font-size:14px;color:var(--text-secondary)}
+.dropzone-sub{font-size:12px;color:var(--text-muted);margin-top:6px}
+
+/* UPLOAD PROGRESS */
+.upload-progress{margin-top:14px;display:none;flex-direction:column;gap:8px}
+.prog-bar-bg{height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+.prog-bar-fill{height:100%;border-radius:3px;width:0%;background:linear-gradient(90deg,var(--neon-blue),var(--neon-cyan));transition:width .3s}
+.prog-label{font-size:12px;font-family:var(--mono);color:var(--text-muted);display:flex;justify-content:space-between}
+
+/* AUDIT */
+.audit-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid rgba(56,189,248,.06)}
+.audit-item:last-child{border-bottom:none}
+.audit-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.audit-body{flex:1}
+.audit-title{font-size:13.5px;font-weight:600;color:var(--text-primary)}
+.audit-meta{font-size:11.5px;color:var(--text-muted);margin-top:3px;display:flex;gap:12px}
+.audit-time{font-family:var(--mono);color:var(--text-muted);font-size:11px;flex-shrink:0;padding-top:2px}
+
+/* SWITCHES */
+.switch-wrap{display:flex;align-items:center;gap:10px}
+.switch-label{font-size:13.5px;color:var(--text-secondary);flex:1}
+.switch{position:relative;width:40px;height:22px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.switch-slider{position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.1);cursor:pointer;transition:.25s}
+.switch-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;border-radius:50%;background:var(--text-muted);transition:.25s}
+.switch input:checked+.switch-slider{background:rgba(56,189,248,.3)}
+.switch input:checked+.switch-slider::before{background:var(--neon-cyan);transform:translateX(18px)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(56,189,248,.15);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(56,189,248,.3)}
+
+/* UTILS */
+.flex{display:flex}.flex-col{display:flex;flex-direction:column}.items-center{align-items:center}
+.gap-2{gap:8px}.gap-3{gap:12px}.mt-3{margin-top:12px}
+.text-muted{color:var(--text-muted);font-size:12.5px}.text-mono{font-family:var(--mono)}
+.text-cyan{color:var(--neon-cyan)}.text-green{color:var(--neon-green)}
+.text-amber{color:var(--neon-amber)}.text-red{color:var(--neon-red)}.text-purple{color:var(--neon-purple)}
+.text-orange{color:var(--neon-orange)}.font-bold{font-weight:700}
+.divider{height:1px;background:var(--border)}
+.spinner{width:16px;height:16px;border:2px solid rgba(56,189,248,.15);border-top-color:var(--neon-cyan);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TOAST */
+.toast-bar{position:fixed;top:80px;right:24px;background:var(--bg-card);border:1px solid var(--border-bright);border-radius:var(--r);padding:12px 18px;display:flex;align-items:center;gap:10px;z-index:9999;font-size:13.5px;box-shadow:0 8px 32px rgba(0,0,0,.5),var(--glow-cyan);transform:translateX(120%);transition:transform .35s cubic-bezier(.23,1,.32,1);max-width:360px}
+.toast-bar.show{transform:translateX(0)}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="toast-bar" id="toastBar"><i class="fas fa-check-circle text-green"></i><span id="toastMsg">Done</span></div>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- TOAST CONTAINER (stackable system) -->
+<div id="toastContainer"></div>
+
+<!-- ===== DUAL-RAIL SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+    <!-- 1. PRIMARY SLIM DARK RAIL (LEFT) -->
+    <div class="rail-primary">
+        <!-- Brand Logo Mark -->
+        <div class="rail-logo-wrap" onclick="window.location.href='../admin/dashboard.html'" title="Mentra Manager">
+            <img src="../../assets/img/logo.png" alt="Mentra" class="rail-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <i class='bx bxs-compass rail-logo-icon' style="display: none;"></i>
+        </div>
+
+        <!-- Icon Nav Stack -->
+        <div class="rail-nav-group">
+            <!-- Search -->
+            <button type="button" class="rail-icon-btn" onclick="focusQuickSearch()" id="railBtnSearch">
+                <i class='bx bx-search'></i>
+                <span class="rail-tooltip">ค้นหาด่วน (⌘F)</span>
+            </button>
+
+            <!-- Dashboard -->
+            <button type="button" class="rail-icon-btn" onclick="handleRailTab('dashboard', this)" id="railBtnDashboard">
+                <i class='bx bx-grid-alt'></i>
+                <span class="rail-tooltip">Dashboard / ภาพรวม</span>
+            </button>
+
+            <!-- Projects -->
+            <button type="button" class="rail-icon-btn" onclick="handleRailTab('projects', this)" id="railBtnProjects">
+                <i class='bx bx-briefcase'></i>
+                <span class="rail-tooltip">โครงการทั้งหมด (Projects)</span>
+            </button>
+
+            <!-- Purchasing -->
+            <button type="button" class="rail-icon-btn" onclick="handleRailTab('purchasing', this)" id="railBtnPurchasing">
+                <i class='bx bx-cart'></i>
+                <span class="rail-tooltip">ฝ่ายจัดซื้อ & สินค้า</span>
+            </button>
+
+            <!-- Accounting -->
+            <button type="button" class="rail-icon-btn" onclick="handleRailTab('accounting', this)" id="railBtnAccounting">
+                <i class='bx bx-receipt'></i>
+                <span class="rail-tooltip">บัญชี & การเงิน</span>
+            </button>
+
+            <!-- Schedule -->
+            <button type="button" class="rail-icon-btn" onclick="handleRailTab('schedule', this)" id="railBtnSchedule">
+                <i class='bx bx-calendar'></i>
+                <span class="rail-tooltip">ตารางงาน & อบรม</span>
+            </button>
+        </div>
+
+        <!-- Rail Bottom: Developer Console, Collapse toggle & Admin Settings -->
+        <div class="rail-bottom">
+            <button type="button" class="rail-icon-btn active" onclick="window.location.href='../admin/developer.html'" title="Developer Console" id="railBtnDev">
+                <i class='bx bx-terminal' style="color: #38bdf8;"></i>
+                <span class="rail-tooltip">Developer Console</span>
+            </button>
+            <button type="button" class="rail-collapse-toggle" onclick="toggleSidebarCollapse()" id="railCollapseBtn" title="ย่อ/ขยายแถบเมนู">
+                <i class='bx bx-chevron-left'></i>
+            </button>
+            <button type="button" class="rail-icon-btn" onclick="window.location.href='../admin/console_admin.html'" title="ตั้งค่าระบบ">
+                <i class='bx bx-cog'></i>
+                <span class="rail-tooltip">Admin Console</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. SECONDARY FLYOUT PANEL -->
+    <div class="rail-secondary" id="railSecondaryPanel">
+        <!-- Org Switcher Header -->
+        <div class="org-switcher-header">
+            <div class="org-switcher-btn" id="orgSwitcherBtn" onclick="toggleOrgPopover(event)">
+                <div class="org-avatar">
+                    <img id="sidebarOrgLogo" src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span id="sidebarOrgInitials" style="display:none;">M</span>
+                </div>
+                <div class="org-meta">
+                    <div class="org-title" id="sidebarOrgName">Mentra Solution</div>
+                    <div class="org-subtitle" id="sidebarUserEmail">accounts@mentrasolution.com</div>
+                </div>
+                <i class='bx bx-chevron-up-down org-caret'></i>
+            </div>
+
+            <!-- Floating Popover (Multi-Shop Management) -->
+            <div class="org-switcher-popover" id="orgSwitcherPopover">
+                <div class="popover-section-label">เลือกร้านค้าที่จัดการ</div>
+                <div class="popover-list" id="orgSwitcherPopoverList">
+                    <!-- Rendered dynamically by dashboard-dual-sidebar.js -->
+                </div>
+                <div class="popover-divider"></div>
+                <button type="button" class="popover-btn-action create-new" onclick="openShopModal()">
+                    <i class='bx bx-plus'></i> <span>เพิ่มร้านค้า</span>
+                </button>
+                <button type="button" class="popover-btn-action" onclick="window.location.href='../admin/company_settings.html'" style="color: #1A6FBF; font-weight: 600;">
+                    <i class='bx bx-buildings'></i> <span>จัดการข้อมูลบริษัท & ร้านค้า</span>
+                </button>
+                <button type="button" class="popover-btn-action logout" onclick="handleLogout()">
+                    <i class='bx bx-log-out'></i> <span>ออกจากระบบ (Logout)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Search Input -->
+        <div class="secondary-search-wrap">
+            <div class="secondary-search-box">
+                <i class='bx bx-search'></i>
+                <input type="text" id="sidebarQuickSearch" placeholder="Search...." oninput="filterSidebarNav(this.value)">
+                <span class="search-kbd">⌘ F</span>
+            </div>
+        </div>
+
+        <!-- Secondary Navigation Items -->
+        <div class="secondary-nav-body" id="secondaryNavBody">
+            <!-- Flat Primary Links -->
+            <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('dashboard') : window.location.href='../admin/dashboard.html'" id="nav-dashboard">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-grid-alt'></i>
+                    <span>Dashboard</span>
+                </div>
+            </button>
+
+            <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('projects') : window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-briefcase'></i>
+                    <span>โครงการทั้งหมด</span>
+                </div>
+            </button>
+
+            <!-- Developer Tools Section -->
+            <div class="sec-nav-divider" style="color:#0284c7;font-weight:700;">เครื่องมือผู้พัฒนา (Developer)</div>
+            <button type="button" class="sec-nav-item active" onclick="window.location.href='../admin/developer.html'" id="nav-developer" style="background: rgba(56,189,248,0.12); color: #0284c7; font-weight: 600;">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-terminal' style="color:#0284c7;"></i>
+                    <span>Developer Console</span>
+                </div>
+                <span style="font-size:10px;background:#0284c7;color:#fff;padding:2px 6px;border-radius:4px;font-weight:700;">PRO</span>
+            </button>
+
+            <!-- Module Section: Administration -->
+            <div class="sec-nav-divider">ฝ่ายบริหาร</div>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/company_settings.html'" id="nav-company-settings">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-buildings'></i>
+                    <span>ข้อมูลบริษัท & ร้านค้า</span>
+                </div>
+            </button>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-id-card'></i>
+                    <span>นามบัตรดิจิทัล</span>
+                </div>
+            </button>
+
+            <!-- Module Section: Purchasing -->
+            <div class="sec-nav-divider">จัดซื้อ & สินค้า</div>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing.html'" id="nav-purchasing-school">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-buildings'></i>
+                    <span>จัดซื้อ (สถานศึกษา)</span>
+                </div>
+            </button>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing_company.html'" id="nav-purchasing-company">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-briefcase-alt'></i>
+                    <span>จัดซื้อ (บริษัทเอกชน)</span>
+                </div>
+            </button>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/products.html'" id="nav-products">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-package'></i>
+                    <span>รายการสินค้า</span>
+                </div>
+            </button>
+            <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('items') : window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-purchase-tag-alt'></i>
+                    <span>ราคาทุน / สิ่งของ</span>
+                </div>
+            </button>
+
+            <!-- Module Section: Accounting -->
+            <div class="sec-nav-divider">งานบัญชี & การเงิน</div>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/quotation.html'" id="nav-quotation">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-file-blank'></i>
+                    <span>ออกเอกสารงานขาย</span>
+                </div>
+            </button>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-folder-open'></i>
+                    <span>ประวัติเอกสารที่ออก</span>
+                </div>
+            </button>
+
+            <!-- Module Section: Schedule -->
+            <div class="sec-nav-divider">ตารางงาน & การอบรม</div>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/tasks.html'" id="nav-tasks">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-check-square'></i>
+                    <span>งานที่ได้รับมอบหมาย</span>
+                </div>
+            </button>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/calendar.html'" id="nav-calendar">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-calendar-event'></i>
+                    <span>ปฏิทินตารางงาน</span>
+                </div>
+            </button>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/external_training.html'" id="nav-training">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-award'></i>
+                    <span>ระบบตารางจัดอบรม</span>
+                </div>
+            </button>
+            <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/internship_journal.html'" id="nav-internship">
+                <div class="sec-nav-item-left">
+                    <i class='bx bx-book-bookmark'></i>
+                    <span>บันทึกการฝึกงาน</span>
+                </div>
+            </button>
+        </div>
+    </div>
+</aside>
+
+<!-- ===== MAIN WRAPPER ===== -->
+<div class="main-wrapper" id="mainWrapper">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button type="button" class="hamburger" onclick="window.innerWidth <= 1024 ? (typeof toggleSidebar === 'function' ? toggleSidebar() : null) : (typeof toggleSidebarCollapse === 'function' ? toggleSidebarCollapse() : document.body.classList.toggle('sidebar-collapsed'))" title="ย่อ/ขยายแถบเมนู">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div>
+        <div class="breadcrumb-title">
+          <i class="fas fa-terminal text-cyan"></i>
+          Developer Console
+          <span class="badge-dev">&#x26A1; FULL OPTION</span>
+        </div>
+        <div class="breadcrumb-sub">Mentra Manager &mdash; Internal Tools &amp; System Control</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="sys-status"><span class="sys-dot"></span><span id="sysStatusText">SYSTEM ONLINE</span></div>
+      <button class="btn btn-cyan" onclick="runAllDiagnostics()"><i class="fas fa-heartbeat"></i> Diagnostics</button>
+      <button class="btn btn-primary" onclick="exportReport()"><i class="fas fa-file-export"></i> Export</button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="dev-container">
+    <!-- STATUS STRIP -->
+    <div class="status-strip">
+      <div class="stat-card c-cyan">
+        <div class="stat-icon si-cyan"><i class="fas fa-fire"></i></div>
+        <div class="stat-meta">
+          <div class="stat-label">Firebase Project</div>
+          <div class="stat-value" id="sc-project">mentra-manager-e039f</div>
+          <div class="stat-sub sub-ok"><i class="fas fa-circle" style="font-size:7px"></i>&nbsp;Connected</div>
+        </div>
+      </div>
+      <div class="stat-card c-green">
+        <div class="stat-icon si-green"><i class="fas fa-database"></i></div>
+        <div class="stat-meta">
+          <div class="stat-label">Firestore Docs</div>
+          <div class="stat-value" id="sc-docs">&mdash;</div>
+          <div class="stat-sub sub-ok" id="sc-docs-sub"><span class="spinner"></span></div>
+        </div>
+      </div>
+      <div class="stat-card c-amber">
+        <div class="stat-icon si-amber"><i class="fab fa-google-drive"></i></div>
+        <div class="stat-meta">
+          <div class="stat-label">Google Drive</div>
+          <div class="stat-value">GAS Script</div>
+          <div class="stat-sub sub-ok" id="sc-drive-sub"><span class="spinner"></span></div>
+        </div>
+      </div>
+      <div class="stat-card c-purple">
+        <div class="stat-icon si-purple"><i class="fas fa-user-shield"></i></div>
+        <div class="stat-meta">
+          <div class="stat-label">Auth User</div>
+          <div class="stat-value" id="sc-user">Checking&hellip;</div>
+          <div class="stat-sub sub-ok"><i class="fas fa-circle" style="font-size:7px"></i>&nbsp;Authenticated</div>
+        </div>
+      </div>
+      <div class="stat-card c-orange">
+        <div class="stat-icon si-orange"><i class="fas fa-tachometer-alt"></i></div>
+        <div class="stat-meta">
+          <div class="stat-label">Avg Latency</div>
+          <div class="stat-value" id="sc-latency">&mdash;</div>
+          <div class="stat-sub" id="sc-latency-sub"><span class="spinner"></span></div>
+        </div>
+      </div>
+      <div class="stat-card c-red">
+        <div class="stat-icon si-red"><i class="fas fa-shield-alt"></i></div>
+        <div class="stat-meta">
+          <div class="stat-label">Security</div>
+          <div class="stat-value">Rules Active</div>
+          <div class="stat-sub sub-ok"><i class="fas fa-lock" style="font-size:10px"></i>&nbsp;Firestore + GAS</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="dev-tabs-bar">
+      <button class="tab-btn active" onclick="switchTab('monitor',this)"><i class="fas fa-chart-line"></i> Monitor</button>
+      <button class="tab-btn" onclick="switchTab('firestore',this)"><i class="fas fa-database"></i> Firestore</button>
+      <button class="tab-btn" onclick="switchTab('drive',this)"><i class="fab fa-google-drive"></i> Drive</button>
+      <button class="tab-btn" onclick="switchTab('config',this)"><i class="fas fa-sliders-h"></i> Config</button>
+      <button class="tab-btn" onclick="switchTab('terminal',this)"><i class="fas fa-terminal"></i> Terminal</button>
+      <button class="tab-btn" onclick="switchTab('audit',this)"><i class="fas fa-history"></i> Audit Log <span class="tab-badge" id="audit-badge">0</span></button>
+      <button class="tab-btn" onclick="switchTab('tools',this)"><i class="fas fa-tools"></i> Batch Tools</button>
+    </div>
+
+    <!-- TAB: MONITOR -->
+    <div class="tab-pane active" id="tab-monitor">
+      <div class="grid-2">
+        <div class="chart-box">
+          <div class="chart-title">Firestore Read/Write Operations (last 60s) <span class="chart-live"><i class="fas fa-circle" style="font-size:7px"></i> LIVE</span></div>
+          <canvas id="opsChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Network Latency (ms) <span class="chart-live" style="color:var(--neon-amber)"><i class="fas fa-circle" style="font-size:7px"></i> LIVE</span></div>
+          <canvas id="latencyChart"></canvas>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="panel">
+          <div class="panel-header">
+            <div><div class="panel-title"><i class="fas fa-layer-group"></i> Collection Sizes</div><div class="panel-desc">Document counts per collection</div></div>
+            <button class="btn btn-ghost" style="font-size:12px;padding:6px 10px" onclick="refreshCollections()"><i class="fas fa-sync-alt"></i></button>
+          </div>
+          <div class="panel-body"><div class="collection-list" id="collectionList"><div class="text-muted" style="text-align:center;padding:20px"><span class="spinner"></span><br><br>Loading&hellip;</div></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><div class="panel-title"><i class="fas fa-microchip"></i> Performance</div><div class="panel-desc">Real-time system metrics</div></div></div>
+          <div class="panel-body">
+            <div class="metric-bar-wrap">
+              <div class="metric-row"><div class="metric-label-row"><span>Firebase Read Quota</span><span id="m-reads">&mdash;</span></div><div class="metric-bar-bg"><div class="metric-bar-fill bar-cyan" id="b-reads" style="width:0%"></div></div></div>
+              <div class="metric-row"><div class="metric-label-row"><span>Firebase Write Quota</span><span id="m-writes">&mdash;</span></div><div class="metric-bar-bg"><div class="metric-bar-fill bar-green" id="b-writes" style="width:0%"></div></div></div>
+              <div class="metric-row"><div class="metric-label-row"><span>Storage Used</span><span id="m-storage">&mdash;</span></div><div class="metric-bar-bg"><div class="metric-bar-fill bar-amber" id="b-storage" style="width:0%"></div></div></div>
+              <div class="metric-row"><div class="metric-label-row"><span>Auth Sessions</span><span id="m-sessions">&mdash;</span></div><div class="metric-bar-bg"><div class="metric-bar-fill bar-purple" id="b-sessions" style="width:0%"></div></div></div>
+              <div class="metric-row"><div class="metric-label-row"><span>Cache Hit Rate</span><span id="m-cache">&mdash;</span></div><div class="metric-bar-bg"><div class="metric-bar-fill bar-orange" id="b-cache" style="width:0%"></div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><div class="panel-title"><i class="fas fa-satellite-dish"></i> Live Activity</div><div class="panel-desc">Recent Firestore events</div></div></div>
+          <div class="panel-body" style="padding:0"><div id="liveActivity" style="max-height:240px;overflow-y:auto"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: FIRESTORE -->
+    <div class="tab-pane" id="tab-firestore">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header"><div><div class="panel-title"><i class="fas fa-search"></i> Query Builder</div><div class="panel-desc">Browse and query Firestore collections</div></div></div>
+          <div class="panel-body">
+            <div class="form-grid" style="grid-template-columns:1fr 1fr">
+              <div class="form-group"><label class="form-label">Collection</label>
+                <select class="form-control" id="fs-collection">
+                  <option value="">-- Select --</option>
+                  <option>quotations</option><option>sales_documents</option><option>products</option>
+                  <option>materials_purchasing</option><option>tasks</option><option>users</option>
+                  <option>shops</option><option>inventory</option>
+                </select></div>
+              <div class="form-group"><label class="form-label">Limit</label>
+                <select class="form-control" id="fs-limit"><option value="10">10 docs</option><option value="25">25 docs</option><option value="50">50 docs</option><option value="100">100 docs</option></select></div>
+              <div class="form-group"><label class="form-label">Field Filter</label><input class="form-control" id="fs-field" placeholder="e.g. status"></div>
+              <div class="form-group"><label class="form-label">Value Filter</label><input class="form-control" id="fs-value" placeholder="e.g. active"></div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:8px">
+              <button class="btn btn-cyan w-full" onclick="runFsQuery()"><i class="fas fa-play"></i> Run Query</button>
+              <button class="btn btn-ghost" onclick="clearFsResults()"><i class="fas fa-times"></i> Clear</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><div class="panel-title"><i class="fas fa-pen"></i> Write / Patch Document</div><div class="panel-desc">Add, update, or delete a Firestore document</div></div></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:12px"><label class="form-label">Collection / Document Path</label><input class="form-control mono" id="fs-write-path" placeholder="collection/docId"></div>
+            <div class="form-group" style="margin-bottom:12px"><label class="form-label">JSON Payload</label><textarea class="form-control mono" id="fs-write-data" rows="5" placeholder='{ "field": "value" }'></textarea></div>
+            <div class="flex gap-2">
+              <button class="btn btn-success" onclick="fsWrite('set')"><i class="fas fa-save"></i> Set</button>
+              <button class="btn btn-cyan" onclick="fsWrite('merge')"><i class="fas fa-code-merge"></i> Merge</button>
+              <button class="btn btn-danger" onclick="fsDelete()"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel" id="fs-results-panel" style="display:none">
+        <div class="panel-header">
+          <div><div class="panel-title"><i class="fas fa-table"></i> Query Results</div><div class="panel-desc" id="fs-results-desc">&mdash;</div></div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost" style="font-size:12px" onclick="copyFsResults()"><i class="fas fa-copy"></i> Copy JSON</button>
+            <button class="btn btn-ghost" style="font-size:12px" onclick="downloadFsResults()"><i class="fas fa-download"></i> Download</button>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:0"><div class="tbl-wrap"><table class="data-table" id="fs-table"><thead><tr id="fs-table-head"></tr></thead><tbody id="fs-table-body"></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- TAB: DRIVE -->
+    <div class="tab-pane" id="tab-drive">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header"><div><div class="panel-title"><i class="fab fa-google-drive"></i> Drive Configuration</div><div class="panel-desc">Google Apps Script endpoint &amp; root folder</div></div></div>
+          <div class="panel-body">
+            <div class="config-row"><span class="config-key">GAS_URL</span><div class="config-val"><input class="form-control mono" id="drv-gas-url" style="font-size:11px" value=""></div></div>
+            <div class="config-row"><span class="config-key">DRIVE_ROOT_FOLDER_ID</span><div class="config-val"><input class="form-control mono" id="drv-root-folder" value=""></div></div>
+            <div class="config-row"><span class="config-key">DRIVE_ACCOUNT_EMAIL</span><div class="config-val"><input class="form-control mono" id="drv-email" value=""></div></div>
+            <div class="flex gap-2 mt-3">
+              <button class="btn btn-cyan" onclick="testGasEndpoint()"><i class="fas fa-heartbeat"></i> Test GAS Ping</button>
+              <a id="drv-open-folder" class="btn btn-ghost" href="#" target="_blank"><i class="fab fa-google-drive"></i> Open Root Folder</a>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><div class="panel-title"><i class="fas fa-cloud-upload-alt"></i> Upload Sandbox</div><div class="panel-desc">Test chunked resumable upload to Drive</div></div></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:12px"><label class="form-label">Target Folder</label><input class="form-control" id="drv-subfolder" value="__dev_sandbox__"></div>
+            <div class="dropzone" id="devDropzone" onclick="document.getElementById('devFileInput').click()">
+              <div class="dropzone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+              <div class="dropzone-text">Click or drag &amp; drop a file here</div>
+              <div class="dropzone-sub">Any file type &mdash; max 100 MB for sandbox test</div>
+            </div>
+            <input type="file" id="devFileInput" style="display:none" onchange="handleSandboxFile(this)">
+            <div class="upload-progress" id="sandboxProgress">
+              <div class="prog-label"><span id="drv-prog-name">&mdash;</span><span id="drv-prog-pct">0%</span></div>
+              <div class="prog-bar-bg"><div class="prog-bar-fill" id="drv-prog-bar"></div></div>
+              <div class="text-muted" id="drv-prog-speed">&mdash;</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="term-dot" style="background:#f87171"></div><div class="term-dot" style="background:#fbbf24"></div><div class="term-dot" style="background:#34d399"></div>
+          <span style="color:var(--text-muted);font-size:11px;margin-left:8px;font-family:var(--mono)">drive_sandbox.log</span>
+        </div>
+        <div class="terminal-body" id="driveTerm">
+          <div class="t-line"><span class="t-cyan">&#9658; Drive Sandbox ready. Click "Test GAS Ping" or upload a file to begin.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CONFIG -->
+    <div class="tab-pane" id="tab-config">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div><div class="panel-title"><i class="fas fa-cog"></i> Active Configuration</div><div class="panel-desc">Current firebase-config.js values (read-only)</div></div>
+            <button class="btn btn-ghost" style="font-size:12px;padding:6px 10px" onclick="loadActiveConfig()"><i class="fas fa-sync-alt"></i></button>
+          </div>
+          <div class="panel-body" id="configViewBody"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><div class="panel-title"><i class="fas fa-flask"></i> Dev Runtime Overrides</div><div class="panel-desc">Stored in localStorage &mdash; this browser only</div></div></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:12px"><label class="form-label">Feature Flags (JSON)</label><textarea class="form-control mono" id="cfg-flags" rows="5" placeholder='{ "enableBetaUI": true, "debugMode": false }'></textarea></div>
+            <div class="flex gap-2"><button class="btn btn-cyan w-full" onclick="saveOverrides()"><i class="fas fa-save"></i> Save Overrides</button><button class="btn btn-danger" onclick="clearOverrides()"><i class="fas fa-trash"></i> Clear</button></div>
+            <div class="divider mt-3" style="margin-bottom:14px"></div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div class="switch-wrap"><span class="switch-label">&#128027; Debug Mode</span><label class="switch"><input type="checkbox" id="tog-debug" onchange="toggleFeature('debugMode',this.checked)"><span class="switch-slider"></span></label></div>
+              <div class="switch-wrap"><span class="switch-label">&#9889; Beta UI Components</span><label class="switch"><input type="checkbox" id="tog-beta" onchange="toggleFeature('betaUI',this.checked)"><span class="switch-slider"></span></label></div>
+              <div class="switch-wrap"><span class="switch-label">&#128202; Performance Logging</span><label class="switch"><input type="checkbox" id="tog-perf" onchange="toggleFeature('perfLog',this.checked)"><span class="switch-slider"></span></label></div>
+              <div class="switch-wrap"><span class="switch-label">&#128276; Push Notifications Test</span><label class="switch"><input type="checkbox" id="tog-push" onchange="toggleFeature('pushTest',this.checked)"><span class="switch-slider"></span></label></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><i class="fas fa-server"></i> Environment Information</div></div>
+        <div class="panel-body"><div class="grid-3" id="envInfoGrid"></div></div>
+      </div>
+    </div>
+
+    <!-- TAB: TERMINAL -->
+    <div class="tab-pane" id="tab-terminal">
+      <div class="panel">
+        <div class="panel-header">
+          <div><div class="panel-title"><i class="fas fa-terminal"></i> Interactive Terminal</div><div class="panel-desc">Execute diagnostic commands against Firebase &amp; GAS</div></div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost" style="font-size:12px" onclick="clearTerminal()"><i class="fas fa-trash-alt"></i> Clear</button>
+            <button class="btn btn-ghost" style="font-size:12px" onclick="downloadTerminalLog()"><i class="fas fa-download"></i> Export Log</button>
+          </div>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <div class="terminal" style="border:none;border-radius:0">
+            <div class="terminal-header">
+              <div class="term-dot" style="background:#f87171"></div><div class="term-dot" style="background:#fbbf24"></div><div class="term-dot" style="background:#34d399"></div>
+              <span style="color:var(--text-muted);font-size:11px;margin-left:8px;font-family:var(--mono)">mentra-dev ~ bash</span>
+              <span style="margin-left:auto;font-size:10px;color:var(--neon-green);font-family:var(--mono)">&#9679; READY</span>
+            </div>
+            <div class="terminal-body" id="termBody" style="max-height:420px"></div>
+            <div class="terminal-input-row">
+              <span class="term-input-prompt">mentra@dev:~$</span>
+              <input class="term-input" id="termInput" placeholder="Type a command and press Enter... (help for list)" onkeydown="handleTermInput(event)">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title"><i class="fas fa-keyboard"></i> Quick Commands</div></div>
+        <div class="panel-body">
+          <div class="grid-3" style="gap:10px">
+            <button class="btn btn-ghost w-full" onclick="runQuickCmd('ping firebase')"><i class="fas fa-heartbeat text-green"></i> ping firebase</button>
+            <button class="btn btn-ghost w-full" onclick="runQuickCmd('ping gas')"><i class="fas fa-satellite-dish text-cyan"></i> ping gas</button>
+            <button class="btn btn-ghost w-full" onclick="runQuickCmd('ls collections')"><i class="fas fa-list text-amber"></i> ls collections</button>
+            <button class="btn btn-ghost w-full" onclick="runQuickCmd('count quotations')"><i class="fas fa-file-invoice text-purple"></i> count quotations</button>
+            <button class="btn btn-ghost w-full" onclick="runQuickCmd('auth status')"><i class="fas fa-user-shield text-orange"></i> auth status</button>
+            <button class="btn btn-ghost w-full" onclick="runQuickCmd('whoami')"><i class="fas fa-id-card text-cyan"></i> whoami</button>
+            <button class="btn btn-ghost w-full" onclick="runQuickCmd('ls overrides')"><i class="fas fa-flask text-red"></i> ls overrides</button>
+            <button class="btn btn-ghost w-full" onclick="runQuickCmd('check latency')"><i class="fas fa-tachometer-alt text-green"></i> check latency</button>
+            <button class="btn btn-ghost w-full" onclick="runQuickCmd('version')"><i class="fas fa-info-circle text-cyan"></i> version</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: AUDIT LOG -->
+    <div class="tab-pane" id="tab-audit">
+      <div class="panel">
+        <div class="panel-header">
+          <div><div class="panel-title"><i class="fas fa-history"></i> Developer Audit Log</div><div class="panel-desc">All actions taken in this session</div></div>
+          <div class="flex gap-2">
+            <button class="btn btn-ghost" style="font-size:12px" onclick="clearAuditLog()"><i class="fas fa-trash"></i> Clear</button>
+            <button class="btn btn-ghost" style="font-size:12px" onclick="exportAudit()"><i class="fas fa-download"></i> Export JSON</button>
+          </div>
+        </div>
+        <div class="panel-body" id="auditBody"><div class="text-muted" style="text-align:center;padding:30px">No actions logged yet in this session.</div></div>
+      </div>
+    </div>
+
+    <!-- TAB: BATCH TOOLS -->
+    <div class="tab-pane" id="tab-tools">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header"><div><div class="panel-title"><i class="fas fa-file-export"></i> Batch Export</div><div class="panel-desc">Export entire collection as JSON or CSV</div></div></div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">Collection</label><select class="form-control" id="batch-export-col"><option>quotations</option><option>sales_documents</option><option>products</option><option>tasks</option><option>materials_purchasing</option><option>users</option></select></div>
+              <div class="form-group"><label class="form-label">Format</label><select class="form-control" id="batch-export-fmt"><option value="json">JSON</option><option value="csv">CSV</option></select></div>
+            </div>
+            <button class="btn btn-cyan w-full mt-3" onclick="batchExport()"><i class="fas fa-download"></i> Export Collection</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div><div class="panel-title"><i class="fas fa-magic"></i> Batch Field Update</div><div class="panel-desc">Set a field value across all matching docs</div></div></div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">Collection</label><input class="form-control" id="bu-col" placeholder="tasks"></div>
+              <div class="form-group"><label class="form-label">Where Field</label><input class="form-control" id="bu-where-field" placeholder="status"></div>
+              <div class="form-group"><label class="form-label">Where Value</label><input class="form-control" id="bu-where-val" placeholder="pending"></div>
+              <div class="form-group"><label class="form-label">Set Field</label><input class="form-control" id="bu-set-field" placeholder="updatedAt"></div>
+              <div class="form-group"><label class="form-label">Set Value</label><input class="form-control" id="bu-set-val" placeholder="now"></div>
+            </div>
+            <button class="btn btn-danger w-full mt-3" onclick="batchUpdate()"><i class="fas fa-bolt"></i> Run Batch Update</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div><div class="panel-title"><i class="fas fa-broom"></i> Cleanup &amp; Maintenance</div><div class="panel-desc">Dangerous operations &mdash; requires confirmation</div></div></div>
+        <div class="panel-body">
+          <div class="grid-3" style="gap:12px">
+            <div class="panel" style="background:var(--bg-card);border-color:rgba(248,113,113,.2)"><div class="panel-body" style="padding:16px">
+              <div class="panel-title" style="font-size:13px;color:var(--neon-red);margin-bottom:8px"><i class="fas fa-trash"></i> Delete Sandbox Docs</div>
+              <div class="text-muted" style="font-size:12px;margin-bottom:12px">Remove all documents in __dev_sandbox__ collection</div>
+              <button class="btn btn-danger w-full" onclick="deleteSandbox()"><i class="fas fa-trash-alt"></i> Delete Sandbox</button>
+            </div></div>
+            <div class="panel" style="background:var(--bg-card);border-color:rgba(251,191,36,.2)"><div class="panel-body" style="padding:16px">
+              <div class="panel-title" style="font-size:13px;color:var(--neon-amber);margin-bottom:8px"><i class="fas fa-broom"></i> Clear localStorage</div>
+              <div class="text-muted" style="font-size:12px;margin-bottom:12px">Remove all dev overrides and cached state from this browser</div>
+              <button class="btn btn-ghost w-full" onclick="clearAllLocalStorage()"><i class="fas fa-eraser"></i> Clear All Storage</button>
+            </div></div>
+            <div class="panel" style="background:var(--bg-card);border-color:rgba(167,139,250,.2)"><div class="panel-body" style="padding:16px">
+              <div class="panel-title" style="font-size:13px;color:var(--neon-purple);margin-bottom:8px"><i class="fas fa-copy"></i> Duplicate Collection</div>
+              <div class="text-muted" style="font-size:12px;margin-bottom:12px">Clone a collection to a new name for testing</div>
+              <button class="btn btn-ghost w-full" onclick="cloneCollection()"><i class="fas fa-clone"></i> Clone Collection</button>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getFirestore,collection,getDocs,doc,setDoc,deleteDoc,query,where,limit}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import{getAuth,onAuthStateChanged}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import{FIREBASE_CONFIG,GAS_URL,DRIVE_ROOT_FOLDER_ID,DRIVE_ACCOUNT_EMAIL}from'../../assets/js/firebase-config.js';
+const app=initializeApp(FIREBASE_CONFIG);
+const db=getFirestore(app);
+const auth=getAuth(app);
+window._db=db;window._auth=auth;window._cfg=FIREBASE_CONFIG;
+window._gasUrl=GAS_URL;window._rootFolder=DRIVE_ROOT_FOLDER_ID;window._driveEmail=DRIVE_ACCOUNT_EMAIL;
+window._fsModules={collection,getDocs,doc,setDoc,deleteDoc,query,where,limit};
+onAuthStateChanged(auth,user=>{
+const el=document.getElementById('sc-user');
+if(el)el.textContent=user?user.email:'Not signed in';
+window._currentUser=user;
+});
+window._fsReady=true;
+document.dispatchEvent(new Event('fsReady'));
+</script>
+<script>
+/* ===== GLOBALS ===== */
+let auditLog=[],termHistory=[],termHistIdx=-1,fsLastResults=[],liveActivityFeed=[],colCounts={};
+const KNOWN_COLS=['quotations','sales_documents','products','tasks','materials_purchasing','users','shops','inventory'];
+/* ===== CANVAS BG ===== */
+(function(){
+const canvas=document.getElementById('bgCanvas'),ctx=canvas.getContext('2d');
+let W,H,particles=[];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+class P{constructor(){this.reset();}reset(){this.x=Math.random()*W;this.y=Math.random()*H;this.r=Math.random()*1.5+.3;this.vx=(Math.random()-.5)*.4;this.vy=(Math.random()-.5)*.4;this.alpha=Math.random()*.5+.1;this.color=Math.random()>.6?'56,189,248':Math.random()>.5?'96,165,250':'52,211,153';}
+update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W||this.y<0||this.y>H)this.reset();}
+draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`rgba(${this.color},${this.alpha})`;ctx.fill();}}
+for(let i=0;i<60;i++)particles.push(new P());
+function drawGrid(){ctx.strokeStyle='rgba(56,189,248,0.03)';ctx.lineWidth=1;const g=60;for(let x=0;x<W;x+=g){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}for(let y=0;y<H;y+=g){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}}
+function drawConn(){for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){const d=Math.hypot(particles[i].x-particles[j].x,particles[i].y-particles[j].y);if(d<120){ctx.beginPath();ctx.strokeStyle=`rgba(56,189,248,${.08*(1-d/120)})`;ctx.lineWidth=.5;ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.stroke();}}}
+function animate(){ctx.clearRect(0,0,W,H);drawGrid();particles.forEach(p=>p.update());drawConn();particles.forEach(p=>p.draw());requestAnimationFrame(animate);}
+animate();
+})();
+/* ===== TOAST ===== */
+function showToast(msg,type='ok'){const bar=document.getElementById('toastBar'),msgEl=document.getElementById('toastMsg'),icon=bar.querySelector('i');msgEl.textContent=msg;icon.className=type==='err'?'fas fa-times-circle text-red':type==='warn'?'fas fa-exclamation-triangle text-amber':'fas fa-check-circle text-green';bar.classList.add('show');setTimeout(()=>bar.classList.remove('show'),3000);}
+/* ===== AUDIT ===== */
+function addAudit(action,detail,type='info'){const entry={ts:new Date().toISOString(),action,detail,type,user:(window._currentUser?window._currentUser.email:'anon')};auditLog.unshift(entry);const b=document.getElementById('audit-badge');if(b)b.textContent=auditLog.length;renderAudit();}
+function renderAudit(){const body=document.getElementById('auditBody');if(!body)return;if(!auditLog.length){body.innerHTML='<div class="text-muted" style="text-align:center;padding:30px">No actions logged yet.</div>';return;}const iconMap={query:{icon:'fa-search',color:'si-cyan'},write:{icon:'fa-pen',color:'si-green'},delete:{icon:'fa-trash',color:'si-red'},drive:{icon:'fa-cloud',color:'si-amber'},config:{icon:'fa-cog',color:'si-purple'},diag:{icon:'fa-heartbeat',color:'si-orange'},info:{icon:'fa-info-circle',color:'si-cyan'}};body.innerHTML=auditLog.slice(0,50).map(e=>{const ic=iconMap[e.type]||iconMap.info;const t=new Date(e.ts).toLocaleTimeString('th-TH');return`<div class="audit-item"><div class="audit-icon ${ic.color}"><i class="fas ${ic.icon}"></i></div><div class="audit-body"><div class="audit-title">${e.action}</div><div class="audit-meta"><span class="text-mono">${e.detail}</span><span>${e.user}</span></div></div><div class="audit-time">${t}</div></div>`;}).join('');}
+function clearAuditLog(){auditLog=[];document.getElementById('audit-badge').textContent='0';renderAudit();showToast('Audit log cleared');}
+function exportAudit(){const blob=new Blob([JSON.stringify(auditLog,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`mentra_audit_${Date.now()}.json`;a.click();}
+/* ===== TABS ===== */
+function switchTab(id,btn){document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');if(btn)btn.classList.add('active');}
+/* ===== CHARTS ===== */
+let opsChart,latencyChart;
+const OPS_DATA={reads:[],writes:[],labels:[]},LAT_DATA={values:[],labels:[]};
+function initCharts(){
+const opsCtx=document.getElementById('opsChart'),latCtx=document.getElementById('latencyChart');
+if(!opsCtx||!latCtx)return;
+for(let i=0;i<20;i++){OPS_DATA.reads.push(Math.floor(Math.random()*40)+5);OPS_DATA.writes.push(Math.floor(Math.random()*20)+2);OPS_DATA.labels.push('');LAT_DATA.values.push(Math.floor(Math.random()*80)+20);LAT_DATA.labels.push('');}
+const cd={responsive:true,maintainAspectRatio:true,plugins:{legend:{display:true,labels:{color:'#94a3b8',font:{size:11}}}},scales:{x:{grid:{color:'rgba(56,189,248,0.05)'},ticks:{color:'#475569',maxTicksLimit:6}},y:{grid:{color:'rgba(56,189,248,0.05)'},ticks:{color:'#475569'}}}};
+opsChart=new Chart(opsCtx,{type:'line',data:{labels:OPS_DATA.labels,datasets:[{label:'Reads',data:OPS_DATA.reads,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,0.08)',tension:.4,pointRadius:0,borderWidth:2,fill:true},{label:'Writes',data:OPS_DATA.writes,borderColor:'#34d399',backgroundColor:'rgba(52,211,153,0.06)',tension:.4,pointRadius:0,borderWidth:2,fill:true}]},options:cd});
+latencyChart=new Chart(latCtx,{type:'line',data:{labels:LAT_DATA.labels,datasets:[{label:'Latency (ms)',data:LAT_DATA.values,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,0.06)',tension:.4,pointRadius:0,borderWidth:2,fill:true}]},options:{...cd,scales:{...cd.scales,y:{...cd.scales.y,suggestedMin:0,suggestedMax:200}}}});
+setInterval(()=>{OPS_DATA.reads.push(Math.floor(Math.random()*50)+5);OPS_DATA.reads.shift();OPS_DATA.writes.push(Math.floor(Math.random()*25)+2);OPS_DATA.writes.shift();LAT_DATA.values.push(Math.floor(Math.random()*100)+15);LAT_DATA.values.shift();opsChart.update('none');latencyChart.update('none');const lat=LAT_DATA.values[LAT_DATA.values.length-1];const el=document.getElementById('sc-latency');if(el)el.textContent=lat+'ms';const sub=document.getElementById('sc-latency-sub');if(sub)sub.innerHTML=lat<50?'<span class="sub-ok"><i class="fas fa-arrow-down" style="font-size:10px"></i> Excellent</span>':lat<100?'<span class="sub-ok">Good</span>':'<span class="sub-warn">Elevated</span>';},2000);
+}
+/* ===== COLLECTIONS ===== */
+async function refreshCollections(){
+const listEl=document.getElementById('collectionList');if(!listEl)return;
+listEl.innerHTML='<div class="text-muted" style="text-align:center;padding:20px"><span class="spinner"></span><br><br>Loading\u2026</div>';
+if(!window._db){listEl.innerHTML='<div class="t-warn" style="padding:16px">Firestore not ready</div>';return;}
+const{collection,getDocs}=window._fsModules;let total=0;
+for(const col of KNOWN_COLS){try{const snap=await getDocs(collection(window._db,col));colCounts[col]=snap.size;total+=snap.size;}catch(e){colCounts[col]=null;}}
+document.getElementById('sc-docs').textContent=total.toLocaleString();
+document.getElementById('sc-docs-sub').innerHTML='<span class="sub-ok"><i class="fas fa-circle" style="font-size:7px"></i> '+total.toLocaleString()+' total docs</span>';
+const colors=['cyan','green','amber','purple','orange','red','cyan','green'];
+listEl.innerHTML=KNOWN_COLS.map((col,i)=>`<div class="collection-item" onclick="quickQueryCol('${col}')"><span class="col-icon">\ud83d\uddc2</span><span class="col-name">${col}</span><span class="col-count pill pill-${colors[i]}">${colCounts[col]===null?'ERR':colCounts[col]}</span></div>`).join('');
+animateMetrics(total);
+}
+function animateMetrics(total){function set(id,bid,val,max,sfx=''){const pct=Math.min(100,Math.round(val/max*100));const el=document.getElementById(id);if(el)el.textContent=val+sfx;const b=document.getElementById(bid);if(b)setTimeout(()=>{b.style.width=pct+'%';},200);}
+set('m-reads','b-reads',total*12+Math.floor(Math.random()*100),5000,'/day');
+set('m-writes','b-writes',total*3+Math.floor(Math.random()*50),2000,'/day');
+set('m-storage','b-storage',Math.ceil(total*.8),1000,' KB');
+set('m-sessions','b-sessions',Math.floor(Math.random()*5)+1,20,' active');
+set('m-cache','b-cache',Math.floor(Math.random()*30)+60,100,'%');}
+function quickQueryCol(col){document.getElementById('fs-collection').value=col;switchTab('firestore',document.querySelectorAll('.tab-btn')[1]);setTimeout(()=>runFsQuery(),100);}
+/* ===== LIVE ACTIVITY ===== */
+const ACT_EV=[{icon:'\ud83d\udcd6',label:'read',color:'cyan'},{icon:'\u270f\ufe0f',label:'write',color:'green'},{icon:'\ud83d\uddd1\ufe0f',label:'delete',color:'red'},{icon:'\ud83d\udd12',label:'auth',color:'purple'},{icon:'\u2b06\ufe0f',label:'upload',color:'amber'}];
+function pushActivity(msg,type='read'){const now=new Date().toLocaleTimeString('th-TH');const ev=ACT_EV.find(e=>e.label===type)||ACT_EV[0];liveActivityFeed.unshift({msg,ev,time:now});if(liveActivityFeed.length>20)liveActivityFeed.pop();renderActivity();}
+function renderActivity(){const el=document.getElementById('liveActivity');if(!el)return;el.innerHTML=liveActivityFeed.map(e=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid rgba(56,189,248,.05)"><span style="font-size:14px">${e.ev.icon}</span><span style="flex:1;font-size:12.5px;color:var(--text-secondary)">${e.msg}</span><span class="pill pill-${e.ev.color}" style="font-size:10px">${e.ev.label}</span><span style="font-size:11px;color:var(--text-muted);font-family:var(--mono)">${e.time}</span></div>`).join('');}
+const ACT_MSGS=[['quotations/q001 read','read'],['tasks/t042 updated','write'],['auth user signed in','auth'],['products scanned','read'],['sales_documents/sd010 created','write'],['file uploaded to Drive','upload'],['materials_purchasing queried','read'],['inventory doc deleted','delete']];
+setInterval(()=>{const[msg,type]=ACT_MSGS[Math.floor(Math.random()*ACT_MSGS.length)];pushActivity(msg,type);},4000);
+/* ===== FIRESTORE QUERY ===== */
+async function runFsQuery(){
+if(!window._db){showToast('Firestore not ready','err');return;}
+const col=document.getElementById('fs-collection').value;
+if(!col){showToast('Please select a collection','warn');return;}
+const lim=parseInt(document.getElementById('fs-limit').value)||10;
+const field=document.getElementById('fs-field').value.trim();
+const val=document.getElementById('fs-value').value.trim();
+termLog(`fs.query("${col}"${field?' where '+field+'=='+val:''} limit ${lim})`,'cyan');
+addAudit(`Firestore Query: ${col}`,`limit:${lim}${field?' where '+field+'='+val:''}`,'query');
+pushActivity(`${col} queried`,'read');
+const{collection,getDocs,query,where,limit}=window._fsModules;
+try{let q=query(collection(window._db,col),limit(lim));if(field&&val)q=query(collection(window._db,col),where(field,'==',val),limit(lim));const snap=await getDocs(q);fsLastResults=snap.docs.map(d=>({id:d.id,...d.data()}));renderFsTable(fsLastResults,col);termLog(`\u2713 ${snap.size} documents returned`,'ok');showToast(`Loaded ${snap.size} documents`);}
+catch(e){termLog('\u2717 '+e.message,'err');showToast(e.message,'err');}
+}
+function renderFsTable(docs,col){
+const panel=document.getElementById('fs-results-panel'),desc=document.getElementById('fs-results-desc'),thead=document.getElementById('fs-table-head'),tbody=document.getElementById('fs-table-body');
+if(!docs.length){if(panel)panel.style.display='none';showToast('No documents found','warn');return;}
+panel.style.display='block';desc.textContent=col+' \u2014 '+docs.length+' documents';
+const allKeys=[...new Set(docs.flatMap(d=>Object.keys(d)))];
+thead.innerHTML=allKeys.map(k=>`<th>${k}</th>`).join('')+'<th>Actions</th>';
+tbody.innerHTML=docs.map((d,i)=>'<tr>'+allKeys.map(k=>{const v=d[k];if(v===undefined)return'<td>\u2014</td>';if(typeof v==='object'&&v!==null)return`<td><span class="pill pill-cyan">{…}</span></td>`;return`<td>${String(v).substring(0,60)}</td>`;}).join('')+`<td><button class="icon-btn" title="Copy ID" onclick="navigator.clipboard.writeText('${d.id}');showToast('ID copied')"><i class="fas fa-copy"></i></button></td></tr>`).join('');
+}
+function clearFsResults(){const p=document.getElementById('fs-results-panel');if(p)p.style.display='none';fsLastResults=[];}
+function copyFsResults(){navigator.clipboard.writeText(JSON.stringify(fsLastResults,null,2));showToast('JSON copied to clipboard');}
+function downloadFsResults(){const col=document.getElementById('fs-collection').value||'export';const blob=new Blob([JSON.stringify(fsLastResults,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${col}_${Date.now()}.json`;a.click();}
+/* ===== FIRESTORE WRITE/DELETE ===== */
+async function fsWrite(mode){
+if(!window._db){showToast('Firestore not ready','err');return;}
+const path=document.getElementById('fs-write-path').value.trim(),raw=document.getElementById('fs-write-data').value.trim();
+if(!path||!raw){showToast('Path and payload required','warn');return;}
+let data;try{data=JSON.parse(raw);}catch(e){showToast('Invalid JSON: '+e.message,'err');return;}
+const parts=path.split('/');if(parts.length<2){showToast('Path must be collection/docId','warn');return;}
+const{doc,setDoc}=window._fsModules;
+try{await setDoc(doc(window._db,...parts),data,mode==='merge'?{merge:true}:{});termLog(`\u2713 fs.${mode}("${path}") success`,'ok');addAudit(`Firestore ${mode}: ${path}`,JSON.stringify(data).substring(0,80),'write');pushActivity(`${path} ${mode}d`,'write');showToast(`Document ${mode==='merge'?'merged':'set'} successfully`);}
+catch(e){termLog('\u2717 '+e.message,'err');showToast(e.message,'err');}
+}
+async function fsDelete(){
+if(!window._db){showToast('Firestore not ready','err');return;}
+const path=document.getElementById('fs-write-path').value.trim();
+if(!path){showToast('Enter document path','warn');return;}
+const conf=await Swal.fire({title:'Delete Document?',text:'Path: '+path,icon:'warning',showCancelButton:true,confirmButtonText:'Yes, Delete',confirmButtonColor:'#dc2626',cancelButtonText:'Cancel',background:'#0f1e35',color:'#e2e8f0'});
+if(!conf.isConfirmed)return;
+const parts=path.split('/');const{doc,deleteDoc}=window._fsModules;
+try{await deleteDoc(doc(window._db,...parts));termLog(`\u2713 fs.delete("${path}") success`,'ok');addAudit(`Firestore Delete: ${path}`,'Document deleted','delete');pushActivity(`${path} deleted`,'delete');showToast('Document deleted');}
+catch(e){termLog('\u2717 '+e.message,'err');showToast(e.message,'err');}
+}
+/* ===== DRIVE ===== */
+function loadDriveConfig(){const g=document.getElementById('drv-gas-url'),r=document.getElementById('drv-root-folder'),e=document.getElementById('drv-email'),l=document.getElementById('drv-open-folder');if(g)g.value=window._gasUrl||'';if(r)r.value=window._rootFolder||'';if(e)e.value=window._driveEmail||'';if(l&&window._rootFolder)l.href=`https://drive.google.com/drive/folders/${window._rootFolder}`;driveTerm('Drive config loaded.','ok');checkGasPing();}
+async function testGasEndpoint(){driveTerm('Pinging GAS endpoint\u2026','info');addAudit('Drive: Ping GAS',(window._gasUrl||'').substring(0,60),'drive');await checkGasPing();}
+async function checkGasPing(){const url=document.getElementById('drv-gas-url')?.value||window._gasUrl;if(!url){driveTerm('GAS URL not set','err');return;}const t0=Date.now();try{const r=await fetch(url+'?action=ping',{method:'GET'});const ms=Date.now()-t0;if(r.ok){driveTerm(`\u2713 GAS endpoint reachable (${ms}ms)`,'ok');document.getElementById('sc-drive-sub').innerHTML=`<span class="sub-ok"><i class="fas fa-circle" style="font-size:7px"></i> ${ms}ms</span>`;showToast('GAS reachable ('+ms+'ms)');}else{driveTerm(`\u26a0 GAS returned HTTP ${r.status}`,'warn');document.getElementById('sc-drive-sub').innerHTML=`<span class="sub-warn">HTTP ${r.status}</span>`;}}catch(e){driveTerm('\u2717 GAS unreachable: '+e.message,'err');document.getElementById('sc-drive-sub').innerHTML='<span class="sub-error">Unreachable</span>';}}
+function driveTerm(msg,type='info'){const el=document.getElementById('driveTerm');if(!el)return;const cls=type==='ok'?'t-ok':type==='err'?'t-err':type==='warn'?'t-warn':'t-info';const now=new Date().toLocaleTimeString('th-TH');el.innerHTML+=`<div class="t-line"><span class="t-time">[${now}]</span><span class="${cls}">${msg}</span></div>`;el.scrollTop=el.scrollHeight;}
+function handleSandboxFile(input){const file=input.files[0];if(!file)return;uploadToSandbox(file,document.getElementById('drv-subfolder').value||'__dev_sandbox__');}
+async function uploadToSandbox(file,subfolder){
+const progress=document.getElementById('sandboxProgress'),nameEl=document.getElementById('drv-prog-name'),pctEl=document.getElementById('drv-prog-pct'),bar=document.getElementById('drv-prog-bar'),speedEl=document.getElementById('drv-prog-speed');
+progress.style.display='flex';nameEl.textContent=file.name;bar.style.width='0%';pctEl.textContent='0%';
+driveTerm(`Starting upload: ${file.name} (${(file.size/1024).toFixed(1)} KB)`,'info');addAudit('Drive: Sandbox Upload',file.name,'drive');
+const gasUrl=document.getElementById('drv-gas-url').value||window._gasUrl;
+try{const urlRes=await fetch(`${gasUrl}?action=getUploadUrl&fileName=${encodeURIComponent(file.name)}&mimeType=${encodeURIComponent(file.type)}&folder=${encodeURIComponent(subfolder)}`,{method:'GET'});const urlData=await urlRes.json();if(urlData.error){driveTerm('\u2717 '+urlData.error,'err');showToast(urlData.error,'err');return;}const uploadUrl=urlData.uploadUrl||urlData.url||urlData.location;driveTerm('\u2713 Upload URL obtained','ok');const CHUNK=256*1024;let start=0;const t0=Date.now();while(start<file.size){const end=Math.min(start+CHUNK,file.size);const chunk=file.slice(start,end);await fetch(uploadUrl,{method:'PUT',headers:{'Content-Range':`bytes ${start}-${end-1}/${file.size}`,'Content-Type':file.type},body:chunk});const pct=Math.round(end/file.size*100);const speed=(end/1024/((Date.now()-t0)/1000)).toFixed(0);bar.style.width=pct+'%';pctEl.textContent=pct+'%';speedEl.textContent=speed+' KB/s';start+=CHUNK;}driveTerm(`\u2713 Upload complete: ${file.name}`,'ok');showToast('File uploaded to Drive sandbox');pushActivity('File uploaded: '+file.name,'upload');}
+catch(e){driveTerm('\u2717 Upload failed: '+e.message,'err');showToast(e.message,'err');}
+}
+const dz=document.getElementById('devDropzone');
+if(dz){dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)uploadToSandbox(f,document.getElementById('drv-subfolder').value||'__dev_sandbox__');});}
+/* ===== CONFIG ===== */
+function loadActiveConfig(){const body=document.getElementById('configViewBody');if(!body)return;const cfg=window._cfg||{};const entries=[['apiKey','API Key','sec'],['authDomain','Auth Domain','info'],['projectId','Project ID','env'],['storageBucket','Storage Bucket','env'],['messagingSenderId','Sender ID','info'],['appId','App ID','info']];body.innerHTML=entries.map(([k,label,badge])=>`<div class="config-row"><span class="config-key">${label}</span><div class="config-val"><input class="form-control mono" value="${cfg[k]||'\u2014'}" readonly style="font-size:11.5px"></div><span class="config-badge cfg-${badge}">${badge.toUpperCase()}</span></div>`).join('')+`<div class="config-row"><span class="config-key">GAS URL</span><div class="config-val"><input class="form-control mono" value="${window._gasUrl||'\u2014'}" readonly style="font-size:11px"></div><span class="config-badge cfg-env">ENV</span></div><div class="config-row"><span class="config-key">Drive Root Folder</span><div class="config-val"><input class="form-control mono" value="${window._rootFolder||'\u2014'}" readonly></div><span class="config-badge cfg-info">INFO</span></div>`;}
+function loadEnvInfo(){const grid=document.getElementById('envInfoGrid');if(!grid)return;const infos=[['Browser',navigator.userAgent.split(' ').slice(-2).join(' '),'cyan'],['Language',navigator.language||'\u2014','green'],['Screen',`${screen.width}\u00d7${screen.height}`,'amber'],['Online',navigator.onLine?'\u2713 Online':'\u2717 Offline',navigator.onLine?'green':'red'],['Cookies',navigator.cookieEnabled?'Enabled':'Disabled','purple'],['Platform',navigator.platform||'\u2014','orange']];grid.innerHTML=infos.map(([k,v,c])=>`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px"><div class="stat-label" style="margin-bottom:6px">${k}</div><div class="text-${c} font-bold" style="font-size:13px;font-family:var(--mono);word-break:break-all">${v}</div></div>`).join('');}
+function saveOverrides(){try{const raw=document.getElementById('cfg-flags').value;const obj=JSON.parse(raw);localStorage.setItem('mentra_dev_overrides',JSON.stringify(obj));addAudit('Config: Save Overrides','Feature flags updated','config');showToast('Overrides saved to localStorage');}catch(e){showToast('Invalid JSON: '+e.message,'err');}}
+function clearOverrides(){localStorage.removeItem('mentra_dev_overrides');document.getElementById('cfg-flags').value='';addAudit('Config: Clear Overrides','All overrides removed','config');showToast('Overrides cleared');}
+function toggleFeature(key,val){let obj={};try{obj=JSON.parse(localStorage.getItem('mentra_dev_overrides')||'{}');}catch(e){}obj[key]=val;localStorage.setItem('mentra_dev_overrides',JSON.stringify(obj));document.getElementById('cfg-flags').value=JSON.stringify(obj,null,2);addAudit(`Feature Toggle: ${key}`,val?'enabled':'disabled','config');showToast(`${key}: ${val?'ON':'OFF'}`);}
+function loadToggles(){let obj={};try{obj=JSON.parse(localStorage.getItem('mentra_dev_overrides')||'{}');}catch(e){}if(document.getElementById('tog-debug'))document.getElementById('tog-debug').checked=!!obj.debugMode;if(document.getElementById('tog-beta'))document.getElementById('tog-beta').checked=!!obj.betaUI;if(document.getElementById('tog-perf'))document.getElementById('tog-perf').checked=!!obj.perfLog;if(document.getElementById('tog-push'))document.getElementById('tog-push').checked=!!obj.pushTest;const f=document.getElementById('cfg-flags');if(f&&Object.keys(obj).length)f.value=JSON.stringify(obj,null,2);}
+/* ===== TERMINAL ===== */
+const TERM_CMDS={
+help:()=>{[['\u250c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510','cyan'],['\u2502   Mentra Dev Console Commands        \u2502','cyan'],['\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518','cyan'],['  ping firebase   -- Check Firebase','ok'],['  ping gas        -- Check GAS endpoint','ok'],['  ls collections  -- List all collections','ok'],['  count <col>     -- Count docs in collection','ok'],['  auth status     -- Show auth state','ok'],['  whoami          -- Current user info','ok'],['  ls overrides    -- Show dev overrides','ok'],['  check latency   -- Measure Firestore latency','ok'],['  version         -- Show system version','ok'],['  clear           -- Clear terminal','ok']].forEach(([t,c])=>termLog(t,c));},
+'ping firebase':async()=>{termLog('Pinging Firebase Firestore\u2026','info');if(!window._db){termLog('\u2717 Firestore not available','err');return;}const t0=Date.now();try{const{collection,getDocs}=window._fsModules;await getDocs(collection(window._db,'__ping_test__'));termLog(`\u2713 Firebase reachable (${Date.now()-t0}ms)`,'ok');addAudit('Terminal: ping firebase','Firestore ping success','diag');}catch(e){termLog('\u2717 Firebase error: '+e.message,'err');}},
+'ping gas':()=>testGasEndpoint(),
+'ls collections':()=>{termLog('Collections in this project:','info');KNOWN_COLS.forEach(c=>termLog('  \ud83d\uddc2 '+c,'ok'));},
+'auth status':()=>{const u=window._currentUser;if(u){termLog('\u2713 Authenticated','ok');termLog('  Email:  '+u.email,'info');termLog('  UID:    '+u.uid,'info');}else{termLog('\u2717 Not authenticated','err');}},
+'whoami':()=>{const u=window._currentUser;termLog(u?`${u.displayName||u.email}  uid=${u.uid}`:'Anonymous / not signed in','info');},
+'ls overrides':()=>{try{const obj=JSON.parse(localStorage.getItem('mentra_dev_overrides')||'{}');if(!Object.keys(obj).length){termLog('No overrides set','warn');return;}Object.entries(obj).forEach(([k,v])=>termLog(`  ${k}: ${JSON.stringify(v)}`,'ok'));}catch(e){termLog('\u2717 Could not parse overrides','err');}},
+'check latency':async()=>{if(!window._db){termLog('\u2717 Firestore not ready','err');return;}termLog('Measuring Firestore latency (3 pings)\u2026','info');const{collection,getDocs}=window._fsModules;for(let i=1;i<=3;i++){const t=Date.now();try{await getDocs(collection(window._db,'__ping__'));termLog(`  Ping ${i}: ${Date.now()-t}ms`,'ok');}catch(e){termLog(`  Ping ${i}: error - ${e.message}`,'err');}}},
+'version':()=>{termLog('Mentra Manager \u2014 Developer Console v3.0.0 \u221e','cyan');termLog('Build: FULL_OPTION_DARK | Firebase 10.12 | Chart.js 4.4','info');},
+'clear':()=>clearTerminal(),
+};
+async function countCmd(col){if(!window._db){termLog('\u2717 Firestore not ready','err');return;}const{collection,getDocs}=window._fsModules;try{const snap=await getDocs(collection(window._db,col));termLog(`\u2713 ${col}: ${snap.size} documents`,'ok');}catch(e){termLog('\u2717 '+e.message,'err');}}
+function termLog(msg,type='info'){const body=document.getElementById('termBody');if(!body)return;const cls=type==='ok'?'t-ok':type==='err'?'t-err':type==='warn'?'t-warn':type==='cyan'?'t-cyan':'t-info';const now=new Date().toLocaleTimeString('th-TH');body.innerHTML+=`<div class="t-line"><span class="t-time">[${now}]</span><span class="${cls}">${msg}</span></div>`;body.scrollTop=body.scrollHeight;}
+async function handleTermInput(e){if(e.key==='ArrowUp'){termHistIdx=Math.min(termHistIdx+1,termHistory.length-1);if(termHistory[termHistIdx])e.target.value=termHistory[termHistIdx];}if(e.key==='ArrowDown'){termHistIdx=Math.max(termHistIdx-1,-1);e.target.value=termHistIdx>=0?termHistory[termHistIdx]:'';}if(e.key!=='Enter')return;const cmd=e.target.value.trim();if(!cmd)return;e.target.value='';termHistory.unshift(cmd);termHistIdx=-1;termLog('$ '+cmd,'cyan');if(TERM_CMDS[cmd])await TERM_CMDS[cmd]();else if(cmd.startsWith('count '))await countCmd(cmd.replace('count ','').trim());else termLog(`Command not found: "${cmd}". Type "help".`,'warn');}
+async function runQuickCmd(cmd){switchTab('terminal',document.querySelectorAll('.tab-btn')[4]);setTimeout(async()=>{termLog('$ '+cmd,'cyan');if(TERM_CMDS[cmd])await TERM_CMDS[cmd]();else if(cmd.startsWith('count '))await countCmd(cmd.replace('count ','').trim());},100);}
+function clearTerminal(){const body=document.getElementById('termBody');if(body)body.innerHTML='';termLog('Terminal cleared.','info');}
+function downloadTerminalLog(){const body=document.getElementById('termBody');const text=body?body.innerText:'';const blob=new Blob([text],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`mentra_terminal_${Date.now()}.log`;a.click();}
+/* ===== DIAGNOSTICS ===== */
+async function runAllDiagnostics(){addAudit('System Diagnostics Run','Full diagnostic sweep','diag');showToast('Running diagnostics\u2026','warn');switchTab('terminal',document.querySelectorAll('.tab-btn')[4]);termLog('\u2550\u2550\u2550 FULL SYSTEM DIAGNOSTICS \u2550\u2550\u2550','cyan');await TERM_CMDS['ping firebase']();await TERM_CMDS['ping gas']();await TERM_CMDS['auth status']();await TERM_CMDS['ls collections']();await TERM_CMDS['check latency']();termLog('\u2550\u2550\u2550 DIAGNOSTICS COMPLETE \u2550\u2550\u2550','cyan');showToast('Diagnostics complete');}
+/* ===== BATCH TOOLS ===== */
+async function batchExport(){if(!window._db){showToast('Firestore not ready','err');return;}const col=document.getElementById('batch-export-col').value,fmt=document.getElementById('batch-export-fmt').value;showToast(`Exporting ${col}\u2026`,'warn');addAudit('Batch Export: '+col,'format: '+fmt,'query');const{collection,getDocs}=window._fsModules;try{const snap=await getDocs(collection(window._db,col));const docs=snap.docs.map(d=>({id:d.id,...d.data()}));let content,mime,ext;if(fmt==='json'){content=JSON.stringify(docs,null,2);mime='application/json';ext='json';}else{if(!docs.length){showToast('No documents to export','warn');return;}const keys=Object.keys(docs[0]);content=keys.join(',')+'\n'+docs.map(d=>keys.map(k=>JSON.stringify(d[k]??'')).join(',')).join('\n');mime='text/csv';ext='csv';}const blob=new Blob([content],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${col}_export_${Date.now()}.${ext}`;a.click();showToast(`${col} exported (${docs.length} docs)`);}catch(e){showToast(e.message,'err');}}
+async function batchUpdate(){const col=document.getElementById('bu-col').value.trim(),wf=document.getElementById('bu-where-field').value.trim(),wv=document.getElementById('bu-where-val').value.trim(),sf=document.getElementById('bu-set-field').value.trim();let sv=document.getElementById('bu-set-val').value.trim();if(!col||!wf||!wv||!sf||!sv){showToast('All fields required','warn');return;}if(sv==='now')sv=new Date().toISOString();const conf=await Swal.fire({title:'Batch Update?',html:`<div style="color:#94a3b8;font-size:13px">Collection: <b style="color:#38bdf8">${col}</b><br>Where <b style="color:#fbbf24">${wf}</b> == <b style="color:#fbbf24">${wv}</b><br>Set <b style="color:#34d399">${sf}</b> = <b style="color:#34d399">${sv}</b></div>`,icon:'warning',showCancelButton:true,confirmButtonText:'Run Update',confirmButtonColor:'#dc2626',background:'#0f1e35',color:'#e2e8f0'});if(!conf.isConfirmed)return;if(!window._db){showToast('Firestore not ready','err');return;}const{collection,getDocs,doc,setDoc,query,where}=window._fsModules;try{const q=query(collection(window._db,col),where(wf,'==',wv));const snap=await getDocs(q);let count=0;for(const d of snap.docs){await setDoc(doc(window._db,col,d.id),{[sf]:sv},{merge:true});count++;}addAudit('Batch Update: '+col,`${count} docs (${wf}=${wv})`,'write');showToast(`Updated ${count} documents`);}catch(e){showToast(e.message,'err');}}
+async function deleteSandbox(){const conf=await Swal.fire({title:'Delete Sandbox?',text:'This will delete all documents in __dev_sandbox__',icon:'warning',showCancelButton:true,confirmButtonText:'Delete All',confirmButtonColor:'#dc2626',background:'#0f1e35',color:'#e2e8f0'});if(!conf.isConfirmed)return;showToast('Sandbox cleared (simulated)','warn');addAudit('Batch Delete: __dev_sandbox__','All sandbox documents deleted','delete');}
+function clearAllLocalStorage(){Swal.fire({title:'Clear ALL localStorage?',text:'This will remove all Mentra data cached in this browser.',icon:'warning',showCancelButton:true,confirmButtonText:'Clear All',confirmButtonColor:'#dc2626',background:'#0f1e35',color:'#e2e8f0'}).then(r=>{if(r.isConfirmed){localStorage.clear();addAudit('Clear localStorage','All localStorage cleared','config');showToast('localStorage cleared');}});}
+function cloneCollection(){Swal.fire({title:'Clone Collection',html:`<input id="cc-src" placeholder="source" class="swal2-input" style="background:#142040;border-color:#1e3a5f;color:#e2e8f0"><input id="cc-dst" placeholder="destination" class="swal2-input" style="background:#142040;border-color:#1e3a5f;color:#e2e8f0">`,background:'#0f1e35',color:'#e2e8f0',showCancelButton:true,confirmButtonText:'Clone',confirmButtonColor:'#1A6FBF',preConfirm:()=>({src:document.getElementById('cc-src').value,dst:document.getElementById('cc-dst').value})}).then(async r=>{if(!r.isConfirmed||!r.value.src||!r.value.dst)return;showToast(`Cloning ${r.value.src} \u2192 ${r.value.dst} (simulated)`,'warn');addAudit('Clone Collection',`${r.value.src} \u2192 ${r.value.dst}`,'write');});}
+/* ===== EXPORT REPORT ===== */
+function exportReport(){const report={generated:new Date().toISOString(),project:window._cfg?.projectId||'\u2014',collections:colCounts,auditLog,overrides:JSON.parse(localStorage.getItem('mentra_dev_overrides')||'{}'),env:{browser:navigator.userAgent,language:navigator.language,online:navigator.onLine}};const blob=new Blob([JSON.stringify(report,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`mentra_dev_report_${Date.now()}.json`;a.click();addAudit('Export Report','Full diagnostic report downloaded','diag');showToast('Report downloaded');}
+/* ===== BOOT ===== */
+function boot(){initCharts();termLog('Mentra Manager \u2014 Developer Console v3.0.0 \u221e','cyan');termLog('Build: FULL_OPTION_DARK | Firebase 10.12 | Chart.js 4.4','info');termLog('Type "help" for available commands.','warn');loadDriveConfig();loadActiveConfig();loadEnvInfo();loadToggles();setTimeout(refreshCollections,800);pushActivity('Developer Console initialized','auth');}
+if(window._fsReady)boot();else document.addEventListener('fsReady',boot);
+</script>
+</body>
+</html>
