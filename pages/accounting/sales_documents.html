@@ -29,6 +29,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Mentra App UI & Sidebars -->
     <link rel="stylesheet" href="../../assets/css/app-ui.css">
@@ -1100,9 +1102,14 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn-table-action" onclick="closeDocModal()">
-                    <i class='bx bx-x'></i> ปิดหน้าต่าง
-                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn-table-action" onclick="closeDocModal()">
+                        <i class='bx bx-x'></i> ปิดหน้าต่าง
+                    </button>
+                    <button type="button" class="btn-table-action" style="color: #ef4444; border-color: #fecdd3; background: #fff1f2;" onclick="deleteModalDoc()" title="ลบเอกสารนี้">
+                        <i class='bx bx-trash'></i> ลบเอกสาร
+                    </button>
+                </div>
                 <div style="display: flex; gap: 8px;">
                     <button type="button" class="btn-table-action" onclick="printModalDoc()">
                         <i class='bx bx-printer'></i> พิมพ์เอกสาร
@@ -1120,7 +1127,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
-            initializeFirestore, doc, getDoc, collection, getDocs, query, orderBy, deleteDoc,
+            initializeFirestore, doc, getDoc, collection, getDocs, query, orderBy, where, deleteDoc,
             persistentLocalCache, persistentMultipleTabManager
         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -1596,28 +1603,187 @@
             window.location.href = `quotation.html?docType=${encodeURIComponent(type)}&loadPending=true`;
         };
 
-        // Delete document
+        // Delete document modal from detail view
+        window.deleteModalDoc = function() {
+            if (currentModalDocIndex !== null) {
+                const idx = currentModalDocIndex;
+                closeDocModal();
+                deleteDocument(idx);
+            }
+        };
+
+        // Delete document with beautiful popup & multi-collection cleanup
         window.deleteDocument = async function(index) {
             const d = filteredDocuments[index];
             if (!d) return;
 
-            if (!confirm(`คุณต้องการลบประวัติเอกสาร ${d.refNo || ''} (${d.toCompany || ''}) ใช่หรือไม่?`)) return;
+            const type = d.docType || (d.refNo?.startsWith('MTI') ? 'invoice' : (d.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
+            let typeLabel = '📄 ใบเสนอราคา';
+            let badgeColor = '#2563eb';
+            let badgeBg = '#eff6ff';
+            let badgeBorder = '#bfdbfe';
+            if (type === 'invoice') {
+                typeLabel = '📋 ใบส่งของ / ใบแจ้งหนี้';
+                badgeColor = '#b45309';
+                badgeBg = '#fffbeb';
+                badgeBorder = '#fde68a';
+            } else if (type === 'receipt') {
+                typeLabel = '🧾 ใบเสร็จรับเงิน';
+                badgeColor = '#047857';
+                badgeBg = '#f0fdf4';
+                badgeBorder = '#bbf7d0';
+            }
+
+            const grandTotalNum = parseFloat(String(d.grandTotal || '0').replace(/,/g, '')) || 0;
+            const formattedTotal = formatNumber(grandTotalNum);
+
+            if (typeof Swal !== 'undefined') {
+                const result = await Swal.fire({
+                    title: 'ยืนยันการลบเอกสาร?',
+                    html: `
+                        <div style="text-align: left; font-size: 0.95rem; color: #334155; line-height: 1.6;">
+                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="font-size: 1.2rem; font-weight: 800; color: #1A6FBF; letter-spacing: 0.5px; font-family: 'Prompt', 'Kanit', sans-serif;">${escapeHtml(d.refNo || '-')}</span>
+                                    <span style="display: inline-block; padding: 3px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700; color: ${badgeColor}; background: ${badgeBg}; border: 1px solid ${badgeBorder};">
+                                        ${typeLabel}
+                                    </span>
+                                </div>
+                                <div style="color: #475569; font-size: 0.9rem; margin-bottom: 4px;">
+                                    <i class='bx bx-user' style="margin-right: 5px; color: #94a3b8; font-size: 1.05rem; vertical-align: middle;"></i>
+                                    <b>ลูกค้า:</b> ${escapeHtml(d.toCompany || '-')}
+                                </div>
+                                <div style="color: #475569; font-size: 0.9rem; margin-bottom: 4px;">
+                                    <i class='bx bx-calendar' style="margin-right: 5px; color: #94a3b8; font-size: 1.05rem; vertical-align: middle;"></i>
+                                    <b>วันที่:</b> ${d.docDate || '-'}
+                                </div>
+                                <div style="color: #059669; font-size: 1.1rem; font-weight: 800; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">ยอดเงินรวมทั้งสิ้น:</span>
+                                    <span>฿${formattedTotal}</span>
+                                </div>
+                            </div>
+                            <div style="background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 10px 14px; color: #b91c1c; font-size: 0.85rem; display: flex; align-items: flex-start; gap: 8px;">
+                                <i class='bx bx-error-circle' style="font-size: 1.25rem; flex-shrink: 0; margin-top: 1px;"></i>
+                                <div><b>ข้อควรระวัง:</b> เมื่อลบแล้ว ประวัติเอกสารนี้จะถูกลบออกจากฐานข้อมูลอย่างถาวรและไม่สามารถกู้คืนได้</div>
+                            </div>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    iconColor: '#ef4444',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: '<i class="bx bx-trash" style="margin-right: 5px;"></i> ลบเอกสารนี้',
+                    cancelButtonText: 'ยกเลิก',
+                    reverseButtons: true,
+                    focusCancel: true,
+                    customClass: {
+                        popup: 'mentra-swal-popup'
+                    }
+                });
+                if (!result.isConfirmed) return;
+            } else {
+                if (!confirm(`คุณต้องการลบประวัติเอกสาร ${d.refNo || ''} (${d.toCompany || ''}) ใช่หรือไม่?\n(เมื่อลบแล้วจะไม่สามารถกู้คืนได้)`)) return;
+            }
 
             try {
-                // Delete from central collection
-                if (d.id) {
-                    await deleteDoc(doc(db, 'users', currentUser.uid, 'sales_documents', d.id));
-                }
-                // Also delete from type collection if exists
-                if (d._collection && d._collection !== 'sales_documents' && d.id) {
-                    await deleteDoc(doc(db, 'users', currentUser.uid, d._collection, d.id));
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'กำลังลบเอกสาร...',
+                        html: '<div style="color: #64748b; font-size: 0.9rem;">ระบบกำลังนำข้อมูลออกจากฐานข้อมูล</div>',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
                 }
 
-                alert('ลบเอกสารเรียบร้อยแล้ว');
-                await loadAllDocuments();
+                if (!currentUser) {
+                    throw new Error("ไม่พบข้อมูลผู้ใช้งาน กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+                }
+
+                // 1. Delete by direct ID from source collection if present
+                if (d._collection && d.id) {
+                    try {
+                        await deleteDoc(doc(db, 'users', currentUser.uid, d._collection, d.id));
+                        console.log(`Deleted document ${d.id} from ${d._collection}`);
+                    } catch (errCol) {
+                        console.warn(`Could not delete from ${d._collection} by id:`, errCol);
+                    }
+                }
+
+                // 2. Also ensure deletion across all document collections by refNo
+                const collectionsToClean = ['sales_documents', 'quotations_history', 'invoices_history', 'receipts_history'];
+                if (d.refNo) {
+                    for (const colName of collectionsToClean) {
+                        try {
+                            const colRef = collection(db, 'users', currentUser.uid, colName);
+                            const qRef = query(colRef, where('refNo', '==', d.refNo));
+                            const snapRef = await getDocs(qRef);
+                            const delJobs = [];
+                            snapRef.forEach(docItem => {
+                                delJobs.push(deleteDoc(docItem.ref));
+                            });
+                            if (delJobs.length > 0) {
+                                await Promise.all(delJobs);
+                                console.log(`Deleted ${delJobs.length} doc(s) with refNo ${d.refNo} from ${colName}`);
+                            }
+                        } catch (colErr) {
+                            console.warn(`Could not clean refNo ${d.refNo} from ${colName}:`, colErr);
+                        }
+                    }
+                }
+
+                // 3. Fallback: If id exists and wasn't caught, try deleting from sales_documents directly
+                if (d.id && d._collection !== 'sales_documents') {
+                    try {
+                        await deleteDoc(doc(db, 'users', currentUser.uid, 'sales_documents', d.id));
+                    } catch(e) {}
+                }
+
+                // 4. Remove from in-memory arrays immediately for instantaneous feedback
+                const targetRefNo = d.refNo;
+                const targetId = d.id;
+                allDocuments = allDocuments.filter(item => {
+                    if (targetId && item.id === targetId) return false;
+                    if (targetRefNo && item.refNo === targetRefNo) return false;
+                    return true;
+                });
+                filteredDocuments = filteredDocuments.filter(item => {
+                    if (targetId && item.id === targetId) return false;
+                    if (targetRefNo && item.refNo === targetRefNo) return false;
+                    return true;
+                });
+
+                // 5. Update KPI and re-render
+                updateKPICards();
+                applyFilters();
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ลบเอกสารสำเร็จ',
+                        html: `เอกสารเลขที่ <b>${escapeHtml(d.refNo || '')}</b> ถูกลบออกจากระบบเรียบร้อยแล้ว`,
+                        timer: 2000,
+                        showConfirmButton: false,
+                        timerProgressBar: true
+                    });
+                } else {
+                    alert('ลบเอกสารเรียบร้อยแล้ว');
+                }
+
             } catch (err) {
                 console.error("Error deleting document:", err);
-                alert('เกิดข้อผิดพลาดในการลบเอกสาร');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาดในการลบเอกสาร',
+                        text: err.message || 'โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง',
+                        confirmButtonColor: '#1A6FBF'
+                    });
+                } else {
+                    alert('เกิดข้อผิดพลาดในการลบเอกสาร: ' + err.message);
+                }
             }
         };
 

@@ -1154,17 +1154,25 @@
                             <i class="fa-solid fa-share-nodes"></i>
                             <span>แชร์ลิงก์</span>
                         </button>
-                        <button onclick="appData.openQuotationForProject()" class="h-10 px-4 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ออกใบเสนอราคาสำหรับโครงการนี้">
-                            <i class="fa-solid fa-file-invoice-dollar"></i>
-                            <span class="hidden sm:inline">ออกใบเสนอราคา</span>
+                        <!-- Primary Workflow Action (Dynamic: ออกใบเสนอราคา / ออกใบส่งของ / ออกใบเสร็จรับเงิน) -->
+                        <button id="btn-main-workflow-doc" onclick="appData.handleMainWorkflowAction()" class="h-10 px-4 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="เปิดเอกสารขั้นตอนปัจจุบัน">
+                            <i class="fa-solid fa-file-invoice-dollar" id="btn-main-workflow-icon"></i>
+                            <span class="hidden sm:inline" id="btn-main-workflow-text">ออกใบเสนอราคา</span>
                         </button>
-                        <button id="btn-confirm-quotation" onclick="appData.confirmQuotation()" class="h-10 px-4 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ยืนยันใบเสนอราคาและไปขั้นตอนถัดไป">
+                        <!-- Confirm Step Action (Dynamic: ยืนยันใบเสนอราคา / ยืนยันใบส่งของ / ยืนยันเสร็จสมบูรณ์) -->
+                        <button id="btn-confirm-workflow-step" onclick="appData.handleWorkflowStepConfirm()" class="h-10 px-4 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ยืนยันขั้นตอนปัจจุบันเพื่อไปขั้นตอนถัดไป">
                             <i class="fa-solid fa-circle-check"></i>
-                            <span class="hidden sm:inline">ยืนยันใบเสนอราคา</span>
+                            <span class="hidden sm:inline" id="btn-confirm-workflow-text">ยืนยันใบเสนอราคา</span>
                         </button>
-                        <button id="btn-cancel-quotation" onclick="appData.cancelQuotationConfirmation()" class="h-10 px-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="ยกเลิกการยืนยันเพื่อกลับไปเสนอราคาใหม่">
+                        <!-- View Previous Confirmed Step (Read-Only) -->
+                        <button id="btn-view-previous-step" onclick="appData.openPreviousConfirmedDoc()" class="h-10 px-3.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="เปิดดูเอกสารที่ยืนยันแล้วก่อนหน้า">
+                            <i class="fa-solid fa-eye text-slate-500"></i>
+                            <span class="hidden sm:inline" id="btn-view-previous-text">ดูเอกสารก่อนหน้า</span>
+                        </button>
+                        <button id="btn-cancel-quotation" onclick="appData.cancelStepConfirmation()" class="h-10 px-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="ย้อนกลับขั้นตอนก่อนหน้า (ต้องยืนยัน)">
                             <i class="fa-solid fa-rotate-left"></i>
-                            <span class="hidden sm:inline">ยกเลิกการยืนยัน</span>
+                            <span class="hidden sm:inline" id="btn-cancel-quotation-text">ย้อนกลับ</span>
+                        </button>
                         <button id="btn-edit-project" onclick="appData.openEditProjectModal()" class="w-10 h-10 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-100 hover:text-brand-700 transition-colors flex items-center justify-center shadow-sm" title="แก้ไขรายละเอียดโครงการ">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
@@ -4411,18 +4419,59 @@
                 if (proj.activityLog.length > 200) proj.activityLog = proj.activityLog.slice(0, 200);
             },
 
-            updateWorkflowUI(proj) {
+            getProjectWorkflowBadge(proj) {
+                if (!proj) return '';
                 this._ensureDocWorkflow(proj);
                 const wf = proj.docWorkflow;
                 const step = wf.currentStep || 1;
 
+                if (wf.isCompleted || (wf.receipt && wf.receipt.status === 'confirmed')) {
+                    return `
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs" title="เอกสารออกครบทั้ง 3 ขั้นตอนเรียบร้อยแล้ว">
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i> เสร็จสิ้น: ออกใบเสร็จแล้ว
+                        </span>
+                    `;
+                } else if (step === 3 || (wf.invoice && wf.invoice.status === 'confirmed')) {
+                    return `
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 shadow-2xs" title="ยืนยันใบส่งของแล้ว รอออกใบเสร็จรับเงิน">
+                            <i class="fa-solid fa-receipt text-purple-500"></i> ขั้นที่ 3: รอออกใบเสร็จรับเงิน
+                        </span>
+                    `;
+                } else if (step === 2 || (wf.quotation && wf.quotation.status === 'confirmed')) {
+                    return `
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs" title="ยืนยันใบเสนอราคาแล้ว รอออกใบส่งของ/ใบแจ้งหนี้">
+                            <i class="fa-solid fa-truck-ramp-box text-blue-500"></i> ขั้นที่ 2: รอออกใบส่งของ/แจ้งหนี้
+                        </span>
+                    `;
+                } else if (wf.quotation && wf.quotation.status === 'draft' && (wf.quotation.docNumber || wf.quotation.openedAt)) {
+                    return `
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs" title="กำลังร่างใบเสนอราคา">
+                            <i class="fa-solid fa-file-invoice-dollar text-amber-500"></i> ขั้นที่ 1: กำลังทำใบเสนอราคา
+                        </span>
+                    `;
+                } else {
+                    return `
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 shadow-2xs" title="ยังไม่มีการออกเอกสาร">
+                            <i class="fa-regular fa-file text-slate-400"></i> ยังไม่ออกเอกสาร
+                        </span>
+                    `;
+                }
+            },
+
+            updateWorkflowUI(proj) {
+                this._ensureDocWorkflow(proj);
+                const wf = proj.docWorkflow;
+                const step = wf.currentStep || 1;
+                const isCompleted = !!wf.isCompleted || (wf.receipt && wf.receipt.status === 'confirmed');
+
+                // Update stepper visual
                 for (let i = 1; i <= 3; i++) {
                     const stepEl = document.getElementById(`wf-step-${i}`);
                     const statusEl = document.getElementById(`wf-status-${i}`);
                     if (!stepEl) continue;
 
                     stepEl.classList.remove('active', 'completed', 'disabled');
-                    if (i < step) {
+                    if (isCompleted || i < step) {
                         stepEl.classList.add('completed');
                         if (statusEl) statusEl.textContent = 'ยืนยันแล้ว ✓';
                     } else if (i === step) {
@@ -4433,57 +4482,297 @@
                         if (statusEl) statusEl.textContent = 'รอดำเนินการ';
                     }
                 }
+                // Connectors
                 const conn1 = document.getElementById('wf-connector-1');
                 const conn2 = document.getElementById('wf-connector-2');
-                if (conn1) conn1.classList.toggle('completed', step > 1);
-                if (conn2) conn2.classList.toggle('completed', step > 2);
+                if (conn1) conn1.classList.toggle('completed', isCompleted || step > 1);
+                if (conn2) conn2.classList.toggle('completed', isCompleted || step > 2);
 
-                const btnConfirmQ = document.getElementById('btn-confirm-quotation');
-                const btnCancelQ = document.getElementById('btn-cancel-quotation');
-                const btnGoInvoice = document.getElementById('btn-goto-invoice');
-                const btnGoReceipt = document.getElementById('btn-goto-receipt');
+                // Smart Action Buttons in Header
+                const mainBtn = document.getElementById('btn-main-workflow-doc');
+                const mainBtnIcon = document.getElementById('btn-main-workflow-icon');
+                const mainBtnText = document.getElementById('btn-main-workflow-text');
+                const confirmBtn = document.getElementById('btn-confirm-workflow-step');
+                const confirmBtnText = document.getElementById('btn-confirm-workflow-text');
+                const viewPrevBtn = document.getElementById('btn-view-previous-step');
+                const viewPrevText = document.getElementById('btn-view-previous-text');
+                const cancelBtn = document.getElementById('btn-cancel-quotation');
+                const cancelBtnText = document.getElementById('btn-cancel-quotation-text');
 
-                if (btnConfirmQ) btnConfirmQ.classList.toggle('hidden', wf.quotation.status === 'confirmed');
-                if (btnCancelQ) btnCancelQ.classList.toggle('hidden', wf.quotation.status !== 'confirmed');
-                if (btnGoInvoice) btnGoInvoice.classList.toggle('hidden', step < 2);
-                if (btnGoReceipt) btnGoReceipt.classList.toggle('hidden', step < 3);
+                if (mainBtn && mainBtnText && mainBtnIcon) {
+                    if (isCompleted) {
+                        mainBtnIcon.className = 'fa-solid fa-circle-check text-emerald-500';
+                        mainBtnText.textContent = 'ดูเอกสาร (เสร็จสมบูรณ์)';
+                        mainBtn.title = 'ดูใบเสร็จรับเงินและเอกสารทั้งหมด';
+                    } else if (step === 3) {
+                        mainBtnIcon.className = 'fa-solid fa-receipt text-purple-600';
+                        mainBtnText.textContent = 'ออกใบเสร็จรับเงิน';
+                        mainBtn.title = 'ไปยังขั้นตอนที่ 3: ใบเสร็จรับเงิน';
+                    } else if (step === 2) {
+                        mainBtnIcon.className = 'fa-solid fa-file-invoice text-blue-600';
+                        mainBtnText.textContent = 'ออกใบส่งของ/ใบแจ้งหนี้';
+                        mainBtn.title = 'ไปยังขั้นตอนที่ 2: ใบส่งของ/ใบแจ้งหนี้';
+                    } else {
+                        mainBtnIcon.className = 'fa-solid fa-file-invoice-dollar text-brand-600';
+                        mainBtnText.textContent = wf.quotation?.status === 'confirmed' ? 'ดูใบเสนอราคา' : 'ออกใบเสนอราคา';
+                        mainBtn.title = 'ไปยังขั้นตอนที่ 1: ใบเสนอราคา';
+                    }
+                }
 
+                if (confirmBtn && confirmBtnText) {
+                    if (isCompleted) {
+                        confirmBtn.classList.add('hidden');
+                    } else if (step === 3) {
+                        confirmBtn.classList.remove('hidden');
+                        confirmBtnText.textContent = 'ยืนยันใบเสร็จ (เสร็จสมบูรณ์)';
+                    } else if (step === 2) {
+                        confirmBtn.classList.remove('hidden');
+                        confirmBtnText.textContent = 'ยืนยันใบส่งของ/แจ้งหนี้';
+                    } else {
+                        confirmBtn.classList.toggle('hidden', wf.quotation?.status === 'confirmed');
+                        confirmBtnText.textContent = 'ยืนยันใบเสนอราคา';
+                    }
+                }
+
+                if (viewPrevBtn && viewPrevText) {
+                    if (step === 2) {
+                        viewPrevBtn.classList.remove('hidden');
+                        viewPrevText.textContent = 'ดูใบเสนอราคา (ล็อค)';
+                    } else if (step === 3 || isCompleted) {
+                        viewPrevBtn.classList.remove('hidden');
+                        viewPrevText.textContent = 'ดูใบส่งของ (ล็อค)';
+                    } else {
+                        viewPrevBtn.classList.add('hidden');
+                    }
+                }
+
+                if (cancelBtn) {
+                    if (isCompleted || step === 3 || step === 2 || wf.quotation?.status === 'confirmed') {
+                        cancelBtn.classList.remove('hidden');
+                        if (cancelBtnText) cancelBtnText.textContent = 'ย้อนกลับ/รีเซ็ต (PIN)';
+                        cancelBtn.title = 'ย้อนกลับขั้นตอน หรือ รีเซ็ตกระบวนการทั้งหมด (ต้องใช้รหัส PIN 1234)';
+                    } else {
+                        cancelBtn.classList.add('hidden');
+                    }
+                }
+
+                // Update badge
                 const badge = document.getElementById('activity-count-badge');
                 if (badge) badge.textContent = (proj.activityLog || []).length;
             },
 
-            cancelQuotationConfirmation() {
+            handleMainWorkflowAction() {
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
                 this._ensureDocWorkflow(proj);
+                const step = proj.docWorkflow.currentStep || 1;
 
-                if (proj.docWorkflow.quotation.status !== 'confirmed') {
-                    this.showToast('ใบเสนอราคายังไม่ได้ยืนยัน', 'info');
+                if (step === 1) {
+                    this.openQuotationForProject();
+                } else if (step === 2) {
+                    this.goToInvoice();
+                } else if (step === 3 || proj.docWorkflow.isCompleted) {
+                    this.goToReceipt();
+                }
+            },
+
+            handleWorkflowStepConfirm() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                this._ensureDocWorkflow(proj);
+                const step = proj.docWorkflow.currentStep || 1;
+
+                if (step === 1) {
+                    this.confirmQuotation();
+                } else if (step === 2) {
+                    this.confirmInvoice();
+                } else if (step === 3) {
+                    this.confirmReceipt();
+                }
+            },
+
+            openPreviousConfirmedDoc() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                this._ensureDocWorkflow(proj);
+                const step = proj.docWorkflow.currentStep || 1;
+                const dt = step === 2 ? 'quotation' : 'invoice';
+                let shopParam = '';
+                const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                if (shopName) shopParam = `&shop=${encodeURIComponent(shopName)}`;
+
+                window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=${dt}&viewOnly=true${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=${dt}&viewOnly=true${shopParam}`;
+            },
+
+            async verifyWorkflowSecurityPin(actionDesc = 'ย้อนกลับขั้นตอนเอกสาร') {
+                if (typeof Swal === 'undefined') {
+                    const pin = prompt(`กรุณากรอกรหัสความปลอดภัย (Security PIN) 4 หลัก เพื่อ${actionDesc}:`);
+                    return pin === '1234';
+                }
+                const { value: pin } = await Swal.fire({
+                    title: '🔐 รหัสความปลอดภัย (PIN)',
+                    html: `กรุณากรอกรหัสความปลอดภัย 4 หลัก เพื่อ<b>${actionDesc}</b><br><small style="color:#64748b;">(การย้อนกลับขั้นตอนจะมีผลต่อการออกเอกสารทางการ)</small>`,
+                    input: 'password',
+                    inputPlaceholder: 'กรอกรหัส PIN 4 หลัก',
+                    inputAttributes: {
+                        maxlength: '4',
+                        autocapitalize: 'off',
+                        autocorrect: 'off',
+                        style: 'letter-spacing: 0.5em; text-align: center; font-size: 1.6rem; font-weight: bold;'
+                    },
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'ยืนยันรหัส PIN',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#2563eb',
+                    cancelButtonColor: '#64748b',
+                    customClass: { popup: 'mentra-swal-popup' },
+                    preConfirm: (val) => {
+                        if (!val) {
+                            Swal.showValidationMessage('กรุณากรอกรหัสความปลอดภัย');
+                            return false;
+                        }
+                        if (val !== '1234') {
+                            Swal.showValidationMessage('❌ รหัสความปลอดภัยไม่ถูกต้อง (PIN คือ 1234)');
+                            return false;
+                        }
+                        return val;
+                    }
+                });
+                return pin === '1234';
+            },
+
+            async cancelStepConfirmation() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                this._ensureDocWorkflow(proj);
+                const step = proj.docWorkflow.currentStep || 1;
+
+                if (step === 1 && proj.docWorkflow.quotation.status !== 'confirmed') {
+                    this.showToast('ใบเสนอราคายังไม่ได้ยืนยัน ยังอยู่ที่ขั้นตอนเริ่มต้น', 'info');
                     return;
                 }
 
-                Swal.fire({
-                    title: 'ยกเลิกการยืนยันใบเสนอราคา?',
-                    html: '<p style="color:#64748b;">ระบบจะปรับสถานะกลับมาเป็น <b>"ร่างใบเสนอราคา / รอการยืนยัน"</b><br><br><small style="color:#f59e0b;">(คุณสามารถแก้ไขและกดยืนยันใหม่ได้ทุกเมื่อ)</small></p>',
+                const prevStepName = (step === 3 || proj.docWorkflow.isCompleted) ? 'ใบส่งของ/ใบแจ้งหนี้ (ขั้นที่ 2)' : 'ใบเสนอราคา (ขั้นที่ 1)';
+
+                if (typeof Swal === 'undefined') {
+                    const pin = prompt(`กรุณากรอกรหัสความปลอดภัย PIN เพื่อย้อนกลับหรือรีเซ็ตขั้นตอน:`);
+                    if (pin !== '1234') {
+                        alert('❌ รหัสความปลอดภัยไม่ถูกต้อง');
+                        return;
+                    }
+                    if (confirm(`ต้องการย้อนกลับ 1 ขั้นตอนหรือไม่? (กดยกเลิกเพื่อรีเซ็ตทั้งหมด)`)) {
+                        if (step === 3 || proj.docWorkflow.isCompleted) {
+                            proj.docWorkflow.receipt.status = 'pending';
+                            proj.docWorkflow.invoice.status = 'draft';
+                            proj.docWorkflow.currentStep = 2;
+                            proj.docWorkflow.isCompleted = false;
+                        } else if (step === 2) {
+                            proj.docWorkflow.invoice.status = 'pending';
+                            proj.docWorkflow.quotation.status = 'draft';
+                            proj.docWorkflow.currentStep = 1;
+                        }
+                    } else {
+                        proj.docWorkflow.quotation.status = 'draft';
+                        proj.docWorkflow.quotation.confirmedAt = null;
+                        proj.docWorkflow.invoice = { status: 'pending', confirmedAt: null, confirmedBy: null, docNumber: '' };
+                        proj.docWorkflow.receipt = { status: 'pending', confirmedAt: null, confirmedBy: null, docNumber: '' };
+                        proj.docWorkflow.currentStep = 1;
+                        proj.docWorkflow.isCompleted = false;
+                    }
+                    this.syncCurrentProject();
+                    this.updateWorkflowUI(proj);
+                    return;
+                }
+
+                const { value: formValues } = await Swal.fire({
+                    title: '🔐 จัดการกระบวนการเอกสาร (Security PIN)',
+                    html: `
+                        <div style="text-align:left; font-size:0.92rem; color:#475569; margin-bottom:12px;">
+                            เลือกการกระทำที่ต้องการสำหรับโครงการนี้:
+                        </div>
+                        <div style="text-align:left; margin-bottom:16px; display:flex; flex-direction:column; gap:8px;">
+                            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px;">
+                                <input type="radio" name="wf_action_comp" value="rollback_one" checked style="margin-top:3px;">
+                                <div>
+                                    <b style="color:#1e293b;">ย้อนกลับ 1 ขั้นตอน</b><br>
+                                    <span style="font-size:0.82rem; color:#64748b;">ย้อนกลับไปแก้ไข ${prevStepName}</span>
+                                </div>
+                            </label>
+                            <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; background:#fff1f2; border:1px solid #fecdd3; border-radius:8px; padding:10px;">
+                                <input type="radio" name="wf_action_comp" value="reset_all" style="margin-top:3px;">
+                                <div>
+                                    <b style="color:#b91c1c;">รีเซ็ตกระบวนการทั้งหมด (เริ่มใหม่)</b><br>
+                                    <span style="font-size:0.82rem; color:#64748b;">รีเซ็ตทุกขั้นตอนกลับไปเริ่มต้นที่ใบเสนอราคา (ขั้นที่ 1)</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div style="text-align:left; font-size:0.88rem; font-weight:600; color:#334155; margin-bottom:6px;">
+                            ใส่รหัสความปลอดภัย (Security PIN 4 หลัก):
+                        </div>
+                        <input id="swal_wf_comp_pin" type="password" maxlength="4" placeholder="••••"
+                            style="width:100%; text-align:center; font-size:1.6rem; letter-spacing:0.5em; padding:8px; border:2px solid #cbd5e1; border-radius:8px; outline:none; font-family:monospace;"
+                            onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
+                    `,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: '<i class="fa-solid fa-rotate-left"></i> ยืนยันยกเลิก',
-                    cancelButtonText: 'ปิดหน้าต่าง',
-                    confirmButtonColor: '#ef4444',
-                    customClass: { popup: 'mentra-swal-popup' }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        proj.docWorkflow.quotation.status = 'draft';
-                        proj.docWorkflow.currentStep = 1;
-
-                        this.addActivityLog(proj, 'quotation_uncancelled', `ยกเลิกการยืนยันใบเสนอราคา (${proj.docWorkflow.quotation.docNumber || ''})`, 'fa-solid fa-rotate-left');
-
-                        this.syncCurrentProject();
-                        this.updateWorkflowUI(proj);
-
-                        this.showToast('ยกเลิกการยืนยันแล้ว สามารถกดยืนยันใหม่ได้เลย', 'success');
+                    confirmButtonText: 'ยืนยันดำเนินการ',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#2563eb',
+                    cancelButtonColor: '#64748b',
+                    customClass: { popup: 'mentra-swal-popup' },
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const selectedAction = document.querySelector('input[name="wf_action_comp"]:checked')?.value || 'rollback_one';
+                        const pinInput = document.getElementById('swal_wf_comp_pin')?.value;
+                        if (!pinInput) {
+                            Swal.showValidationMessage('กรุณากรอกรหัสความปลอดภัย 4 หลัก');
+                            return false;
+                        }
+                        if (pinInput !== '1234') {
+                            Swal.showValidationMessage('❌ รหัสความปลอดภัยไม่ถูกต้อง (PIN คือ 1234)');
+                            return false;
+                        }
+                        return { action: selectedAction, pin: pinInput };
                     }
                 });
+
+                if (!formValues) return;
+
+                if (formValues.action === 'reset_all') {
+                    proj.docWorkflow.quotation.status = 'draft';
+                    proj.docWorkflow.quotation.confirmedAt = null;
+                    proj.docWorkflow.quotation.confirmedBy = null;
+                    proj.docWorkflow.invoice = { status: 'pending', confirmedAt: null, confirmedBy: null, docNumber: '' };
+                    proj.docWorkflow.receipt = { status: 'pending', confirmedAt: null, confirmedBy: null, docNumber: '' };
+                    proj.docWorkflow.currentStep = 1;
+                    proj.docWorkflow.isCompleted = false;
+
+                    this.addActivityLog(proj, 'workflow_reset_all', `รีเซ็ตกระบวนการเอกสารทั้งหมดกลับสู่ขั้นตอนที่ 1 ใบเสนอราคา (ผ่าน PIN)`, 'fa-solid fa-rotate-left');
+                    this.syncCurrentProject();
+                    this.updateWorkflowUI(proj);
+                    this.showToast('รีเซ็ตกระบวนการทั้งหมดกลับไปเริ่มต้นที่ใบเสนอราคาแล้ว', 'success');
+                } else {
+                    if (step === 3 || proj.docWorkflow.isCompleted) {
+                        proj.docWorkflow.receipt.status = 'pending';
+                        proj.docWorkflow.invoice.status = 'draft';
+                        proj.docWorkflow.currentStep = 2;
+                        proj.docWorkflow.isCompleted = false;
+                        this.addActivityLog(proj, 'invoice_uncancelled', `ยกเลิกการยืนยันใบส่งของ (${proj.docWorkflow.invoice.docNumber || ''}) ย้อนกลับมาขั้นตอนที่ 2 (ผ่าน PIN)`, 'fa-solid fa-rotate-left');
+                    } else if (step === 2) {
+                        proj.docWorkflow.invoice.status = 'pending';
+                        proj.docWorkflow.quotation.status = 'draft';
+                        proj.docWorkflow.currentStep = 1;
+                        this.addActivityLog(proj, 'quotation_uncancelled', `ยกเลิกการยืนยันใบเสนอราคา (${proj.docWorkflow.quotation.docNumber || ''}) ย้อนกลับมาขั้นตอนที่ 1 (ผ่าน PIN)`, 'fa-solid fa-rotate-left');
+                    }
+                    this.syncCurrentProject();
+                    this.updateWorkflowUI(proj);
+                    this.showToast('ย้อนกลับขั้นตอนเรียบร้อย สามารถแก้ไขเอกสารได้แล้ว', 'success');
+                }
+            },
+
+            cancelQuotationConfirmation() {
+                this.cancelStepConfirmation();
             },
 
             confirmQuotation() {
@@ -4498,7 +4787,7 @@
 
                 Swal.fire({
                     title: 'ยืนยันใบเสนอราคา?',
-                    html: '<p style="color:#64748b;">เมื่อยืนยันแล้ว ระบบจะเปิดขั้นตอน<br><b>"ใบกำกับภาษี / ใบแจ้งหนี้ / ใบส่งของ"</b> ให้อัตโนมัติ<br><br><small style="color:#94a3b8;">คุณยังสามารถกลับมาแก้ไขใบเสนอราคาได้ภายหลัง</small></p>',
+                    html: '<p style="color:#64748b;">เมื่อยืนยันแล้ว ระบบจะเปิดขั้นตอน<br><b>"ใบส่งของ / ใบแจ้งหนี้"</b> ให้อัตโนมัติ<br><br><small style="color:#94a3b8;">เอกสารใบเสนอราคาจะถูกล็อคเป็นทางการ</small></p>',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: '<i class="fa-solid fa-circle-check"></i> ยืนยัน',
@@ -4512,25 +4801,153 @@
                         proj.docWorkflow.quotation.confirmedAt = now;
                         const userEl = document.getElementById('userName');
                         proj.docWorkflow.quotation.confirmedBy = userEl ? userEl.innerText : 'ระบบ';
+                        const d = new Date();
+                        const yy = d.getFullYear().toString().slice(-2);
+                        const mm = String(d.getMonth() + 1).padStart(2, '0');
+                        const dd = String(d.getDate()).padStart(2, '0');
+                        const seq1 = String(Math.floor(Math.random() * 900) + 100);
+                        const seq2 = String(Math.floor(Math.random() * 900) + 100);
                         if (!proj.docWorkflow.quotation.docNumber) {
-                            proj.docWorkflow.quotation.docNumber = `QT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+                            proj.docWorkflow.quotation.docNumber = `MTQ${yy}${mm}${dd}${seq1}`;
                         }
                         proj.docWorkflow.currentStep = 2;
                         proj.docWorkflow.invoice.status = 'draft';
                         proj.docWorkflow.invoice.createdAt = now;
+                        proj.docWorkflow.invoice.parentRef = proj.docWorkflow.quotation.docNumber;
                         if (!proj.docWorkflow.invoice.docNumber) {
-                            proj.docWorkflow.invoice.docNumber = `INV-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+                            proj.docWorkflow.invoice.docNumber = `MTI${yy}${mm}${dd}${seq2}`;
                         }
 
                         this.addActivityLog(proj, 'quotation_confirmed', `ยืนยันใบเสนอราคา (${proj.docWorkflow.quotation.docNumber})`, 'fa-solid fa-circle-check');
-                        this.addActivityLog(proj, 'invoice_created', `เปิดใบกำกับภาษี/ใบแจ้งหนี้ (${proj.docWorkflow.invoice.docNumber})`, 'fa-solid fa-file-invoice');
+                        this.addActivityLog(proj, 'invoice_created', `เปิดขั้นตอนใบส่งของ/ใบแจ้งหนี้ (${proj.docWorkflow.invoice.docNumber}) (อ้างอิง: ${proj.docWorkflow.invoice.parentRef})`, 'fa-solid fa-file-invoice');
 
                         this.syncCurrentProject();
                         this.updateWorkflowUI(proj);
                         
                         Swal.fire({
                             title: 'ยืนยันใบเสนอราคาเรียบร้อย!',
-                            text: 'สถานะได้รับการอัปเดตเป็นยืนยันแล้ว',
+                            html: 'ระบบเปิดขั้นตอน <b>"ใบส่งของ / ใบแจ้งหนี้"</b> ให้แล้ว',
+                            icon: 'success',
+                            confirmButtonText: 'ไปออกใบส่งของทันที',
+                            showCancelButton: true,
+                            cancelButtonText: 'ปิดหน้าต่าง',
+                            confirmButtonColor: '#10b981',
+                            customClass: { popup: 'mentra-swal-popup' }
+                        }).then((goToNext) => {
+                            if (goToNext.isConfirmed) {
+                                this.goToInvoice();
+                            }
+                        });
+                    }
+                });
+            },
+
+            confirmInvoice() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                this._ensureDocWorkflow(proj);
+
+                if (proj.docWorkflow.invoice.status === 'confirmed') {
+                    this.showToast('ใบส่งของ/แจ้งหนี้ยืนยันแล้ว สามารถไปขั้นตอนใบเสร็จได้เลย', 'info');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'ยืนยันใบส่งของ / ใบแจ้งหนี้?',
+                    html: '<p style="color:#64748b;">เมื่อยืนยันแล้ว ระบบจะเปิดขั้นตอน<br><b>"ใบเสร็จรับเงิน / ใบกำกับภาษี"</b> ให้อัตโนมัติ<br><br><small style="color:#94a3b8;">เอกสารใบส่งของจะถูกล็อคเป็นทางการ</small></p>',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fa-solid fa-circle-check"></i> ยืนยัน',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#10b981',
+                    customClass: { popup: 'mentra-swal-popup' }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const now = new Date().toISOString();
+                        proj.docWorkflow.invoice.status = 'confirmed';
+                        proj.docWorkflow.invoice.confirmedAt = now;
+                        const userEl = document.getElementById('userName');
+                        proj.docWorkflow.invoice.confirmedBy = userEl ? userEl.innerText : 'ระบบ';
+                        const d = new Date();
+                        const yy = d.getFullYear().toString().slice(-2);
+                        const mm = String(d.getMonth() + 1).padStart(2, '0');
+                        const dd = String(d.getDate()).padStart(2, '0');
+                        const seq1 = String(Math.floor(Math.random() * 900) + 100);
+                        const seq2 = String(Math.floor(Math.random() * 900) + 100);
+                        if (!proj.docWorkflow.invoice.docNumber) {
+                            proj.docWorkflow.invoice.docNumber = `MTI${yy}${mm}${dd}${seq1}`;
+                        }
+                        proj.docWorkflow.currentStep = 3;
+                        proj.docWorkflow.receipt.status = 'draft';
+                        proj.docWorkflow.receipt.createdAt = now;
+                        proj.docWorkflow.receipt.parentRef = proj.docWorkflow.invoice.docNumber;
+                        if (!proj.docWorkflow.receipt.docNumber) {
+                            proj.docWorkflow.receipt.docNumber = `MTR${yy}${mm}${dd}${seq2}`;
+                        }
+
+                        this.addActivityLog(proj, 'invoice_confirmed', `ยืนยันใบส่งของ/ใบแจ้งหนี้ (${proj.docWorkflow.invoice.docNumber})`, 'fa-solid fa-circle-check');
+                        this.addActivityLog(proj, 'receipt_created', `เปิดขั้นตอนใบเสร็จรับเงิน (${proj.docWorkflow.receipt.docNumber}) (อ้างอิง: ${proj.docWorkflow.receipt.parentRef})`, 'fa-solid fa-receipt');
+
+                        this.syncCurrentProject();
+                        this.updateWorkflowUI(proj);
+
+                        Swal.fire({
+                            title: 'ยืนยันใบส่งของเรียบร้อย!',
+                            html: 'ระบบเปิดขั้นตอน <b>"ใบเสร็จรับเงิน"</b> ให้เรียบร้อยแล้ว',
+                            icon: 'success',
+                            confirmButtonText: 'ไปออกใบเสร็จรับเงินทันที',
+                            showCancelButton: true,
+                            cancelButtonText: 'ปิดหน้าต่าง',
+                            confirmButtonColor: '#10b981',
+                            customClass: { popup: 'mentra-swal-popup' }
+                        }).then((goToNext) => {
+                            if (goToNext.isConfirmed) {
+                                this.goToReceipt();
+                            }
+                        });
+                    }
+                });
+            },
+
+            confirmReceipt() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                this._ensureDocWorkflow(proj);
+
+                if (proj.docWorkflow.receipt.status === 'confirmed' || proj.docWorkflow.isCompleted) {
+                    this.showToast('ใบเสร็จรับเงินยืนยันแล้ว เอกสารสมบูรณ์ครบ 3 ขั้นตอน', 'info');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'ยืนยันใบเสร็จรับเงิน (เสร็จสิ้น)?',
+                    html: '<p style="color:#64748b;">ยืนยันการรับชำระเงินและปิดขั้นตอนเอกสารทั้งหมด<br><br><small style="color:#10b981; font-weight:600;">(ใบเสนอราคา → ใบส่งของ → ใบเสร็จรับเงิน สมบูรณ์ครบถ้วน)</small></p>',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fa-solid fa-circle-check"></i> ยืนยันเสร็จสมบูรณ์',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#10b981',
+                    customClass: { popup: 'mentra-swal-popup' }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const now = new Date().toISOString();
+                        proj.docWorkflow.receipt.status = 'confirmed';
+                        proj.docWorkflow.receipt.confirmedAt = now;
+                        const userEl = document.getElementById('userName');
+                        proj.docWorkflow.receipt.confirmedBy = userEl ? userEl.innerText : 'ระบบ';
+                        if (!proj.docWorkflow.receipt.docNumber) {
+                            proj.docWorkflow.receipt.docNumber = `REC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+                        }
+                        proj.docWorkflow.isCompleted = true;
+
+                        this.addActivityLog(proj, 'receipt_confirmed', `ยืนยันใบเสร็จรับเงิน (${proj.docWorkflow.receipt.docNumber}) - เสร็จสมบูรณ์ครบ 3 ขั้นตอน`, 'fa-solid fa-circle-check');
+
+                        this.syncCurrentProject();
+                        this.updateWorkflowUI(proj);
+
+                        Swal.fire({
+                            title: '🎉 กระบวนการเสร็จสมบูรณ์!',
+                            text: 'เอกสารโครงการออกครบถ้วนสมบูรณ์ทั้ง 3 ขั้นตอนแล้ว',
                             icon: 'success',
                             confirmButtonText: 'ตกลง',
                             confirmButtonColor: '#10b981',
@@ -4574,6 +4991,9 @@
                             storeInfo: it.storeInfo || ''
                         }));
 
+                        const parentRef = proj.docWorkflow?.invoice?.parentRef || proj.docWorkflow?.quotation?.docNumber || '';
+                        let parentRefParam = parentRef ? `&parentRef=${encodeURIComponent(parentRef)}` : '';
+
                         const compDetails = (this.companyDetails && proj.company) ? (this.companyDetails[proj.company] || {}) : {};
                         let compNameWithBranch = proj.company || '';
                         if (compDetails.branchType === 'branch') {
@@ -4591,6 +5011,7 @@
                             shop: shopName,
                             name: proj.name || '',
                             code: proj.code || '',
+                            parentRefNo: parentRef,
                             address: proj.address || compDetails.address || '',
                             attn: proj.contactPerson || proj.attn || compDetails.contact || '',
                             tel: proj.tel || compDetails.phone || '',
@@ -4626,7 +5047,7 @@
                             await window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToInvoice error:', e));
                         }
                     }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=invoice${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=invoice${shopParam}`;
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=invoice${shopParam}${parentRefParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=invoice${shopParam}${parentRefParam}`;
                 }
             },
 
@@ -4644,10 +5065,15 @@
                     }
 
                     let shopParam = '';
+                    let parentRefParam = '';
                     if (proj) {
                         const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : '';
                         if (shopName) {
                             shopParam = `&shop=${encodeURIComponent(shopName)}`;
+                        }
+                        const parentRef = proj.docWorkflow?.receipt?.parentRef || proj.docWorkflow?.invoice?.docNumber || '';
+                        if (parentRef) {
+                            parentRefParam = `&parentRef=${encodeURIComponent(parentRef)}`;
                         }
 
                         const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
@@ -4681,6 +5107,7 @@
                             shop: shopName,
                             name: proj.name || '',
                             code: proj.code || '',
+                            parentRefNo: parentRef,
                             address: proj.address || compDetails.address || '',
                             attn: proj.contactPerson || proj.attn || compDetails.contact || '',
                             tel: proj.tel || compDetails.phone || '',
@@ -4716,7 +5143,7 @@
                             await window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToReceipt error:', e));
                         }
                     }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=receipt${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=receipt${shopParam}`;
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=receipt${shopParam}${parentRefParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=receipt${shopParam}${parentRefParam}`;
                 }
             },
 
@@ -4724,12 +5151,78 @@
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
                 this._ensureDocWorkflow(proj);
-                const currentStep = proj.docWorkflow.currentStep || 1;
-                
+                const currentStep = proj.docWorkflow.isCompleted ? 3 : (proj.docWorkflow.currentStep || 1);
+
+                // 1. Block skipping forward
                 if (stepNum > currentStep) {
-                    this.showToast('กรุณายืนยันขั้นตอนก่อนหน้าก่อน', 'warning');
+                    const stepTitles = ['', 'ใบเสนอราคา', 'ใบส่งของ/ใบแจ้งหนี้', 'ใบเสร็จรับเงิน'];
+                    Swal.fire({
+                        title: 'ยังไม่ถึงขั้นตอนนี้',
+                        html: `กรุณาดำเนินการและยืนยันขั้นตอนที่ ${currentStep} (${stepTitles[currentStep]}) ให้เรียบร้อยก่อน`,
+                        icon: 'warning',
+                        confirmButtonColor: '#1A6FBF',
+                        confirmButtonText: 'เข้าใจแล้ว'
+                    });
                     return;
                 }
+
+                // 2. Prevent accidental reversion / Prompt read-only view
+                if (stepNum < currentStep) {
+                    const stepTitles = ['', 'ใบเสนอราคา', 'ใบส่งของ/ใบแจ้งหนี้', 'ใบเสร็จรับเงิน'];
+                    const dtNames = ['', 'quotation', 'invoice', 'receipt'];
+                    Swal.fire({
+                        title: '🔒 เอกสารขั้นตอนนี้ได้รับการยืนยันแล้ว',
+                        html: `<div style="text-align:left; font-size:0.95rem; line-height:1.6; color:#475569;">
+                            ขั้นตอน <b>"${stepTitles[stepNum]}"</b> ได้รับการยืนยันและส่งต่อไปยังขั้นตอนถัดไปแล้ว<br><br>
+                            <div style="background:#fef3c7; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; color:#92400e; font-size:0.88rem;">
+                                <i class="fa-solid fa-lock" style="margin-right:6px;"></i>
+                                <b>เพื่อความถูกต้องทางบัญชี:</b><br>
+                                ระบบจะเปิดเอกสารนี้ในโหมด <b>"อ่านอย่างเดียว (Locked)"</b> เพื่อตรวจทานหรือสั่งพิมพ์เท่านั้น<br>
+                                หากต้องการแก้ไข ให้กด <b>"ปลดล็อคแก้ไข (PIN)"</b> เพื่อย้อนกลับมาขั้นตอนนี้
+                            </div>
+                        </div>`,
+                        icon: 'info',
+                        showCancelButton: true,
+                        showDenyButton: true,
+                        confirmButtonText: '<i class="fa-regular fa-eye"></i> ดูเอกสาร (อ่านอย่างเดียว)',
+                        denyButtonText: '<i class="fa-solid fa-lock-open"></i> ปลดล็อคแก้ไข (PIN)',
+                        cancelButtonText: 'ยกเลิก',
+                        confirmButtonColor: '#1A6FBF',
+                        denyButtonColor: '#d97706',
+                        cancelButtonColor: '#64748b'
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            let shopParam = '';
+                            const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                            if (shopName) shopParam = `&shop=${encodeURIComponent(shopName)}`;
+                            window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=${dtNames[stepNum]}&viewOnly=true${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=${dtNames[stepNum]}&viewOnly=true${shopParam}`;
+                        } else if (result.isDenied) {
+                            const pinOk = await this.verifyWorkflowSecurityPin(`ย้อนกลับกระบวนการไปยัง ${stepTitles[stepNum]}`);
+                            if (!pinOk) return;
+
+                            if (stepNum === 1) {
+                                proj.docWorkflow.receipt.status = 'pending';
+                                proj.docWorkflow.invoice.status = 'pending';
+                                proj.docWorkflow.quotation.status = 'draft';
+                                proj.docWorkflow.currentStep = 1;
+                                proj.docWorkflow.isCompleted = false;
+                                this.addActivityLog(proj, 'workflow_rollback', `ย้อนกลับกระบวนการมายังขั้นตอนที่ 1 (ใบเสนอราคา) ผ่าน PIN`, 'fa-solid fa-rotate-left');
+                            } else if (stepNum === 2) {
+                                proj.docWorkflow.receipt.status = 'pending';
+                                proj.docWorkflow.invoice.status = 'draft';
+                                proj.docWorkflow.currentStep = 2;
+                                proj.docWorkflow.isCompleted = false;
+                                this.addActivityLog(proj, 'workflow_rollback', `ย้อนกลับกระบวนการมายังขั้นตอนที่ 2 (ใบส่งของ/ใบแจ้งหนี้) ผ่าน PIN`, 'fa-solid fa-rotate-left');
+                            }
+                            this.syncCurrentProject();
+                            this.updateWorkflowUI(proj);
+                            this.showToast(`ย้อนกลับกระบวนการมายัง ${stepTitles[stepNum]} เรียบร้อยแล้ว`, 'success');
+                        }
+                    });
+                    return;
+                }
+
+                // 3. Current active step
                 if (stepNum === 1) {
                     this.openQuotationForProject();
                 } else if (stepNum === 2) {
@@ -5098,6 +5591,7 @@
                                 <h3 class="font-bold text-lg text-slate-800 leading-tight group-hover:text-brand-600 transition-colors mb-1.5">${proj.name}</h3>
                                 <div class="flex flex-wrap items-center gap-3">
                                     <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${proj.code}</span>
+                                    ${this.getProjectWorkflowBadge(proj)}
                                     <span class="text-sm text-slate-500 flex items-center gap-1.5">
                                         <i class="fa-solid fa-boxes-stacked text-slate-400"></i> จำนวน ${proj.items.length} รายการ
                                     </span>

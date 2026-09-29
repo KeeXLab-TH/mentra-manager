@@ -1860,7 +1860,7 @@
                     </div>
 
                     <!-- ── Workflow Step Bar ── -->
-                    <div class="workflow-step-bar" id="workflowStepBar">
+                    <div class="workflow-step-bar" id="workflowStepBar" style="position: relative;">
                         <div class="wf-step active" id="wfStep1" onclick="onWorkflowStepClick('quotation')">
                             <span class="wf-num" id="wfNum1">1</span>
                             <span>ใบเสนอราคา</span>
@@ -1881,6 +1881,9 @@
                             <span class="wf-num" id="wfNum3">3</span>
                             <span>ใบเสร็จรับเงิน</span>
                         </div>
+                        <button type="button" id="btnWfResetTrigger" onclick="promptWorkflowSecurityPinAction('choose')" style="margin-left: 16px; padding: 5px 12px; background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(190, 18, 60, 0.08); white-space: nowrap;" title="ย้อนกลับขั้นตอน หรือรีเซ็ตกระบวนการ (ต้องใช้รหัสความปลอดภัย 1234)">
+                            <i class='bx bx-undo' style="font-size: 1rem;"></i> <span>ย้อนกลับ / รีเซ็ต (PIN)</span>
+                        </button>
                     </div>
 
                     <!-- ── Row 2: Controls (Meta + KPI + View Mode) ── -->
@@ -2043,6 +2046,17 @@
                                                 <i class='bx bx-calendar-event'></i> วันนี้
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <!-- Row 1.5: Reference Document No. (Hidden on Quotation, Visible on Invoice & Receipt) -->
+                                <div id="parentRefContainer" style="display: none; margin-bottom: 12px;">
+                                    <label class="pro-label" id="parentRefLabel" style="display: flex; align-items: center; gap: 6px;">
+                                        <i class='bx bx-link-alt text-brand-500'></i> <span>อ้างถึงเอกสาร (Reference Doc No.)</span>
+                                    </label>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <input type="text" class="pro-input font-mono font-bold" id="parentRefNo" placeholder="เช่น MTQ260929001" style="flex: 1; min-width: 0; color: #475569; background: #f8fafc;" oninput="triggerLiveSync()">
+                                        <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200" id="parentRefHint" style="font-weight: 600;">อ้างอิง</span>
                                     </div>
                                 </div>
 
@@ -2377,6 +2391,11 @@
                                 style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
                                 <span id="labelRefNo" style="color: #6b7280; font-weight: 600; outline: none;">เลขที่ / Ref. No:</span>
                                 <span style="font-weight: 700; color: var(--pdf-primary, #1A6FBF); letter-spacing: normal;" id="pRefNo"></span>
+                            </div>
+                            <div id="pParentRefRow"
+                                style="display: none; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
+                                <span id="labelParentRef" style="color: #6b7280; font-weight: 600; outline: none;">อ้างถึง / Ref.:</span>
+                                <span style="font-weight: 700; color: #475569; letter-spacing: normal;" id="pParentRef"></span>
                             </div>
                             <div
                                 style="display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; letter-spacing: normal;">
@@ -3437,6 +3456,10 @@
                 titleTH: 'ใบเสนอราคา',
                 titleEN: 'QUOTATION',
                 prefix: 'MTQ',
+                showParentRef: false,
+                parentRefLabel: '',
+                parentRefPrintLabel: '',
+                parentRefHint: '',
                 introText: 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:',
                 badgeLabel: 'ใบเสนอราคา',
                 badgeColor: '#1d4ed8',
@@ -3461,6 +3484,10 @@
                 titleTH: 'ใบส่งของ/ใบแจ้งหนี้',
                 titleEN: 'DELIVERY NOTE / INVOICE',
                 prefix: 'MTI',
+                showParentRef: true,
+                parentRefLabel: 'อ้างถึงใบเสนอราคา (Ref. No.)',
+                parentRefPrintLabel: 'อ้างถึง / Ref.:',
+                parentRefHint: 'อ้างอิงใบเสนอราคา',
                 introText: 'ขอแจ้งรายละเอียดสินค้า/บริการที่ส่งมอบ ดังมีรายละเอียดต่อไปนี้:',
                 badgeLabel: 'ใบส่งของ/ใบแจ้งหนี้',
                 badgeColor: '#b45309',
@@ -3485,6 +3512,10 @@
                 titleTH: 'ใบเสร็จรับเงิน/ใบกำกับภาษี',
                 titleEN: 'RECEIPT / TAX INVOICE',
                 prefix: 'MTR',
+                showParentRef: true,
+                parentRefLabel: 'อ้างถึงใบส่งของ/ใบแจ้งหนี้ (Ref. No.)',
+                parentRefPrintLabel: 'อ้างถึง / Ref.:',
+                parentRefHint: 'อ้างอิงใบส่งของ/แจ้งหนี้',
                 introText: 'ได้รับชำระเงินเรียบร้อยแล้ว ดังมีรายละเอียดต่อไปนี้:',
                 badgeLabel: 'ใบเสร็จรับเงิน',
                 badgeColor: '#047857',
@@ -3513,6 +3544,533 @@
             parentRefNo: ''
         };
 
+        // ── Active Project & Workflow Protection State ──
+        let currentWorkflowProjectId = null;
+        let currentWorkflowSource = 'school';
+        let linkedProjectData = null;
+        let isWorkflowLocked = false;
+
+        function getDocTypeByStepNum(stepNum) {
+            for (let k in DOC_TYPE_CONFIG) {
+                if (DOC_TYPE_CONFIG[k].step === stepNum) return k;
+            }
+            return 'quotation';
+        }
+
+        function setWorkflowLockedMode(locked, docType = currentDocType, activeStepNum = 1) {
+            isWorkflowLocked = !!locked;
+            const titleTH = DOC_TYPE_CONFIG[docType]?.titleTH || 'เอกสาร';
+            let banner = document.getElementById('workflowLockedBanner');
+            const itemsTable = document.getElementById('itemsTable');
+            const btnConfirm = document.getElementById('btnWorkflowConfirm');
+            const btnConfirmText = document.getElementById('btnWorkflowConfirmText');
+            const btnAddRow = document.querySelector('.btn-add-row') || document.querySelector("button[onclick*='addTableRow']");
+            const btnAddHeader = document.querySelector('.btn-add-header') || document.querySelector("button[onclick*='addHeaderRow']");
+
+            if (isWorkflowLocked) {
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'workflowLockedBanner';
+                    banner.style.cssText = 'background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #fde68a; color: #92400e; padding: 12px 18px; border-radius: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.12); flex-wrap: wrap;';
+                    banner.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 1.6rem; line-height: 1;">🔒</span>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.95rem; color: #92400e;" id="wfLockedBannerTitle">เอกสารนี้ได้รับการยืนยันและส่งต่อแล้ว (โหมดอ่านอย่างเดียว)</div>
+                                <div style="font-size: 0.82rem; color: #b45309;" id="wfLockedBannerSub">ไม่สามารถแก้ไขข้อมูลเพื่อความถูกต้องทางบัญชี หากต้องการพิมพ์หรือส่งออก สามารถกด Export PDF ได้</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <button type="button" id="wfLockedReturnBtn" onclick="returnToActiveWorkflowStep()" style="padding: 7px 16px; background: linear-gradient(135deg, #d97706, #b45309); color: white; border: none; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(180, 83, 9, 0.25); white-space: nowrap;">
+                                <span>กลับไปขั้นตอนปัจจุบัน</span> <i class='bx bx-right-arrow-alt' style="font-size: 1.1rem;"></i>
+                            </button>
+                            <button type="button" id="wfLockedRollbackBtn" onclick="promptWorkflowSecurityPinAction('rollback_to_current')" style="padding: 7px 14px; background: #ffffff; color: #dc2626; border: 1.5px solid #fca5a5; border-radius: 9px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.08); white-space: nowrap;" title="ปลดล็อคเพื่อย้อนกลับมาแก้ไขขั้นตอนนี้ (ต้องใส่รหัส PIN 1234)">
+                                <i class='bx bx-lock-open-alt' style="font-size: 1.1rem;"></i> <span>ปลดล็อคแก้ไขขั้นตอนนี้ (PIN)</span>
+                            </button>
+                        </div>
+                    `;
+                    const hero = document.querySelector('.hero-bar') || document.getElementById('workflowStepBar');
+                    if (hero && hero.parentNode) {
+                        hero.parentNode.insertBefore(banner, hero.nextSibling);
+                    } else {
+                        const container = document.querySelector('.container') || document.body;
+                        container.insertBefore(banner, container.firstChild);
+                    }
+                } else {
+                    banner.style.display = 'flex';
+                }
+
+                const bannerTitle = document.getElementById('wfLockedBannerTitle');
+                if (bannerTitle) bannerTitle.innerText = `🔒 ${titleTH} ได้รับการยืนยันแล้ว (โหมดอ่านอย่างเดียว)`;
+
+                const returnBtn = document.getElementById('wfLockedReturnBtn');
+                if (returnBtn) {
+                    const activeDocType = getDocTypeByStepNum(activeStepNum);
+                    const activeTitle = DOC_TYPE_CONFIG[activeDocType]?.titleTH || `ขั้นที่ ${activeStepNum}`;
+                    returnBtn.innerHTML = `<span>กลับไปขั้นตอนปัจจุบัน (${activeTitle})</span> <i class='bx bx-right-arrow-alt' style="font-size: 1.1rem;"></i>`;
+                }
+
+                // Make table inputs readonly
+                if (itemsTable) {
+                    itemsTable.classList.add('table-workflow-locked');
+                    const inputs = itemsTable.querySelectorAll('input, textarea, select');
+                    inputs.forEach(inp => {
+                        inp.setAttribute('readonly', 'true');
+                        inp.style.pointerEvents = 'none';
+                    });
+                    const delBtns = itemsTable.querySelectorAll('.btn-del-row, .btn-remove-row, button[title*="ลบ"]');
+                    delBtns.forEach(btn => btn.style.display = 'none');
+                }
+                if (btnAddRow) btnAddRow.style.display = 'none';
+                if (btnAddHeader) btnAddHeader.style.display = 'none';
+
+                if (btnConfirm) {
+                    btnConfirm.disabled = true;
+                    btnConfirm.style.opacity = '0.55';
+                    btnConfirm.style.cursor = 'not-allowed';
+                    if (btnConfirmText) btnConfirmText.innerText = `🔒 ขั้นตอนนี้ยืนยันแล้ว`;
+                }
+            } else {
+                if (banner) banner.style.display = 'none';
+                if (itemsTable) {
+                    itemsTable.classList.remove('table-workflow-locked');
+                    const inputs = itemsTable.querySelectorAll('input, textarea, select');
+                    inputs.forEach(inp => {
+                        inp.removeAttribute('readonly');
+                        inp.style.pointerEvents = '';
+                    });
+                    const delBtns = itemsTable.querySelectorAll('.btn-del-row, .btn-remove-row, button[title*="ลบ"]');
+                    delBtns.forEach(btn => btn.style.display = '');
+                }
+                if (btnAddRow) btnAddRow.style.display = '';
+                if (btnAddHeader) btnAddHeader.style.display = '';
+
+                if (btnConfirm) {
+                    btnConfirm.disabled = false;
+                    btnConfirm.style.opacity = '1';
+                    btnConfirm.style.cursor = 'pointer';
+                    const config = DOC_TYPE_CONFIG[currentDocType];
+                    if (btnConfirmText && config) {
+                        btnConfirmText.innerText = config.confirmButtonText || 'เสร็จสิ้นสมบูรณ์';
+                    }
+                }
+            }
+            updateWorkflowStepperUI();
+        }
+        window.setWorkflowLockedMode = setWorkflowLockedMode;
+
+        function returnToActiveWorkflowStep() {
+            const activeStep = linkedProjectData?.docWorkflow?.currentStep || 1;
+            const targetDocType = getDocTypeByStepNum(activeStep);
+            switchDocType(targetDocType, { generateNewRef: false });
+            setWorkflowLockedMode(false, targetDocType, activeStep);
+            if (typeof showToast === 'function') {
+                showToast(`กลับมายังขั้นตอนปัจจุบัน: ${DOC_TYPE_CONFIG[targetDocType].titleTH}`, 'info');
+            }
+        }
+        window.returnToActiveWorkflowStep = returnToActiveWorkflowStep;
+
+        const WORKFLOW_SECURITY_PIN = '1234';
+
+        async function saveProjectWorkflowToStorageAndCloud(proj) {
+            if (!currentWorkflowProjectId) return;
+            const projectId = String(currentWorkflowProjectId);
+            const source = currentWorkflowSource || 'school';
+            const storageKey = source === 'company' ? 'company_material_projects' : 'material_projects';
+            const collectionName = source === 'company' ? 'company_material_projects' : 'material_projects';
+
+            try {
+                let projectsList = [];
+                try {
+                    const raw = localStorage.getItem(storageKey);
+                    if (raw) projectsList = JSON.parse(raw) || [];
+                } catch(e) {}
+
+                const idx = projectsList.findIndex(p => String(p.id) === projectId);
+                if (idx !== -1) {
+                    projectsList[idx] = proj;
+                } else {
+                    projectsList.push(proj);
+                }
+                localStorage.setItem(storageKey, JSON.stringify(projectsList));
+
+                try {
+                    const pendingRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
+                    if (pendingRaw) {
+                        const pending = JSON.parse(pendingRaw);
+                        pending.docWorkflow = proj.docWorkflow;
+                        sessionStorage.setItem('pending_quotation_project', JSON.stringify(pending));
+                        localStorage.setItem('pending_quotation_project', JSON.stringify(pending));
+                    }
+                } catch(e) {}
+
+                if (db) {
+                    try {
+                        await setDoc(doc(db, collectionName, projectId), proj, { merge: true });
+                        console.log(`[Workflow] Synced rollback/reset project ${projectId} to ${collectionName}`);
+                    } catch(dbErr) {
+                        console.warn("[Workflow] Could not sync rollback/reset to Firestore:", dbErr);
+                    }
+                }
+            } catch(err) {
+                console.warn("[Workflow] Error saving rollback/reset to storage/cloud:", err);
+            }
+        }
+
+        async function promptWorkflowSecurityPinAction(mode = 'choose', targetStep = null) {
+            if (typeof Swal === 'undefined') {
+                const pin = prompt('กรุณาระบุรหัสความปลอดภัย (Security PIN 4 หลัก) เพื่อยืนยัน:');
+                if (pin !== WORKFLOW_SECURITY_PIN) {
+                    alert('❌ รหัสความปลอดภัยไม่ถูกต้อง');
+                    return;
+                }
+                if (mode === 'rollback_to_target' && targetStep) {
+                    await executeWorkflowRollback(targetStep);
+                } else if (mode === 'rollback_to_current') {
+                    const currentStepNum = DOC_TYPE_CONFIG[currentDocType]?.step || 1;
+                    await executeWorkflowRollback(currentStepNum);
+                } else {
+                    const activeStep = linkedProjectData?.docWorkflow?.isCompleted ? 3 : (linkedProjectData?.docWorkflow?.currentStep || 1);
+                    const prevStep = Math.max(1, activeStep - 1);
+                    await executeWorkflowRollback(prevStep);
+                }
+                return;
+            }
+
+            const { value: pin } = await Swal.fire({
+                title: '🔒 รหัสความปลอดภัย (Security PIN)',
+                html: `
+                    <div style="font-size: 0.95rem; color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                        กรุณาระบุ <b>รหัสความปลอดภัย 4 หลัก</b><br>เพื่อยืนยันการย้อนกลับหรือรีเซ็ตกระบวนการเอกสาร
+                    </div>
+                    <div style="font-size: 0.8rem; color: #94a3b8; margin-top: -4px; margin-bottom: 6px;">
+                        (การดำเนินการนี้จะปลดล็อคขั้นตอนที่ยืนยันแล้วให้กลับมาแก้ไขได้)
+                    </div>
+                `,
+                input: 'password',
+                inputPlaceholder: '••••',
+                inputAttributes: {
+                    maxlength: '4',
+                    autocapitalize: 'off',
+                    autocorrect: 'off',
+                    style: 'text-align: center; font-size: 1.6rem; letter-spacing: 0.5rem; font-weight: 800; width: 170px; margin: 0 auto; color: #1e293b;'
+                },
+                showCancelButton: true,
+                confirmButtonText: '<i class="bx bx-check-shield"></i> ยืนยันรหัส PIN',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#64748b',
+                customClass: { popup: 'mentra-swal-popup' },
+                didOpen: () => {
+                    const input = Swal.getInput();
+                    if (input) input.focus();
+                },
+                preConfirm: (inputVal) => {
+                    if (!inputVal) {
+                        Swal.showValidationMessage('กรุณากรอกรหัส PIN 4 หลัก');
+                        return false;
+                    }
+                    if (inputVal !== WORKFLOW_SECURITY_PIN) {
+                        Swal.showValidationMessage('❌ รหัสความปลอดภัยไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง');
+                        return false;
+                    }
+                    return inputVal;
+                }
+            });
+
+            if (!pin) return; // Cancelled
+
+            if (mode === 'rollback_to_target' && targetStep) {
+                await executeWorkflowRollback(targetStep);
+            } else if (mode === 'rollback_to_current') {
+                const currentStepNum = DOC_TYPE_CONFIG[currentDocType]?.step || 1;
+                await executeWorkflowRollback(currentStepNum);
+            } else {
+                const activeStep = linkedProjectData?.docWorkflow?.isCompleted ? 3 : (linkedProjectData?.docWorkflow?.currentStep || 1);
+                const { value: selectedAction } = await Swal.fire({
+                    title: '⚙️ จัดการกระบวนการเอกสาร',
+                    html: `
+                        <div style="text-align: left; font-size: 0.92rem; color: #475569; line-height: 1.6;">
+                            รหัสความปลอดภัยถูกต้อง! กรุณาเลือกการดำเนินการที่ต้องการ:<br><br>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; cursor: pointer; background: #f8fafc;" onclick="document.getElementById('optRollback').checked = true;">
+                                    <input type="radio" name="wfActionChoice" id="optRollback" value="rollback" checked style="margin-top: 3px;">
+                                    <div>
+                                        <b style="color: #0f172a;">ย้อนกลับ 1 ขั้นตอน (Step Rollback)</b>
+                                        <div style="font-size: 0.8rem; color: #64748b;">
+                                            ${activeStep === 3 ? 'ย้อนจาก "ใบเสร็จรับเงิน" → ไปยัง "ใบส่งของ/ใบแจ้งหนี้"' : activeStep === 2 ? 'ย้อนจาก "ใบส่งของ/ใบแจ้งหนี้" → ไปยัง "ใบเสนอราคา"' : 'ปลดล็อคใบเสนอราคาให้แก้ไขได้'}
+                                        </div>
+                                    </div>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1.5px solid #fee2e2; border-radius: 10px; cursor: pointer; background: #fff5f5;" onclick="document.getElementById('optReset').checked = true;">
+                                    <input type="radio" name="wfActionChoice" id="optReset" value="reset" style="margin-top: 3px;">
+                                    <div>
+                                        <b style="color: #b91c1c;">รีเซ็ตกระบวนการทั้งหมด (Reset to Step 1)</b>
+                                        <div style="font-size: 0.8rem; color: #991b1b;">
+                                            ยกเลิกการยืนยันทุกขั้นตอนและเริ่มใหม่อีกครั้งที่ "ใบเสนอราคา" (Draft)
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bx bx-check"></i> ดำเนินการต่อ',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#2563eb',
+                    cancelButtonColor: '#64748b',
+                    customClass: { popup: 'mentra-swal-popup' },
+                    preConfirm: () => {
+                        const checked = document.querySelector('input[name="wfActionChoice"]:checked');
+                        return checked ? checked.value : 'rollback';
+                    }
+                });
+
+                if (!selectedAction) return;
+
+                if (selectedAction === 'reset') {
+                    await executeWorkflowResetAll();
+                } else {
+                    const prevStep = Math.max(1, activeStep - 1);
+                    await executeWorkflowRollback(prevStep);
+                }
+            }
+        }
+        window.promptWorkflowSecurityPinAction = promptWorkflowSecurityPinAction;
+
+        async function executeWorkflowRollback(targetStep) {
+            const targetDocType = getDocTypeByStepNum(targetStep);
+            const targetTitle = DOC_TYPE_CONFIG[targetDocType]?.titleTH || 'เอกสาร';
+            const now = new Date().toISOString();
+            const userName = currentUser?.displayName || currentUser?.email || 'ระบบ';
+
+            if (linkedProjectData) {
+                if (!linkedProjectData.docWorkflow) {
+                    linkedProjectData.docWorkflow = { currentStep: targetStep, isCompleted: false };
+                }
+                linkedProjectData.docWorkflow.currentStep = targetStep;
+                linkedProjectData.docWorkflow.isCompleted = false;
+
+                if (targetStep === 1) {
+                    if (linkedProjectData.docWorkflow.quotation) linkedProjectData.docWorkflow.quotation.status = 'draft';
+                    if (linkedProjectData.docWorkflow.invoice) linkedProjectData.docWorkflow.invoice.status = 'pending';
+                    if (linkedProjectData.docWorkflow.receipt) linkedProjectData.docWorkflow.receipt.status = 'pending';
+                } else if (targetStep === 2) {
+                    if (linkedProjectData.docWorkflow.invoice) linkedProjectData.docWorkflow.invoice.status = 'draft';
+                    if (linkedProjectData.docWorkflow.receipt) linkedProjectData.docWorkflow.receipt.status = 'pending';
+                }
+
+                if (!linkedProjectData.activityLog) linkedProjectData.activityLog = [];
+                linkedProjectData.activityLog.unshift({
+                    action: 'workflow_rollback',
+                    details: `ย้อนกระบวนการกลับมายังขั้นตอน "${targetTitle}" (ผ่านการยืนยันรหัส PIN)`,
+                    icon: 'fa-solid fa-rotate-left',
+                    timestamp: now,
+                    user: userName
+                });
+
+                await saveProjectWorkflowToStorageAndCloud(linkedProjectData);
+            }
+
+            switchDocType(targetDocType, { generateNewRef: false });
+            setWorkflowLockedMode(false, targetDocType, targetStep);
+
+            if (typeof showToast === 'function') {
+                showToast(`🔓 ปลดล็อคและย้อนกลับมายัง ${targetTitle} เรียบร้อยแล้ว`, 'success');
+            }
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: `🔓 ปลดล็อค ${targetTitle} สำเร็จ!`,
+                    html: `ระบบได้ย้อนกระบวนการกลับมายัง <b>"${targetTitle}"</b> และเปิดให้แก้ไขข้อมูลได้เรียบร้อยแล้ว`,
+                    icon: 'success',
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+        }
+        window.executeWorkflowRollback = executeWorkflowRollback;
+
+        async function executeWorkflowResetAll() {
+            const now = new Date().toISOString();
+            const userName = currentUser?.displayName || currentUser?.email || 'ระบบ';
+
+            if (linkedProjectData) {
+                linkedProjectData.docWorkflow = {
+                    currentStep: 1,
+                    isCompleted: false,
+                    quotation: {
+                        status: 'draft',
+                        confirmedAt: null,
+                        confirmedBy: null,
+                        docNumber: linkedProjectData.docWorkflow?.quotation?.docNumber || null
+                    },
+                    invoice: {
+                        status: 'pending',
+                        createdAt: null,
+                        confirmedAt: null,
+                        confirmedBy: null,
+                        docNumber: null,
+                        parentRef: null
+                    },
+                    receipt: {
+                        status: 'pending',
+                        createdAt: null,
+                        confirmedAt: null,
+                        confirmedBy: null,
+                        docNumber: null,
+                        parentRef: null
+                    }
+                };
+
+                if (!linkedProjectData.activityLog) linkedProjectData.activityLog = [];
+                linkedProjectData.activityLog.unshift({
+                    action: 'workflow_reset',
+                    details: `รีเซ็ตกระบวนการทั้งหมดกลับไปเริ่มต้นที่ใบเสนอราคา (ผ่านการยืนยันรหัส PIN)`,
+                    icon: 'fa-solid fa-arrows-rotate',
+                    timestamp: now,
+                    user: userName
+                });
+
+                await saveProjectWorkflowToStorageAndCloud(linkedProjectData);
+            }
+
+            switchDocType('quotation', { generateNewRef: false });
+            setWorkflowLockedMode(false, 'quotation', 1);
+
+            if (typeof showToast === 'function') {
+                showToast('🔄 รีเซ็ตกระบวนการทั้งหมดเรียบร้อยแล้ว', 'success');
+            }
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: '🔄 รีเซ็ตกระบวนการสำเร็จ!',
+                    html: 'ระบบได้รีเซ็ตกระบวนการทั้งหมดกลับไปเป็น <b>"ใบเสนอราคา" (ขั้นตอนที่ 1)</b> เรียบร้อยแล้ว',
+                    icon: 'success',
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+        }
+        window.executeWorkflowResetAll = executeWorkflowResetAll;
+
+        async function syncWorkflowToLinkedProject(docType, refNo, isFinalizing = false) {
+            if (!currentWorkflowProjectId) return;
+            const projectId = String(currentWorkflowProjectId);
+            const source = currentWorkflowSource || 'school';
+            const storageKey = source === 'company' ? 'company_material_projects' : 'material_projects';
+            const collectionName = source === 'company' ? 'company_material_projects' : 'material_projects';
+
+            try {
+                let projectsList = [];
+                try {
+                    const raw = localStorage.getItem(storageKey);
+                    if (raw) projectsList = JSON.parse(raw) || [];
+                } catch(e) {}
+
+                let proj = projectsList.find(p => String(p.id) === projectId);
+                if (!proj && linkedProjectData) {
+                    proj = linkedProjectData;
+                    projectsList.push(proj);
+                }
+                if (!proj) return;
+
+                if (!proj.docWorkflow) {
+                    proj.docWorkflow = {
+                        currentStep: 1,
+                        quotation: { status: 'draft', confirmedAt: null, confirmedBy: null, docNumber: null },
+                        invoice: { status: 'pending', createdAt: null, confirmedAt: null, confirmedBy: null, docNumber: null },
+                        receipt: { status: 'pending', createdAt: null, confirmedAt: null, confirmedBy: null, docNumber: null }
+                    };
+                }
+
+                const now = new Date().toISOString();
+                const userName = currentUser?.displayName || currentUser?.email || 'ระบบ';
+
+                if (docType === 'quotation') {
+                    proj.docWorkflow.quotation.status = 'confirmed';
+                    proj.docWorkflow.quotation.confirmedAt = now;
+                    proj.docWorkflow.quotation.confirmedBy = userName;
+                    proj.docWorkflow.quotation.docNumber = refNo || proj.docWorkflow.quotation.docNumber;
+                    proj.docWorkflow.currentStep = 2;
+                    proj.docWorkflow.invoice.status = 'draft';
+                    proj.docWorkflow.invoice.createdAt = now;
+                    proj.docWorkflow.invoice.parentRef = refNo || proj.docWorkflow.quotation.docNumber;
+
+                    if (!proj.activityLog) proj.activityLog = [];
+                    proj.activityLog.unshift({
+                        action: 'quotation_confirmed',
+                        details: `ยืนยันใบเสนอราคา (${refNo || proj.docWorkflow.quotation.docNumber}) → เปิดขั้นตอนใบส่งของ/แจ้งหนี้`,
+                        icon: 'fa-solid fa-circle-check',
+                        timestamp: now,
+                        user: userName
+                    });
+                } else if (docType === 'invoice') {
+                    proj.docWorkflow.invoice.status = 'confirmed';
+                    proj.docWorkflow.invoice.confirmedAt = now;
+                    proj.docWorkflow.invoice.confirmedBy = userName;
+                    proj.docWorkflow.invoice.docNumber = refNo || proj.docWorkflow.invoice.docNumber;
+                    proj.docWorkflow.currentStep = 3;
+                    proj.docWorkflow.receipt.status = 'draft';
+                    proj.docWorkflow.receipt.createdAt = now;
+                    proj.docWorkflow.receipt.parentRef = refNo || proj.docWorkflow.invoice.docNumber;
+
+                    if (!proj.activityLog) proj.activityLog = [];
+                    proj.activityLog.unshift({
+                        action: 'invoice_confirmed',
+                        details: `ยืนยันใบส่งของ/ใบแจ้งหนี้ (${refNo || proj.docWorkflow.invoice.docNumber}) → เปิดขั้นตอนใบเสร็จรับเงิน`,
+                        icon: 'fa-solid fa-file-invoice',
+                        timestamp: now,
+                        user: userName
+                    });
+                } else if (docType === 'receipt' || isFinalizing) {
+                    proj.docWorkflow.receipt.status = 'confirmed';
+                    proj.docWorkflow.receipt.confirmedAt = now;
+                    proj.docWorkflow.receipt.confirmedBy = userName;
+                    proj.docWorkflow.receipt.docNumber = refNo || proj.docWorkflow.receipt.docNumber;
+                    proj.docWorkflow.receipt.parentRef = document.getElementById('parentRefNo')?.value || workflowHistory.parentRefNo || proj.docWorkflow.receipt.parentRef || proj.docWorkflow.invoice?.docNumber || null;
+                    proj.docWorkflow.currentStep = 3;
+                    proj.docWorkflow.isCompleted = true;
+
+                    if (!proj.activityLog) proj.activityLog = [];
+                    proj.activityLog.unshift({
+                        action: 'receipt_confirmed',
+                        details: `ยืนยันใบเสร็จรับเงิน (${refNo || proj.docWorkflow.receipt.docNumber}) - เสร็จสมบูรณ์ครบ 3 ขั้นตอน`,
+                        icon: 'fa-solid fa-circle-check',
+                        timestamp: now,
+                        user: userName
+                    });
+                }
+
+                linkedProjectData = proj;
+
+                // Save back to localStorage
+                try {
+                    localStorage.setItem(storageKey, JSON.stringify(projectsList));
+                } catch(e) {}
+
+                // Update pending_quotation_project cache
+                try {
+                    const pendingRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
+                    if (pendingRaw) {
+                        const pending = JSON.parse(pendingRaw);
+                        pending.docWorkflow = proj.docWorkflow;
+                        sessionStorage.setItem('pending_quotation_project', JSON.stringify(pending));
+                        localStorage.setItem('pending_quotation_project', JSON.stringify(pending));
+                    }
+                } catch(e) {}
+
+                // Save to Firestore
+                if (db) {
+                    try {
+                        await setDoc(doc(db, collectionName, projectId), proj, { merge: true });
+                        console.log(`[Workflow] Synced project ${projectId} to ${collectionName}`);
+                    } catch(dbErr) {
+                        console.warn("[Workflow] Could not sync project to Firestore:", dbErr);
+                    }
+                }
+            } catch (err) {
+                console.warn("[Workflow] Error syncing workflow to project:", err);
+            }
+        }
         function switchDocType(type, options = {}) {
             const config = DOC_TYPE_CONFIG[type];
             if (!config) return;
@@ -3565,6 +4123,43 @@
             const barStatusText = document.getElementById('barStatusText');
             if (barStatusText) barStatusText.innerText = config.statusLabel;
 
+            // 5.5 Update Parent Reference field on left panel
+            const parentRefContainer = document.getElementById('parentRefContainer');
+            const parentRefLabel = document.getElementById('parentRefLabel');
+            const parentRefHint = document.getElementById('parentRefHint');
+            const parentRefInput = document.getElementById('parentRefNo');
+
+            if (parentRefContainer) {
+                if (config.showParentRef) {
+                    parentRefContainer.style.display = 'block';
+                    if (parentRefLabel) {
+                        parentRefLabel.innerHTML = `<i class='bx bx-link-alt text-brand-500'></i> <span>${config.parentRefLabel || 'อ้างถึงเอกสาร (Reference Doc No.)'}</span>`;
+                    }
+                    if (parentRefHint && config.parentRefHint) {
+                        parentRefHint.innerText = config.parentRefHint;
+                    }
+                    if (parentRefInput) {
+                        if (options.forceParentRef || !parentRefInput.value.trim()) {
+                            let autoRef = '';
+                            if (type === 'invoice') {
+                                autoRef = workflowHistory.quotationRefNo || workflowHistory.parentRefNo || linkedProjectData?.docWorkflow?.invoice?.parentRef || linkedProjectData?.docWorkflow?.quotation?.docNumber || '';
+                            } else if (type === 'receipt') {
+                                autoRef = workflowHistory.invoiceRefNo || workflowHistory.parentRefNo || linkedProjectData?.docWorkflow?.receipt?.parentRef || linkedProjectData?.docWorkflow?.invoice?.docNumber || '';
+                            }
+                            if (autoRef) {
+                                parentRefInput.value = autoRef;
+                                workflowHistory.parentRefNo = autoRef;
+                            }
+                        }
+                    }
+                } else {
+                    parentRefContainer.style.display = 'none';
+                    if (parentRefInput && type === 'quotation') {
+                        parentRefInput.value = '';
+                    }
+                }
+            }
+
             // 6. Update Confirm Button in Action Bar
             const btnConfirm = document.getElementById('btnWorkflowConfirm');
             const btnConfirmText = document.getElementById('btnWorkflowConfirmText');
@@ -3595,9 +4190,12 @@
                 syncFormToPrintArea();
             }
         }
+        window.switchDocType = switchDocType;
 
         function updateWorkflowStepperUI() {
             const currentStepNum = DOC_TYPE_CONFIG[currentDocType]?.step || 1;
+            const activeStep = linkedProjectData?.docWorkflow?.currentStep || currentStepNum;
+            const isCompleted = linkedProjectData?.docWorkflow?.isCompleted;
 
             ['quotation', 'invoice', 'receipt'].forEach(dt => {
                 const conf = DOC_TYPE_CONFIG[dt];
@@ -3605,15 +4203,25 @@
                 const numEl = document.getElementById(`wfNum${conf.step}`);
                 if (!stepEl) return;
 
-                stepEl.classList.remove('active', 'completed');
-                if (conf.step < currentStepNum) {
+                stepEl.classList.remove('active', 'completed', 'locked-view');
+
+                if (isCompleted || conf.step < activeStep) {
                     stepEl.classList.add('completed');
                     if (numEl) numEl.innerHTML = "<i class='bx bx-check'></i>";
-                } else if (conf.step === currentStepNum) {
-                    stepEl.classList.add('active');
+                } else if (conf.step === activeStep) {
+                    if (conf.step === currentStepNum && !isWorkflowLocked) {
+                        stepEl.classList.add('active');
+                    }
                     if (numEl) numEl.innerText = conf.step;
                 } else {
                     if (numEl) numEl.innerText = conf.step;
+                }
+
+                // If currently viewing a locked past step
+                if (conf.step === currentStepNum && isWorkflowLocked) {
+                    stepEl.classList.add('active');
+                    stepEl.classList.add('locked-view');
+                    if (numEl) numEl.innerHTML = "<i class='bx bx-lock-alt'></i>";
                 }
             });
 
@@ -3621,11 +4229,11 @@
             const conn1 = document.getElementById('wfConn1');
             const conn2 = document.getElementById('wfConn2');
             if (conn1) {
-                if (currentStepNum > 1) conn1.classList.add('done');
+                if (isCompleted || activeStep > 1) conn1.classList.add('done');
                 else conn1.classList.remove('done');
             }
             if (conn2) {
-                if (currentStepNum > 2) conn2.classList.add('done');
+                if (isCompleted || activeStep > 2) conn2.classList.add('done');
                 else conn2.classList.remove('done');
             }
         }
@@ -3728,7 +4336,9 @@
         async function openWorkflowConfirmModal() {
             const config = DOC_TYPE_CONFIG[currentDocType];
             if (!config || !config.nextDocType) {
-                showToast('เอกสารนี้อยู่ในขั้นตอนสุดท้าย (ใบเสร็จรับเงิน) เรียบร้อยแล้ว', 'info');
+                if (typeof showToast === 'function') {
+                    showToast('เอกสารนี้อยู่ในขั้นตอนสุดท้าย (ใบเสร็จรับเงิน) เรียบร้อยแล้ว', 'info');
+                }
                 return;
             }
 
@@ -3804,10 +4414,6 @@
             if (proceedBtnText) proceedBtnText.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> กำลังบันทึกข้อมูล...";
 
             const currentRef = document.getElementById('refNo')?.value || '';
-            const toCompany = document.getElementById('toCompany')?.value || 'ลูกค้า';
-
-            const confirmMsg = `${config.confirmDialogPrompt}\n\n• เอกสารปัจจุบัน: ${config.titleTH} (${currentRef})\n• ลูกค้า: ${toCompany}`;
-            if (!confirm(confirmMsg)) return;
 
             // Save current doc to history before moving forward
             try {
@@ -3816,45 +4422,195 @@
                 console.warn('Could not save current document before advancing:', err);
             }
 
+            // Sync status to linked project (advances currentStep!)
+            await syncWorkflowToLinkedProject(currentDocType, currentRef);
+
             // Save parent reference
             if (currentDocType === 'quotation') {
                 workflowHistory.quotationRefNo = currentRef;
                 workflowHistory.parentRefNo = currentRef;
             } else if (currentDocType === 'invoice') {
                 workflowHistory.invoiceRefNo = currentRef;
+                workflowHistory.parentRefNo = currentRef;
             }
 
             const nextType = config.nextDocType;
             const nextConfig = DOC_TYPE_CONFIG[nextType];
 
             // Switch to next document type
-            switchDocType(nextType, { generateNewRef: true });
+            switchDocType(nextType, { generateNewRef: true, forceParentRef: true });
+            setWorkflowLockedMode(false); // New step is editable
 
             closeWorkflowConfirmModal();
 
             if (proceedBtn) proceedBtn.disabled = false;
             if (proceedBtnText) proceedBtnText.innerText = originalText;
 
-            showToast(`✅ ยืนยัน ${config.titleTH} เรียบร้อยแล้ว! ระบบเปลี่ยนเป็น ${nextConfig.titleTH}`, 'success');
-            alert(`✅ ยืนยัน ${config.titleTH} เรียบร้อยแล้ว!\nระบบได้เปลี่ยนเป็น ${DOC_TYPE_CONFIG[nextType].titleTH} พร้อมรันเลขที่เอกสารใหม่ให้แล้ว`);
+            if (typeof showToast === 'function') {
+                showToast(`✅ ยืนยัน ${config.titleTH} เรียบร้อยแล้ว! ระบบเปลี่ยนเป็น ${nextConfig.titleTH}`, 'success');
+            }
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: `✅ ยืนยัน ${config.titleTH} สำเร็จ!`,
+                    html: `ระบบได้บันทึกเอกสารและเปลี่ยนมายังขั้นตอน <b>"${nextConfig.titleTH}"</b> พร้อมรันเลขที่เอกสารใหม่เรียบร้อยแล้ว`,
+                    icon: 'success',
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'ตกลง'
+                });
+            } else {
+                alert(`✅ ยืนยัน ${config.titleTH} เรียบร้อยแล้ว!\nระบบได้เปลี่ยนเป็น ${DOC_TYPE_CONFIG[nextType].titleTH} พร้อมรันเลขที่เอกสารใหม่ให้แล้ว`);
+            }
         }
 
-        function confirmAndAdvanceWorkflow() {
+        async function confirmAndAdvanceWorkflow() {
+            if (isWorkflowLocked) {
+                if (typeof showToast === 'function') {
+                    showToast('🔒 เอกสารนี้อยู่ในโหมดอ่านอย่างเดียว (ยืนยันแล้ว)', 'warning');
+                }
+                return;
+            }
             const config = DOC_TYPE_CONFIG[currentDocType];
-            if (!config || !config.nextDocType) {
-                showToast('เอกสารนี้อยู่ในขั้นตอนสุดท้าย (ใบเสร็จรับเงิน) เรียบร้อยแล้ว', 'info');
+            if (!config) return;
+
+            if (!config.nextDocType) {
+                // Final receipt step completion
+                await confirmFinalReceiptWorkflow();
                 return;
             }
             openWorkflowConfirmModal();
         }
 
+        async function confirmFinalReceiptWorkflow() {
+            const currentRef = document.getElementById('refNo')?.value || '-';
+            const toCompany = (document.getElementById('toCompany')?.value || '').trim() || 'ลูกค้า';
+
+            const canProceed = await checkRequiredDocFields('workflow');
+            if (!canProceed) return;
+
+            if (typeof Swal !== 'undefined') {
+                const res = await Swal.fire({
+                    title: 'ยืนยันใบเสร็จรับเงิน (เสร็จสิ้น)?',
+                    html: `<div style="text-align:left; font-size:0.95rem; line-height:1.6; color:#475569;">
+                        ยืนยันการรับชำระเงินและออกใบเสร็จรับเงินสำหรับ:<br>
+                        • <b>เลขที่:</b> ${currentRef}<br>
+                        • <b>ลูกค้า:</b> ${toCompany}<br><br>
+                        <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:10px 14px; color:#065f46; font-size:0.88rem;">
+                            <i class='bx bx-check-shield' style="font-size:1.15rem; vertical-align:middle;"></i>
+                            เมื่อยืนยันแล้ว กระบวนการเอกสารทั้ง 3 ขั้นตอนจะถือว่า <b>"เสร็จสมบูรณ์ (Completed)"</b>
+                        </div>
+                    </div>`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bx bx-check-circle"></i> ยืนยันเสร็จสมบูรณ์',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#059669',
+                    cancelButtonColor: '#64748b'
+                });
+
+                if (res.isConfirmed) {
+                    try {
+                        await saveDocumentToHistory();
+                    } catch(e) {}
+
+                    await syncWorkflowToLinkedProject('receipt', currentRef, true);
+                    updateWorkflowStepperUI();
+                    setWorkflowLockedMode(true, 'receipt', 3);
+
+                    Swal.fire({
+                        title: '🎉 กระบวนการเสร็จสมบูรณ์!',
+                        html: `การออกเอกสารโครงการครบทั้ง 3 ขั้นตอนเรียบร้อยแล้ว<br><small style="color:#64748b;">(ใบเสนอราคา → ใบส่งของ/แจ้งหนี้ → ใบเสร็จรับเงิน)</small>`,
+                        icon: 'success',
+                        confirmButtonColor: '#059669',
+                        confirmButtonText: 'ตกลง'
+                    });
+                }
+            } else {
+                if (confirm(`ยืนยันการออกใบเสร็จรับเงิน (${currentRef}) และปิดขั้นตอนโครงการทั้งหมดหรือไม่?`)) {
+                    await saveDocumentToHistory();
+                    await syncWorkflowToLinkedProject('receipt', currentRef, true);
+                    updateWorkflowStepperUI();
+                    setWorkflowLockedMode(true, 'receipt', 3);
+                    alert('🎉 การออกเอกสารโครงการครบทั้ง 3 ขั้นตอนเรียบร้อยแล้ว!');
+                }
+            }
+        }
+
         function onWorkflowStepClick(targetDocType) {
             const targetStep = DOC_TYPE_CONFIG[targetDocType]?.step;
             const currentStep = DOC_TYPE_CONFIG[currentDocType]?.step;
-            if (!targetStep || targetDocType === currentDocType) return;
+            if (!targetStep) return;
 
+            // Maximum confirmed/active step for this project
+            const maxStep = linkedProjectData?.docWorkflow?.isCompleted ? 3 : (linkedProjectData?.docWorkflow?.currentStep || currentStep || 1);
+
+            // 1. Prevent skipping forward
+            if (targetStep > maxStep) {
+                const maxDocType = getDocTypeByStepNum(maxStep);
+                const maxTitle = DOC_TYPE_CONFIG[maxDocType]?.titleTH || `ขั้นตอนที่ ${maxStep}`;
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'ยังไม่ถึงขั้นตอนนี้',
+                        html: `คุณยังไม่สามารถข้ามไปยังขั้นตอน <b>"${DOC_TYPE_CONFIG[targetDocType].titleTH}"</b> ได้<br><br>กรุณาดำเนินการและกดยืนยันขั้นตอน <b>"${maxTitle}"</b> ให้เรียบร้อยก่อน`,
+                        icon: 'warning',
+                        confirmButtonColor: '#2563eb',
+                        confirmButtonText: 'เข้าใจแล้ว'
+                    });
+                } else {
+                    alert(`⚠️ ยังไม่สามารถข้ามขั้นตอนได้ กรุณายืนยันขั้นตอน "${maxTitle}" ก่อน`);
+                }
+                return;
+            }
+
+            // 2. Prevent accidental reversion / Prompt Read-Only view for confirmed steps
+            if (targetStep < maxStep) {
+                const targetTitle = DOC_TYPE_CONFIG[targetDocType].titleTH;
+                const activeDocType = getDocTypeByStepNum(maxStep);
+                const activeTitle = DOC_TYPE_CONFIG[activeDocType]?.titleTH || `ขั้นที่ ${maxStep}`;
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: '🔒 เอกสารขั้นตอนนี้ได้รับการยืนยันแล้ว',
+                        html: `<div style="text-align:left; font-size:0.95rem; line-height:1.6; color:#475569;">
+                            ขั้นตอน <b>"${targetTitle}"</b> ได้รับการยืนยันและส่งต่อไปยัง <b>"${activeTitle}"</b> เรียบร้อยแล้ว<br><br>
+                            <div style="background:#fef3c7; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; color:#92400e; font-size:0.88rem;">
+                                <i class='bx bx-lock-alt' style="font-size:1.1rem; vertical-align:middle;"></i>
+                                <b>เพื่อความถูกต้องทางบัญชี:</b><br>
+                                ระบบจะแสดงเอกสารนี้ในโหมด <b>"อ่านอย่างเดียว (Locked / Read-Only)"</b> เพื่อตรวจทานหรือสั่งพิมพ์เท่านั้น<br>
+                                หากต้องการแก้ไข ให้กด <b>"ปลดล็อคแก้ไข (PIN)"</b> เพื่อย้อนกลับกระบวนการ
+                            </div>
+                        </div>`,
+                        icon: 'info',
+                        showCancelButton: true,
+                        showDenyButton: true,
+                        confirmButtonText: '<i class="bx bx-show"></i> ดูเอกสาร (อ่านอย่างเดียว)',
+                        denyButtonText: '<i class="bx bx-lock-open-alt"></i> ปลดล็อคแก้ไข (PIN)',
+                        cancelButtonText: 'ยกเลิก',
+                        confirmButtonColor: '#2563eb',
+                        denyButtonColor: '#d97706',
+                        cancelButtonColor: '#64748b'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            switchDocType(targetDocType, { generateNewRef: false });
+                            setWorkflowLockedMode(true, targetDocType, maxStep);
+                        } else if (result.isDenied) {
+                            promptWorkflowSecurityPinAction('rollback_to_target', targetStep);
+                        }
+                    });
+                } else {
+                    if (confirm(`ขั้นตอน "${targetTitle}" ยืนยันแล้ว ต้องการเปิดดูในโหมดอ่านอย่างเดียวหรือไม่?\n(หรือกดยกเลิกเพื่อคงไว้ที่เดิม)`)) {
+                        switchDocType(targetDocType, { generateNewRef: false });
+                        setWorkflowLockedMode(true, targetDocType, maxStep);
+                    }
+                }
+                return;
+            }
+
+            // 3. Normal switch to active step
             switchDocType(targetDocType, { generateNewRef: false });
-            showToast(`สลับมาที่ ${DOC_TYPE_CONFIG[targetDocType].titleTH}`, 'info');
+            setWorkflowLockedMode(false, targetDocType, maxStep);
+            if (typeof showToast === 'function') {
+                showToast(`สลับมาที่ ${DOC_TYPE_CONFIG[targetDocType].titleTH}`, 'info');
+            }
         }
 
         let isImportingProject = false;
@@ -3869,6 +4625,10 @@
             const paramDocType = urlParams.get('docType');
             if (paramDocType && DOC_TYPE_CONFIG[paramDocType]) {
                 currentDocType = paramDocType;
+            }
+            const paramParentRef = urlParams.get('parentRef');
+            if (paramParentRef) {
+                workflowHistory.parentRefNo = paramParentRef;
             }
 
             // Fallback: If not found in URL params, check fresh pending_quotation_project from sessionStorage or localStorage
@@ -3910,6 +4670,10 @@
                 }
             }
 
+            currentWorkflowProjectId = autoImportId;
+            currentWorkflowSource = autoImportSource;
+            const paramViewOnly = urlParams.get('viewOnly') === 'true';
+
             if (autoImportId) {
                 // If projectId is present, start importing immediately from local cache, pending project or Firestore
                 await autoImportProject(autoImportId, autoImportSource).catch(e => console.error("Early auto-import error:", e));
@@ -3918,6 +4682,33 @@
             }
 
             loadSavedRecipientsDropdown(); // Load saved recipient profiles
+
+            // Handle workflow step alignment & lock state for linked project
+            if (linkedProjectData && linkedProjectData.docWorkflow) {
+                const wf = linkedProjectData.docWorkflow;
+                const activeStep = wf.isCompleted ? 3 : (wf.currentStep || 1);
+
+                if (paramViewOnly) {
+                    setWorkflowLockedMode(true, currentDocType, activeStep);
+                } else if (!paramDocType) {
+                    // No explicit docType in URL: Default directly to active workflow step
+                    const activeDocType = getDocTypeByStepNum(activeStep);
+                    currentDocType = activeDocType;
+                    switchDocType(currentDocType, { generateNewRef: false });
+                    if (wf.isCompleted) {
+                        setWorkflowLockedMode(true, currentDocType, 3);
+                    }
+                } else {
+                    const reqStep = DOC_TYPE_CONFIG[paramDocType]?.step || 1;
+                    if (reqStep < activeStep) {
+                        // User opened an earlier already-confirmed step: Lock it to prevent accidental modification!
+                        setWorkflowLockedMode(true, paramDocType, activeStep);
+                    } else if (wf.isCompleted) {
+                        setWorkflowLockedMode(true, paramDocType, 3);
+                    }
+                }
+            }
+
             switchDocType(currentDocType, { generateNewRef: false });
 
             // Restore sidebar collapse state
@@ -4878,6 +5669,24 @@
             }
 
             document.getElementById('pRefNo').innerText = document.getElementById('refNo').value;
+
+            // Sync Parent Reference to print area
+            const pParentRefRow = document.getElementById('pParentRefRow');
+            const pParentRef = document.getElementById('pParentRef');
+            const parentRefNoVal = document.getElementById('parentRefNo')?.value?.trim() || '';
+            const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
+            if (pParentRefRow && pParentRef) {
+                if (currentDocType !== 'quotation' && parentRefNoVal) {
+                    pParentRef.innerText = parentRefNoVal;
+                    const labelParentRef = document.getElementById('labelParentRef');
+                    if (labelParentRef && docConfig?.parentRefPrintLabel) {
+                        labelParentRef.innerText = docConfig.parentRefPrintLabel;
+                    }
+                    pParentRefRow.style.display = 'flex';
+                } else {
+                    pParentRefRow.style.display = 'none';
+                }
+            }
 
             // Format Date for print template
             const docDateVal = document.getElementById('docDate').value;
@@ -8389,6 +9198,7 @@
 
                 // Combine sources with priority: pendingProj > localCacheProj > firestoreProj
                 const proj = Object.assign({}, firestoreProj || {}, localCacheProj || {}, pendingProj || {});
+                linkedProjectData = proj;
 
                 if (finalItems.length === 0 && proj && toItemsArray(proj.items).length > 0) {
                     finalItems = toItemsArray(proj.items);
@@ -8582,6 +9392,18 @@
                 } else {
                     const discountInputEl = document.getElementById('discountInput');
                     if (discountInputEl) discountInputEl.value = '0';
+                }
+
+                // Import Parent Reference No. if applicable
+                const paramParentRef = urlParams.get('parentRef');
+                const workflowParentRef = proj.docWorkflow?.[currentDocType]?.parentRef || 
+                    (currentDocType === 'invoice' ? (proj.docWorkflow?.quotation?.docNumber || workflowHistory.quotationRefNo) : 
+                    currentDocType === 'receipt' ? (proj.docWorkflow?.invoice?.docNumber || workflowHistory.invoiceRefNo) : '');
+                const parentRefVal = paramParentRef || pendingProj?.parentRefNo || workflowParentRef || workflowHistory.parentRefNo || '';
+                if (parentRefVal) {
+                    const parentRefInput = document.getElementById('parentRefNo');
+                    if (parentRefInput) parentRefInput.value = parentRefVal;
+                    workflowHistory.parentRefNo = parentRefVal;
                 }
 
                 hasAutoImported = true;
@@ -9106,6 +9928,12 @@
             switchDocType(docTypeToSwitch, { generateNewRef: false });
 
             document.getElementById('refNo').value = data.refNo || '';
+            if (document.getElementById('parentRefNo')) {
+                document.getElementById('parentRefNo').value = data.parentRefNo || '';
+            }
+            if (data.parentRefNo) {
+                workflowHistory.parentRefNo = data.parentRefNo;
+            }
             document.getElementById('toCompany').value = data.toCompany || '';
             document.getElementById('toAddress').value = data.toAddress || '';
             document.getElementById('toAttn').value = data.toAttn || '';
