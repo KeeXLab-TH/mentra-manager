@@ -24,7 +24,6 @@ window.PAGE_DEPT_MAP = {
     'products.html': 'purchasing/products.html',
     'quotation.html': 'accounting/quotation.html',
     'sales_documents.html': 'accounting/sales_documents.html',
-    'sales_dashboard.html': 'accounting/sales_dashboard.html',
     'sales_invoice.html': 'accounting/sales_invoice.html',
     'sales_receipt.html': 'accounting/sales_receipt.html',
     'calendar.html': 'schedule/calendar.html',
@@ -997,12 +996,6 @@ window.applySidebarPermissions = function(userData) {
             'a[href*="sales_documents.html"]',
             'button[onclick*="sales_documents.html"]',
             '[data-page*="sales_documents.html"]'
-        ],
-        'sales_dashboard.html': [
-            '#nav-sales-dashboard',
-            'a[href*="sales_dashboard.html"]',
-            'button[onclick*="sales_dashboard.html"]',
-            '[data-page*="sales_dashboard.html"]'
         ],
         'products.html': [
             '#nav-products', 'a[href*="products.html"]', 'button[onclick*="products.html"]',

@@ -684,7 +684,7 @@
                 target.style.background = '#e0f2fe';
                 setTimeout(() => { target.style.background = ''; }, 1200);
             } else {
-                window.location.href = '../accounting/sales_dashboard.html';
+                window.location.href = '../accounting/quotation.html';
             }
         } else if (tab === 'schedule') {
             const target = document.getElementById('nav-tasks');
@@ -830,8 +830,6 @@
             setNavActive('nav-quotation', 'railBtnAccounting');
         } else if (path.includes('sales_documents.html')) {
             setNavActive('nav-sales-documents', 'railBtnAccounting');
-        } else if (path.includes('sales_dashboard.html')) {
-            setNavActive('nav-sales-dashboard', 'railBtnAccounting');
         } else if (path.includes('sales_invoice.html')) {
             setNavActive('nav-sales-invoice', 'railBtnAccounting');
         } else if (path.includes('sales_receipt.html')) {

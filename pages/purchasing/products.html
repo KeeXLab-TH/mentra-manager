@@ -30,11 +30,7 @@
     
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- PDF Generation Libraries (Upgraded for Thai Font Support) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
     <style>
 
@@ -2153,6 +2149,30 @@
             flex-direction: column;
             border: 1px solid rgba(0,0,0,0.03);
             cursor: pointer;
+            content-visibility: auto;
+            contain-intrinsic-size: 0 380px;
+        }
+
+        /* Skeleton Loading Animation */
+        @keyframes skeletonPulse {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .skeleton-card {
+            pointer-events: none !important;
+            cursor: default !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+        }
+        .skeleton-card:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: skeletonPulse 1.4s ease-in-out infinite;
         }
 
         .product-card:hover {
@@ -2385,7 +2405,7 @@
     <!-- Dual-Rail Sidebar & Multi-Shop Styles -->
     <link rel="stylesheet" href="../../assets/css/dashboard-dual-sidebar.css?v=2.5">
     <!-- Dual-Rail Sidebar & Multi-Shop Controller -->
-    <script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5"></script>
+    <script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5" defer></script>
 </head>
 
 <body>
@@ -2583,12 +2603,6 @@
                         <span>ประวัติเอกสารที่ออก</span>
                     </div>
                 </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_dashboard.html'" id="nav-sales-dashboard">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-spreadsheet'></i>
-                        <span>ระบบเอกสารงานขาย</span>
-                    </div>
-                </button>
 
                 <!-- Module Section: Schedule -->
                 <div class="sec-nav-divider">ตารางงาน & การอบรม</div>
@@ -2680,11 +2694,20 @@
     <!-- === PAGE CONTENT === -->
     <div class="dashboard-content" style="padding: 24px;">
         <div id="paneListView" style="display: block;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h2>สินค้า (Products)</h2>
-            <button class="btn-add-product" onclick="openProductModal()">
-                <i class="fa-solid fa-plus"></i> เพิ่มสินค้าใหม่
-            </button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <h2 style="font-size: 22px; font-weight: 700; margin: 0; color: var(--text);">สินค้า (Products)</h2>
+                <span id="productCountBadge" style="background: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;">... รายการ</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div style="position: relative; width: 260px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; pointer-events: none;"></i>
+                    <input type="text" id="productSearchInput" placeholder="ค้นหาสินค้า / ผู้ผลิต..." oninput="window.handleSearchProducts(this.value)" style="width: 100%; padding: 9px 12px 9px 34px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 13.5px; font-family: inherit; outline: none; background: #ffffff; transition: border-color 0.2s;">
+                </div>
+                <button class="btn-add-product" onclick="openProductModal()">
+                    <i class="fa-solid fa-plus"></i> เพิ่มสินค้าใหม่
+                </button>
+            </div>
         </div>
         <div id="productsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px;">
             <!-- Render products here -->
@@ -2827,40 +2850,215 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { initializeFirestore, collection, addDoc, getDoc, getDocs, doc, updateDoc, Timestamp, deleteDoc, orderBy, query, persistentLocalCache, persistentMultipleTabManager } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { FIREBASE_CONFIG, GAS_URL, DRIVE_ROOT_FOLDER_ID } from '../../assets/js/firebase-config.js';
 
-let FIREBASE_CONFIG, GAS_URL, DRIVE_ROOT_FOLDER_ID;
-let app, auth, db;
+const PRODUCTS_CACHE_KEY = 'mentra_cached_products_v1';
+const USER_CACHE_KEY = 'mentra_cached_user_profile';
+
+let app = initializeApp(FIREBASE_CONFIG);
+let auth = getAuth(app);
+let db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
+
 let currentProducts = [];
 
-async function init() {
+function loadCachedUser() {
     try {
-        const cfg = await import('../../assets/js/firebase-config.js');
-        FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
-        GAS_URL = cfg.GAS_URL || cfg.default?.GAS_URL;
-        DRIVE_ROOT_FOLDER_ID = cfg.DRIVE_ROOT_FOLDER_ID || cfg.default?.DRIVE_ROOT_FOLDER_ID;
+        const cachedUser = localStorage.getItem(USER_CACHE_KEY);
+        if (cachedUser) {
+            const u = JSON.parse(cachedUser);
+            if (u) {
+                document.body.style.display = 'block';
+                const avatar = document.getElementById("userAvatar");
+                const nameEl = document.getElementById("userName");
+                const badge = document.getElementById('userRoleBadge');
+                if (avatar) avatar.textContent = (u.firstName || u.displayName || u.email || 'M').charAt(0).toUpperCase();
+                if (nameEl) nameEl.textContent = u.displayName || u.firstName || u.email || 'ผู้ใช้งาน';
+                if (badge && u.role) {
+                    badge.textContent = u.role === 'admin' ? 'Admin' : 'User';
+                    badge.className = `role-badge ${u.role}`;
+                }
+            }
+        }
+    } catch (e) {}
+}
+
+function loadCachedProducts() {
+    try {
+        const cached = localStorage.getItem(PRODUCTS_CACHE_KEY);
+        if (cached) {
+            const data = JSON.parse(cached);
+            if (Array.isArray(data) && data.length > 0) {
+                currentProducts = data;
+                renderProducts(currentProducts);
+                return true;
+            }
+        }
     } catch (e) {
+        console.warn('Error reading products cache:', e);
+    }
+    return false;
+}
+
+function renderSkeletonLoading() {
+    const grid = document.getElementById("productsGrid");
+    if (!grid) return;
+    let skeletonHtml = '';
+    for (let i = 0; i < 8; i++) {
+        skeletonHtml += `
+            <div class="product-card skeleton-card">
+                <div class="product-card-img-container" style="background:#f8fafc;">
+                    <div class="skeleton-shimmer" style="width:100%; height:100%; border-radius:8px;"></div>
+                </div>
+                <div class="product-card-body">
+                    <div class="skeleton-shimmer" style="height:18px; width:75%; border-radius:6px; margin-bottom:8px;"></div>
+                    <div class="skeleton-shimmer" style="height:14px; width:45%; border-radius:6px; margin-bottom:14px;"></div>
+                    <div class="skeleton-shimmer" style="height:22px; width:35%; border-radius:6px; margin-top:auto;"></div>
+                </div>
+            </div>
+        `;
+    }
+    grid.innerHTML = skeletonHtml;
+}
+
+function getDriveImageUrl(url, fileId, size = 400) {
+    if (!url) return '../../assets/img/placeholder.png';
+    let id = fileId || null;
+    
+    if (!id) {
+        let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match) id = match[1];
+        else {
+            match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (match) id = match[1];
+        }
+    }
+    
+    if (id) {
+        return `https://lh3.googleusercontent.com/d/${id}=w${size}`;
+    }
+    return url;
+}
+
+function renderProducts(productsToRender = currentProducts) {
+    const grid = document.getElementById("productsGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    const countBadge = document.getElementById("productCountBadge");
+    if (countBadge) {
+        countBadge.textContent = `${productsToRender.length} รายการ`;
     }
 
-    if (!FIREBASE_CONFIG || !GAS_URL || !DRIVE_ROOT_FOLDER_ID) {
-        throw new Error('ไม่พบไฟล์การตั้งค่า firebase-config.js กรุณาติดต่อผู้ดูแลระบบ');
+    if (productsToRender.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
+            <i class="fa-solid fa-box-open" style="font-size: 48px; margin-bottom: 16px; color: var(--border);"></i>
+            <h3>ไม่พบสินค้า</h3>
+            <p>ยังไม่มีรายการสินค้าตรงกับคำค้นหา หรือยังไม่มีสินค้าในระบบ</p>
+        </div>`;
+        return;
     }
 
-    app = initializeApp(FIREBASE_CONFIG);
-    auth = getAuth(app);
-    db = initializeFirestore(app, {
-        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+    const fragment = document.createDocumentFragment();
+    productsToRender.forEach(p => {
+        const pName = p.name || p.title || p.productName || 'ไม่ระบุชื่อสินค้า';
+        const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || 'ไม่ระบุผู้ผลิต';
+        const pPrice = p.price || p.cost || 0;
+        let pImgUrl = getDriveImageUrl(p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl, p.fileId, 400);
+        const priceFmt = pPrice.toLocaleString();
+        
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+            <div class="product-card-img-container">
+                <img src="${pImgUrl}" alt="${pName}" class="product-card-img" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.src=\'../../assets/img/logo.png\'">
+            </div>
+            <div class="product-card-body">
+                <div class="product-card-title">${pName}</div>
+                <div class="product-card-mfg"><i class="fa-solid fa-industry"></i> ${pMfg}</div>
+                <div class="product-card-price">${priceFmt} ฿</div>
+                <div class="product-card-actions">
+                    <button type="button" class="btn-edit" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i> แก้ไข</button>
+                    <button type="button" class="btn-details" onclick="viewProductDetails('${p.id}')"><i class="fa-solid fa-circle-info"></i> รายละเอียด</button>
+                </div>
+            </div>
+        `;
+        fragment.appendChild(card);
     });
+    grid.appendChild(fragment);
+}
 
-    onAuthStateChanged(auth, async (user) => {
+window.handleSearchProducts = (queryText) => {
+    const q = (queryText || '').trim().toLowerCase();
+    if (!q) {
+        renderProducts(currentProducts);
+        return;
+    }
+    const filtered = currentProducts.filter(p => {
+        const name = (p.name || p.title || p.productName || '').toLowerCase();
+        const mfg = (p.manufacturer || p.brand || p.company || p.supplier || p.mfg || '').toLowerCase();
+        return name.includes(q) || mfg.includes(q);
+    });
+    renderProducts(filtered);
+};
+
+async function fetchProducts() {
+    try {
+        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        const freshProducts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        currentProducts = freshProducts;
+
+        try {
+            localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(freshProducts));
+        } catch (e) {
+            console.warn("Storage quota or error caching products", e);
+        }
+
+        const searchInput = document.getElementById("productSearchInput");
+        if (searchInput && searchInput.value.trim()) {
+            window.handleSearchProducts(searchInput.value);
+        } else {
+            renderProducts(currentProducts);
+        }
+    } catch (e) {
+        console.error("Error fetching products", e);
+        if (currentProducts.length === 0) {
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลสินค้าได้', 'error');
+        }
+    }
+}
+
+async function init() {
+    // 1. Instant Cached UI Render (0ms perceived latency)
+    loadCachedUser();
+    const hasCache = loadCachedProducts();
+    if (!hasCache) {
+        renderSkeletonLoading();
+    }
+
+    // 2. Auth listener
+    onAuthStateChanged(auth, (user) => {
         if (!user) {
+            try { localStorage.removeItem(USER_CACHE_KEY); } catch(e){}
             window.location.href = '../../index.html';
             return;
         }
-        
-        try {
-            const snap = await getDoc(doc(db, 'users', user.uid));
+
+        document.body.style.display = 'block';
+
+        // Background Sync: Fetch fresh products
+        fetchProducts();
+
+        // In parallel: Fetch user role/profile
+        getDoc(doc(db, 'users', user.uid)).then(snap => {
             if (snap.exists()) {
                 const userData = snap.data();
+                try {
+                    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(userData));
+                } catch(e){}
+
                 document.getElementById("userAvatar").textContent = (userData.firstName || user.displayName || user.email).charAt(0).toUpperCase();
                 document.getElementById("userName").textContent = userData.displayName || userData.firstName || user.displayName || user.email;
                 
@@ -2876,93 +3074,20 @@ async function init() {
                 document.getElementById("userAvatar").textContent = user.email.charAt(0).toUpperCase();
                 document.getElementById("userName").textContent = user.displayName || user.email;
             }
-        } catch (e) {
-            console.error("Error fetching user role:", e);
-        }
-
-        document.body.style.display = 'block';
-        fetchProducts();
+        }).catch(e => {
+            console.error("Error fetching user profile:", e);
+        });
     });
 }
 
 init();
 
 window.handleLogout = () => {
-    signOut(auth).then(() => { window.location.href = '../../index.html'; });
-};
-
-async function fetchProducts() {
-    try {
-        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-        const snap = await getDocs(q);
-        currentProducts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderProducts();
-    } catch (e) {
-        console.error("Error fetching products", e);
-        Swal.fire('ข้อผิดพลาด', 'ไม่สามารถโหลดข้อมูลสินค้าได้', 'error');
-    }
-}
-
-
-function getDriveImageUrl(url, fileId) {
-    if (!url) return '../../assets/img/placeholder.png';
-    let id = fileId || null;
-    
-    if (!id) {
-        let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (match) id = match[1];
-        else {
-            match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            if (match) id = match[1];
-        }
-    }
-    
-    if (id) {
-        // Try lh3.googleusercontent.com which is the most reliable for images right now
-        return `https://lh3.googleusercontent.com/d/${id}=w1000`;
-    }
-    return url;
-}
-
-function renderProducts() {
-    const grid = document.getElementById("productsGrid");
-    grid.innerHTML = "";
-
-    if (currentProducts.length === 0) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-secondary);">
-            <i class="fa-solid fa-box-open" style="font-size: 48px; margin-bottom: 16px; color: var(--border);"></i>
-            <h3>ยังไม่มีสินค้าในระบบ</h3>
-            <p>คลิก "เพิ่มสินค้าใหม่" เพื่อเริ่มต้น</p>
-        </div>`;
-        return;
-    }
-
-    currentProducts.forEach(p => {
-        const pName = p.name || p.title || p.productName || 'ไม่ระบุชื่อสินค้า';
-        const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || 'ไม่ระบุผู้ผลิต';
-        const pPrice = p.price || p.cost || 0;
-        let pImgUrl = getDriveImageUrl(p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl, p.fileId);
-        const priceFmt = pPrice.toLocaleString();
-        
-        const card = document.createElement("div");
-        card.className = "product-card";
-        card.innerHTML = `
-            <div class="product-card-img-container">
-                <img src="${pImgUrl}" alt="${pName}" class="product-card-img" referrerpolicy="no-referrer" onerror="this.src=\'../../assets/img/logo.png\'">
-            </div>
-            <div class="product-card-body">
-                <div class="product-card-title">${pName}</div>
-                <div class="product-card-mfg"><i class="fa-solid fa-industry"></i> ${pMfg}</div>
-                <div class="product-card-price">${priceFmt} ฿</div>
-                <div class="product-card-actions">
-                    <button type="button" class="btn-edit" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i> แก้ไข</button>
-                    <button type="button" class="btn-details" onclick="viewProductDetails('${p.id}')"><i class="fa-solid fa-circle-info"></i> รายละเอียด</button>
-                </div>
-            </div>
-        `;
-        grid.appendChild(card);
+    signOut(auth).then(() => {
+        try { localStorage.removeItem(USER_CACHE_KEY); } catch(e){}
+        window.location.href = '../../index.html';
     });
-}
+};
 
 window.openProductModal = () => {
     try {
@@ -3194,7 +3319,7 @@ window.viewProductDetails = (id) => {
         const pName = p.name || p.title || p.productName || '';
         const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || '- ไม่ระบุ -';
         const pPrice = p.price || p.cost || 0;
-        let pImgUrl = getDriveImageUrl(p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl, p.fileId);
+        let pImgUrl = getDriveImageUrl(p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl, p.fileId, 1000);
         const pDocs = p.documentDriveUrls || p.documents || p.docs || p.files || [];
 
         const pdpi = document.getElementById("paneDetailProdId"); if(pdpi) pdpi.value = id;
@@ -3252,7 +3377,7 @@ window.editProduct = (id) => {
         const pName = p.name || p.title || p.productName || '';
         const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || '';
         const pPrice = p.price || p.cost || 0;
-        const pImgUrl = getDriveImageUrl(p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl, p.fileId);
+        const pImgUrl = getDriveImageUrl(p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl, p.fileId, 1000);
         const pDocs = p.documentDriveUrls || p.documents || p.docs || p.files || [];
 
         const prodId = document.getElementById("prodId"); if(prodId) prodId.value = p.id;

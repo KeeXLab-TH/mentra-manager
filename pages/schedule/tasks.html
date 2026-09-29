@@ -28,25 +28,40 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- SweetAlert2 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 
     <!-- Premium UI Overlay -->
     <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780690277137">
     <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
 
     <style>
-        /* ===== RESET ===== */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { overflow-x: hidden; max-width: 100vw; }
+        /* ===== RESET & GLOBAL FONT ===== */
+        *, *::before, *::after { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
+        html, body { 
+            overflow-x: hidden; 
+            max-width: 100vw; 
+        }
+        html, body, button, input, select, textarea, optgroup {
+            font-family: 'Kanit', 'Inter', 'Prompt', sans-serif !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        button {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+        }
 
         :root {
             --sidebar-w: 260px;
@@ -72,7 +87,7 @@
 
         body {
             display: none;
-            font-family: 'Kanit', 'Inter', sans-serif;
+            font-family: 'Kanit', 'Inter', 'Prompt', sans-serif !important;
             background: var(--bg);
             color: var(--text);
         }
@@ -294,12 +309,150 @@
         }
         .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26, 111, 191, 0.15); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* Lightweight Utilities replacing Tailwind CDN */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .w-full { width: 100%; }
+        .gap-2 { gap: 8px; }
+        .gap-3 { gap: 12px; }
+        .gap-4 { gap: 16px; }
+        .text-xs { font-size: 12px; }
+        .text-sm { font-size: 13.5px; }
+        .text-slate-400 { color: #94a3b8; }
+        .text-slate-500 { color: #64748b; }
+        .text-slate-600 { color: #475569; }
+        .text-slate-700 { color: #334155; }
+        .text-slate-800 { color: #1e293b; }
+        .text-blue-500 { color: #3b82f6; }
+        .text-blue-600 { color: #2563eb; }
+        .text-amber-500 { color: #f59e0b; }
+        .text-amber-800 { color: #92400e; }
+        .text-emerald-500 { color: #10b981; }
+        .bg-amber-100 { background-color: #fef3c7; }
+        .bg-slate-100 { background-color: #f1f5f9; }
+        .bg-slate-50\/50 { background-color: rgba(248, 250, 252, 0.5); }
+        .border-slate-200 { border-color: #e2e8f0; }
+        .rounded-full { border-radius: 9999px; }
+        .rounded-xl { border-radius: 12px; }
+        .rounded-lg { border-radius: 8px; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .py-6 { padding-top: 24px; padding-bottom: 24px; }
+        .py-12 { padding-top: 48px; padding-bottom: 48px; }
+        .px-2\.5 { padding-left: 10px; padding-right: 10px; }
+        .py-1 { padding-top: 4px; padding-bottom: 4px; }
+        .p-1\.5 { padding: 6px; }
+        .ml-2 { margin-left: 8px; }
+        .mr-1 { margin-right: 4px; }
+        .mb-1 { margin-bottom: 4px; }
+        .pl-4 { padding-left: 16px; }
+        .border-l { border-left-width: 1px; }
+        .border-dashed { border-style: dashed; }
+        .col-span-full { grid-column: 1 / -1; }
+        .text-center { text-align: center; }
+
+        /* View Toggle Group */
+        .view-btn-group {
+            display: inline-flex;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 3px;
+            gap: 2px;
+            border: 1px solid #e2e8f0;
+        }
+        .view-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .view-btn:hover {
+            color: var(--text);
+        }
+        .view-btn.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Add Task Button */
+        .btn-add-task {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            background: linear-gradient(135deg, var(--primary) 0%, #155e9e 100%);
+            color: #ffffff !important;
+            border: none;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(26, 111, 191, 0.25);
+            font-family: inherit;
+        }
+        .btn-add-task:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(26, 111, 191, 0.35);
+            filter: brightness(1.05);
+        }
+        .btn-add-task:active {
+            transform: translateY(0);
+        }
+
+        /* Modal & Row Utilities */
+        .px-4 { padding-left: 16px; padding-right: 16px; }
+        .px-5 { padding-left: 20px; padding-right: 20px; }
+        .py-2 { padding-top: 8px; padding-bottom: 8px; }
+        .text-white { color: #ffffff !important; }
+        .text-lg { font-size: 18px; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+        .hover\:bg-slate-100:hover { background-color: #f1f5f9; }
+        .hover\:bg-blue-50:hover { background-color: #eff6ff; }
+        .hover\:bg-red-50:hover { background-color: #fef2f2; }
+        .hover\:text-red-500:hover { color: #ef4444; }
+        .hover\:text-slate-600:hover { color: #475569; }
+        .line-clamp-1 {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Skeleton Animation */
+        @keyframes skeletonPulse {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: skeletonPulse 1.4s ease-in-out infinite;
+        }
     </style>
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <!-- Dual-Rail Sidebar & Multi-Shop Styles -->
     <link rel="stylesheet" href="../../assets/css/dashboard-dual-sidebar.css?v=2.5">
     <!-- Dual-Rail Sidebar & Multi-Shop Controller -->
-    <script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5"></script>
+    <script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5" defer></script>
 </head>
 
 <body>
@@ -491,12 +644,6 @@
                     <div class="sec-nav-item-left">
                         <i class='bx bx-folder-open'></i>
                         <span>ประวัติเอกสารที่ออก</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_dashboard.html'" id="nav-sales-dashboard">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-spreadsheet'></i>
-                        <span>ระบบเอกสารงานขาย</span>
                     </div>
                 </button>
 
@@ -752,79 +899,168 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
         import { 
-            getFirestore, doc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp 
+            initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, collection, onSnapshot, addDoc, updateDoc, deleteDoc, serverTimestamp 
         } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { FIREBASE_CONFIG } from '../../assets/js/firebase-config.js';
 
-        let firebaseConfig;
-        try {
-            const _cfg = await import('../../assets/js/firebase-config.js');
-            firebaseConfig = _cfg.FIREBASE_CONFIG || _cfg.default?.FIREBASE_CONFIG;
-        } catch (e) { /* firebase-config.js ไม่พบ */ }
-        if (!firebaseConfig) throw new Error('ไม่พบไฟล์ firebase-config.js กรุณาติดต่อผู้ดูแลระบบ');
+        const TASKS_CACHE_KEY = 'mentra_cached_tasks_v1';
+        const USERS_CACHE_KEY = 'mentra_cached_users_v1';
+        const USER_PROFILE_CACHE_KEY = 'mentra_cached_user_profile';
 
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp(FIREBASE_CONFIG);
         const auth = getAuth(app);
-        const db = getFirestore(app);
+        const db = initializeFirestore(app, {
+            localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+        });
 
         let currentUser = null;
         let tasksList = [];
         let usersList = [];
 
-        // Auth Protection
-        onAuthStateChanged(auth, async (user) => {
+        // 1. Instant User Profile Load from Cache
+        function loadCachedUserProfile() {
+            try {
+                const cached = localStorage.getItem(USER_PROFILE_CACHE_KEY);
+                if (cached) {
+                    const u = JSON.parse(cached);
+                    if (u) {
+                        document.body.style.display = 'flex';
+                        const name = u.displayName || u.firstName || u.name || u.email || 'ผู้ใช้งาน';
+                        const avatar = (u.firstName || u.displayName || u.name || u.email || 'M').charAt(0).toUpperCase();
+                        document.getElementById('userName').textContent = name;
+                        document.getElementById('userAvatar').textContent = avatar;
+                        const badge = document.getElementById('userRoleBadge');
+                        if (badge && u.role) {
+                            badge.textContent = u.role === 'admin' ? 'Admin' : 'User';
+                            badge.className = `role-badge ${u.role}`;
+                        }
+                    }
+                }
+            } catch(e){}
+        }
+
+        // 2. Instant Users Dropdown Load from Cache
+        function populateAssigneeDropdown(list) {
+            const assigneeSelect = document.getElementById('taskAssignee');
+            if (!assigneeSelect) return;
+            assigneeSelect.innerHTML = '<option value="">-- เลือกผู้รับผิดชอบ --</option>';
+            list.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.name;
+                opt.textContent = u.name;
+                assigneeSelect.appendChild(opt);
+            });
+        }
+
+        function loadCachedUsersDropdown() {
+            try {
+                const cached = localStorage.getItem(USERS_CACHE_KEY);
+                if (cached) {
+                    usersList = JSON.parse(cached);
+                    populateAssigneeDropdown(usersList);
+                }
+            } catch(e){}
+        }
+
+        // 3. Instant Tasks Load from Cache (0ms perceived load time)
+        function loadCachedTasks() {
+            try {
+                const cached = localStorage.getItem(TASKS_CACHE_KEY);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        tasksList = parsed;
+                        renderTasks();
+                        return true;
+                    }
+                }
+            } catch(e){}
+            return false;
+        }
+
+        // 4. Skeleton Loading if no cache exists
+        function renderSkeletonTasks() {
+            const cardsContainer = document.getElementById('colTaskCards');
+            if (!cardsContainer) return;
+            let skeletonHtml = '';
+            for (let i = 0; i < 4; i++) {
+                skeletonHtml += `
+                    <div class="task-card-row" style="pointer-events: none; opacity: 0.85;">
+                        <div class="task-row-main" style="width: 100%;">
+                            <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                                <div class="skeleton-shimmer" style="height: 18px; width: 70px; border-radius: 6px;"></div>
+                                <div class="skeleton-shimmer" style="height: 18px; width: 60px; border-radius: 6px;"></div>
+                            </div>
+                            <div class="skeleton-shimmer" style="height: 20px; width: 65%; border-radius: 6px; margin-bottom: 6px;"></div>
+                            <div class="skeleton-shimmer" style="height: 14px; width: 40%; border-radius: 6px;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            cardsContainer.innerHTML = skeletonHtml;
+        }
+
+        // Run Instant Cached UI Load immediately
+        loadCachedUserProfile();
+        loadCachedUsersDropdown();
+        const hasCache = loadCachedTasks();
+        if (!hasCache) {
+            renderSkeletonTasks();
+        }
+
+        // 5. Auth Protection & Parallel Background Sync
+        onAuthStateChanged(auth, (user) => {
             if (!user) {
+                try { localStorage.removeItem(USER_PROFILE_CACHE_KEY); } catch(e){}
                 window.location.href = '../../index.html';
                 return;
             }
             currentUser = user;
-            try {
-                const userSnap = await getDoc(doc(db, 'users', user.uid));
+            document.body.style.display = 'flex';
+
+            // Background Realtime Listeners
+            listenToUsers();
+            listenToTasks();
+
+            // In Parallel: User profile verification
+            getDoc(doc(db, 'users', user.uid)).then(userSnap => {
                 if (userSnap.exists()) {
                     const uData = userSnap.data();
+                    try { localStorage.setItem(USER_PROFILE_CACHE_KEY, JSON.stringify(uData)); } catch(e){}
                     if (window.checkPageAccess && !window.checkPageAccess(uData)) return;
 
-                    document.getElementById('userName').textContent = uData.name || user.email;
-                    document.getElementById('userAvatar').textContent = (uData.name || user.email).charAt(0).toUpperCase();
+                    document.getElementById('userName').textContent = uData.name || uData.displayName || user.email;
+                    document.getElementById('userAvatar').textContent = (uData.name || uData.displayName || user.email).charAt(0).toUpperCase();
                     const badge = document.getElementById('userRoleBadge');
-                    badge.textContent = uData.role === 'admin' ? 'Admin' : 'User';
-                    badge.className = `role-badge ${uData.role}`;
+                    const role = uData.role || 'user';
+                    badge.textContent = role === 'admin' ? 'Admin' : 'User';
+                    badge.className = `role-badge ${role}`;
                 }
-                document.body.style.display = 'flex';
-                listenToUsers();
-                listenToTasks();
-            } catch (err) {
-                console.error(err);
-                document.body.style.display = 'flex';
-            }
+            }).catch(err => console.error("Error fetching user profile:", err));
         });
 
-        // Realtime Users Listener (Populate Assignee Dropdown)
+        // Realtime Users Listener (Populate Assignee Dropdown & Cache)
         function listenToUsers() {
             onSnapshot(collection(db, 'users'), (snap) => {
                 usersList = [];
-                const assigneeSelect = document.getElementById('taskAssignee');
-                assigneeSelect.innerHTML = '<option value="">-- เลือกผู้รับผิดชอบ --</option>';
-
                 snap.forEach(docSnap => {
                     const uData = docSnap.data();
                     const userName = uData.name || uData.displayName || uData.email || docSnap.id;
                     usersList.push({ id: docSnap.id, name: userName, ...uData });
-
-                    const opt = document.createElement('option');
-                    opt.value = userName;
-                    opt.textContent = userName;
-                    assigneeSelect.appendChild(opt);
                 });
+                populateAssigneeDropdown(usersList);
+                try { localStorage.setItem(USERS_CACHE_KEY, JSON.stringify(usersList)); } catch(e){}
             }, (err) => console.error('Users listener error:', err));
         }
 
-        // Realtime Tasks Listener
+        // Realtime Tasks Listener & Cache Sync
         function listenToTasks() {
             onSnapshot(collection(db, 'tasks'), (snap) => {
                 tasksList = [];
                 snap.forEach(docSnap => {
                     tasksList.push({ id: docSnap.id, ...docSnap.data() });
                 });
+                try { localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(tasksList)); } catch(e){}
                 renderTasks();
             }, (err) => console.error('Tasks listener error:', err));
         }
