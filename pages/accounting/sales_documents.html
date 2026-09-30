@@ -1268,23 +1268,70 @@
             let qCount = 0, qTotal = 0;
             let iCount = 0, iTotal = 0;
             let rCount = 0, rTotal = 0;
-            let grandTotalAll = 0;
+
+            // --- Grand Total: count only once per project chain ---
+            // Build refNo → parentRefNo lookup.
+            // IMPORTANT: Quotations (MTQ) are always root — ignore their parentRefNo
+            // even if bad data was saved (prevents circular MTQ→MTI→MTQ loops).
+            const refToParent = new Map();
+            allDocuments.forEach(d => {
+                const ref    = (d.refNo || '').toString().trim();
+                const parent = (d.parentRefNo || '').toString().trim();
+                const type   = d.docType || (ref.startsWith('MTI') ? 'invoice' : (ref.startsWith('MTR') ? 'receipt' : 'quotation'));
+                if (ref && ref !== '-') {
+                    // Only non-quotation docs may have a meaningful parent
+                    const effectiveParent = (type !== 'quotation' && parent && parent !== '-') ? parent : '';
+                    refToParent.set(ref, effectiveParent);
+                }
+            });
+
+            // Walk the chain upward to find the root (no parent = root)
+            function resolveRoot(refNo) {
+                let current = refNo;
+                const visited = new Set();
+                while (current) {
+                    if (visited.has(current)) break; // cycle guard
+                    visited.add(current);
+                    const parent = refToParent.get(current) || '';
+                    if (!parent) break; // reached root
+                    current = parent;
+                }
+                return current || refNo;
+            }
+
+            // projectGroups: key = root refNo (always the quotation), value = { quotation, invoice, receipt }
+            const projectGroups = new Map();
 
             allDocuments.forEach(d => {
-                const total = parseFloat(String(d.grandTotal || '0').replace(/,/g, '')) || 0;
-                grandTotalAll += total;
+                const total  = parseFloat(String(d.grandTotal || '0').replace(/,/g, '')) || 0;
+                const rawRef = (d.refNo || '').toString().trim();
+                const type   = d.docType || (rawRef.startsWith('MTI') ? 'invoice' : (rawRef.startsWith('MTR') ? 'receipt' : 'quotation'));
 
-                const type = d.docType || (d.refNo?.startsWith('MTI') ? 'invoice' : (d.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
-                if (type === 'quotation') {
-                    qCount++;
-                    qTotal += total;
-                } else if (type === 'invoice') {
-                    iCount++;
-                    iTotal += total;
-                } else if (type === 'receipt') {
-                    rCount++;
-                    rTotal += total;
+                // Per-type KPI counters (all docs, no dedup)
+                if (type === 'quotation') { qCount++; qTotal += total; }
+                else if (type === 'invoice') { iCount++; iTotal += total; }
+                else if (type === 'receipt') { rCount++; rTotal += total; }
+
+                // Resolve root — quotation resolves to itself, invoice/receipt walk up
+                const rootRef = resolveRoot(rawRef) || rawRef || d.id;
+
+                if (!projectGroups.has(rootRef)) {
+                    projectGroups.set(rootRef, { quotation: null, invoice: null, receipt: null });
                 }
+                const group = projectGroups.get(rootRef);
+
+                // Store first occurrence per type in this project group
+                if (type === 'quotation' && group.quotation === null) group.quotation = total;
+                else if (type === 'invoice'   && group.invoice   === null) group.invoice   = total;
+                else if (type === 'receipt'   && group.receipt   === null) group.receipt   = total;
+            });
+
+            // Sum grand total: pick ONE value per project (quotation > invoice > receipt)
+            let grandTotalAll = 0;
+            projectGroups.forEach(group => {
+                if      (group.quotation !== null) grandTotalAll += group.quotation;
+                else if (group.invoice   !== null) grandTotalAll += group.invoice;
+                else if (group.receipt   !== null) grandTotalAll += group.receipt;
             });
 
             document.getElementById('kpiQuotationCount').innerText = qCount;
@@ -1297,7 +1344,7 @@
             document.getElementById('kpiReceiptTotal').innerText = `฿${formatNumber(rTotal)}`;
 
             document.getElementById('kpiGrandTotalAll').innerText = `฿${formatNumber(grandTotalAll)}`;
-            document.getElementById('kpiTotalAllDocs').innerText = `รวม ${allDocuments.length} ฉบับ`;
+            document.getElementById('kpiTotalAllDocs').innerText = `รวม ${allDocuments.length} ฉบับ (${projectGroups.size} โครงการ)`;
 
             document.getElementById('totalDocsBadge').innerText = `${allDocuments.length} ฉบับ`;
             document.getElementById('countAll').innerText = allDocuments.length;

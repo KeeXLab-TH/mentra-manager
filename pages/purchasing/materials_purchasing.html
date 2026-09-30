@@ -7115,6 +7115,26 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Instant user display from local cache to prevent seeing "กำลังโหลด..."
+        try {
+            const cachedStr = localStorage.getItem('mentra_cached_user_profile') || localStorage.getItem('mentra_user_permissions');
+            if (cachedStr) {
+                const cached = JSON.parse(cachedStr);
+                const name = cached.displayName || (cached.firstName ? `${cached.firstName} ${cached.lastName || ''}`.trim() : '') || cached.name || cached.username || cached.email;
+                if (name) {
+                    const uName = document.getElementById('userName');
+                    const uAvatar = document.getElementById('userAvatar');
+                    const uBadge = document.getElementById('userRoleBadge');
+                    if (uName) uName.textContent = name;
+                    if (uAvatar) uAvatar.textContent = name.charAt(0).toUpperCase();
+                    if (uBadge && cached.role) {
+                        uBadge.textContent = cached.role === 'admin' ? 'Administrator' : (cached.role.charAt(0).toUpperCase() + cached.role.slice(1));
+                        uBadge.className = `role-badge ${cached.role}`;
+                    }
+                }
+            }
+        } catch(e) {}
+
         onAuthStateChanged(auth, async (user) => {
             const urlParams = new URLSearchParams(window.location.search);
             const paramProjId = urlParams.get('projectId');

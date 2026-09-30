@@ -6612,6 +6612,26 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Instant user display from local cache to prevent seeing "กำลังโหลด..."
+        try {
+            const cachedStr = localStorage.getItem('mentra_cached_user_profile') || localStorage.getItem('mentra_user_permissions');
+            if (cachedStr) {
+                const cached = JSON.parse(cachedStr);
+                const name = cached.displayName || (cached.firstName ? `${cached.firstName} ${cached.lastName || ''}`.trim() : '') || cached.name || cached.username || cached.email;
+                if (name) {
+                    const uName = document.getElementById('userName');
+                    const uAvatar = document.getElementById('userAvatar');
+                    const uBadge = document.getElementById('userRoleBadge');
+                    if (uName) uName.textContent = name;
+                    if (uAvatar) uAvatar.textContent = name.charAt(0).toUpperCase();
+                    if (uBadge && cached.role) {
+                        uBadge.textContent = cached.role === 'admin' ? 'Administrator' : (cached.role.charAt(0).toUpperCase() + cached.role.slice(1));
+                        uBadge.className = `role-badge ${cached.role}`;
+                    }
+                }
+            }
+        } catch(e) {}
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = '../../index.html';
@@ -6639,10 +6659,35 @@
 
                 if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
 
+                // Update Topbar User UI
+                const resolvedName = userData.displayName 
+                    || (userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : '') 
+                    || userData.name 
+                    || userData.username 
+                    || user.displayName 
+                    || user.email 
+                    || 'ผู้ใช้งาน';
+                const userNameEl = document.getElementById('userName');
+                const userAvatarEl = document.getElementById('userAvatar');
+                const userRoleBadge = document.getElementById('userRoleBadge');
+                if (userNameEl) userNameEl.textContent = resolvedName;
+                if (userAvatarEl) userAvatarEl.textContent = resolvedName.charAt(0).toUpperCase();
+                if (userRoleBadge) {
+                    const r = userData.role || 'user';
+                    userRoleBadge.textContent = r === 'admin' ? 'Administrator' : (r.charAt(0).toUpperCase() + r.slice(1));
+                    userRoleBadge.className = `role-badge ${r}`;
+                }
+
+                // Cache profile for fast subsequent page loads
+                try {
+                    localStorage.setItem('mentra_cached_user_profile', JSON.stringify({
+                        ...userData,
+                        displayName: resolvedName
+                    }));
+                } catch(e) {}
+
                 // Show body now that the user is fully verified
                 document.body.style.setProperty('display', 'flex', 'important');
-
-                // Update Auth UI logic here if any needed for this page
             } catch (e) {
                 console.warn('User load issue:', e);
             }
