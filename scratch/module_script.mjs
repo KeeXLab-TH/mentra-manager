@@ -217,9 +217,27 @@
             // 7. Update Stepper UI
             updateWorkflowStepperUI();
 
-            // 8. Generate new RefNo if requested
-            if (options.generateNewRef) {
+            // 8. Generate new RefNo if requested, or sync prefix when switching types
+            const existingStepDocNumber = linkedProjectData?.docWorkflow?.[type]?.docNumber;
+            const refNoEl = document.getElementById('refNo');
+            if (existingStepDocNumber && refNoEl) {
+                refNoEl.value = existingStepDocNumber;
+            } else if (options.generateNewRef) {
                 generateRefNo();
+            } else if (refNoEl) {
+                const curVal = refNoEl.value.trim();
+                if (!curVal || curVal === '-') {
+                    generateRefNo();
+                } else if (type === 'invoice' && curVal.startsWith('MTQ')) {
+                    const suffix = extractDocSuffix(curVal);
+                    refNoEl.value = `MTI${suffix}`;
+                } else if (type === 'receipt' && (curVal.startsWith('MTI') || curVal.startsWith('MTQ'))) {
+                    const suffix = extractDocSuffix(curVal);
+                    refNoEl.value = `MTR${suffix}`;
+                } else if (type === 'quotation' && (curVal.startsWith('MTI') || curVal.startsWith('MTR'))) {
+                    const suffix = extractDocSuffix(curVal);
+                    refNoEl.value = `MTQ${suffix}`;
+                }
             }
 
             // 9. Sync preview
@@ -664,8 +682,86 @@
         window.handleLogout = handleLogout;
         // toggleSidebarCollapse handled by dashboard-dual-sidebar.js
 
+        function extractDocSuffix(ref) {
+            if (!ref) return '';
+            const str = String(ref).trim();
+            return str.replace(/^(?:MT[A-Z]|REC|INV|QT)/i, '');
+        }
+
+        function onParentRefInput() {
+            const parentVal = document.getElementById('parentRefNo')?.value?.trim() || '';
+            workflowHistory.parentRefNo = parentVal;
+            const suffix = extractDocSuffix(parentVal);
+            if (suffix) {
+                const refEl = document.getElementById('refNo');
+                if (refEl) {
+                    if (currentDocType === 'invoice') {
+                        refEl.value = `MTI${suffix}`;
+                    } else if (currentDocType === 'receipt') {
+                        refEl.value = `MTR${suffix}`;
+                    }
+                }
+            }
+            if (typeof triggerLiveSync === 'function') triggerLiveSync();
+        }
+
         // --- Core Functions ---
-        async function generateRefNo() {
+        async function generateRefNo(forceSequential = false) {
+            const config = DOC_TYPE_CONFIG[currentDocType] || DOC_TYPE_CONFIG.quotation;
+
+            // 1. If invoice (MTI), derive number from preceding quotation (MTQ)
+            if (!forceSequential && currentDocType === 'invoice') {
+                const parentInputVal = document.getElementById('parentRefNo')?.value?.trim();
+                const parentRef = parentInputVal || 
+                    workflowHistory.quotationRefNo || 
+                    workflowHistory.parentRefNo || 
+                    linkedProjectData?.docWorkflow?.invoice?.parentRef || 
+                    linkedProjectData?.docWorkflow?.quotation?.docNumber || 
+                    new URLSearchParams(window.location.search).get('parentRef') || '';
+
+                if (parentRef) {
+                    const suffix = extractDocSuffix(parentRef);
+                    if (suffix) {
+                        const newRef = `MTI${suffix}`;
+                        const refEl = document.getElementById('refNo');
+                        if (refEl) refEl.value = newRef;
+                        if (!parentInputVal && document.getElementById('parentRefNo')) {
+                            document.getElementById('parentRefNo').value = parentRef;
+                        }
+                        if (typeof triggerLiveSync === 'function') triggerLiveSync();
+                        return newRef;
+                    }
+                }
+            }
+
+            // 2. If receipt (MTR), derive number from preceding invoice (MTI) or quotation (MTQ)
+            if (!forceSequential && currentDocType === 'receipt') {
+                const parentInputVal = document.getElementById('parentRefNo')?.value?.trim();
+                const parentRef = parentInputVal || 
+                    workflowHistory.invoiceRefNo || 
+                    workflowHistory.quotationRefNo || 
+                    workflowHistory.parentRefNo || 
+                    linkedProjectData?.docWorkflow?.receipt?.parentRef || 
+                    linkedProjectData?.docWorkflow?.invoice?.docNumber || 
+                    linkedProjectData?.docWorkflow?.quotation?.docNumber || 
+                    new URLSearchParams(window.location.search).get('parentRef') || '';
+
+                if (parentRef) {
+                    const suffix = extractDocSuffix(parentRef);
+                    if (suffix) {
+                        const newRef = `MTR${suffix}`;
+                        const refEl = document.getElementById('refNo');
+                        if (refEl) refEl.value = newRef;
+                        if (!parentInputVal && document.getElementById('parentRefNo')) {
+                            document.getElementById('parentRefNo').value = parentRef;
+                        }
+                        if (typeof triggerLiveSync === 'function') triggerLiveSync();
+                        return newRef;
+                    }
+                }
+            }
+
+            // 3. Fallback: Sequential generation by date
             const docDateInput = document.getElementById('docDate');
             const docDateVal = docDateInput?.value;
             if (!docDateVal) {
@@ -678,7 +774,6 @@
             const year = date.getFullYear().toString().slice(-2);
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
-            const config = DOC_TYPE_CONFIG[currentDocType] || DOC_TYPE_CONFIG.quotation;
             const prefix = `${config.prefix}${year}${month}${day}`;
 
             let nextSeq = 1;
@@ -700,14 +795,16 @@
                     });
                     nextSeq = maxSeq + 1;
                 } catch (err) {
-                    console.warn('Could not query quotations_history for sequence, fallback to 1:', err);
                     console.warn(`Could not query ${config.firestoreCollection} for sequence, fallback to 1:`, err);
                 }
             }
 
             const runStr = String(nextSeq).padStart(3, '0');
-            document.getElementById('refNo').value = `${prefix}${runStr}`;
+            const newRef = `${prefix}${runStr}`;
+            const refEl = document.getElementById('refNo');
+            if (refEl) refEl.value = newRef;
             if (typeof triggerLiveSync === 'function') triggerLiveSync();
+            return newRef;
         }
 
         function formatNumber(num) {

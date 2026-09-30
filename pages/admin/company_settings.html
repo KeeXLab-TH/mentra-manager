@@ -900,6 +900,7 @@
                 </div>
                 <div class="data-mapping-chips">
                     <span class="data-mapping-chip"><i class='bx bx-check-circle'></i> Logo → หัวเอกสาร</span>
+                    <span class="data-mapping-chip" style="background: rgba(37, 99, 235, 0.25); border: 1px solid rgba(255, 255, 255, 0.4); color: #ffffff;"><i class='bx bx-purchase-tag'></i> Code (อักษรย่อร้าน 2 ตัว) → นำหน้าเลขที่ ({CODE}Q / {CODE}I / {CODE}R)</span>
                     <span class="data-mapping-chip"><i class='bx bx-check-circle'></i> Tax ID (13 หลัก) → เลขภาษี</span>
                     <span class="data-mapping-chip"><i class='bx bx-check-circle'></i> Address → ที่อยู่ผู้เสนอราคา</span>
                     <span class="data-mapping-chip"><i class='bx bx-check-circle'></i> Phone / Email → บรรทัดติดต่อ</span>
@@ -1019,6 +1020,19 @@
 
                 <div class="form-grid-2">
                     <div class="form-group">
+                        <label class="form-label" style="display: flex; align-items: center; justify-content: space-between;">
+                            <span><i class='bx bx-purchase-tag' style="color: var(--primary);"></i> อักษรย่อประจำร้าน (2 ตัว) <span class="required">*</span></span>
+                            <span style="font-size: 0.72rem; color: #64748b; font-weight: normal;">เช่น MT, PS, TP</span>
+                        </label>
+                        <input type="text" class="form-input" id="inputCompanyCode" placeholder="MT" maxlength="3" style="text-transform: uppercase; font-weight: 800; letter-spacing: 2px; color: #0284c7; background: #f0f9ff; font-family: monospace; font-size: 1.05rem;" oninput="onCompanyCodeChange(this.value)">
+                        <div id="companyCodeHelp" style="font-size: 0.76rem; color: #475569; margin-top: 6px; line-height: 1.4; background: #f8fafc; padding: 6px 10px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                            <div style="font-size: 0.7rem; color: #64748b; margin-bottom: 2px;">⚡ พรีวิวรหัสเอกสารอัตโนมัติ:</div>
+                            <span style="display: inline-block; padding: 2px 6px; background: #eff6ff; color: #1d4ed8; border-radius: 4px; font-weight: 700; font-family: monospace;" id="previewQuotationCode">MTQ</span> ใบเสนอราคา | 
+                            <span style="display: inline-block; padding: 2px 6px; background: #f0f9ff; color: #0284c7; border-radius: 4px; font-weight: 700; font-family: monospace;" id="previewInvoiceCode">MTI</span> ใบส่งของ | 
+                            <span style="display: inline-block; padding: 2px 6px; background: #ecfdf5; color: #059669; border-radius: 4px; font-weight: 700; font-family: monospace;" id="previewReceiptCode">MTR</span> ใบเสร็จ
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">ประเภทกิจการ</label>
                         <select class="form-input" id="inputCategory">
                             <option value="บริษัทจำกัด (สำนักงานใหญ่)">บริษัทจำกัด (สำนักงานใหญ่)</option>
@@ -1026,10 +1040,10 @@
                             <option value="ห้างหุ้นส่วนจำกัด">ห้างหุ้นส่วนจำกัด</option>
                             <option value="ร้านค้าทั่วไป">ร้านค้าทั่วไป / บุคคลธรรมดา</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">เลขประจำตัวผู้เสียภาษี (Tax ID 13 หลัก)</label>
-                        <input type="text" class="form-input" id="inputTaxId" placeholder="0115568026644" maxlength="13">
+                        <div style="margin-top: 10px;">
+                            <label class="form-label">เลขประจำตัวผู้เสียภาษี (Tax ID 13 หลัก)</label>
+                            <input type="text" class="form-input" id="inputTaxId" placeholder="0115568026644" maxlength="13">
+                        </div>
                     </div>
                 </div>
 
@@ -1164,6 +1178,7 @@
                             registeredShops = parsed.map(w => ({
                                 id: w.id || ('shop_' + Date.now()),
                                 name: w.name || '',
+                                code: (w.code || w.shortCode || 'MT').toUpperCase(),
                                 category: w.category || '',
                                 taxId: w.taxId || '',
                                 address: w.address || '',
@@ -1177,6 +1192,15 @@
                         }
                     }
                 } catch(e) {}
+            }
+
+            // Ensure every registered shop has a valid code
+            if (Array.isArray(registeredShops)) {
+                registeredShops.forEach(s => {
+                    if (s && typeof s === 'object') {
+                        s.code = (s.code || 'MT').toUpperCase();
+                    }
+                });
             }
 
             // Save to localStorage cache
@@ -1216,6 +1240,7 @@
             let html = '';
             list.forEach((shop, index) => {
                 const sName = typeof shop === 'string' ? shop : (shop.name || '-');
+                const sCode = ((typeof shop === 'object' && shop && shop.code) ? shop.code : 'MT').toUpperCase();
                 const sTax = shop.taxId ? shop.taxId : '<span style="color:#94a3b8;">ยังไม่ได้ระบุ</span>';
                 const sAddress = shop.address ? shop.address : '<span style="color:#94a3b8;">ยังไม่ได้ระบุที่อยู่</span>';
                 const sPhone = shop.phone || shop.tel || '-';
@@ -1235,7 +1260,12 @@
                                 <div class="company-name" title="${sName}">
                                     ${sName}
                                 </div>
-                                <span class="badge-category">${sCategory}</span>
+                                <div style="display: flex; gap: 6px; align-items: center; margin-top: 4px; flex-wrap: wrap;">
+                                    <span class="badge-category">${sCategory}</span>
+                                    <span class="badge-category" style="background:#e0f2fe; color:#0284c7; font-weight:800; border: 1px solid #bae6fd; font-family: monospace; font-size: 0.76rem;" title="รหัสย่อประจำร้านสำหรับออกเลขเอกสาร">
+                                        <i class='bx bx-purchase-tag'></i> ${sCode} (${sCode}Q / ${sCode}I / ${sCode}R)
+                                    </span>
+                                </div>
                             </div>
                             <div style="width: 14px; height: 14px; border-radius: 50%; background: ${sColor}; flex-shrink: 0;" title="สีประจำร้าน: ${sColor}"></div>
                         </div>
@@ -1293,11 +1323,32 @@
             renderShops(filtered);
         };
 
+        // Company Code Live Preview Handler
+        window.onCompanyCodeChange = function(val) {
+            let clean = (val || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3);
+            const inputEl = document.getElementById('inputCompanyCode');
+            if (inputEl && inputEl.value !== clean) {
+                inputEl.value = clean;
+            }
+            const displayCode = clean || 'MT';
+            const qEl = document.getElementById('previewQuotationCode');
+            const iEl = document.getElementById('previewInvoiceCode');
+            const rEl = document.getElementById('previewReceiptCode');
+            if (qEl) qEl.innerText = `${displayCode}Q`;
+            if (iEl) iEl.innerText = `${displayCode}I`;
+            if (rEl) rEl.innerText = `${displayCode}R`;
+        };
+
         // Open Add Modal
         window.openAddCompanyModal = function() {
             document.getElementById('companyModalTitle').innerText = 'เพิ่มบริษัท / ร้านค้าใหม่';
             document.getElementById('editCompanyId').value = '';
             document.getElementById('inputCompanyName').value = '';
+            const codeEl = document.getElementById('inputCompanyCode');
+            if (codeEl) {
+                codeEl.value = 'MT';
+                window.onCompanyCodeChange('MT');
+            }
             document.getElementById('inputCategory').value = 'บริษัทจำกัด (สำนักงานใหญ่)';
             document.getElementById('inputTaxId').value = '';
             document.getElementById('inputAddress').value = '';
@@ -1324,6 +1375,12 @@
             document.getElementById('companyModalTitle').innerText = 'แก้ไขข้อมูลบริษัท / ร้านค้า';
             document.getElementById('editCompanyId').value = index;
             document.getElementById('inputCompanyName').value = shop.name || '';
+            const codeEl = document.getElementById('inputCompanyCode');
+            const shopCode = ((shop.code || 'MT')).toUpperCase();
+            if (codeEl) {
+                codeEl.value = shopCode;
+                window.onCompanyCodeChange(shopCode);
+            }
             document.getElementById('inputCategory').value = shop.category || 'บริษัทจำกัด (สำนักงานใหญ่)';
             document.getElementById('inputTaxId').value = shop.taxId || '';
             document.getElementById('inputAddress').value = shop.address || '';
@@ -1400,6 +1457,8 @@
             }
 
             const category = document.getElementById('inputCategory').value;
+            let code = (document.getElementById('inputCompanyCode')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3);
+            if (!code) code = 'MT';
             const taxId = document.getElementById('inputTaxId').value.trim();
             const address = document.getElementById('inputAddress').value.trim();
             const phone = document.getElementById('inputPhone').value.trim();
@@ -1411,6 +1470,7 @@
 
             const companyObj = {
                 name,
+                code,
                 category,
                 taxId,
                 address,
@@ -1450,6 +1510,7 @@
                 const workspaces = registeredShops.map(s => ({
                     id: s.id,
                     name: s.name,
+                    code: s.code || 'MT',
                     category: s.category,
                     phone: s.phone,
                     email: s.email,

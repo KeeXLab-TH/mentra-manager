@@ -1215,7 +1215,7 @@
                 margin: 0;
             }
             /* Component page-break rules */
-            #pHeaderSection, #pInfoRow, #pSummaryTotalsBox, #pLeftSummarySection, #pBuyerSignatureBlock, #pSellerSignatureBlock, [id*="Signature"], #pBottomSectionWrapper, #pSummarySection {
+            #pHeaderSection, #pInfoRow, #pSummaryTotalsBox, #pLeftSummarySection, #pBuyerSignatureBlock, #pSellerSignatureBlock, [id*="Signature"], #pBottomSectionWrapper, #pSummarySection, #pDocumentFooter, .print-page-footer {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -1343,6 +1343,10 @@
         #pPageWrapper.compact-fit-1page #pLeftSignerTitle,
         #pPageWrapper.compact-fit-1page #pRightSignerTitle {
             margin-bottom: 3px !important;
+        }
+        #pPageWrapper.compact-fit-1page #pDocumentFooter {
+            padding-top: 2px !important;
+            margin-top: 2px !important;
         }
 
         /* SortableJS drag and drop styling for template editor */
@@ -2052,7 +2056,8 @@
                                         <i class='bx bx-link-alt text-brand-500'></i> <span>อ้างถึงเอกสาร (Reference Doc No.)</span>
                                     </label>
                                     <div style="display: flex; gap: 6px; align-items: center;">
-                                        <input type="text" class="pro-input font-mono font-bold" id="parentRefNo" placeholder="เช่น MTQ260929001" style="flex: 1; min-width: 0; color: #475569; background: #f8fafc;" oninput="triggerLiveSync()">
+                                        <input type="text" class="pro-input font-mono font-bold" id="parentRefNo" placeholder="เช่น MTQ260929001" style="flex: 1; min-width: 0; color: #475569; background: #f8fafc;" oninput="onParentRefInput(); triggerLiveSync()">
+                                        <button type="button" class="btn btn-outline" style="padding: 0.35rem 0.65rem; border-color: #cbd5e1; font-size: 0.78rem; white-space: nowrap; color: #0284c7; display: flex; align-items: center; gap: 4px;" onclick="onParentRefInput(); triggerLiveSync()" title="คลิกเพื่อ Sync เลขเอกสารตามเลขอ้างอิงนี้"><i class='bx bx-sync'></i> Gen เลข</button>
                                         <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200" id="parentRefHint" style="font-weight: 600;">อ้างอิง</span>
                                     </div>
                                 </div>
@@ -2072,12 +2077,12 @@
 
                                     <div>
                                         <label class="pro-label">กำหนดส่งมอบ (Delivery)</label>
-                                        <input type="text" class="pro-input" id="termDelivery" value="15-30 วัน" oninput="triggerLiveSync()">
+                                        <input type="text" class="pro-input" id="termDelivery" value="30 วัน" oninput="triggerLiveSync()">
                                         <div class="preset-chips">
-                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', 'ทันที', this)">ทันที</span>
-                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', '7-15 วัน', this)">7-15 วัน</span>
-                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', '15-30 วัน', this)">15-30 วัน</span>
-                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', '30-45 วัน', this)">30-45 วัน</span>
+                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', '15 วัน', this)">15 วัน</span>
+                                            <span class="preset-chip active" onclick="setTermPreset('termDelivery', '30 วัน', this)">30 วัน</span>
+                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', '60 วัน', this)">60 วัน</span>
+                                            <span class="preset-chip" onclick="setTermPreset('termDelivery', '90 วัน', this)">90 วัน</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2541,6 +2546,11 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- ══ DOCUMENT FOOTER / PAGE NUMBER ══ -->
+                        <div id="pDocumentFooter" style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; margin-top: 4px; font-size: 10px; color: #64748b; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal;">
+                            <div id="pPageNumberText" style="font-weight: 500;">หน้าที่ 1/1</div>
                         </div>
                     </div>
 
@@ -3172,6 +3182,7 @@
         // ── Single Source of Truth for Official Mentra Solution & Signer Sanitization ──
         const MENTRA_OFFICIAL = {
             name: "บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)",
+            code: "MT",
             subName: "",
             themeColor: "#1A6FBF",
             signer: "นายวัฒนชัย เตียวแก",
@@ -3262,6 +3273,21 @@
             return MENTRA_OFFICIAL.signerRole;
         }
 
+        function getCurrentShopCode() {
+            try {
+                const currentIssuerName = document.getElementById('companyName')?.value || 
+                                          document.getElementById('issuerModalSelectedName')?.innerText || 
+                                          localStorage.getItem('selected_issuer_company') || '';
+                const shop = findRegisteredShop(currentIssuerName);
+                if (shop && typeof shop === 'object') {
+                    const c = (shop.code || shop.shortCode || '').trim().toUpperCase();
+                    if (c) return c;
+                }
+            } catch(e) {}
+            return 'MT';
+        }
+        window.getCurrentShopCode = getCurrentShopCode;
+
         let registeredShopsCache = [];
         try {
             const cachedShops = localStorage.getItem('registered_shops');
@@ -3276,6 +3302,7 @@
                     if (Array.isArray(parsedWs) && parsedWs.length > 0) {
                         registeredShopsCache = parsedWs.map(w => ({
                             name: w.name || 'บริษัทของท่าน',
+                            code: (w.code || w.shortCode || 'MT').toUpperCase(),
                             themeColor: w.color || '#1A6FBF',
                             signer: w.signer || '',
                             signerRole: w.signerRole || 'ผู้มีอำนาจลงนาม',
@@ -3295,11 +3322,15 @@
         } else {
             let hasMentra = false;
             registeredShopsCache.forEach(s => {
+                if (s && typeof s === 'object') {
+                    if (!s.code) s.code = 'MT';
+                }
                 const sName = typeof s === 'string' ? s : (s.name || '');
                 if (sName.includes('เมนทร้า') || sName.toLowerCase().includes('mentra')) {
                     hasMentra = true;
                     if (!s.signer || s.signer.trim() === '' || isEmail(s.signer)) s.signer = MENTRA_OFFICIAL.signer;
                     if (!s.signerRole || s.signerRole.trim() === '') s.signerRole = MENTRA_OFFICIAL.signerRole;
+                    if (!s.code) s.code = 'MT';
                 } else if (s && isEmail(s.signer)) {
                     s.signer = '';
                 }
@@ -4212,9 +4243,31 @@
             // 7. Update Stepper UI
             updateWorkflowStepperUI();
 
-            // 8. Generate new RefNo if requested
-            if (options.generateNewRef) {
+            // 8. Generate new RefNo if requested, or sync prefix when switching types
+            const existingStepDocNumber = linkedProjectData?.docWorkflow?.[type]?.docNumber;
+            const refNoEl = document.getElementById('refNo');
+            if (existingStepDocNumber && !existingStepDocNumber.includes('PRJ') && refNoEl) {
+                refNoEl.value = existingStepDocNumber;
+            } else if (options.generateNewRef) {
                 generateRefNo();
+            } else if (refNoEl) {
+                const curVal = refNoEl.value.trim();
+                const code = (typeof getCurrentShopCode === 'function') ? getCurrentShopCode() : 'MT';
+                if (!curVal || curVal === '-' || curVal.includes('PRJ')) {
+                    generateRefNo(true);
+                } else if (type === 'invoice') {
+                    const suffix = extractDocSuffix(curVal);
+                    refNoEl.value = suffix ? `${code}I${suffix}` : '';
+                    if (!refNoEl.value) generateRefNo(true);
+                } else if (type === 'receipt') {
+                    const suffix = extractDocSuffix(curVal);
+                    refNoEl.value = suffix ? `${code}R${suffix}` : '';
+                    if (!refNoEl.value) generateRefNo(true);
+                } else if (type === 'quotation') {
+                    const suffix = extractDocSuffix(curVal);
+                    refNoEl.value = suffix ? `${code}Q${suffix}` : '';
+                    if (!refNoEl.value) generateRefNo(true);
+                }
             }
 
             // 9. Sync preview
@@ -4665,22 +4718,24 @@
                 workflowHistory.parentRefNo = paramParentRef;
             }
 
-            // Fallback: If not found in URL params, check fresh pending_quotation_project from sessionStorage or localStorage
+            // If no projectId in URL, clear any leftover pending project so it doesn't linger on clean page refreshes
             let pendingProjInstitution = '';
-            if (!autoImportId || !urlShop) {
+            if (!autoImportId) {
+                try {
+                    sessionStorage.removeItem('pending_quotation_project');
+                    localStorage.removeItem('pending_quotation_project');
+                } catch(e) {}
+            } else if (!urlShop) {
+                // Only if projectId was provided in URL, check pending project for its associated shop
                 try {
                     const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
                     if (pRaw) {
                         const pData = JSON.parse(pRaw);
-                        if (pData && (Date.now() - (pData.timestamp || 0) < 600000)) {
+                        if (pData && String(pData.projectId) === String(autoImportId) && (Date.now() - (pData.timestamp || 0) < 600000)) {
                             if (pData.institution) {
                                 pendingProjInstitution = String(pData.institution).trim();
                             }
-                            if (!autoImportId && pData.projectId) {
-                                autoImportId = pData.projectId;
-                                autoImportSource = pData.source || 'school';
-                            }
-                            if (!urlShop && pData.shop) {
+                            if (pData.shop) {
                                 urlShop = pData.shop;
                             }
                         }
@@ -5030,21 +5085,8 @@
 
                         const autoImportId = urlParams.get('projectId');
                         const autoImportSource = urlParams.get('source') || 'school';
-                        if (!hasAutoImported && !isImportingProject) {
-                            if (autoImportId) {
-                                autoImportProject(autoImportId, autoImportSource).catch(e => console.error("Auth auto-import error:", e));
-                            } else {
-                                // Fallback: Check if fresh pending_quotation_project exists (within last 10 minutes)
-                                try {
-                                    const pendingRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
-                                    if (pendingRaw) {
-                                        const pData = JSON.parse(pendingRaw);
-                                        if (pData && pData.projectId && pData.timestamp && (Date.now() - pData.timestamp < 600000)) {
-                                            autoImportProject(pData.projectId, pData.source || 'school').catch(e => console.error("Auth fallback auto-import error:", e));
-                                        }
-                                    }
-                                } catch(e) {}
-                            }
+                        if (!hasAutoImported && !isImportingProject && autoImportId) {
+                            autoImportProject(autoImportId, autoImportSource).catch(e => console.error("Auth auto-import error:", e));
                         }
                     } else {
                         // User document deleted!
@@ -5086,22 +5128,116 @@
         window.handleLogout = handleLogout;
         // toggleSidebarCollapse handled by dashboard-dual-sidebar.js
 
+        function extractDocSuffix(ref) {
+            if (!ref) return '';
+            const str = String(ref).trim();
+            if (str.includes('PRJ')) return '';
+            const stripped = str.replace(/^(?:[A-Za-z]{2,4}[QIRqir]|(?:MT|KT|SM|PS|TP)[A-Za-z]|REC|INV|QT)[-_]?/i, '');
+            // A valid document suffix must be numeric digits (such as 260930001)
+            return /^\d+$/.test(stripped) ? stripped : '';
+        }
+
+        function onParentRefInput() {
+            const parentInput = document.getElementById('parentRefNo');
+            let parentVal = parentInput?.value?.trim() || '';
+            if (parentVal.includes('PRJ')) {
+                parentVal = '';
+                if (parentInput) parentInput.value = '';
+            }
+            workflowHistory.parentRefNo = parentVal;
+            const suffix = extractDocSuffix(parentVal);
+            if (suffix) {
+                const refEl = document.getElementById('refNo');
+                if (refEl) {
+                    const code = (typeof getCurrentShopCode === 'function') ? getCurrentShopCode() : 'MT';
+                    if (currentDocType === 'invoice') {
+                        refEl.value = `${code}I${suffix}`;
+                    } else if (currentDocType === 'receipt') {
+                        refEl.value = `${code}R${suffix}`;
+                    }
+                }
+            } else if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                generateRefNo(true);
+            }
+            if (typeof triggerLiveSync === 'function') triggerLiveSync();
+        }
+
         // --- Core Functions ---
-        async function generateRefNo() {
+        async function generateRefNo(forceSequential = false) {
+            const code = (typeof getCurrentShopCode === 'function') ? getCurrentShopCode() : 'MT';
+            const config = DOC_TYPE_CONFIG[currentDocType] || DOC_TYPE_CONFIG.quotation;
+
+            // 1. If invoice, derive number from preceding quotation
+            if (!forceSequential && currentDocType === 'invoice') {
+                const parentInputVal = document.getElementById('parentRefNo')?.value?.trim();
+                const parentRef = parentInputVal || 
+                    workflowHistory.quotationRefNo || 
+                    workflowHistory.parentRefNo || 
+                    linkedProjectData?.docWorkflow?.invoice?.parentRef || 
+                    linkedProjectData?.docWorkflow?.quotation?.docNumber || 
+                    new URLSearchParams(window.location.search).get('parentRef') || '';
+
+                if (parentRef && !parentRef.includes('PRJ')) {
+                    const suffix = extractDocSuffix(parentRef);
+                    if (suffix) {
+                        const newRef = `${code}I${suffix}`;
+                        const refEl = document.getElementById('refNo');
+                        if (refEl) refEl.value = newRef;
+                        if (!parentInputVal && document.getElementById('parentRefNo')) {
+                            document.getElementById('parentRefNo').value = parentRef;
+                        }
+                        if (typeof triggerLiveSync === 'function') triggerLiveSync();
+                        return newRef;
+                    }
+                }
+            }
+
+            // 2. If receipt, derive number from preceding invoice or quotation
+            if (!forceSequential && currentDocType === 'receipt') {
+                const parentInputVal = document.getElementById('parentRefNo')?.value?.trim();
+                const parentRef = parentInputVal || 
+                    workflowHistory.invoiceRefNo || 
+                    workflowHistory.quotationRefNo || 
+                    workflowHistory.parentRefNo || 
+                    linkedProjectData?.docWorkflow?.receipt?.parentRef || 
+                    linkedProjectData?.docWorkflow?.invoice?.docNumber || 
+                    linkedProjectData?.docWorkflow?.quotation?.docNumber || 
+                    new URLSearchParams(window.location.search).get('parentRef') || '';
+
+                if (parentRef && !parentRef.includes('PRJ')) {
+                    const suffix = extractDocSuffix(parentRef);
+                    if (suffix) {
+                        const newRef = `${code}R${suffix}`;
+                        const refEl = document.getElementById('refNo');
+                        if (refEl) refEl.value = newRef;
+                        if (!parentInputVal && document.getElementById('parentRefNo')) {
+                            document.getElementById('parentRefNo').value = parentRef;
+                        }
+                        if (typeof triggerLiveSync === 'function') triggerLiveSync();
+                        return newRef;
+                    }
+                }
+            }
+
+            // 3. Fallback: Sequential generation by date (format: {CODE}Q{YY}{MM}{DD}{SEQ} e.g. MTQ260930001)
             const docDateInput = document.getElementById('docDate');
-            const docDateVal = docDateInput?.value;
+            let docDateVal = docDateInput?.value;
             if (!docDateVal) {
-                alert('กรุณาเลือกวันที่ก่อนรันเลขที่เอกสาร');
-                if (docDateInput) docDateInput.focus();
-                return;
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                docDateVal = `${yyyy}-${mm}-${dd}`;
+                if (docDateInput) docDateInput.value = docDateVal;
             }
             const parts = docDateVal.split('-');
             const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
             const year = date.getFullYear().toString().slice(-2);
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
-            const config = DOC_TYPE_CONFIG[currentDocType] || DOC_TYPE_CONFIG.quotation;
-            const prefix = `${config.prefix}${year}${month}${day}`;
+            const typeLetter = currentDocType === 'invoice' ? 'I' : (currentDocType === 'receipt' ? 'R' : 'Q');
+            const targetDocPrefix = `${code}${typeLetter}`;
+            const prefix = `${targetDocPrefix}${year}${month}${day}`;
 
             let nextSeq = 1;
             if (currentUser && db) {
@@ -5122,14 +5258,16 @@
                     });
                     nextSeq = maxSeq + 1;
                 } catch (err) {
-                    console.warn('Could not query quotations_history for sequence, fallback to 1:', err);
                     console.warn(`Could not query ${config.firestoreCollection} for sequence, fallback to 1:`, err);
                 }
             }
 
             const runStr = String(nextSeq).padStart(3, '0');
-            document.getElementById('refNo').value = `${prefix}${runStr}`;
+            const newRef = `${prefix}${runStr}`;
+            const refEl = document.getElementById('refNo');
+            if (refEl) refEl.value = newRef;
             if (typeof triggerLiveSync === 'function') triggerLiveSync();
+            return newRef;
         }
 
         function formatNumber(num) {
@@ -5375,7 +5513,7 @@
                 input.value = value;
                 triggerLiveSync();
                 if (btn && btn.parentElement) {
-                    btn.parentElement.querySelectorAll('.pro-preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.parentElement.querySelectorAll('.preset-chip, .pro-preset-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                 }
             }
@@ -5435,6 +5573,7 @@
             const introText = document.getElementById('pIntroText');
             const summarySection = document.getElementById('pSummarySection') || document.getElementById('pSummaryTotalsBox')?.parentElement;
             const signatureSection = document.getElementById('pSignatureSection');
+            const documentFooter = document.getElementById('pDocumentFooter');
 
             let headerHeight = 0;
             let bottomHeight = 0;
@@ -5449,6 +5588,7 @@
 
                 if (summarySection) bottomHeight += summarySection.offsetHeight;
                 if (signatureSection) bottomHeight += signatureSection.offsetHeight;
+                if (documentFooter) bottomHeight += documentFooter.offsetHeight;
                 bottomHeight += 12; // margins & gap between sections
             } else {
                 // In editor mode (preview hidden): measure via offscreen clone matching exact A4 printable width
@@ -5464,6 +5604,7 @@
                 offscreen.innerHTML = '';
                 if (summarySection) offscreen.appendChild(summarySection.cloneNode(true));
                 if (signatureSection) offscreen.appendChild(signatureSection.cloneNode(true));
+                if (documentFooter) offscreen.appendChild(documentFooter.cloneNode(true));
                 bottomHeight = offscreen.offsetHeight + 12;
 
                 document.body.removeChild(offscreen);
@@ -5471,7 +5612,7 @@
 
             // Calibrated safe minimums (never underestimate)
             headerHeight = Math.max(headerHeight, 230);
-            bottomHeight = Math.max(bottomHeight, 245);
+            bottomHeight = Math.max(bottomHeight, 255);
 
             return {
                 usablePageHeight,
@@ -6204,12 +6345,28 @@
 
                     tableHTML += `</tbody></table>`;
 
-                    finalHTML += `<div class="print-page" style="display:block; ${isFirst ? '' : 'padding-top: ' + page2TopSpacing + 'px;'} page-break-after:${isLast ? 'auto' : 'always'}; break-after:${isLast ? 'auto' : 'page'};">${tableHTML}</div>`;
+                    let pageFooterHTML = '';
+                    if (!isLast) {
+                        pageFooterHTML = `
+                            <div class="print-page-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 4px; font-size: 10px; color: #64748b; font-family: 'Sarabun', 'Tahoma', sans-serif; letter-spacing: normal;">
+                                <div style="font-weight: 500;">หน้าที่ ${pageIdx + 1}/${pages.length}</div>
+                            </div>
+                        `;
+                    }
+
+                    finalHTML += `<div class="print-page" style="display:block; ${isFirst ? '' : 'padding-top: ' + page2TopSpacing + 'px;'} page-break-after:${isLast ? 'auto' : 'always'}; break-after:${isLast ? 'auto' : 'page'};">${tableHTML}${pageFooterHTML}</div>`;
                     if (!isLast) {
                         finalHTML += `<div class="preview-page-break-indicator" style="margin: 16px 0; border-top: 2px dashed #cbd5e1; text-align: center; position: relative;"><span style="position: relative; top: -10px; background: #fff; padding: 0 12px; font-size: 10px; color: #94a3b8; font-weight: 600; letter-spacing: 0.5px;">✂️ สิ้นสุดหน้าที่ ${pageIdx + 1} (ขึ้นหน้าใหม่) ✂️</span></div>`;
                     }
                 });
                 pTablesContainer.innerHTML = finalHTML;
+            }
+
+            // Update footer page number on the final page (or single page)
+            const pageNumberEl = document.getElementById('pPageNumberText');
+            if (pageNumberEl) {
+                const totalPages = pages.length || 1;
+                pageNumberEl.innerText = `หน้าที่ ${totalPages}/${totalPages}`;
             }
         }
 
@@ -7372,6 +7529,7 @@
             let html = '';
             registeredShopsCache.forEach((shop) => {
                 const sName = typeof shop === 'string' ? shop : (shop.name || '-');
+                const sCode = ((typeof shop === 'object' && shop && shop.code) ? shop.code : 'MT').toUpperCase();
                 const sColor = (shop && shop.themeColor) || '#1A6FBF';
                 const sLogo = (shop && shop.logo) 
                     ? `<img src="${shop.logo}" style="max-height: 36px; max-width: 36px; object-fit: contain;">` 
@@ -7393,10 +7551,12 @@
                         </div>
                         <div style="flex: 1; min-width: 0;">
                             <div style="font-weight: 700; color: #1e293b; font-size: 0.96rem; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center;">
-                                <span>${sName}</span> ${sigBadge} ${isSelected ? '<span style="font-size: 0.7rem; color: #2563eb; background: #dbeafe; padding: 1px 6px; border-radius: 4px; font-weight: 700; margin-left: 6px;">✓ ปัจจุบัน</span>' : ''}
+                                <span>${sName}</span>
+                                <span style="font-size: 0.72rem; color: #0369a1; background: #e0f2fe; padding: 1px 6px; border-radius: 4px; font-weight: 800; margin-left: 6px; font-family: monospace;">[${sCode}]</span>
+                                ${sigBadge} ${isSelected ? '<span style="font-size: 0.7rem; color: #2563eb; background: #dbeafe; padding: 1px 6px; border-radius: 4px; font-weight: 700; margin-left: 6px;">✓ ปัจจุบัน</span>' : ''}
                             </div>
                             <div style="font-size: 0.8rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${shop.taxId ? `TAX: ${shop.taxId}` : ''} ${(shop.taxId && (shop.tel || shop.phone)) ? ' | ' : ''}${shop.tel || shop.phone || ''}
+                                รหัสเอกสาร: <b>${sCode}Q / ${sCode}I / ${sCode}R</b> ${(shop.taxId ? ` | TAX: ${shop.taxId}` : '')}
                             </div>
                         </div>
                         <i class='bx bx-chevron-right' style="font-size: 1.5rem; color: #94a3b8;"></i>
@@ -7474,6 +7634,32 @@
             
             // 2. Prepare default customizable template settings based on the company's authorized signer
             const shop = findRegisteredShop(safeCompanyName);
+            const shopCode = (shop && shop.code && shop.code.trim()) ? shop.code.trim().toUpperCase() : 'MT';
+            if (DOC_TYPE_CONFIG.quotation) DOC_TYPE_CONFIG.quotation.prefix = `${shopCode}Q`;
+            if (DOC_TYPE_CONFIG.invoice) DOC_TYPE_CONFIG.invoice.prefix = `${shopCode}I`;
+            if (DOC_TYPE_CONFIG.receipt) DOC_TYPE_CONFIG.receipt.prefix = `${shopCode}R`;
+
+            const refNoEl = document.getElementById('refNo');
+            if (refNoEl) {
+                refNoEl.placeholder = `${shopCode}Q260930001`;
+                const curRef = refNoEl.value.trim();
+                if (curRef && curRef !== '-') {
+                    if (curRef.includes('PRJ')) {
+                        refNoEl.value = '';
+                        generateRefNo(true);
+                    } else {
+                        const suffix = extractDocSuffix(curRef);
+                        if (suffix) {
+                            const typeLetter = currentDocType === 'invoice' ? 'I' : (currentDocType === 'receipt' ? 'R' : 'Q');
+                            refNoEl.value = `${shopCode}${typeLetter}${suffix}`;
+                        } else {
+                            refNoEl.value = '';
+                            generateRefNo(true);
+                        }
+                    }
+                }
+            }
+
             let shopTheme = (shop && shop.themeColor) ? shop.themeColor : '#1A6FBF';
             let shopSignerRaw = getAuthorizedSignerForCompany(safeCompanyName);
             let shopSigner = formatSignerDisplay(shopSignerRaw);
@@ -9279,7 +9465,7 @@
                     const pendingRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
                     if (pendingRaw) {
                         const parsed = JSON.parse(pendingRaw);
-                        if (parsed && (String(parsed.projectId) === String(projectId) || !projectId)) {
+                        if (parsed && projectId && String(parsed.projectId) === String(projectId)) {
                             pendingProj = parsed;
                         }
                     }
@@ -9578,6 +9764,30 @@
                     workflowHistory.parentRefNo = parentRefVal;
                 }
 
+                // Ensure refNo is correctly populated according to docType & parentRef
+                const existingStepDocNumber = proj.docWorkflow?.[currentDocType]?.docNumber;
+                const refNoEl = document.getElementById('refNo');
+                const activeCode = (typeof getCurrentShopCode === 'function') ? getCurrentShopCode() : 'MT';
+                if (existingStepDocNumber && !existingStepDocNumber.includes('PRJ') && refNoEl) {
+                    refNoEl.value = existingStepDocNumber;
+                } else if (currentDocType === 'invoice' && parentRefVal && !parentRefVal.includes('PRJ')) {
+                    const suffix = extractDocSuffix(parentRefVal);
+                    if (suffix && refNoEl) {
+                        refNoEl.value = `${activeCode}I${suffix}`;
+                    } else {
+                        generateRefNo(true);
+                    }
+                } else if (currentDocType === 'receipt' && parentRefVal && !parentRefVal.includes('PRJ')) {
+                    const suffix = extractDocSuffix(parentRefVal);
+                    if (suffix && refNoEl) {
+                        refNoEl.value = `${activeCode}R${suffix}`;
+                    } else {
+                        generateRefNo(true);
+                    }
+                } else {
+                    generateRefNo(true);
+                }
+
                 hasAutoImported = true;
                 updateRowNumbers();
                 calculateAll();
@@ -9590,6 +9800,12 @@
                         url.searchParams.delete('loadPending');
                         window.history.replaceState({}, '', url);
                     }
+                } catch(e) {}
+
+                // Clean up pending project cache so clean page reloads don't reload it
+                try {
+                    sessionStorage.removeItem('pending_quotation_project');
+                    localStorage.removeItem('pending_quotation_project');
                 } catch(e) {}
 
                 if (finalItems.length > 0 && typeof showToast === 'function') {
@@ -10221,6 +10437,8 @@
         window.loadQuotationToForm = loadQuotationToForm;
         window.saveDocumentToHistory = saveDocumentToHistory;
         window.switchDocType = switchDocType;
+        window.onParentRefInput = onParentRefInput;
+        window.extractDocSuffix = extractDocSuffix;
         window.confirmAndAdvanceWorkflow = confirmAndAdvanceWorkflow;
         window.checkRequiredDocFields = checkRequiredDocFields;
         window.openWorkflowConfirmModal = openWorkflowConfirmModal;

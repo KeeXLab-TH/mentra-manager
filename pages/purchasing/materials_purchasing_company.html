@@ -4390,10 +4390,19 @@
                 if (!proj.docWorkflow) {
                     proj.docWorkflow = {
                         currentStep: 1,
-                        quotation: { status: 'draft', confirmedAt: null, confirmedBy: null, docNumber: proj.code || '' },
+                        quotation: { status: 'draft', confirmedAt: null, confirmedBy: null, docNumber: '' },
                         invoice: { status: 'pending', createdAt: null, confirmedAt: null, confirmedBy: null, docNumber: null },
                         receipt: { status: 'pending', createdAt: null, confirmedAt: null, confirmedBy: null, docNumber: null }
                     };
+                }
+                if (proj.docWorkflow.quotation && proj.docWorkflow.quotation.docNumber && proj.docWorkflow.quotation.docNumber.includes('PRJ')) {
+                    proj.docWorkflow.quotation.docNumber = '';
+                }
+                if (proj.docWorkflow.invoice && proj.docWorkflow.invoice.docNumber && proj.docWorkflow.invoice.docNumber.includes('PRJ')) {
+                    proj.docWorkflow.invoice.docNumber = '';
+                }
+                if (proj.docWorkflow.receipt && proj.docWorkflow.receipt.docNumber && proj.docWorkflow.receipt.docNumber.includes('PRJ')) {
+                    proj.docWorkflow.receipt.docNumber = '';
                 }
                 if (!proj.activityLog) proj.activityLog = [];
                 return proj;
@@ -4417,39 +4426,77 @@
                 if (!proj) return '';
                 this._ensureDocWorkflow(proj);
                 const wf = proj.docWorkflow;
-                const step = wf.currentStep || 1;
+                const isCompleted = !!wf.isCompleted || (wf.receipt && wf.receipt.status === 'confirmed');
 
-                if (wf.isCompleted || (wf.receipt && wf.receipt.status === 'confirmed')) {
-                    return `
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs" title="เอกสารออกครบทั้ง 3 ขั้นตอนเรียบร้อยแล้ว">
-                            <i class="fa-solid fa-circle-check text-emerald-500"></i> เสร็จสิ้น: ออกใบเสร็จแล้ว
-                        </span>
-                    `;
-                } else if (step === 3 || (wf.invoice && wf.invoice.status === 'confirmed')) {
-                    return `
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 shadow-2xs" title="ยืนยันใบส่งของแล้ว รอออกใบเสร็จรับเงิน">
-                            <i class="fa-solid fa-receipt text-purple-500"></i> ขั้นที่ 3: รอออกใบเสร็จรับเงิน
-                        </span>
-                    `;
-                } else if (step === 2 || (wf.quotation && wf.quotation.status === 'confirmed')) {
-                    return `
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs" title="ยืนยันใบเสนอราคาแล้ว รอออกใบส่งของ/ใบแจ้งหนี้">
-                            <i class="fa-solid fa-truck-ramp-box text-blue-500"></i> ขั้นที่ 2: รอออกใบส่งของ/แจ้งหนี้
-                        </span>
-                    `;
-                } else if (wf.quotation && wf.quotation.status === 'draft' && (wf.quotation.docNumber || wf.quotation.openedAt)) {
-                    return `
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs" title="กำลังร่างใบเสนอราคา">
-                            <i class="fa-solid fa-file-invoice-dollar text-amber-500"></i> ขั้นที่ 1: กำลังทำใบเสนอราคา
-                        </span>
-                    `;
-                } else {
-                    return `
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 shadow-2xs" title="ยังไม่มีการออกเอกสาร">
-                            <i class="fa-regular fa-file text-slate-400"></i> ยังไม่ออกเอกสาร
-                        </span>
-                    `;
+                let effectiveStep = wf.currentStep || 1;
+                if (isCompleted) {
+                    effectiveStep = 4;
+                } else if (effectiveStep === 1 && wf.quotation && wf.quotation.status === 'confirmed') {
+                    effectiveStep = 2;
+                } else if (effectiveStep === 2 && wf.invoice && wf.invoice.status === 'confirmed') {
+                    effectiveStep = 3;
                 }
+
+                const s1State = (isCompleted || effectiveStep > 1) ? 'completed' : (effectiveStep === 1 ? 'active' : 'pending');
+                const s2State = (isCompleted || effectiveStep > 2) ? 'completed' : (effectiveStep === 2 ? 'active' : 'pending');
+                const s3State = isCompleted ? 'completed' : (effectiveStep === 3 ? 'active' : 'pending');
+
+                const renderStepItem = (num, label, state, tooltip) => {
+                    if (state === 'active') {
+                        return `
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50/90 border border-blue-200/90 rounded-xl shadow-xs transition-all shrink-0" title="${tooltip}">
+                                <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs shrink-0">${num}</span>
+                                <span class="text-xs font-bold text-blue-900 whitespace-nowrap">${label}</span>
+                            </div>
+                        `;
+                    } else if (state === 'completed') {
+                        return `
+                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50/80 border border-emerald-200/80 rounded-xl shadow-2xs transition-all shrink-0" title="${tooltip}">
+                                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-[10px] shadow-xs shrink-0">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                                <span class="text-xs font-semibold text-emerald-800 whitespace-nowrap">${label}</span>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="inline-flex items-center gap-1.5 px-2 py-1 text-slate-400 select-none transition-all shrink-0" title="${tooltip}">
+                                <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 border border-slate-200/80 flex items-center justify-center font-bold text-[11px] shrink-0">${num}</span>
+                                <span class="text-xs font-medium text-slate-400 whitespace-nowrap">${label}</span>
+                            </div>
+                        `;
+                    }
+                };
+
+                const renderArrow = (isDone) => {
+                    const strokeClass = isDone ? 'text-emerald-400' : 'text-slate-300';
+                    return `
+                        <div class="inline-flex items-center ${strokeClass} px-0.5 sm:px-1 select-none shrink-0" aria-hidden="true">
+                            <svg class="w-5 sm:w-7 h-2.5" viewBox="0 0 28 10" fill="none" stroke="currentColor">
+                                <path d="M0 5h23M19 1l4 4-4 4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    `;
+                };
+
+                const s1Tooltip = s1State === 'completed' ? 'ขั้นตอนที่ 1: ใบเสนอราคา (ยืนยันแล้ว ✓)' : (s1State === 'active' ? 'ขั้นตอนที่ 1: กำลังทำใบเสนอราคา' : 'ขั้นตอนที่ 1: ใบเสนอราคา');
+                const s2Tooltip = s2State === 'completed' ? 'ขั้นตอนที่ 2: ใบส่งของ/ใบแจ้งหนี้ (ยืนยันแล้ว ✓)' : (s2State === 'active' ? 'ขั้นตอนที่ 2: กำลังทำใบส่งของ/ใบแจ้งหนี้' : 'ขั้นตอนที่ 2: ใบส่งของ/ใบแจ้งหนี้');
+                const s3Tooltip = s3State === 'completed' ? 'ขั้นตอนที่ 3: ใบเสร็จรับเงิน (เสร็จสมบูรณ์ ✓)' : (s3State === 'active' ? 'ขั้นตอนที่ 3: กำลังทำใบเสร็จรับเงิน' : 'ขั้นตอนที่ 3: ใบเสร็จรับเงิน');
+
+                return `
+                    <div class="workflow-stepper-mini inline-flex items-center flex-wrap sm:flex-nowrap gap-1 sm:gap-1.5 py-0.5">
+                        ${renderStepItem(1, 'ใบเสนอราคา', s1State, s1Tooltip)}
+                        ${renderArrow(s1State === 'completed')}
+                        ${renderStepItem(2, 'ใบส่งของ/ใบแจ้งหนี้', s2State, s2Tooltip)}
+                        ${renderArrow(s2State === 'completed')}
+                        ${renderStepItem(3, 'ใบเสร็จรับเงิน', s3State, s3Tooltip)}
+                        ${isCompleted ? `
+                            <span class="ml-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300/80 whitespace-nowrap shadow-2xs">
+                                <i class="fa-solid fa-circle-check text-emerald-600"></i> เสร็จสมบูรณ์
+                            </span>
+                        ` : ''}
+                    </div>
+                `;
             },
 
             updateWorkflowUI(proj) {
@@ -4809,7 +4856,9 @@
                         proj.docWorkflow.invoice.createdAt = now;
                         proj.docWorkflow.invoice.parentRef = proj.docWorkflow.quotation.docNumber;
                         if (!proj.docWorkflow.invoice.docNumber) {
-                            proj.docWorkflow.invoice.docNumber = `MTI${yy}${mm}${dd}${seq2}`;
+                            const qRef = proj.docWorkflow.quotation.docNumber || '';
+                            const qSuffix = qRef.replace(/^(?:MT[A-Z]|REC|INV|QT)[-_]?/i, '');
+                            proj.docWorkflow.invoice.docNumber = qSuffix ? `MTI${qSuffix}` : `MTI${yy}${mm}${dd}${seq2}`;
                         }
 
                         this.addActivityLog(proj, 'quotation_confirmed', `ยืนยันใบเสนอราคา (${proj.docWorkflow.quotation.docNumber})`, 'fa-solid fa-circle-check');
@@ -4869,14 +4918,18 @@
                         const seq1 = String(Math.floor(Math.random() * 900) + 100);
                         const seq2 = String(Math.floor(Math.random() * 900) + 100);
                         if (!proj.docWorkflow.invoice.docNumber) {
-                            proj.docWorkflow.invoice.docNumber = `MTI${yy}${mm}${dd}${seq1}`;
+                            const qRef = proj.docWorkflow.quotation?.docNumber || '';
+                            const qSuffix = qRef.replace(/^(?:MT[A-Z]|REC|INV|QT)[-_]?/i, '');
+                            proj.docWorkflow.invoice.docNumber = qSuffix ? `MTI${qSuffix}` : `MTI${yy}${mm}${dd}${seq1}`;
                         }
                         proj.docWorkflow.currentStep = 3;
                         proj.docWorkflow.receipt.status = 'draft';
                         proj.docWorkflow.receipt.createdAt = now;
                         proj.docWorkflow.receipt.parentRef = proj.docWorkflow.invoice.docNumber;
                         if (!proj.docWorkflow.receipt.docNumber) {
-                            proj.docWorkflow.receipt.docNumber = `MTR${yy}${mm}${dd}${seq2}`;
+                            const iRef = proj.docWorkflow.invoice.docNumber || proj.docWorkflow.quotation?.docNumber || '';
+                            const iSuffix = iRef.replace(/^(?:MT[A-Z]|REC|INV|QT)[-_]?/i, '');
+                            proj.docWorkflow.receipt.docNumber = iSuffix ? `MTR${iSuffix}` : `MTR${yy}${mm}${dd}${seq2}`;
                         }
 
                         this.addActivityLog(proj, 'invoice_confirmed', `ยืนยันใบส่งของ/ใบแจ้งหนี้ (${proj.docWorkflow.invoice.docNumber})`, 'fa-solid fa-circle-check');
@@ -4930,7 +4983,9 @@
                         const userEl = document.getElementById('userName');
                         proj.docWorkflow.receipt.confirmedBy = userEl ? userEl.innerText : 'ระบบ';
                         if (!proj.docWorkflow.receipt.docNumber) {
-                            proj.docWorkflow.receipt.docNumber = `REC-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+                            const iRef = proj.docWorkflow.invoice?.docNumber || proj.docWorkflow.quotation?.docNumber || '';
+                            const iSuffix = iRef.replace(/^(?:MT[A-Z]|REC|INV|QT)[-_]?/i, '');
+                            proj.docWorkflow.receipt.docNumber = iSuffix ? `MTR${iSuffix}` : `MTR${yy}${mm}${dd}${seq1}`;
                         }
                         proj.docWorkflow.isCompleted = true;
 
@@ -5583,26 +5638,30 @@
                     card.appendChild(accent);
 
                     card.innerHTML += `
-                        <div class="flex items-center gap-4 pl-2">
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800 leading-tight group-hover:text-brand-600 transition-colors mb-1.5">${proj.name}</h3>
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${proj.code}</span>
+                        <div class="flex items-start gap-4 pl-2 flex-1 min-w-0">
+                            <div class="w-full">
+                                <div class="flex flex-wrap items-center gap-2.5 mb-1.5">
+                                    <h3 class="font-bold text-lg text-slate-800 leading-tight group-hover:text-brand-600 transition-colors">${proj.name}</h3>
+                                    <span class="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 shrink-0">${proj.code}</span>
+                                </div>
+                                <div class="my-2 overflow-x-auto py-0.5 scrollbar-none">
                                     ${this.getProjectWorkflowBadge(proj)}
-                                    <span class="text-sm text-slate-500 flex items-center gap-1.5">
+                                </div>
+                                <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500 mt-2">
+                                    <span class="flex items-center gap-1.5">
                                         <i class="fa-solid fa-boxes-stacked text-slate-400"></i> จำนวน ${proj.items.length} รายการ
                                     </span>
-                                    <span class="text-sm text-slate-500 flex items-center gap-1.5 border-l border-slate-200 pl-3">
+                                    <span class="flex items-center gap-1.5 border-l border-slate-200 pl-3">
                                         <i class="fa-solid fa-building text-slate-400"></i> ${deptText}
                                     </span>
-                                    <span class="text-sm text-slate-500 flex items-center gap-1.5 border-l border-slate-200 pl-3">
+                                    <span class="flex items-center gap-1.5 border-l border-slate-200 pl-3">
                                         <i class="fa-regular fa-calendar text-slate-400"></i> ${displayDate}
                                     </span>
-                                    <span class="text-sm text-slate-500 flex items-center gap-1.5 border-l border-slate-200 pl-3">
+                                    <span class="flex items-center gap-1.5 border-l border-slate-200 pl-3">
                                         <i class="fa-solid fa-user-tie text-slate-400"></i> ${teacherText}
                                     </span>
                                     ${this.getCompanyDisplayString(proj.shop) ? `
-                                    <span class="text-sm text-slate-500 flex items-center gap-1.5 border-l border-slate-200 pl-3">
+                                    <span class="flex items-center gap-1.5 border-l border-slate-200 pl-3">
                                         <i class="fa-solid fa-shop text-slate-400"></i> ${this.getCompanyDisplayString(proj.shop)}
                                     </span>
                                     ` : ''}

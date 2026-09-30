@@ -1204,8 +1204,14 @@
                         const snap = await getDocs(q);
                         snap.forEach(d => {
                             const data = d.data();
-                            // If this refNo is not already in allDocuments, add it
-                            const exists = allDocuments.some(docItem => docItem.refNo === data.refNo);
+                            // If this document is not already in allDocuments, add it
+                            const exists = allDocuments.some(docItem => {
+                                if (docItem.id && d.id && docItem.id === d.id) return true;
+                                if (data.refNo && data.refNo.trim() !== '-' && docItem.refNo && docItem.refNo.trim() !== '-') {
+                                    return docItem.refNo.trim() === data.refNo.trim();
+                                }
+                                return false;
+                            });
                             if (!exists) {
                                 allDocuments.push({
                                     id: d.id,
@@ -1696,56 +1702,79 @@
                     throw new Error("ไม่พบข้อมูลผู้ใช้งาน กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
                 }
 
-                // 1. Delete by direct ID from source collection if present
-                if (d._collection && d.id) {
-                    try {
-                        await deleteDoc(doc(db, 'users', currentUser.uid, d._collection, d.id));
-                        console.log(`Deleted document ${d.id} from ${d._collection}`);
-                    } catch (errCol) {
-                        console.warn(`Could not delete from ${d._collection} by id:`, errCol);
+                const collectionsToClean = ['sales_documents', 'quotations_history', 'invoices_history', 'receipts_history'];
+                const delJobs = [];
+
+                // 1. Delete by direct ID across all user document collections
+                if (d.id) {
+                    for (const colName of collectionsToClean) {
+                        delJobs.push(
+                            deleteDoc(doc(db, 'users', currentUser.uid, colName, d.id))
+                                .catch(e => console.warn(`Could not delete doc ${d.id} from ${colName}:`, e))
+                        );
+                        // Also try root collection for legacy structures
+                        delJobs.push(
+                            deleteDoc(doc(db, colName, d.id))
+                                .catch(e => {})
+                        );
                     }
                 }
 
-                // 2. Also ensure deletion across all document collections by refNo
-                const collectionsToClean = ['sales_documents', 'quotations_history', 'invoices_history', 'receipts_history'];
-                if (d.refNo) {
+                // 2. If refNo exists and is not '-' or empty, delete all documents matching that refNo
+                const cleanRef = (d.refNo && d.refNo.trim() !== '-' && d.refNo.trim() !== '') ? d.refNo.trim() : null;
+                if (cleanRef) {
                     for (const colName of collectionsToClean) {
                         try {
                             const colRef = collection(db, 'users', currentUser.uid, colName);
-                            const qRef = query(colRef, where('refNo', '==', d.refNo));
+                            const qRef = query(colRef, where('refNo', '==', cleanRef));
                             const snapRef = await getDocs(qRef);
-                            const delJobs = [];
                             snapRef.forEach(docItem => {
-                                delJobs.push(deleteDoc(docItem.ref));
+                                delJobs.push(deleteDoc(docItem.ref).catch(e => console.warn(e)));
                             });
-                            if (delJobs.length > 0) {
-                                await Promise.all(delJobs);
-                                console.log(`Deleted ${delJobs.length} doc(s) with refNo ${d.refNo} from ${colName}`);
-                            }
                         } catch (colErr) {
-                            console.warn(`Could not clean refNo ${d.refNo} from ${colName}:`, colErr);
+                            console.warn(`Query refNo ${cleanRef} in ${colName} error:`, colErr);
+                        }
+                    }
+                } else {
+                    // 3. If refNo is empty or '-', delete all orphan/dash documents that match this customer/date/amount
+                    for (const colName of collectionsToClean) {
+                        try {
+                            const colRef = collection(db, 'users', currentUser.uid, colName);
+                            const snapRef = await getDocs(colRef);
+                            snapRef.forEach(docItem => {
+                                const data = docItem.data();
+                                const docRefNo = (data.refNo || '').trim();
+                                if (!docRefNo || docRefNo === '-') {
+                                    const matchCompany = !d.toCompany || data.toCompany === d.toCompany;
+                                    const matchAmount = !d.grandTotal || String(data.grandTotal).replace(/,/g, '') === String(d.grandTotal).replace(/,/g, '');
+                                    const matchDate = !d.docDate || data.docDate === d.docDate;
+                                    if (docItem.id === d.id || (matchCompany && matchAmount) || (matchCompany && matchDate)) {
+                                        delJobs.push(deleteDoc(docItem.ref).catch(e => console.warn(e)));
+                                    }
+                                }
+                            });
+                        } catch(e) {
+                            console.warn(`Clean orphan in ${colName} error:`, e);
                         }
                     }
                 }
 
-                // 3. Fallback: If id exists and wasn't caught, try deleting from sales_documents directly
-                if (d.id && d._collection !== 'sales_documents') {
-                    try {
-                        await deleteDoc(doc(db, 'users', currentUser.uid, 'sales_documents', d.id));
-                    } catch(e) {}
-                }
+                await Promise.all(delJobs);
 
                 // 4. Remove from in-memory arrays immediately for instantaneous feedback
-                const targetRefNo = d.refNo;
+                const targetRefNo = cleanRef;
                 const targetId = d.id;
+                const targetCompany = d.toCompany;
                 allDocuments = allDocuments.filter(item => {
                     if (targetId && item.id === targetId) return false;
                     if (targetRefNo && item.refNo === targetRefNo) return false;
+                    if (!targetRefNo && (!item.refNo || item.refNo === '-') && (!targetCompany || item.toCompany === targetCompany)) return false;
                     return true;
                 });
                 filteredDocuments = filteredDocuments.filter(item => {
                     if (targetId && item.id === targetId) return false;
                     if (targetRefNo && item.refNo === targetRefNo) return false;
+                    if (!targetRefNo && (!item.refNo || item.refNo === '-') && (!targetCompany || item.toCompany === targetCompany)) return false;
                     return true;
                 });
 

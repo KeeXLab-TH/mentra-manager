@@ -206,9 +206,31 @@
             // 7. Update Stepper UI
             updateWorkflowStepperUI();
 
-            // 8. Generate new RefNo if requested
-            if (options.generateNewRef) {
+            // 8. Generate new RefNo if requested, or sync prefix when switching types
+            const existingStepDocNumber = linkedProjectData?.docWorkflow?.[type]?.docNumber;
+            const refNoEl = document.getElementById('refNo');
+            if (existingStepDocNumber && !existingStepDocNumber.includes('PRJ') && refNoEl) {
+                refNoEl.value = existingStepDocNumber;
+            } else if (options.generateNewRef) {
                 generateRefNo();
+            } else if (refNoEl) {
+                const curVal = refNoEl.value.trim();
+                const code = (typeof getCurrentShopCode === 'function') ? getCurrentShopCode() : 'MT';
+                if (!curVal || curVal === '-' || curVal.includes('PRJ')) {
+                    generateRefNo(true);
+                } else if (type === 'invoice') {
+                    const suffix = extractDocSuffix(curVal);
+                    refNoEl.value = suffix ? `${code}I${suffix}` : '';
+                    if (!refNoEl.value) generateRefNo(true);
+                } else if (type === 'receipt') {
+                    const suffix = extractDocSuffix(curVal);
+                    refNoEl.value = suffix ? `${code}R${suffix}` : '';
+                    if (!refNoEl.value) generateRefNo(true);
+                } else if (type === 'quotation') {
+                    const suffix = extractDocSuffix(curVal);
+                    refNoEl.value = suffix ? `${code}Q${suffix}` : '';
+                    if (!refNoEl.value) generateRefNo(true);
+                }
             }
 
             // 9. Sync preview
@@ -618,16 +640,9 @@
                         const autoImportSource = urlParams.get('source') || 'school';
                         if (autoImportId && !hasAutoImported) {
                             autoImportProject(autoImportId, autoImportSource).catch(e => console.error("Error auto-importing project:", e));
-                        } else {
-                            // Fallback: Check if fresh pending_quotation_project exists (within last 3 minutes)
+                        } else if (!autoImportId) {
                             try {
-                                const pendingRaw = localStorage.getItem('pending_quotation_project');
-                                if (pendingRaw) {
-                                    const pData = JSON.parse(pendingRaw);
-                                    if (pData && pData.projectId && pData.timestamp && (Date.now() - pData.timestamp < 180000)) {
-                                        autoImportProject(pData.projectId, pData.source || 'school').catch(e => console.error("Error auto-importing project:", e));
-                                    }
-                                }
+                                localStorage.removeItem('pending_quotation_project');
                             } catch(e) {}
                         }
                     } else {
@@ -670,22 +685,115 @@
         window.handleLogout = handleLogout;
         // toggleSidebarCollapse handled by dashboard-dual-sidebar.js
 
+        function extractDocSuffix(ref) {
+            if (!ref) return '';
+            const str = String(ref).trim();
+            if (str.includes('PRJ')) return '';
+            const stripped = str.replace(/^(?:[A-Za-z]{2,4}[QIRqir]|(?:MT|KT|SM|PS|TP)[A-Za-z]|REC|INV|QT)[-_]?/i, '');
+            return /^\d+$/.test(stripped) ? stripped : '';
+        }
+
+        function onParentRefInput() {
+            const parentInput = document.getElementById('parentRefNo');
+            let parentVal = parentInput?.value?.trim() || '';
+            if (parentVal.includes('PRJ')) {
+                parentVal = '';
+                if (parentInput) parentInput.value = '';
+            }
+            workflowHistory.parentRefNo = parentVal;
+            const suffix = extractDocSuffix(parentVal);
+            if (suffix) {
+                const refEl = document.getElementById('refNo');
+                if (refEl) {
+                    const code = (typeof getCurrentShopCode === 'function') ? getCurrentShopCode() : 'MT';
+                    if (currentDocType === 'invoice') {
+                        refEl.value = `${code}I${suffix}`;
+                    } else if (currentDocType === 'receipt') {
+                        refEl.value = `${code}R${suffix}`;
+                    }
+                }
+            } else if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                generateRefNo(true);
+            }
+            if (typeof triggerLiveSync === 'function') triggerLiveSync();
+        }
+
         // --- Core Functions ---
-        async function generateRefNo() {
+        async function generateRefNo(forceSequential = false) {
+            const code = (typeof getCurrentShopCode === 'function') ? getCurrentShopCode() : 'MT';
+            const config = DOC_TYPE_CONFIG[currentDocType] || DOC_TYPE_CONFIG.quotation;
+
+            // 1. If invoice, derive number from preceding quotation
+            if (!forceSequential && currentDocType === 'invoice') {
+                const parentInputVal = document.getElementById('parentRefNo')?.value?.trim();
+                const parentRef = parentInputVal || 
+                    workflowHistory.quotationRefNo || 
+                    workflowHistory.parentRefNo || 
+                    linkedProjectData?.docWorkflow?.invoice?.parentRef || 
+                    linkedProjectData?.docWorkflow?.quotation?.docNumber || 
+                    new URLSearchParams(window.location.search).get('parentRef') || '';
+
+                if (parentRef && !parentRef.includes('PRJ')) {
+                    const suffix = extractDocSuffix(parentRef);
+                    if (suffix) {
+                        const newRef = `${code}I${suffix}`;
+                        const refEl = document.getElementById('refNo');
+                        if (refEl) refEl.value = newRef;
+                        if (!parentInputVal && document.getElementById('parentRefNo')) {
+                            document.getElementById('parentRefNo').value = parentRef;
+                        }
+                        if (typeof triggerLiveSync === 'function') triggerLiveSync();
+                        return newRef;
+                    }
+                }
+            }
+
+            // 2. If receipt, derive number from preceding invoice or quotation
+            if (!forceSequential && currentDocType === 'receipt') {
+                const parentInputVal = document.getElementById('parentRefNo')?.value?.trim();
+                const parentRef = parentInputVal || 
+                    workflowHistory.invoiceRefNo || 
+                    workflowHistory.quotationRefNo || 
+                    workflowHistory.parentRefNo || 
+                    linkedProjectData?.docWorkflow?.receipt?.parentRef || 
+                    linkedProjectData?.docWorkflow?.invoice?.docNumber || 
+                    linkedProjectData?.docWorkflow?.quotation?.docNumber || 
+                    new URLSearchParams(window.location.search).get('parentRef') || '';
+
+                if (parentRef && !parentRef.includes('PRJ')) {
+                    const suffix = extractDocSuffix(parentRef);
+                    if (suffix) {
+                        const newRef = `${code}R${suffix}`;
+                        const refEl = document.getElementById('refNo');
+                        if (refEl) refEl.value = newRef;
+                        if (!parentInputVal && document.getElementById('parentRefNo')) {
+                            document.getElementById('parentRefNo').value = parentRef;
+                        }
+                        if (typeof triggerLiveSync === 'function') triggerLiveSync();
+                        return newRef;
+                    }
+                }
+            }
+
+            // 3. Fallback: Sequential generation by date (format: {CODE}Q{YY}{MM}{DD}{SEQ} e.g. MTQ260930001)
             const docDateInput = document.getElementById('docDate');
-            const docDateVal = docDateInput?.value;
+            let docDateVal = docDateInput?.value;
             if (!docDateVal) {
-                alert('กรุณาเลือกวันที่ก่อนรันเลขที่เอกสาร');
-                if (docDateInput) docDateInput.focus();
-                return;
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                docDateVal = `${yyyy}-${mm}-${dd}`;
+                if (docDateInput) docDateInput.value = docDateVal;
             }
             const parts = docDateVal.split('-');
             const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
             const year = date.getFullYear().toString().slice(-2);
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
-            const config = DOC_TYPE_CONFIG[currentDocType] || DOC_TYPE_CONFIG.quotation;
-            const prefix = `${config.prefix}${year}${month}${day}`;
+            const typeLetter = currentDocType === 'invoice' ? 'I' : (currentDocType === 'receipt' ? 'R' : 'Q');
+            const targetDocPrefix = `${code}${typeLetter}`;
+            const prefix = `${targetDocPrefix}${year}${month}${day}`;
 
             let nextSeq = 1;
             if (currentUser && db) {
@@ -706,14 +814,16 @@
                     });
                     nextSeq = maxSeq + 1;
                 } catch (err) {
-                    console.warn('Could not query quotations_history for sequence, fallback to 1:', err);
                     console.warn(`Could not query ${config.firestoreCollection} for sequence, fallback to 1:`, err);
                 }
             }
 
             const runStr = String(nextSeq).padStart(3, '0');
-            document.getElementById('refNo').value = `${prefix}${runStr}`;
+            const newRef = `${prefix}${runStr}`;
+            const refEl = document.getElementById('refNo');
+            if (refEl) refEl.value = newRef;
             if (typeof triggerLiveSync === 'function') triggerLiveSync();
+            return newRef;
         }
 
         function formatNumber(num) {
@@ -959,7 +1069,7 @@
                 input.value = value;
                 triggerLiveSync();
                 if (btn && btn.parentElement) {
-                    btn.parentElement.querySelectorAll('.pro-preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.parentElement.querySelectorAll('.preset-chip, .pro-preset-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                 }
             }
@@ -4440,7 +4550,7 @@
                     const pendingRaw = localStorage.getItem('pending_quotation_project');
                     if (pendingRaw) {
                         const parsed = JSON.parse(pendingRaw);
-                        if (parsed && (String(parsed.projectId) === String(projectId) || !projectId)) {
+                        if (parsed && projectId && String(parsed.projectId) === String(projectId)) {
                             pendingProj = parsed;
                         }
                     }
@@ -4783,6 +4893,9 @@
                 updateRowNumbers();
                 applyLivePreview();
                 calculateAll();
+                try {
+                    localStorage.removeItem('pending_quotation_project');
+                } catch(e) {}
                 closeImportProjectModal();
             }
         }

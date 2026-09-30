@@ -1180,6 +1180,11 @@
                             <div class="back-bottom-address">
                                 <div style="font-weight:700; color:var(--primary-darker); margin-bottom:2px;" id="prevBackCompPrimary"></div>
                                 <div><i class="fa-solid fa-location-dot" style="color:var(--secondary); margin-right:3px;"></i> <span id="prevAddressPrimary"></span></div>
+                                <div style="margin-top:2px; font-size:0.73rem; color:#475569; display:flex; align-items:center; gap:4px;" id="prevTaxIdContainer">
+                                    <i class="fa-solid fa-receipt" style="color:var(--primary); font-size:0.75rem;"></i>
+                                    <span id="prevTaxIdLabel" style="font-weight:600;">เลขประจำตัวผู้เสียภาษี:</span>
+                                    <span id="prevTaxId" style="font-weight:700; color:var(--text); letter-spacing:0.3px;">0115568026644</span>
+                                </div>
                             </div>
 
                         </div>
@@ -1254,6 +1259,10 @@
                             <div class="form-group" style="grid-column: 1 / -1;">
                                 <label><i class="fa-solid fa-location-dot"></i> Company Address (English)</label>
                                 <input type="text" class="form-control" id="inputAddressEn" value="115/123 M.12, Bang Kaeo, Bang Phli, Samut Prakan 10540" readonly style="background-color: var(--primary-light); color: var(--primary-darker); font-weight: 600; cursor: not-allowed;">
+                            </div>
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label><i class="fa-solid fa-receipt"></i> เลขประจำตัวผู้เสียภาษี (Tax ID)</label>
+                                <input type="text" class="form-control" id="inputTaxId" value="0115568026644" readonly style="background-color: var(--primary-light); color: var(--primary-darker); font-weight: 600; cursor: not-allowed;">
                             </div>
                         </div>
 
@@ -1390,6 +1399,14 @@
                 document.getElementById('prevAddressPrimary').textContent = addrEn;
             }
 
+            // Tax ID display
+            const taxId = (document.getElementById('inputTaxId')?.value || '0115568026644').trim();
+            const taxIdLabel = (currentCardLang === 'TH') ? 'เลขประจำตัวผู้เสียภาษี:' : 'Tax ID:';
+            const prevTaxIdLabel = document.getElementById('prevTaxIdLabel');
+            if (prevTaxIdLabel) prevTaxIdLabel.textContent = taxIdLabel;
+            const prevTaxId = document.getElementById('prevTaxId');
+            if (prevTaxId) prevTaxId.textContent = taxId;
+
             // Phone display
             const phoneItem = document.getElementById('prevPhoneItem');
             if (phoneItem) {
@@ -1456,6 +1473,10 @@
                     document.getElementById('inputPhone').value = data.phone || '';
                     document.getElementById('inputLineId').value = data.lineId || '';
                     document.getElementById('inputEmail').value = data.email || currentUser?.email || '';
+                    if (data.taxId) {
+                        const taxInput = document.getElementById('inputTaxId');
+                        if (taxInput) taxInput.value = data.taxId;
+                    }
                     if (data.qrCodeBase64) {
                         currentQrBase64 = data.qrCodeBase64;
                     }
@@ -1483,6 +1504,7 @@
                 compEn: document.getElementById('inputCompEn').value.trim(),
                 addressTh: document.getElementById('inputAddressTh').value.trim(),
                 addressEn: document.getElementById('inputAddressEn').value.trim(),
+                taxId: (document.getElementById('inputTaxId')?.value || '0115568026644').trim(),
                 qrCodeBase64: currentQrBase64,
                 updatedAt: new Date().toISOString()
             };

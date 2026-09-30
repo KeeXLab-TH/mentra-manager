@@ -28,9 +28,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- FontAwesome for Icons -->
+    <!-- Icons: FontAwesome & Boxicons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+
+    <!-- Premium UI Overlay & Mentra Design System -->
+    <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780690277137">
+    <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
 
     <style>
 
@@ -75,6 +80,8 @@
             --sidebar-w: 260px;
             --sidebar-w-collapsed: 72px;
             --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
+            --sidebar-font: 'Kanit', sans-serif;
+            --font-family: 'Kanit', 'Inter', sans-serif;
             --header-h: 68px;
 
             /* Shadows */
@@ -95,7 +102,7 @@
             --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -109,6 +116,33 @@
             min-height: 100vh;
             display: none; /* Hidden by default until authenticated */
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        button, input, select, textarea, optgroup {
+            font-family: 'Kanit', 'Inter', sans-serif;
+        }
+
+        /* Protect all icon fonts from font-family overrides */
+        .bx, [class^="bx-"], [class*=" bx-"] {
+            font-family: 'boxicons' !important;
+            font-style: normal;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+        }
+        .fa, .fas, .far, .fal, .fad, .fab, .fa-solid, .fa-regular, .fa-brands, [class^="fa-"], [class*=" fa-"] {
+            font-family: "Font Awesome 6 Free", "FontAwesome" !important;
+            font-style: normal;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+        }
+        .fa-brands, [class^="fa-brands"], [class*=" fa-brands"] {
+            font-family: "Font Awesome 6 Brands" !important;
         }
 
         /* ===== SIDEBAR ===== */
@@ -1805,7 +1839,7 @@
             display: block;
         }
         .c-company {
-            font-family: 'Prompt', sans-serif;
+            font-family: 'Kanit', sans-serif;
             font-size: 11px;
             font-weight: 600;
             letter-spacing: 2px;
@@ -1830,7 +1864,7 @@
             letter-spacing: 1px;
         }
         .c-name {
-            font-family: 'Prompt', sans-serif;
+            font-family: 'Kanit', sans-serif;
             font-size: 38px;
             font-weight: 700;
             color: #0b3d6e;
@@ -1860,7 +1894,7 @@
             border-bottom: 1px dashed rgba(26, 111, 191, 0.15);
         }
         .c-course {
-            font-family: 'Prompt', sans-serif;
+            font-family: 'Kanit', sans-serif;
             font-size: 24px;
             font-weight: 700;
             color: var(--primary);
@@ -1910,7 +1944,7 @@
             opacity: 0.35;
         }
                 .c-sig-name {
-            font-family: 'Prompt', sans-serif;
+            font-family: 'Kanit', sans-serif;
             font-size: 13.5px;
             font-weight: 600;
             color: var(--text);
@@ -2232,42 +2266,259 @@
 
         .product-card-actions {
             display: flex;
-            gap: 8px;
-            margin-top: 16px;
+            gap: 6px;
+            margin-top: 14px;
+            align-items: center;
         }
 
-        .btn-view, .btn-edit {
-            flex: 1;
-            padding: 8px;
+        .btn-quote {
+            flex: 1.15;
+            padding: 8px 6px;
             border-radius: var(--radius-sm);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            border: none;
-            transition: background var(--t-fast), color var(--t-fast);
+            border: 1px solid #bfdbfe;
+            background: #eff6ff;
+            color: #1d4ed8;
+            transition: all var(--t-fast);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
+            white-space: nowrap;
         }
 
-        .btn-view {
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .btn-view:hover {
-            background: #e2e8f0;
+        .btn-quote:hover {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+            transform: translateY(-1px);
         }
 
         .btn-edit {
-            background: var(--primary-light);
-            color: var(--primary-dark);
+            flex: 0.9;
+            padding: 8px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #475569;
+            transition: all var(--t-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
         }
 
         .btn-edit:hover {
-            background: var(--primary);
-            color: white;
+            background: #e0f2fe;
+            color: #0284c7;
+            border-color: #bae6fd;
+            transform: translateY(-1px);
+        }
+
+        .btn-details {
+            flex: 1.1;
+            padding: 8px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background: #f1f5f9;
+            color: #334155;
+            transition: all var(--t-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .btn-details:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        /* ===== PRODUCT CARD SELECTION & QUOTATION STYLES ===== */
+        .product-card {
+            position: relative;
+            transition: transform var(--t-fast), box-shadow var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+        }
+
+        .product-card.is-selected {
+            border: 2px solid #2563eb !important;
+            background: #f0f7ff !important;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.16) !important;
+        }
+
+        .product-card-select-btn {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 10;
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(4px);
+            border: 1.5px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            color: transparent;
+            font-size: 13px;
+        }
+
+        .product-card-select-btn:hover {
+            border-color: #3b82f6;
+            background: #ffffff;
+            transform: scale(1.08);
+        }
+
+        .product-card.is-selected .product-card-select-btn {
+            background: #2563eb !important;
+            border-color: #2563eb !important;
+            color: #ffffff !important;
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.45) !important;
+        }
+        }
+
+        .select-all-btn:hover {
+            background: #f8fafc !important;
+            border-color: #94a3b8 !important;
+        }
+
+        .btn-bulk-quote {
+            animation: pulse-badge 2s infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+            50% { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.45); }
+        }
+
+        /* Floating Bottom Action Bar */
+        .floating-quote-bar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            z-index: 180;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 9999px;
+            padding: 10px 14px 10px 22px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.3s ease;
+            max-width: 92vw;
+        }
+
+        .floating-quote-bar.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .floating-bar-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .floating-bar-badge {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            padding: 5px 14px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+            white-space: nowrap;
+        }
+
+        .floating-bar-total {
+            color: #cbd5e1;
+            font-size: 13.5px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .floating-bar-total strong {
+            color: #38bdf8;
+            font-weight: 800;
+            font-size: 15.5px;
+            margin-left: 4px;
+        }
+
+        .floating-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-clear-selection {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #cbd5e1;
+            padding: 8px 14px;
+            border-radius: 9999px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-clear-selection:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-create-quote {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            border: none;
+            padding: 9px 20px;
+            border-radius: 9999px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-create-quote:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
         }
 
         
@@ -2698,12 +2949,19 @@
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <h2 style="font-size: 22px; font-weight: 700; margin: 0; color: var(--text);">สินค้า (Products)</h2>
                 <span id="productCountBadge" style="background: #e2e8f0; color: #475569; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;">... รายการ</span>
+                <label id="selectAllContainer" class="select-all-btn" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-secondary); background: white; padding: 5px 12px; border-radius: 10px; border: 1px solid var(--border); user-select: none; transition: all 0.15s;">
+                    <input type="checkbox" id="selectAllProductsCheckbox" onchange="window.toggleSelectAllProducts(this.checked)" style="accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer;">
+                    <span>เลือกทั้งหมด</span>
+                </label>
             </div>
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <div style="position: relative; width: 260px;">
                     <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px; pointer-events: none;"></i>
                     <input type="text" id="productSearchInput" placeholder="ค้นหาสินค้า / ผู้ผลิต..." oninput="window.handleSearchProducts(this.value)" style="width: 100%; padding: 9px 12px 9px 34px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 13.5px; font-family: inherit; outline: none; background: #ffffff; transition: border-color 0.2s;">
                 </div>
+                <button id="btnBulkQuotation" type="button" onclick="window.openSelectedProductsQuotationModal()" class="btn-bulk-quote" style="display: none; align-items: center; gap: 8px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 9px 16px; border-radius: 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); transition: all 0.2s;">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> <span>ออกใบเสนอราคา (<span id="selectedCountBadge">0</span>)</span>
+                </button>
                 <button class="btn-add-product" onclick="openProductModal()">
                     <i class="fa-solid fa-plus"></i> เพิ่มสินค้าใหม่
                 </button>
@@ -2718,7 +2976,8 @@
                 <div class="view-content-pane" id="paneDetailView" style="display: none; flex-direction: column;">
                     <div class="view-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                         <button class="btn-cancel" onclick="closeProductDetail()" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px; background: white; border: 1px solid var(--border); cursor: pointer;"><i class="fa-solid fa-arrow-left"></i> กลับหน้ารวม</button>
-                        <div style="display: flex; gap: 12px;">
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button class="btn-quote-pane" id="btnPaneQuote" onclick="window.quickQuoteSingleProduct(document.getElementById('paneDetailProdId').value)" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); transition: all 0.2s;"><i class="fa-solid fa-file-invoice-dollar"></i> ออกใบเสนอราคา</button>
                             <button class="btn-edit" id="btnPaneEdit" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px; background: #e0f2fe; color: #0284c7; border: none; cursor: pointer;"><i class="fa-solid fa-pen-to-square"></i> แก้ไขข้อมูล</button>
                             <button class="btn-delete" id="btnPaneDelete" style="padding: 10px 20px; border-radius: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px; background: white; color: #ef4444; border: 1px solid #fca5a5; cursor: pointer;"><i class="fa-solid fa-trash-can"></i> ลบสินค้า</button>
                         </div>
@@ -2845,6 +3104,102 @@
     </div>
 </div>
 
+<!-- Floating Bottom Action Bar for Bulk Quotation -->
+<div id="floatingQuoteBar" class="floating-quote-bar">
+    <div class="floating-bar-info">
+        <span class="floating-bar-badge" id="floatingBarBadge">0 รายการ</span>
+        <span class="floating-bar-divider" style="color: rgba(255,255,255,0.2);">|</span>
+        <span class="floating-bar-total">รวมประมาณ <strong id="floatingBarTotal">0</strong> ฿</span>
+    </div>
+    <div class="floating-bar-actions">
+        <button type="button" class="btn-clear-selection" onclick="window.clearSelectedProducts()">
+            <i class="fa-solid fa-xmark"></i> ล้างการเลือก
+        </button>
+        <button type="button" class="btn-create-quote" onclick="window.openSelectedProductsQuotationModal()">
+            <i class="fa-solid fa-file-invoice-dollar"></i> ออกใบเสนอราคา
+        </button>
+    </div>
+</div>
+
+<!-- Selected Products Quotation Review Modal -->
+<div class="modal-overlay" id="selectedQuoteModal" style="display: none; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="modal-container" style="max-width: 720px; width: 92%; max-height: 90vh; display: flex; flex-direction: column; border-radius: 20px; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25); background: #ffffff; overflow: hidden; border: 1px solid var(--border);">
+        <header class="modal-header" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #ffffff; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: none;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: #34d399; font-size: 18px;">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #ffffff; font-family: 'Kanit', sans-serif;">ออกใบเสนอราคาจากสินค้าที่เลือก</h3>
+                    <div style="font-size: 12.5px; color: #94a3b8; margin-top: 2px;">ตรวจสอบรายการและระบุจำนวนที่ต้องการก่อนส่งไปยังหน้าใบเสนอราคา</div>
+                </div>
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeModal('selectedQuoteModal')" style="background: rgba(255,255,255,0.1); color: #cbd5e1; border: none; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </header>
+
+        <div class="modal-body" style="padding: 20px 24px; overflow-y: auto; flex: 1; background: #f8fafc;">
+            <!-- Customer / Recipient Quick Input (Optional) -->
+            <div style="background: #ffffff; border-radius: 14px; padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">
+                            <i class="fa-solid fa-building" style="color: var(--primary);"></i> เสนอราคาถึง (ลูกค้า / บริษัท)
+                        </label>
+                        <input type="text" id="quoteRecipientCompany" class="form-input" placeholder="ระบุชื่อลูกค้าหรือชื่อบริษัท (ระบุหรือไม่ก็ได้)" style="width: 100%; font-size: 13px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px;">
+                            <i class="fa-solid fa-tag" style="color: #10b981;"></i> หมายเหตุ / ชื่อโครงการ
+                        </label>
+                        <input type="text" id="quoteProjectRemark" class="form-input" placeholder="เช่น เสนอราคาจัดซื้ออุปกรณ์ประจำปี" style="width: 100%; font-size: 13px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Items Table Container -->
+            <div style="background: #ffffff; border-radius: 14px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <div style="padding: 12px 16px; background: #f1f5f9; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-list-check" style="color: var(--primary);"></i>
+                        <span>รายการสินค้า (<span id="quoteModalItemsCount">0</span> รายการ)</span>
+                    </div>
+                    <button type="button" onclick="window.clearSelectedProducts(); closeModal('selectedQuoteModal');" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-trash-can"></i> ล้างทั้งหมด
+                    </button>
+                </div>
+                
+                <div id="quoteModalItemsList" style="max-height: 320px; overflow-y: auto;">
+                    <!-- Rendered items with qty controls -->
+                </div>
+            </div>
+
+            <!-- Grand Total Summary Box -->
+            <div style="margin-top: 16px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; border-radius: 14px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-size: 12px; font-weight: 600; color: #1e40af;">ยอดรวมประเมิน (ยังไม่รวม VAT)</div>
+                    <div style="font-size: 11.5px; color: #3b82f6; margin-top: 2px;">สามารถปรับส่วนลดและ VAT เพิ่มเติมได้ในหน้าใบเสนอราคา</div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 24px; font-weight: 800; color: #1d4ed8; font-family: 'Kanit', sans-serif;" id="quoteModalGrandTotal">0.00</span>
+                    <span style="font-size: 14px; font-weight: 600; color: #1e40af; margin-left: 4px;">บาท</span>
+                </div>
+            </div>
+        </div>
+
+        <footer class="modal-footer" style="padding: 16px 24px; background: #ffffff; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" class="btn-cancel" onclick="closeModal('selectedQuoteModal')" style="padding: 9px 18px; border-radius: 10px; font-weight: 600; border: 1px solid var(--border); background: white; cursor: pointer; color: var(--text-secondary);">
+                กลับไปเลือกเพิ่ม
+            </button>
+            <button type="button" class="btn-create-quote" onclick="window.confirmAndOpenQuotation()" style="padding: 10px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer;">
+                <i class="fa-solid fa-paper-plane"></i> เปิดหน้าใบเสนอราคา
+            </button>
+        </footer>
+    </div>
+</div>
+
+
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -2862,6 +3217,8 @@ let db = initializeFirestore(app, {
 });
 
 let currentProducts = [];
+let selectedProductIds = new Set();
+let selectedProductQtys = {}; // { [productId]: number }
 
 function loadCachedUser() {
     try {
@@ -2964,13 +3321,23 @@ function renderProducts(productsToRender = currentProducts) {
     productsToRender.forEach(p => {
         const pName = p.name || p.title || p.productName || 'ไม่ระบุชื่อสินค้า';
         const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || 'ไม่ระบุผู้ผลิต';
-        const pPrice = p.price || p.cost || 0;
+        const pPrice = Number(p.price || p.cost || 0);
         let pImgUrl = getDriveImageUrl(p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl, p.fileId, 400);
         const priceFmt = pPrice.toLocaleString();
+        const isSelected = selectedProductIds.has(p.id);
         
         const card = document.createElement("div");
-        card.className = "product-card";
+        card.className = `product-card ${isSelected ? 'is-selected' : ''}`;
+        card.setAttribute("data-id", p.id);
+        card.onclick = (e) => {
+            if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+            window.toggleProductSelect(p.id);
+        };
+
         card.innerHTML = `
+            <button type="button" class="product-card-select-btn" title="${isSelected ? 'ยกเลิกการเลือก' : 'เลือกสินค้านี้'}" onclick="event.stopPropagation(); window.toggleProductSelect('${p.id}')">
+                <i class="fa-solid fa-check"></i>
+            </button>
             <div class="product-card-img-container">
                 <img src="${pImgUrl}" alt="${pName}" class="product-card-img" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.src=\'../../assets/img/logo.png\'">
             </div>
@@ -2979,15 +3346,334 @@ function renderProducts(productsToRender = currentProducts) {
                 <div class="product-card-mfg"><i class="fa-solid fa-industry"></i> ${pMfg}</div>
                 <div class="product-card-price">${priceFmt} ฿</div>
                 <div class="product-card-actions">
-                    <button type="button" class="btn-edit" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i> แก้ไข</button>
-                    <button type="button" class="btn-details" onclick="viewProductDetails('${p.id}')"><i class="fa-solid fa-circle-info"></i> รายละเอียด</button>
+                    <button type="button" class="btn-quote" title="ออกใบเสนอราคาสินค้านี้" onclick="event.stopPropagation(); window.quickQuoteSingleProduct('${p.id}')">
+                        <i class="fa-solid fa-file-invoice-dollar"></i> เสนอราคา
+                    </button>
+                    <button type="button" class="btn-edit" title="แก้ไขสินค้า" onclick="event.stopPropagation(); editProduct('${p.id}')">
+                        <i class="fa-solid fa-pen-to-square"></i> แก้ไข
+                    </button>
+                    <button type="button" class="btn-details" title="ดูรายละเอียด" onclick="event.stopPropagation(); viewProductDetails('${p.id}')">
+                        <i class="fa-solid fa-circle-info"></i> รายละเอียด
+                    </button>
                 </div>
             </div>
         `;
         fragment.appendChild(card);
     });
     grid.appendChild(fragment);
+    updateSelectionUI();
 }
+
+window.toggleProductSelect = (id) => {
+    if (!id) return;
+    if (selectedProductIds.has(id)) {
+        selectedProductIds.delete(id);
+        delete selectedProductQtys[id];
+    } else {
+        selectedProductIds.add(id);
+        if (!selectedProductQtys[id]) selectedProductQtys[id] = 1;
+    }
+    updateSelectionUI();
+};
+
+window.toggleSelectAllProducts = (checked) => {
+    if (checked) {
+        currentProducts.forEach(p => {
+            selectedProductIds.add(p.id);
+            if (!selectedProductQtys[p.id]) selectedProductQtys[p.id] = 1;
+        });
+    } else {
+        selectedProductIds.clear();
+        selectedProductQtys = {};
+    }
+    updateSelectionUI();
+};
+
+window.clearSelectedProducts = () => {
+    selectedProductIds.clear();
+    selectedProductQtys = {};
+    updateSelectionUI();
+    const modal = document.getElementById('selectedQuoteModal');
+    if (modal && modal.classList.contains('show')) {
+        closeModal('selectedQuoteModal');
+    }
+};
+
+window.updateSelectionUI = () => {
+    const totalSelected = selectedProductIds.size;
+    
+    // Update card styles
+    const cards = document.querySelectorAll(".product-card");
+    cards.forEach(card => {
+        const id = card.getAttribute("data-id");
+        const btn = card.querySelector(".product-card-select-btn");
+        if (id && selectedProductIds.has(id)) {
+            card.classList.add("is-selected");
+            if (btn) btn.title = "ยกเลิกการเลือก";
+        } else {
+            card.classList.remove("is-selected");
+            if (btn) btn.title = "เลือกสินค้านี้";
+        }
+    });
+
+    // Update select-all checkbox state
+    const selectAllCheckbox = document.getElementById("selectAllProductsCheckbox");
+    if (selectAllCheckbox) {
+        if (totalSelected === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (totalSelected === currentProducts.length && currentProducts.length > 0) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        }
+    }
+
+    // Update top bulk button
+    const btnBulk = document.getElementById("btnBulkQuotation");
+    const countBadge = document.getElementById("selectedCountBadge");
+    if (btnBulk) {
+        if (totalSelected > 0) {
+            btnBulk.style.display = "inline-flex";
+            if (countBadge) countBadge.textContent = totalSelected;
+        } else {
+            btnBulk.style.display = "none";
+        }
+    }
+
+    // Calculate sum of selected products
+    let grandTotal = 0;
+    selectedProductIds.forEach(id => {
+        const p = currentProducts.find(item => item.id === id);
+        if (p) {
+            const price = Number(p.price || p.cost || 0);
+            const qty = Number(selectedProductQtys[id] || 1);
+            grandTotal += (price * qty);
+        }
+    });
+
+    // Update floating bottom bar
+    const floatBar = document.getElementById("floatingQuoteBar");
+    const floatBadge = document.getElementById("floatingBarBadge");
+    const floatTotal = document.getElementById("floatingBarTotal");
+    if (floatBar) {
+        if (totalSelected > 0) {
+            floatBar.classList.add("show");
+            if (floatBadge) floatBadge.textContent = `${totalSelected} รายการ`;
+            if (floatTotal) floatTotal.textContent = grandTotal.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        } else {
+            floatBar.classList.remove("show");
+        }
+    }
+
+    // If modal is open, refresh item list
+    const modal = document.getElementById("selectedQuoteModal");
+    if (modal && modal.style.display === "flex") {
+        renderSelectedQuoteModalItems();
+    }
+};
+
+window.quickQuoteSingleProduct = (id) => {
+    if (!id) return;
+    const p = currentProducts.find(item => item.id === id);
+    if (!p) {
+        Swal.fire('ข้อผิดพลาด', 'ไม่พบข้อมูลสินค้านี้', 'error');
+        return;
+    }
+    // Select this item and ensure quantity is at least 1
+    selectedProductIds.add(id);
+    if (!selectedProductQtys[id]) selectedProductQtys[id] = 1;
+    updateSelectionUI();
+    openSelectedProductsQuotationModal();
+};
+
+window.openSelectedProductsQuotationModal = () => {
+    if (selectedProductIds.size === 0) {
+        Swal.fire({
+            icon: 'info',
+            title: 'ยังไม่ได้เลือกสินค้า',
+            text: 'กรุณาติ๊กเลือกสินค้าที่ต้องการออกใบเสนอราคาอย่างน้อย 1 รายการ'
+        });
+        return;
+    }
+    renderSelectedQuoteModalItems();
+    const modal = document.getElementById("selectedQuoteModal");
+    if (modal) {
+        modal.style.display = "flex";
+        setTimeout(() => modal.classList.add("show"), 10);
+    }
+};
+
+window.renderSelectedQuoteModalItems = () => {
+    const listContainer = document.getElementById("quoteModalItemsList");
+    const countEl = document.getElementById("quoteModalItemsCount");
+    const totalEl = document.getElementById("quoteModalGrandTotal");
+    if (!listContainer) return;
+
+    if (countEl) countEl.textContent = selectedProductIds.size;
+
+    if (selectedProductIds.size === 0) {
+        listContainer.innerHTML = `
+            <div style="padding: 30px; text-align: center; color: var(--text-secondary);">
+                <i class="fa-solid fa-cart-shopping" style="font-size: 32px; color: #cbd5e1; margin-bottom: 8px;"></i>
+                <div>ไม่มีสินค้าที่เลือก</div>
+            </div>
+        `;
+        if (totalEl) totalEl.textContent = "0.00";
+        return;
+    }
+
+    let html = '';
+    let grandTotal = 0;
+
+    selectedProductIds.forEach(id => {
+        const p = currentProducts.find(item => item.id === id);
+        if (!p) return;
+
+        const pName = p.name || p.title || p.productName || 'ไม่ระบุชื่อสินค้า';
+        const pMfg = p.manufacturer || p.brand || p.company || p.supplier || p.mfg || 'ผู้ผลิตทั่วไป';
+        const pPrice = Number(p.price || p.cost || 0);
+        const pUnit = p.unit || 'ชุด';
+        const qty = Number(selectedProductQtys[id] || 1);
+        const lineTotal = pPrice * qty;
+        grandTotal += lineTotal;
+
+        const pImgUrl = getDriveImageUrl(p.imageDriveUrl || p.imageUrl || p.image || p.imgUrl || p.picture || p.fileUrl, p.fileId, 120);
+
+        html += `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; gap: 12px; background: #ffffff;">
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+                    <img src="${pImgUrl}" alt="${pName}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0;" onerror="this.src=\'../../assets/img/logo.png\'">
+                    <div style="min-width: 0;">
+                        <div style="font-weight: 600; font-size: 13.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${pName}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                            <span style="color: #64748b;">${pMfg}</span> • <span style="color: var(--primary); font-weight: 600;">${pPrice.toLocaleString()} ฿ / ${pUnit}</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                    <!-- Qty Stepper -->
+                    <div style="display: flex; align-items: center; border: 1.5px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #f8fafc;">
+                        <button type="button" onclick="window.changeProductQuoteQty('${p.id}', -1)" style="width: 28px; height: 28px; border: none; background: transparent; cursor: pointer; color: #475569; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center;">-</button>
+                        <input type="number" min="1" value="${qty}" onchange="window.setProductQuoteQty('${p.id}', this.value)" style="width: 44px; height: 28px; border: none; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; text-align: center; font-weight: 700; font-size: 13px; color: var(--text); outline: none; background: #ffffff;">
+                        <button type="button" onclick="window.changeProductQuoteQty('${p.id}', 1)" style="width: 28px; height: 28px; border: none; background: transparent; cursor: pointer; color: #475569; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center;">+</button>
+                    </div>
+                    <!-- Line Total -->
+                    <div style="min-width: 86px; text-align: right; font-weight: 700; font-size: 13.5px; color: var(--text);">
+                        ${lineTotal.toLocaleString()} ฿
+                    </div>
+                    <!-- Remove Item -->
+                    <button type="button" onclick="window.removeProductFromQuote('${p.id}')" title="นำออกจากใบเสนอราคา" style="width: 28px; height: 28px; border-radius: 6px; border: none; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    listContainer.innerHTML = html;
+    if (totalEl) {
+        totalEl.textContent = grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+};
+
+window.changeProductQuoteQty = (id, delta) => {
+    if (!id) return;
+    const currentQty = Number(selectedProductQtys[id] || 1);
+    const newQty = Math.max(1, currentQty + delta);
+    selectedProductQtys[id] = newQty;
+    updateSelectionUI();
+    renderSelectedQuoteModalItems();
+};
+
+window.setProductQuoteQty = (id, val) => {
+    if (!id) return;
+    let num = parseInt(val, 10);
+    if (isNaN(num) || num < 1) num = 1;
+    selectedProductQtys[id] = num;
+    updateSelectionUI();
+    renderSelectedQuoteModalItems();
+};
+
+window.removeProductFromQuote = (id) => {
+    if (!id) return;
+    selectedProductIds.delete(id);
+    delete selectedProductQtys[id];
+    updateSelectionUI();
+    if (selectedProductIds.size === 0) {
+        closeModal('selectedQuoteModal');
+    } else {
+        renderSelectedQuoteModalItems();
+    }
+};
+
+window.confirmAndOpenQuotation = () => {
+    if (selectedProductIds.size === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'กรุณาเลือกสินค้า',
+            text: 'ไม่มีรายการสินค้าที่เลือกสำหรับออกใบเสนอราคา'
+        });
+        return;
+    }
+
+    const items = [];
+    selectedProductIds.forEach(id => {
+        const p = currentProducts.find(item => item.id === id);
+        if (p) {
+            const pName = p.name || p.title || p.productName || 'สินค้า';
+            const pPrice = Number(p.price || p.cost || 0);
+            const pQty = Number(selectedProductQtys[id] || 1);
+            const pUnit = p.unit || 'ชุด';
+            items.push({
+                desc: pName,
+                qty: pQty,
+                unit: pUnit,
+                price: pPrice
+            });
+        }
+    });
+
+    if (items.length === 0) {
+        Swal.fire('ข้อผิดพลาด', 'ไม่พบข้อมูลสินค้าที่เลือก', 'error');
+        return;
+    }
+
+    const recipientCompany = (document.getElementById('quoteRecipientCompany')?.value || '').trim();
+    const projectRemark = (document.getElementById('quoteProjectRemark')?.value || '').trim();
+
+    const pendingData = {
+        docType: 'quotation',
+        toCompany: recipientCompany,
+        remark: projectRemark,
+        items: items
+    };
+
+    try {
+        // Clear any previous project quotation draft sessions
+        sessionStorage.removeItem('pending_quotation_project');
+        localStorage.removeItem('pending_quotation_project');
+        // Set new payload for quotation.html
+        localStorage.setItem('pending_load_quotation', JSON.stringify(pendingData));
+    } catch (e) {
+        console.error("Storage error:", e);
+    }
+
+    closeModal('selectedQuoteModal');
+
+    Swal.fire({
+        icon: 'success',
+        title: 'กำลังสร้างใบเสนอราคา...',
+        text: `กำลังนำ ${items.length} รายการไปยังหน้าใบเสนอราคา`,
+        timer: 900,
+        showConfirmButton: false
+    }).then(() => {
+        window.location.href = '../accounting/quotation.html?loadPending=true';
+    });
+};
+
 
 window.handleSearchProducts = (queryText) => {
     const q = (queryText || '').trim().toLowerCase();
@@ -3350,6 +4036,13 @@ window.viewProductDetails = (id) => {
             docsContainer.style.display = 'flex';
         } else if (docsContainer) { docsContainer.innerHTML = '<div style="text-align:center; padding: 24px; color: var(--text-muted); font-size: 14px; background: #f8fafc; border-radius: 12px; border: 1px dashed var(--border);">ยังไม่มีเอกสารแนบอ้างอิงสำหรับสินค้านี้</div>';
             docsContainer.style.display = 'block';
+        }
+
+        const btnPaneQuote = document.getElementById("btnPaneQuote");
+        if (btnPaneQuote) {
+            btnPaneQuote.onclick = () => {
+                window.quickQuoteSingleProduct(id);
+            };
         }
 
         document.getElementById("btnPaneEdit").onclick = () => {
