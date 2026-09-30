@@ -655,16 +655,16 @@
         ensureSidebarExpanded();
 
         if (tab === 'dashboard') {
-            if (typeof window.navigateTo === 'function') {
+            if (typeof window.navigateTo === 'function' && window.location.pathname.includes('dashboard.html')) {
                 window.navigateTo('dashboard');
             } else {
-                window.location.href = '../admin/dashboard.html?view=dashboard';
+                window.location.href = '../admin/dashboard.html';
             }
-        } else if (tab === 'projects') {
-            if (typeof window.navigateTo === 'function') {
-                window.navigateTo('projects');
+        } else if (tab === 'projects' || tab === 'bidding') {
+            if (typeof window.navigateTo === 'function' && window.location.pathname.includes('bidding.html')) {
+                window.navigateTo('dashboard');
             } else {
-                window.location.href = '../admin/dashboard.html?view=projects';
+                window.location.href = '../admin/bidding.html';
             }
         } else if (tab === 'purchasing') {
             const target = document.getElementById('nav-purchasing-school');
@@ -808,7 +808,11 @@
             if (rail) rail.classList.add('active');
         };
 
-        if (path.includes('dashboard.html')) {
+        if (path.includes('bidding.html')) {
+            setNavActive('nav-bidding', 'railBtnProjects');
+            const navProj = document.getElementById('nav-projects');
+            if (navProj) navProj.classList.add('active');
+        } else if (path.includes('dashboard.html')) {
             if (search.includes('view=projects')) {
                 setNavActive('nav-projects', 'railBtnProjects');
             } else if (search.includes('view=items')) {
