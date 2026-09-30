@@ -7184,6 +7184,33 @@
                     appData.currentUserId = user.uid;
                     appData.currentUserRole = userData.role || 'user';
 
+                    // Update Topbar User UI
+                    const resolvedName = userData.displayName 
+                        || (userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : '') 
+                        || userData.name 
+                        || userData.username 
+                        || user.displayName 
+                        || user.email 
+                        || 'ผู้ใช้งาน';
+                    const userNameEl = document.getElementById('userName');
+                    const userAvatarEl = document.getElementById('userAvatar');
+                    const userRoleBadge = document.getElementById('userRoleBadge');
+                    if (userNameEl) userNameEl.textContent = resolvedName;
+                    if (userAvatarEl) userAvatarEl.textContent = resolvedName.charAt(0).toUpperCase();
+                    if (userRoleBadge) {
+                        const r = userData.role || 'user';
+                        userRoleBadge.textContent = r === 'admin' ? 'Administrator' : (r.charAt(0).toUpperCase() + r.slice(1));
+                        userRoleBadge.className = `role-badge ${r}`;
+                    }
+
+                    // Cache profile for fast subsequent page loads
+                    try {
+                        localStorage.setItem('mentra_cached_user_profile', JSON.stringify({
+                            ...userData,
+                            displayName: resolvedName
+                        }));
+                    } catch(e) {}
+
                     if (!document.getElementById('view-institutions').classList.contains('hidden')) {
                         appData.renderInstitutions();
                     }

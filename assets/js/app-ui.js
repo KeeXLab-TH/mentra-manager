@@ -783,9 +783,34 @@ function initAccountDropdown(userData) {
         : (allowedPages['console_admin.html'] === true);
     const canAccessDashboard = allowedPages['dashboard.html'] !== false;
 
-    // Avoid duplicate initialization, but update existing items if permissions changed
+    // Resolve proper user display name across all supported Firestore user schemas
+    const resolvedName = (userData && (
+        userData.displayName 
+        || (userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : '') 
+        || userData.name 
+        || userData.username 
+        || userData.email
+    )) || '';
+
+    // Avoid duplicate initialization, but update existing items if permissions or user profile changed
     const existingWrapper = document.querySelector('.user-dropdown-wrapper');
     if (existingWrapper) {
+        const nameEl = existingWrapper.querySelector('.user-name') || document.getElementById('userName');
+        const avatarEl = existingWrapper.querySelector('.user-avatar') || document.getElementById('userAvatar');
+        const badgeEl = existingWrapper.querySelector('.role-badge') || document.getElementById('userRoleBadge');
+        const headerName = existingWrapper.querySelector('.user-dropdown-header-name');
+        const headerRole = existingWrapper.querySelector('.user-dropdown-header-role');
+
+        if (nameEl && resolvedName) nameEl.textContent = resolvedName;
+        if (avatarEl && resolvedName) avatarEl.textContent = resolvedName.charAt(0).toUpperCase();
+        if (badgeEl && userData && userData.role) {
+            badgeEl.textContent = userData.role === 'admin' ? 'Administrator' : userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+        }
+        if (headerName && resolvedName) headerName.textContent = resolvedName;
+        if (headerRole && userData && userData.role) {
+            headerRole.textContent = userData.role === 'admin' ? 'Administrator' : userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+        }
+
         const consoleBtn = existingWrapper.querySelector('#dropdownAdminConsole, [data-page="console_admin.html"]');
         if (consoleBtn) {
             if (canAccessConsole) {
@@ -827,13 +852,13 @@ function initAccountDropdown(userData) {
     const avatarEl = userCard.querySelector('.user-avatar') || document.getElementById('userAvatar');
     const badgeEl = userCard.querySelector('.role-badge') || document.getElementById('userRoleBadge');
 
-    if (nameEl && userData.name) {
-        nameEl.textContent = userData.name;
+    if (nameEl && resolvedName) {
+        nameEl.textContent = resolvedName;
     }
-    if (avatarEl && userData.name) {
-        avatarEl.textContent = userData.name.substring(0, 1).toUpperCase();
+    if (avatarEl && resolvedName) {
+        avatarEl.textContent = resolvedName.substring(0, 1).toUpperCase();
     }
-    if (badgeEl && userData.role) {
+    if (badgeEl && userData && userData.role) {
         badgeEl.textContent = userData.role === 'admin' ? 'Administrator' : userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
     }
 
@@ -860,11 +885,11 @@ function initAccountDropdown(userData) {
     
     const headerName = document.createElement('div');
     headerName.className = 'user-dropdown-header-name';
-    headerName.textContent = userData.name || 'User Profile';
+    headerName.textContent = resolvedName || 'User Profile';
     
     const headerRole = document.createElement('div');
     headerRole.className = 'user-dropdown-header-role';
-    headerRole.textContent = userData.role === 'admin' ? 'Administrator' : userData.role.charAt(0).toUpperCase() + userData.role.slice(1);
+    headerRole.textContent = (userData && userData.role === 'admin') ? 'Administrator' : ((userData && userData.role) ? userData.role.charAt(0).toUpperCase() + userData.role.slice(1) : 'User');
     
     dropdownHeader.appendChild(headerName);
     dropdownHeader.appendChild(headerRole);
@@ -1395,6 +1420,31 @@ window.notifyCloudSync = function(message) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Early hydration of user profile from cache to prevent "กำลังโหลด..."
+    try {
+        const cachedStr = localStorage.getItem('mentra_cached_user_profile') || localStorage.getItem('mentra_user_permissions');
+        if (cachedStr) {
+            const cached = JSON.parse(cachedStr);
+            if (cached) {
+                const name = cached.displayName || (cached.firstName ? `${cached.firstName} ${cached.lastName || ''}`.trim() : '') || cached.name || cached.username || cached.email;
+                if (name) {
+                    const nameEl = document.getElementById('userName');
+                    const avatarEl = document.getElementById('userAvatar');
+                    const badgeEl = document.getElementById('userRoleBadge');
+                    if (nameEl && (nameEl.textContent.trim() === 'กำลังโหลด...' || nameEl.textContent.trim() === '')) {
+                        nameEl.textContent = name;
+                    }
+                    if (avatarEl && (avatarEl.textContent.trim() === 'M' || avatarEl.textContent.trim() === '')) {
+                        avatarEl.textContent = name.charAt(0).toUpperCase();
+                    }
+                    if (badgeEl && cached.role && (badgeEl.textContent.trim() === '-' || badgeEl.textContent.trim() === '')) {
+                        badgeEl.textContent = cached.role === 'admin' ? 'Administrator' : (cached.role.charAt(0).toUpperCase() + cached.role.slice(1));
+                    }
+                }
+            }
+        }
+    } catch(e) {}
+
     try {
         window.highlightActiveSidebar();
     } catch(e) {}
