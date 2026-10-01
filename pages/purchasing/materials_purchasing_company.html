@@ -1031,14 +1031,6 @@
             <div class="topbar-actions" id="topbarActions"></div>
             <div class="topbar-right-menu">
                 <div id="adminMenu" style="display:none;">
-                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html?view=users'" id="nav-users">
-                        <div class="nav-icon">👥</div>
-                        <span class="nav-label">จัดการผู้ใช้งาน</span>
-                    </button>
-                    <button class="nav-item" onclick="window.location.href='../admin/dashboard.html'" id="nav-add-project">
-                        <div class="nav-icon">➕</div>
-                        <span class="nav-label">เพิ่มโครงการใหม่</span>
-                    </button>
                     <a href="../admin/console_admin.html" class="nav-item" style="text-decoration: none;">
                         <div class="nav-icon">🛠️</div>
                         <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
@@ -1828,14 +1820,29 @@
 
             <!-- GLOBAL LOADER OVERLAY -->
             <div id="global-loading-overlay" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0">
-                <div class="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center justify-center transform scale-95 transition-transform duration-300" id="global-loading-content">
+                <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col items-center justify-center transform scale-95 transition-transform duration-300 w-full max-w-sm mx-4" id="global-loading-content">
                     <div class="relative w-16 h-16 mb-4">
                         <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
                         <div class="absolute inset-0 rounded-full border-4 border-brand-500 border-t-transparent animate-spin"></div>
                         <i id="global-loading-icon" class="fa-solid fa-spinner absolute inset-0 flex items-center justify-center text-brand-500 text-xl animate-pulse"></i>
                     </div>
-                    <h3 id="global-loading-title" class="text-lg font-bold text-slate-800 mb-1">กำลังประมวลผล...</h3>
-                    <p id="global-loading-subtitle" class="text-sm text-slate-500 font-medium">กรุณารอสักครู่</p>
+                    <h3 id="global-loading-title" class="text-lg font-bold text-slate-800 mb-1 text-center">กำลังประมวลผล...</h3>
+                    <p id="global-loading-subtitle" class="text-sm text-slate-500 font-medium text-center">กรุณารอสักครู่</p>
+
+                    <!-- Realtime Upload Progress Bar & Detail -->
+                    <div id="global-loading-progress-wrap" class="w-full mt-4 pt-3 border-t border-slate-100 hidden">
+                        <div class="flex justify-between items-center text-xs font-semibold text-slate-700 mb-1.5">
+                            <span id="global-loading-filename" class="truncate max-w-[210px] text-slate-700" title="">กำลังเตรียมข้อมูล...</span>
+                            <span id="global-loading-percent" class="text-brand-600 font-bold ml-2">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden shadow-inner p-0.5 border border-slate-200/60">
+                            <div id="global-loading-bar" class="bg-gradient-to-r from-brand-500 via-blue-500 to-indigo-600 h-1.5 rounded-full transition-all duration-150" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px] text-slate-400 mt-2 font-medium">
+                            <span id="global-loading-bytes">0 KB / 0 KB</span>
+                            <span id="global-loading-step">กำลังส่งข้อมูล...</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -2186,12 +2193,29 @@
                 }, 300);
             },
             
-            showGlobalLoader(title = 'กำลังประมวลผล...', subtitle = 'กรุณารอสักครู่', iconClass = 'fa-spinner') {
+            showGlobalLoader(title = 'กำลังประมวลผล...', subtitle = 'กรุณารอสักครู่', iconClass = 'fa-spinner', options = {}) {
                 const overlay = document.getElementById('global-loading-overlay');
                 const content = document.getElementById('global-loading-content');
+                const progressWrap = document.getElementById('global-loading-progress-wrap');
+                
                 document.getElementById('global-loading-title').innerText = title;
                 document.getElementById('global-loading-subtitle').innerText = subtitle;
                 document.getElementById('global-loading-icon').className = `fa-solid ${iconClass} absolute inset-0 flex items-center justify-center text-brand-500 text-xl animate-pulse`;
+                
+                if (progressWrap) {
+                    if (options && options.showProgress) {
+                        progressWrap.classList.remove('hidden');
+                        this.updateGlobalLoaderProgress(
+                            options.percent || 0,
+                            options.filename || '',
+                            options.bytes || '',
+                            options.step || 'กำลังเริ่มเชื่อมต่อ...'
+                        );
+                    } else {
+                        progressWrap.classList.add('hidden');
+                    }
+                }
+
                 overlay.classList.remove('hidden');
                 overlay.classList.add('flex');
                 setTimeout(() => {
@@ -2200,14 +2224,44 @@
                 }, 10);
             },
 
+            updateGlobalLoaderProgress(percent, filename, bytes, step) {
+                const bar = document.getElementById('global-loading-bar');
+                const pctText = document.getElementById('global-loading-percent');
+                const fileText = document.getElementById('global-loading-filename');
+                const bytesText = document.getElementById('global-loading-bytes');
+                const stepText = document.getElementById('global-loading-step');
+
+                const clamped = Math.max(0, Math.min(100, Math.round(percent || 0)));
+                if (bar) bar.style.width = clamped + '%';
+                if (pctText) pctText.innerText = clamped + '%';
+                if (fileText && filename !== undefined && filename !== null) {
+                    fileText.innerText = filename;
+                    fileText.title = filename;
+                }
+                if (bytesText && bytes !== undefined && bytes !== null) {
+                    bytesText.innerText = bytes;
+                }
+                if (stepText && step !== undefined && step !== null) {
+                    stepText.innerText = step;
+                }
+            },
+
             hideGlobalLoader() {
                 const overlay = document.getElementById('global-loading-overlay');
                 const content = document.getElementById('global-loading-content');
+                const progressWrap = document.getElementById('global-loading-progress-wrap');
                 overlay.classList.add('opacity-0');
                 content.classList.add('scale-95');
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                     overlay.classList.remove('flex');
+                    if (progressWrap) {
+                        progressWrap.classList.add('hidden');
+                        const bar = document.getElementById('global-loading-bar');
+                        if (bar) bar.style.width = '0%';
+                        const pctText = document.getElementById('global-loading-percent');
+                        if (pctText) pctText.innerText = '0%';
+                    }
                 }, 300);
             },
             
@@ -3526,51 +3580,117 @@
                 
                 if (!proj.documents) proj.documents = [];
 
-                this.showGlobalLoader('กำลังอัปโหลดเอกสาร...', `จำนวน ${files.length} ไฟล์`, 'fa-cloud-arrow-up');
+                const totalFiles = files.length;
+                const formatBytes = (bytes) => {
+                    if (!bytes || isNaN(bytes)) return '0 B';
+                    if (bytes < 1024) return bytes + ' B';
+                    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+                };
+
+                this.showGlobalLoader('กำลังอัปโหลดเอกสาร...', totalFiles > 1 ? `ไฟล์ที่ 1 จาก ${totalFiles} ไฟล์` : 'กรุณารอสักครู่', 'fa-cloud-arrow-up', {
+                    showProgress: true,
+                    percent: 5,
+                    filename: files[0]?.name || 'เอกสาร',
+                    bytes: `0 KB / ${formatBytes(files[0]?.size || 0)}`,
+                    step: 'กำลังเตรียมโฟลเดอร์ Google Drive...'
+                });
 
                 try {
-                    for (const file of files) {
-                        let fileUrl = '';
-                        
-                        // Format File Size
-                        let sizeStr = '';
-                        if (file.size < 1024 * 1024) {
-                            sizeStr = (file.size / 1024).toFixed(1) + ' KB';
-                        } else {
-                            sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+                    // Resolve Folders ONCE for all files in this batch (cached in memory)
+                    let sysFolderId = null;
+                    if (window.driveIntegration && window.GAS_URL) {
+                        try {
+                            const instName = proj.company && proj.company.trim() !== '' ? proj.company.trim() : 'ไม่ระบุบริษัทเอกชน';
+                            const instFolderId = await window.driveIntegration.getOrCreateFolder(instName, window.DRIVE_ROOT_FOLDER_ID);
+                            sysFolderId = await window.driveIntegration.getOrCreateFolder('เอกสารโครงการ', instFolderId);
+                        } catch (fErr) {
+                            console.warn('Folder resolution fallback:', fErr);
                         }
+                    }
+
+                    for (let i = 0; i < totalFiles; i++) {
+                        const file = files[i];
+                        const fileNum = i + 1;
+                        let fileUrl = '';
+                        const totalSizeStr = formatBytes(file.size);
                         
-                        // Upload to Drive or FileReader
-                        if (window.driveIntegration && window.GAS_URL) {
+                        const basePct = (i / totalFiles) * 100;
+                        const fileShare = 100 / totalFiles;
+
+                        this.showGlobalLoader(
+                            'กำลังอัปโหลดเอกสาร...', 
+                            totalFiles > 1 ? `ไฟล์ที่ ${fileNum} จาก ${totalFiles} ไฟล์` : 'กรุณารอสักครู่', 
+                            'fa-cloud-arrow-up',
+                            {
+                                showProgress: true,
+                                percent: Math.round(basePct + 2),
+                                filename: file.name,
+                                bytes: `0 KB / ${totalSizeStr}`,
+                                step: 'กำลังเริ่มอัปโหลด...'
+                            }
+                        );
+                        
+                        // Upload directly to Drive or fallback to base64
+                        if (window.driveIntegration && window.GAS_URL && sysFolderId) {
                             try {
-                                const instName = proj.company && proj.company.trim() !== '' ? proj.company.trim() : 'ไม่ระบุบริษัทเอกชน';
-                                const instFolderId = await window.driveIntegration.getOrCreateFolder(instName, window.DRIVE_ROOT_FOLDER_ID);
-                                const sysFolderId = await window.driveIntegration.getOrCreateFolder('เอกสารโครงการ', instFolderId);
-                                
                                 const filename = `doc_${Date.now()}_${file.name}`;
-                                fileUrl = await window.driveIntegration.uploadImageResumable(file, filename, sysFolderId);
+                                fileUrl = await window.driveIntegration.uploadFileDirect(
+                                    file, 
+                                    filename, 
+                                    sysFolderId,
+                                    (filePct, loaded, total, stepDesc) => {
+                                        const overallPct = Math.round(basePct + (filePct * (fileShare / 100)));
+                                        const loadedStr = formatBytes(loaded);
+                                        const totalStr = formatBytes(total);
+                                        this.updateGlobalLoaderProgress(
+                                            overallPct,
+                                            file.name,
+                                            `${loadedStr} / ${totalStr}`,
+                                            stepDesc || `กำลังอัปโหลด... ${filePct}%`
+                                        );
+                                    }
+                                );
                             } catch (driveErr) {
-                                console.warn('Drive upload fallback to base64:', driveErr);
-                                fileUrl = await this._fileToBase64(file);
+                                console.warn('Drive direct upload fallback:', driveErr);
+                                this.updateGlobalLoaderProgress(Math.round(basePct + 30), file.name, totalSizeStr, 'กำลังบันทึกไฟล์สำรอง...');
+                                fileUrl = await this._fileToBase64(file, (pct, loaded, total) => {
+                                    const overallPct = Math.round(basePct + (pct * (fileShare / 100)));
+                                    this.updateGlobalLoaderProgress(overallPct, file.name, `${formatBytes(loaded)} / ${formatBytes(total)}`, `กำลังประมวลผลไฟล์... ${pct}%`);
+                                });
                             }
                         } else {
-                            fileUrl = await this._fileToBase64(file);
+                            this.updateGlobalLoaderProgress(Math.round(basePct + 30), file.name, totalSizeStr, 'กำลังบันทึกไฟล์สำรอง...');
+                            fileUrl = await this._fileToBase64(file, (pct, loaded, total) => {
+                                const overallPct = Math.round(basePct + (pct * (fileShare / 100)));
+                                this.updateGlobalLoaderProgress(overallPct, file.name, `${formatBytes(loaded)} / ${formatBytes(total)}`, `กำลังประมวลผลไฟล์... ${pct}%`);
+                            });
                         }
+
+                        this.updateGlobalLoaderProgress(
+                            Math.round(((i + 1) / totalFiles) * 100),
+                            file.name,
+                            `${totalSizeStr} / ${totalSizeStr}`,
+                            'อัปโหลดไฟล์นี้เสร็จแล้ว'
+                        );
 
                         proj.documents.push({
                             id: 'doc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                             name: file.name,
-                            size: sizeStr,
+                            size: totalSizeStr,
                             type: file.type || '',
                             url: fileUrl,
                             uploadedAt: new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                         });
                     }
 
+                    this.updateGlobalLoaderProgress(100, 'เสร็จสมบูรณ์', '', 'กำลังบันทึกข้อมูล...');
                     this.syncCurrentProject();
                     this.renderDocuments();
-                    this.hideGlobalLoader();
-                    this.showToast(`อัปโหลดเอกสารสำเร็จ ${files.length} รายการ`, 'success');
+                    setTimeout(() => {
+                        this.hideGlobalLoader();
+                        this.showToast(`อัปโหลดเอกสารสำเร็จ ${files.length} รายการ`, 'success');
+                    }, 400);
                 } catch (err) {
                     console.error('Doc Upload Error:', err);
                     this.hideGlobalLoader();
@@ -3578,9 +3698,17 @@
                 }
             },
 
-            _fileToBase64(file) {
+            _fileToBase64(file, onProgress) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
+                    if (onProgress && reader.addEventListener) {
+                        reader.onprogress = (e) => {
+                            if (e.lengthComputable && e.total > 0) {
+                                const pct = Math.round((e.loaded / e.total) * 100);
+                                onProgress(pct, e.loaded, e.total);
+                            }
+                        };
+                    }
                     reader.onload = e => resolve(e.target.result);
                     reader.onerror = err => reject(err);
                     reader.readAsDataURL(file);
@@ -6793,98 +6921,136 @@
             };
 
             window.driveIntegration = {
+                _folderCache: {},
                 async getOrCreateFolder(folderName, parentFolderId) {
                     if (!window.GAS_URL) throw new Error("GAS_URL not configured");
+                    const cacheKey = `${folderName}_${parentFolderId || 'root'}`;
+                    if (this._folderCache[cacheKey]) {
+                        return this._folderCache[cacheKey];
+                    }
                     const res = await fetch(window.GAS_URL, {
                         method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({ action: 'createFolder', folderName, parentFolderId })
                     });
                     const data = await res.json();
                     if (data.status === 'error') throw new Error(data.message);
+                    this._folderCache[cacheKey] = data.folderId;
                     return data.folderId;
                 },
                 async uploadImage(base64, filename, folderId) {
                     if (!window.GAS_URL) throw new Error("GAS_URL not configured");
-                    // GAS legacyUpload expects base64 without data URI prefix
                     const base64Data = base64.split(',')[1] || base64;
                     const res = await fetch(window.GAS_URL, {
                         method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({ action: 'legacyUpload', base64: base64Data, filename, folderId, mimeType: 'image/jpeg' })
                     });
                     const data = await res.json();
                     if (data.status === 'error') throw new Error(data.message);
-                    // Return direct view URL instead of default viewer
                     return `https://drive.google.com/uc?id=${data.fileId}`;
                 },
-                async uploadImageResumable(blob, filename, targetFolderId) {
+                async uploadFileDirect(fileOrBlob, filename, folderId, onProgress) {
                     if (!window.GAS_URL) throw new Error("GAS_URL not configured");
-                    return new Promise(async (resolve, reject) => {
-                        try {
-                            const gasRes = await fetch(window.GAS_URL, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                                body: JSON.stringify({
-                                    action: 'getUploadUrl',
-                                    filename: filename,
-                                    mimeType: blob.type || 'image/jpeg',
-                                    folderId: targetFolderId
-                                })
-                            });
-                            const gasResult = await gasRes.json();
-                            if (gasResult.status !== 'success' || !gasResult.token) throw new Error('GAS error: ' + gasResult.error);
+                    
+                    // 1. Convert to base64
+                    const base64Data = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            const res = e.target.result;
+                            const pureBase64 = res.includes(',') ? res.split(',')[1] : res;
+                            resolve(pureBase64);
+                        };
+                        reader.onerror = err => reject(err);
+                        reader.readAsDataURL(fileOrBlob);
+                    });
 
-                            const uploadMimeType = blob.type || 'image/jpeg';
-                            const initRes = await fetch(
-                                'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id,name',
-                                {
-                                    method: 'POST',
-                                    headers: {
-                                        'Authorization': 'Bearer ' + gasResult.token,
-                                        'Content-Type': 'application/json',
-                                        'X-Upload-Content-Type': uploadMimeType,
-                                        'X-Upload-Content-Length': blob.size.toString()
-                                    },
-                                    body: JSON.stringify({
-                                        name: gasResult.filename || filename,
-                                        parents: [targetFolderId]
-                                    })
+                    if (typeof onProgress === 'function') {
+                        onProgress(15, Math.round(fileOrBlob.size * 0.15), fileOrBlob.size, 'กำลังส่งข้อมูลไปยัง Google Drive...');
+                    }
+
+                    // 2. Upload via XHR to GAS URL with real-time stream progress
+                    return new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', window.GAS_URL, true);
+                        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+                        xhr.timeout = 75000; // 75s timeout
+
+                        let smoothTimer = null;
+                        let currentPct = 15;
+
+                        xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable && e.total > 0) {
+                                const streamPct = Math.round((e.loaded / e.total) * 100);
+                                currentPct = Math.min(85, Math.round(15 + (streamPct * 0.70)));
+                                const sentBytes = Math.min(fileOrBlob.size, Math.round((e.loaded / e.total) * fileOrBlob.size));
+                                if (typeof onProgress === 'function') {
+                                    onProgress(currentPct, sentBytes, fileOrBlob.size, `กำลังส่งข้อมูล... ${currentPct}%`);
                                 }
-                            );
+                            }
+                        };
 
-                            const locationUrl = initRes.headers.get('Location');
-                            if (!locationUrl) throw new Error('Failed to get resumable upload URL');
+                        xhr.onload = () => {
+                            if (smoothTimer) clearInterval(smoothTimer);
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                try {
+                                    const data = JSON.parse(xhr.responseText);
+                                    if (data.status === 'error') {
+                                        reject(new Error(data.message || 'Google Drive error'));
+                                        return;
+                                    }
+                                    if (typeof onProgress === 'function') {
+                                        onProgress(100, fileOrBlob.size, fileOrBlob.size, 'บันทึกสำเร็จ!');
+                                    }
+                                    resolve(data.fileUrl || `https://drive.google.com/uc?id=${data.fileId}`);
+                                } catch (parseErr) {
+                                    reject(new Error('Invalid response from Google Drive: ' + xhr.responseText.slice(0, 100)));
+                                }
+                            } else {
+                                reject(new Error('Upload failed with status: ' + xhr.status));
+                            }
+                        };
 
-                            const xhr = new XMLHttpRequest();
-                            xhr.open('PUT', locationUrl, true);
-                            xhr.setRequestHeader('Content-Type', uploadMimeType);
-                            
-                            xhr.upload.onprogress = function(e) {
-                                if (e.lengthComputable) {
-                                    const percentComplete = Math.round((e.loaded / e.total) * 100);
-                                    if (Swal.isVisible()) {
-                                        Swal.update({ html: '<div style="margin-top:10px;">กำลังอัปโหลดรูปภาพ...<br><b style="font-size:20px; color:var(--primary);">' + percentComplete + '%</b></div>' });
+                        xhr.onerror = () => {
+                            if (smoothTimer) clearInterval(smoothTimer);
+                            reject(new Error('เกิดข้อผิดพลาดในการเชื่อมต่อ Google Drive'));
+                        };
+
+                        xhr.ontimeout = () => {
+                            if (smoothTimer) clearInterval(smoothTimer);
+                            reject(new Error('การเชื่อมต่อ Google Drive หมดเวลา (Timeout)'));
+                        };
+
+                        // When stream finishes, tick 85% -> 96% so UI is lively while Drive writes
+                        xhr.upload.onload = () => {
+                            currentPct = 85;
+                            if (typeof onProgress === 'function') {
+                                onProgress(85, fileOrBlob.size, fileOrBlob.size, 'Google Drive กำลังประมวลผล...');
+                            }
+                            smoothTimer = setInterval(() => {
+                                if (currentPct < 96) {
+                                    currentPct++;
+                                    if (typeof onProgress === 'function') {
+                                        onProgress(currentPct, fileOrBlob.size, fileOrBlob.size, 'กำลังบันทึกไฟล์...');
                                     }
                                 }
-                            };
-                            
-                            xhr.onload = function() {
-                                if (xhr.status >= 200 && xhr.status < 300) {
-                                    const response = JSON.parse(xhr.responseText);
-                                    resolve(`https://drive.google.com/uc?id=${response.id}`);
-                                } else {
-                                    reject(new Error('Upload failed with status: ' + xhr.status));
-                                }
-                            };
-                            
-                            xhr.onerror = function() {
-                                reject(new Error('Network error during upload'));
-                            };
-                            
-                            xhr.send(blob);
-                        } catch (err) {
-                            reject(err);
-                        }
+                            }, 400);
+                        };
+
+                        const payload = JSON.stringify({
+                            action: 'legacyUpload',
+                            base64: base64Data,
+                            filename: filename,
+                            folderId: folderId,
+                            mimeType: fileOrBlob.type || 'application/octet-stream'
+                        });
+
+                        xhr.send(payload);
                     });
+                },
+                async uploadImageResumable(blob, filename, targetFolderId, onProgress) {
+                    // Forward directly to high-speed uploadFileDirect
+                    return this.uploadFileDirect(blob, filename, targetFolderId, onProgress);
                 },
                 async deleteFile(fileId) {
                     if (!window.GAS_URL) return;

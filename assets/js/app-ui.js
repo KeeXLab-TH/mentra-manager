@@ -919,47 +919,7 @@ function initAccountDropdown(userData) {
     headerDivider.className = 'user-dropdown-divider';
     dropdown.appendChild(headerDivider);
 
-    // Add Admin items if user is admin
-    if (isAdmin) {
-        // 1. Manage Users
-        if (canAccessDashboard) {
-            const itemUsers = document.createElement('button');
-            itemUsers.id = 'dropdownManageUsers';
-            itemUsers.setAttribute('data-page', 'dashboard.html');
-            itemUsers.className = 'user-dropdown-item';
-            itemUsers.innerHTML = `
-                <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                <span>จัดการผู้ใช้งาน</span>
-            `;
-            itemUsers.onclick = () => window.location.href = window.getDeptUrl('dashboard.html?view=users');
-            dropdown.appendChild(itemUsers);
-        }
-
-        // 2. Add New Project
-        if (canAccessDashboard) {
-            const itemAdd = document.createElement('button');
-            itemAdd.id = 'dropdownAddProject';
-            itemAdd.setAttribute('data-page', 'dashboard.html');
-            itemAdd.className = 'user-dropdown-item';
-            itemAdd.innerHTML = `
-                <svg class="dropdown-item-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                    <line x1="12" y1="11" x2="12" y2="17"></line>
-                    <line x1="9" y1="14" x2="15" y2="14"></line>
-                </svg>
-                <span>เพิ่มโครงการใหม่</span>
-            `;
-            itemAdd.onclick = () => window.location.href = window.getDeptUrl('dashboard.html');
-            dropdown.appendChild(itemAdd);
-        }
-    }
-
-    // 3. Admin Console (Strictly checks allowedPages: hidden if false for Admin, required true for non-admin)
+    // 1. Admin Console (Strictly checks allowedPages: hidden if false for Admin, required true for non-admin)
     if (canAccessConsole) {
         const itemConsole = document.createElement('button');
         itemConsole.id = 'dropdownAdminConsole';
@@ -980,7 +940,7 @@ function initAccountDropdown(userData) {
         dropdown.appendChild(itemConsole);
     }
 
-    if (isAdmin || canAccessConsole) {
+    if (canAccessConsole) {
         // Divider
         const divider = document.createElement('div');
         divider.className = 'user-dropdown-divider';
