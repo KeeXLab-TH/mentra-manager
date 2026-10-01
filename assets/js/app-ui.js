@@ -46,11 +46,16 @@ window.getDeptUrl = function(page) {
     const subpath = window.PAGE_DEPT_MAP[fileName] || fileName;
     const path = (location.pathname || '').replace(/\\/g, '/');
 
-    if (path.includes('/pages/admin/') || path.includes('/pages/purchasing/') ||
-        path.includes('/pages/accounting/') || path.includes('/pages/schedule/')) {
+    const pagesIndex = path.indexOf('/pages/');
+    if (pagesIndex !== -1) {
+        // Absolute path from root domain: handles clean URLs, trailing slashes, and subdirs uniformly
+        const rootBase = path.substring(0, pagesIndex + 1); // e.g. "/" or "/subapp/"
+        return rootBase + 'pages/' + subpath + query + hash;
+    } else if (path.startsWith('pages/')) {
+        return 'pages/' + subpath + query + hash;
+    } else if (path.includes('/admin/') || path.includes('/purchasing/') ||
+               path.includes('/accounting/') || path.includes('/schedule/')) {
         return '../' + subpath + query + hash;
-    } else if (path.includes('/pages/')) {
-        return subpath + query + hash;
     } else {
         return 'pages/' + subpath + query + hash;
     }

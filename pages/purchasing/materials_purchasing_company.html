@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th" style="background-color:#f8fafc">
 <head>
     <!-- Security Headers (meta fallback) -->
@@ -4492,6 +4492,24 @@
                             console.warn("Could not save pending_quotation_project:", e);
                         }
 
+                        // Also set pending_load_quotation as a guaranteed cross-page fallback
+                        try {
+                            const loadQuotationFallback = {
+                                docType: 'quotation',
+                                projectId: this.currentProjectId,
+                                toCompany: compNameWithBranch,
+                                toAddress: proj.address || compDetails.address || '',
+                                toAttn: proj.contactPerson || proj.attn || compDetails.contact || '',
+                                toTel: proj.tel || compDetails.phone || '',
+                                toEmail: proj.email || compDetails.email || '',
+                                toTaxId: proj.taxId || compDetails.taxId || '',
+                                items: cleanItems,
+                                shop: shopName,
+                                timestamp: Date.now()
+                            };
+                            localStorage.setItem('pending_load_quotation', JSON.stringify(loadQuotationFallback));
+                        } catch(e) {}
+
                         try {
                             const lightProjects = this.projects.map(p => {
                                 const pCopy = { ...p };
@@ -6836,6 +6854,21 @@
                 docs.sort((a, b) => b.id.localeCompare(a.id));
                 
                 appData.projects = docs;
+                
+                // Cache lightweight projects list in localStorage for instant access across tabs
+                try {
+                    const lightProjects = docs.map(p => {
+                        const pCopy = { ...p };
+                        if (Array.isArray(pCopy.items)) {
+                            pCopy.items = pCopy.items.map(it => {
+                                const { images, ...lightItem } = it;
+                                return lightItem;
+                            });
+                        }
+                        return pCopy;
+                    });
+                    localStorage.setItem('company_material_projects', JSON.stringify(lightProjects));
+                } catch(e) {}
                 
                 // Trigger view updates based on what is active
                 if (!document.getElementById('view-companies').classList.contains('hidden')) {

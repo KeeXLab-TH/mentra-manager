@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th" style="background-color:#f8fafc">
 <head>
     <!-- Security Headers (meta fallback) -->
@@ -4805,6 +4805,24 @@
                             console.warn("Could not save pending_quotation_project to localStorage:", e);
                         }
 
+                        // Also set pending_load_quotation as a guaranteed cross-page fallback
+                        try {
+                            const loadQuotationFallback = {
+                                docType: 'quotation',
+                                projectId: this.currentProjectId,
+                                toCompany: proj.institution || '',
+                                toAddress: proj.address || instDetails.address || '',
+                                toAttn: proj.teacher || proj.attn || instDetails.contact || '',
+                                toTel: proj.tel || instDetails.phone || '',
+                                toEmail: proj.email || instDetails.email || '',
+                                toTaxId: proj.taxId || instDetails.taxId || '',
+                                items: cleanItems,
+                                shop: shopName,
+                                timestamp: Date.now()
+                            };
+                            localStorage.setItem('pending_load_quotation', JSON.stringify(loadQuotationFallback));
+                        } catch(e) {}
+
                         // Also cache full projects list without heavy images
                         try {
                             const lightProjects = this.projects.map(p => {
@@ -5622,6 +5640,25 @@
                             localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
                         } catch(e) {}
 
+                        // Also set pending_load_quotation as a guaranteed cross-page fallback
+                        try {
+                            const loadInvoiceFallback = {
+                                docType: 'invoice',
+                                projectId: this.currentProjectId,
+                                toCompany: proj.institution || '',
+                                toAddress: proj.address || instDetails.address || '',
+                                toAttn: proj.teacher || proj.attn || instDetails.contact || '',
+                                toTel: proj.tel || instDetails.phone || '',
+                                toEmail: proj.email || instDetails.email || '',
+                                toTaxId: proj.taxId || instDetails.taxId || '',
+                                parentRefNo: parentRef,
+                                items: cleanItems,
+                                shop: shopName,
+                                timestamp: Date.now()
+                            };
+                            localStorage.setItem('pending_load_quotation', JSON.stringify(loadInvoiceFallback));
+                        } catch(e) {}
+
                         // Also cache full projects list without heavy images
                         try {
                             const lightProjects = this.projects.map(p => {
@@ -5709,6 +5746,25 @@
                         } catch(e) {}
                         try {
                             localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+
+                        // Also set pending_load_quotation as a guaranteed cross-page fallback
+                        try {
+                            const loadReceiptFallback = {
+                                docType: 'receipt',
+                                projectId: this.currentProjectId,
+                                toCompany: proj.institution || '',
+                                toAddress: proj.address || instDetails.address || '',
+                                toAttn: proj.teacher || proj.attn || instDetails.contact || '',
+                                toTel: proj.tel || instDetails.phone || '',
+                                toEmail: proj.email || instDetails.email || '',
+                                toTaxId: proj.taxId || instDetails.taxId || '',
+                                parentRefNo: parentRef,
+                                items: cleanItems,
+                                shop: shopName,
+                                timestamp: Date.now()
+                            };
+                            localStorage.setItem('pending_load_quotation', JSON.stringify(loadReceiptFallback));
                         } catch(e) {}
                         if (window.saveProjectToFirestore) {
                             window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToReceipt error:', e));
@@ -7374,6 +7430,21 @@
                 docs.sort((a, b) => b.id.localeCompare(a.id));
                 
                 appData.projects = docs;
+                
+                // Cache lightweight projects list in localStorage for instant access across tabs
+                try {
+                    const lightProjects = docs.map(p => {
+                        const pCopy = { ...p };
+                        if (Array.isArray(pCopy.items)) {
+                            pCopy.items = pCopy.items.map(it => {
+                                const { images, ...lightItem } = it;
+                                return lightItem;
+                            });
+                        }
+                        return pCopy;
+                    });
+                    localStorage.setItem('material_projects', JSON.stringify(lightProjects));
+                } catch(e) {}
                 
                 // Check if opened via Shared Link URL params
                 const urlParams = new URLSearchParams(window.location.search);

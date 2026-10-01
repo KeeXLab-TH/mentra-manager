@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th" style="background-color:#f8fafc">
 
 <head>
@@ -4711,28 +4711,53 @@
                 workflowHistory.parentRefNo = paramParentRef;
             }
 
-            // If no projectId in URL, clear any leftover pending project so it doesn't linger on clean page refreshes
-            let pendingProjInstitution = '';
-            if (!autoImportId) {
-                try {
-                    sessionStorage.removeItem('pending_quotation_project');
-                    localStorage.removeItem('pending_quotation_project');
-                } catch(e) {}
-            } else if (!urlShop) {
-                // Only if projectId was provided in URL, check pending project for its associated shop
-                try {
-                    const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
-                    if (pRaw) {
-                        const pData = JSON.parse(pRaw);
-                        if (pData && String(pData.projectId) === String(autoImportId) && (Date.now() - (pData.timestamp || 0) < 600000)) {
-                            if (pData.institution) {
-                                pendingProjInstitution = String(pData.institution).trim();
+            // Resilient check for pending project data in storage (recovers projectId even if stripped by Vercel clean URL redirects)
+            let pendingProjData = null;
+            try {
+                const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
+                if (pRaw) {
+                    const parsed = JSON.parse(pRaw);
+                    const isFresh = parsed && parsed.timestamp && (Date.now() - parsed.timestamp < 600000);
+                    if (parsed && (isFresh || autoImportId)) {
+                        if (!autoImportId || String(parsed.projectId) === String(autoImportId)) {
+                            pendingProjData = parsed;
+                            if (!autoImportId && parsed.projectId) {
+                                autoImportId = String(parsed.projectId);
                             }
-                            if (pData.shop) {
-                                urlShop = pData.shop;
+                            if (parsed.source) {
+                                autoImportSource = parsed.source;
                             }
                         }
                     }
+                }
+            } catch(e) {}
+
+            // Also check pending_load_quotation fallback if autoImportId is still null
+            if (!autoImportId) {
+                try {
+                    const loadRaw = localStorage.getItem('pending_load_quotation');
+                    if (loadRaw) {
+                        const loadParsed = JSON.parse(loadRaw);
+                        if (loadParsed && loadParsed.projectId && (Date.now() - (loadParsed.timestamp || 0) < 600000)) {
+                            autoImportId = String(loadParsed.projectId);
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            let pendingProjInstitution = '';
+            if (pendingProjData) {
+                if (pendingProjData.institution) {
+                    pendingProjInstitution = String(pendingProjData.institution).trim();
+                }
+                if (pendingProjData.shop && !urlShop) {
+                    urlShop = pendingProjData.shop;
+                }
+            } else if (!autoImportId) {
+                // Only clear if completely stale
+                try {
+                    sessionStorage.removeItem('pending_quotation_project');
+                    localStorage.removeItem('pending_quotation_project');
                 } catch(e) {}
             }
 
@@ -5060,14 +5085,15 @@
                             switchDocType(paramDocType, { generateNewRef: false });
                         }
 
-                        // Support loadPending from sales_documents.html
-                        if (urlParams.get('loadPending') === 'true') {
+                        // Support loadPending from sales_documents.html / materials_purchasing.html
+                        if (urlParams.get('loadPending') === 'true' && !hasAutoImported) {
                             try {
                                 const rawPending = localStorage.getItem('pending_load_quotation');
                                 if (rawPending) {
                                     const docData = JSON.parse(rawPending);
-                                    if (docData) {
+                                    if (docData && (Date.now() - (docData.timestamp || 0) < 600000)) {
                                         loadQuotationData(docData);
+                                        hasAutoImported = true;
                                         localStorage.removeItem('pending_load_quotation');
                                     }
                                 }
@@ -5076,10 +5102,25 @@
                             }
                         }
 
-                        const autoImportId = urlParams.get('projectId');
-                        const autoImportSource = urlParams.get('source') || 'school';
-                        if (!hasAutoImported && !isImportingProject && autoImportId) {
-                            autoImportProject(autoImportId, autoImportSource).catch(e => console.error("Auth auto-import error:", e));
+                        let authImportId = urlParams.get('projectId');
+                        let authImportSource = urlParams.get('source') || 'school';
+
+                        if (!hasAutoImported && !isImportingProject) {
+                            if (!authImportId) {
+                                try {
+                                    const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
+                                    if (pRaw) {
+                                        const pData = JSON.parse(pRaw);
+                                        if (pData && pData.projectId && (Date.now() - (pData.timestamp || 0) < 600000)) {
+                                            authImportId = String(pData.projectId);
+                                            authImportSource = pData.source || 'school';
+                                        }
+                                    }
+                                } catch(e) {}
+                            }
+                            if (authImportId) {
+                                autoImportProject(authImportId, authImportSource).catch(e => console.error("Auth auto-import error:", e));
+                            }
                         }
                     } else {
                         // User document deleted!
@@ -9458,12 +9499,37 @@
                     const pendingRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
                     if (pendingRaw) {
                         const parsed = JSON.parse(pendingRaw);
-                        if (parsed && projectId && String(parsed.projectId) === String(projectId)) {
-                            pendingProj = parsed;
+                        const isFresh = parsed && (!parsed.timestamp || (Date.now() - parsed.timestamp < 10 * 60 * 1000));
+                        if (parsed && isFresh) {
+                            if (!projectId || String(parsed.projectId) === String(projectId) || !parsed.projectId) {
+                                pendingProj = parsed;
+                                if (!projectId && parsed.projectId) projectId = String(parsed.projectId);
+                                if (!source && parsed.source) source = parsed.source;
+                            }
                         }
                     }
                 } catch (e) {
                     console.warn("Could not read pending_quotation_project:", e);
+                }
+
+                // 1.1 Check pending_load_quotation fallback if pendingProj has no items
+                if (!pendingProj || toItemsArray(pendingProj.items).length === 0) {
+                    try {
+                        const loadRaw = localStorage.getItem('pending_load_quotation');
+                        if (loadRaw) {
+                            const parsedLoad = JSON.parse(loadRaw);
+                            const isFresh = parsedLoad && (!parsedLoad.timestamp || (Date.now() - parsedLoad.timestamp < 10 * 60 * 1000));
+                            if (parsedLoad && isFresh && toItemsArray(parsedLoad.items).length > 0) {
+                                if (!projectId || !parsedLoad.projectId || String(parsedLoad.projectId) === String(projectId)) {
+                                    pendingProj = Object.assign({}, parsedLoad, pendingProj || {});
+                                    if (!projectId && parsedLoad.projectId) projectId = String(parsedLoad.projectId);
+                                    if (!source && parsedLoad.source) source = parsedLoad.source;
+                                }
+                            }
+                        }
+                    } catch(e) {
+                        console.warn("Could not read pending_load_quotation:", e);
+                    }
                 }
 
                 // 2. Check material_projects cache from localStorage
@@ -9520,6 +9586,15 @@
 
                 // Combine sources with priority: pendingProj > localCacheProj > firestoreProj
                 const proj = Object.assign({}, firestoreProj || {}, localCacheProj || {}, pendingProj || {});
+
+                // Map field aliases if loaded from pending_load_quotation
+                if (!proj.institution && proj.toCompany) proj.institution = proj.toCompany;
+                if (!proj.address && proj.toAddress) proj.address = proj.toAddress;
+                if (!proj.attn && proj.toAttn) proj.attn = proj.toAttn;
+                if (!proj.tel && proj.toTel) proj.tel = proj.toTel;
+                if (!proj.email && proj.toEmail) proj.email = proj.toEmail;
+                if (!proj.taxId && proj.toTaxId) proj.taxId = proj.toTaxId;
+
                 if (source !== 'company') {
                     if (proj.company && proj.institution && proj.company === proj.institution) {
                         proj.company = '';
@@ -9561,12 +9636,9 @@
                         }
                     });
                 } else {
-                    // No items found in project: ensure at least 1 empty row so table is usable
-                    console.warn("autoImportProject: No items found for", projectId);
-                    addTableRow();
-                    if (typeof showToast === 'function') {
-                        showToast('ไม่พบรายการวัสดุในโครงการนี้', 'warning');
-                    }
+                    // No items found in project yet: do NOT claim hasAutoImported = true so onAuthStateChanged can retry!
+                    console.warn("autoImportProject: No items found yet for", projectId);
+                    return;
                 }
 
                 // Apply Issuer Theme:
@@ -9795,10 +9867,9 @@
                     }
                 } catch(e) {}
 
-                // Clean up pending project cache so clean page reloads don't reload it
+                // Clean up temporary pending load quotation cache safely
                 try {
-                    sessionStorage.removeItem('pending_quotation_project');
-                    localStorage.removeItem('pending_quotation_project');
+                    localStorage.removeItem('pending_load_quotation');
                 } catch(e) {}
 
                 if (finalItems.length > 0 && typeof showToast === 'function') {
