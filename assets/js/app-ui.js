@@ -56,6 +56,23 @@ window.getDeptUrl = function(page) {
     }
 };
 
+// Ensure Session Security Guard is active across all pages
+(function ensureSessionGuard() {
+    if (typeof window !== 'undefined' && !window.MentraSessionGuard) {
+        const path = (location.pathname || '').replace(/\\/g, '/');
+        let prefix = 'assets/js/session-guard.js';
+        if (path.includes('/pages/admin/') || path.includes('/pages/purchasing/') ||
+            path.includes('/pages/accounting/') || path.includes('/pages/schedule/')) {
+            prefix = '../../assets/js/session-guard.js';
+        } else if (path.includes('/pages/')) {
+            prefix = '../assets/js/session-guard.js';
+        }
+        const s = document.createElement('script');
+        s.src = prefix;
+        document.head.appendChild(s);
+    }
+})();
+
 (function MentraUI() {
     'use strict';
 
@@ -488,9 +505,11 @@ window.getDeptUrl = function(page) {
         logoutRow.addEventListener('click', () => {
             closeSheet();
             setTimeout(() => {
+                if (window.MentraSessionGuard) window.MentraSessionGuard.clearSessionData();
                 const orig = document.querySelector('.btn-logout');
                 if (orig) orig.click();
                 else if (typeof handleLogout === 'function') handleLogout();
+                else if (window.MentraSessionGuard) window.MentraSessionGuard.logout('logged_out');
                 else window.location.href = location.pathname.includes('/pages/') ? '../../index.html' : 'index.html';
             }, 200);
         });
@@ -980,12 +999,15 @@ function initAccountDropdown(userData) {
         <span>ออกจากระบบ</span>
     `;
     itemLogout.onclick = () => {
+        if (window.MentraSessionGuard) window.MentraSessionGuard.clearSessionData();
         if (oldLogoutBtn) {
             oldLogoutBtn.click();
         } else if (typeof handleLogout === 'function') {
             handleLogout();
         } else if (window.handleLogout) {
             window.handleLogout();
+        } else if (window.MentraSessionGuard) {
+            window.MentraSessionGuard.logout('logged_out');
         } else {
             window.location.href = location.pathname.includes('/pages/') ? '../../index.html' : 'index.html';
         }

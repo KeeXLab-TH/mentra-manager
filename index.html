@@ -1,1269 +1,954 @@
 <!DOCTYPE html>
-<html lang="th" style="background-color:#f8fafc">
+<html lang="th" style="background-color:#f1f5f9">
 
 <head>
     <!-- Security Headers (meta fallback) -->
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
     <!-- Anti-Flash Instant Background -->
-    <style>html,body{background:#f8fafc!important;}</style>
+    <style>html,body{background:#f1f5f9!important;color:#0f172a;}</style>
     <script>
     (function(){
         var d=document,o=d.createElement('div');
         o.id='mentra-page-transition-overlay';
-        o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(248,250,252,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:1;transition:opacity .22s ease-out;pointer-events:none;';
+        o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(241,245,249,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:1;transition:opacity .25s ease-out;pointer-events:none;';
         d.documentElement.appendChild(o);
         function fadeOut(){if(o){o.style.opacity='0';setTimeout(function(){o.style.pointerEvents='none';},280);}}
         if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',fadeOut);}else{fadeOut();}
         window.addEventListener('pageshow',function(){if(o){o.style.opacity='0';o.style.pointerEvents='none';}});
     })();
     </script>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mentra Manager — เข้าสู่ระบบ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mentra Manager — ระบบบริหารจัดการธุรกิจและโครงการ</title>
+    
+    <!-- Google Fonts: Prompt, Kanit, Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* ================================================
-           MENTRA MANAGER — ENTERPRISE LOGIN UI
-           Brand: Blue #1A6FBF + Orange #E07B2F
-           ================================================ */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Boxicons & SweetAlert2 -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Enterprise Session Security Guard -->
+    <script src="assets/js/session-guard.js"></script>
 
-        *,
-        *::before,
-        *::after {
+    <style>
+        /* ================================================================
+           MENTRA MANAGER — OFFICIAL BRAND THEME
+           Palette: Mentra Royal Blue (#1A6FBF) + Mentra Amber Orange (#E07B2F)
+           ================================================================ */
+
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         :root {
-            /* Brand Colors */
-            --primary: #1A6FBF;
-            --primary-dark: #145999;
-            --primary-darker: #0e4a85;
-            --primary-light: #e8f1fb;
-            --primary-glow: rgba(26, 111, 191, 0.18);
+            --mentra-blue: #1A6FBF;
+            --mentra-blue-dark: #0f3d6e;
+            --mentra-blue-light: #eff6ff;
+            --mentra-blue-glow: rgba(26, 111, 191, 0.25);
 
-            --secondary: #E07B2F;
-            --secondary-dark: #c4681f;
-            --secondary-light: #fdf0e6;
-            --secondary-glow: rgba(224, 123, 47, 0.18);
+            --mentra-orange: #E07B2F;
+            --mentra-orange-hover: #c4681f;
+            --mentra-orange-light: #fff7ed;
+            --mentra-orange-glow: rgba(224, 123, 47, 0.28);
 
-            /* Semantic Colors */
-            --success: #10b981;
-            --success-light: #d1fae5;
-            --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            --danger: #ef4444;
-            --danger-light: #fee2e2;
-            --info: #3b82f6;
-            --info-light: #dbeafe;
+            --emerald: #10b981;
+            --bg-canvas: #f1f5f9;
+            --bg-card: #ffffff;
+            --border-color: #e2e8f0;
 
-            /* UI Colors */
-            --text: #1a202c;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border: #e2e8f0;
-            --border-focus: var(--primary);
-            --bg: #f5f7fa;
-            --bg-subtle: #f8fafc;
-            --white: #ffffff;
+            --text-title: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
 
-            /* Aliases (backward compat) */
-            --blue: #1A6FBF;
-            --blue-dark: #145999;
-            --blue-light: #e8f1fb;
-            --orange: #E07B2F;
-            --orange-dark: #c4681f;
-            --orange-light: #fdf0e6;
-            --error: #ef4444;
-
-            /* Shadows */
-            --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.06);
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.07);
-            --shadow-md: 0 4px 20px rgba(26, 111, 191, 0.10);
-            --shadow-lg: 0 8px 40px rgba(26, 111, 191, 0.15);
-            --shadow-xl: 0 20px 60px rgba(26, 111, 191, 0.20);
-
-            /* Radii */
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-
-            /* Transitions */
-            --t-fast: 0.15s ease;
-            --t-normal: 0.25s ease;
-            --t-slow: 0.35s ease;
+            --font-display: 'Prompt', 'Plus Jakarta Sans', sans-serif;
+            --font-ui: 'Kanit', 'Plus Jakarta Sans', sans-serif;
+            --font-num: 'Plus Jakarta Sans', 'Kanit', sans-serif;
         }
 
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Kanit', sans-serif;
-            font-size: 15px;
-            color: var(--text);
-            line-height: 1.5;
-            height: 100vh;
-            overflow: hidden;
+        html, body {
+            min-height: 100vh;
+            background-color: var(--bg-canvas);
+            font-family: var(--font-ui);
+            color: var(--text-body);
             display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ===========================
-           BRAND PANEL (LEFT)
-           =========================== */
-        .brand-panel {
-            width: 45%;
-            background: linear-gradient(150deg,
-                    #0b3d6e 0%,
-                    #0e4a85 20%,
-                    var(--primary) 55%,
-                    #1a7a62 80%,
-                    #155a48 100%);
+        /* Elevated Main Master Card */
+        .master-card-container {
+            width: 100%;
+            max-width: 1080px;
+            min-height: 640px;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 
+                0 30px 70px -15px rgba(26, 111, 191, 0.18),
+                0 15px 30px -10px rgba(15, 23, 42, 0.08),
+                0 0 0 1px rgba(226, 232, 240, 0.85);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
             position: relative;
+        }
+
+        /* ================================================================
+           LEFT SIDE: MENTRA SIGNATURE BLUE & ORANGE ARTWORK
+           ================================================================ */
+        .art-side {
+            position: relative;
+            background: linear-gradient(145deg, #0e3763 0%, #1A6FBF 55%, #1860a5 100%);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 48px;
+            justify-content: space-between;
+            padding: 40px;
             overflow: hidden;
+            color: #ffffff;
         }
 
-        /* Decorative blobs */
-        .brand-panel::before {
-            content: '';
-            position: absolute;
-            top: -90px;
-            right: -90px;
-            width: 380px;
-            height: 380px;
-            background: radial-gradient(circle, var(--secondary) 0%, transparent 70%);
-            border-radius: 50%;
-            opacity: 0.15;
-            animation: blobPulse 6s ease-in-out infinite;
-        }
-
-        .brand-panel::after {
-            content: '';
-            position: absolute;
-            bottom: -120px;
-            left: -70px;
-            width: 320px;
-            height: 320px;
-            background: radial-gradient(circle, #ffffff 0%, transparent 70%);
-            border-radius: 50%;
-            opacity: 0.07;
-            animation: blobPulse 8s ease-in-out infinite reverse;
-        }
-
-        @keyframes blobPulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.12);
-            }
-        }
-
-        /* Floating particles */
-        .brand-particles {
+        /* Architectural Grid Overlay */
+        .art-grid-bg {
             position: absolute;
             inset: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 38px 38px;
             pointer-events: none;
-            overflow: hidden;
+            z-index: 1;
         }
 
-        .particle {
+        /* Subtle Orange Ambient Flare (Mentra Accent) */
+        .art-orange-flare {
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(224, 123, 47, 0.4) 0%, rgba(224, 123, 47, 0) 70%);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Flowing SVG Vector Waves (With Mentra Orange Highlights) */
+        .svg-wave-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 220px;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.88;
+        }
+
+        .svg-wave-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 220px;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0.88;
+        }
+
+        /* Constellation Glowing Nodes & Geometry */
+        .art-node {
             position: absolute;
             border-radius: 50%;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        .node-ring-1 {
+            top: 48px;
+            right: 80px;
+            width: 48px;
+            height: 48px;
+            border: 2px solid rgba(224, 123, 47, 0.5);
+            background: rgba(224, 123, 47, 0.15);
+            box-shadow: 0 0 20px rgba(224, 123, 47, 0.3);
+        }
+
+        .node-ring-2 {
+            bottom: 80px;
+            right: 110px;
+            width: 62px;
+            height: 62px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
             background: rgba(255, 255, 255, 0.12);
-            animation: particleFloat linear infinite;
         }
 
-        @keyframes particleFloat {
-            0% {
-                transform: translateY(100vh) scale(0);
-                opacity: 0;
-            }
-
-            10% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateY(-20px) scale(1);
-                opacity: 0;
-            }
-        }
-
-        .brand-content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-        }
-
-        .brand-logo {
-            width: 150px;
-            height: 150px;
-            object-fit: contain;
-            background: white;
-            border-radius: 28px;
-            padding: 14px;
-            margin-bottom: 28px;
-            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.12);
-            animation: logoFloat 4s ease-in-out infinite;
-        }
-
-        @keyframes logoFloat {
-
-            0%,
-            100% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-8px);
-            }
-        }
-
-        .brand-title {
-            font-size: 34px;
-            font-weight: 900;
-            color: #ffffff;
-            line-height: 1.15;
-            margin-bottom: 12px;
-            letter-spacing: -0.8px;
-        }
-
-        .brand-title span {
-            color: var(--secondary);
-            text-shadow: 0 0 20px rgba(224, 123, 47, 0.5);
-        }
-
-        .brand-subtitle {
-            font-size: 14.5px;
-            color: rgba(255, 255, 255, 0.70);
-            font-weight: 400;
-            line-height: 1.7;
-            margin-bottom: 44px;
-        }
-
-        .brand-features {
-            list-style: none;
-            text-align: left;
-            width: 100%;
-            max-width: 280px;
-        }
-
-        .brand-features li {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: rgba(255, 255, 255, 0.82);
-            font-size: 13.5px;
-            font-weight: 500;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            transition: color var(--t-normal);
-        }
-
-        .brand-features li:last-child {
-            border-bottom: none;
-        }
-
-        .brand-features li:hover {
-            color: #fff;
-        }
-
-        .feature-icon {
+        .node-ring-3 {
+            top: 130px;
+            left: 50px;
             width: 34px;
             height: 34px;
-            background: rgba(255, 255, 255, 0.13);
-            border-radius: 9px;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .node-dot-1 {
+            top: 180px;
+            right: 140px;
+            width: 10px;
+            height: 10px;
+            background: #E07B2F;
+            box-shadow: 0 0 12px #E07B2F;
+        }
+
+        .node-dot-2 {
+            bottom: 160px;
+            left: 100px;
+            width: 8px;
+            height: 8px;
+            background: #ffffff;
+            box-shadow: 0 0 10px #ffffff;
+        }
+
+        .node-line {
+            position: absolute;
+            background: linear-gradient(to right, rgba(224, 123, 47, 0.45), transparent);
+            height: 1.5px;
+            transform-origin: left center;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Content inside Art Side */
+        .art-content-top {
+            position: relative;
+            z-index: 5;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            flex-shrink: 0;
-            transition: background var(--t-normal);
+            justify-content: space-between;
+            gap: 12px;
         }
 
-        .brand-features li:hover .feature-icon {
-            background: rgba(255, 255, 255, 0.22);
+        .company-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
         }
 
-        .brand-footer {
-            position: absolute;
-            bottom: 24px;
-            color: rgba(255, 255, 255, 0.38);
-            font-size: 11px;
-            text-align: center;
-            line-height: 1.6;
-            letter-spacing: 0.2px;
+        .company-pill img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
         }
 
-        /* ===========================
-           FORM PANEL (RIGHT)
-           =========================== */
-        .form-panel {
-            flex: 1;
+        .company-pill span {
+            font-family: var(--font-display);
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: 0.3px;
+        }
+
+        .company-pill span b {
+            color: var(--mentra-blue);
+        }
+
+        .company-pill span span {
+            color: var(--mentra-orange);
+        }
+
+        .version-badge {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 4px 10px;
+            border-radius: 9999px;
+        }
+
+        /* Center Typography in Art Side */
+        .art-center-box {
+            position: relative;
+            z-index: 5;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 32px;
-            overflow: hidden;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            text-align: center;
+            margin: auto 0;
+            padding: 20px 0;
         }
 
-        .form-card {
-            width: 100%;
-            max-width: 520px;
-            background: var(--white);
-            padding: 44px 48px;
-            border-radius: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
-            animation: formFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        .art-sub-welcome {
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
         }
 
-        @keyframes formFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Logo on mobile */
-        .form-mobile-logo {
-            display: none;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 28px;
-        }
-
-        .form-mobile-logo img {
-            width: 44px;
-            height: 44px;
-            object-fit: contain;
-            background: var(--primary-light);
-            border-radius: 12px;
-            padding: 5px;
-        }
-
-        .form-mobile-logo-text {
-            font-size: 18px;
+        .art-main-welcome {
+            font-family: var(--font-display);
+            font-size: 38px;
             font-weight: 800;
-            color: var(--text);
+            color: #ffffff;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            line-height: 1.15;
+            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
-        .form-mobile-logo-text span {
-            color: var(--primary);
+        .art-dash {
+            width: 52px;
+            height: 4px;
+            background: linear-gradient(90deg, #E07B2F 0%, #f59e0b 100%);
+            border-radius: 9999px;
+            margin: 16px auto;
+            box-shadow: 0 2px 10px rgba(224, 123, 47, 0.5);
+        }
+
+        .art-desc {
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            max-width: 370px;
+            margin: 0 auto;
+        }
+
+        /* Bottom Art Status */
+        .art-bottom-bar {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, 0.8);
+            padding-top: 10px;
+        }
+
+        .art-bottom-bar span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .art-bottom-bar i {
+            color: #E07B2F;
+        }
+
+        /* ================================================================
+           RIGHT SIDE: PURE WHITE CLEAN LOGIN CONSOLE
+           ================================================================ */
+        .form-side {
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 48px 52px;
+            position: relative;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .form-header {
-            margin-bottom: 22px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .form-header h2 {
-            font-size: 26px;
-            font-weight: 800;
-            color: var(--text);
-            margin-bottom: 6px;
-            letter-spacing: -0.5px;
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--mentra-blue);
+            letter-spacing: -0.3px;
+        }
+
+        .form-header h2 span {
+            color: var(--mentra-orange);
         }
 
         .form-header p {
-            font-size: 14.5px;
-            color: var(--text-secondary);
+            font-size: 12.5px;
+            color: var(--text-muted);
+            line-height: 1.5;
         }
 
-        /* ===========================
-           TAB SWITCHER
-           =========================== */
-        .tab-switcher {
+        /* Tab Switcher */
+        .auth-tab-bar {
             display: flex;
-            background: var(--bg);
-            border-radius: 14px;
-            padding: 5px;
-            margin-bottom: 22px;
-            position: relative;
+            align-items: center;
+            gap: 18px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+            margin-bottom: 2px;
         }
 
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
+        .auth-tab-btn {
             background: transparent;
-            border-radius: 10px;
+            border: none;
+            font-family: var(--font-ui);
             font-size: 14px;
             font-weight: 600;
-            cursor: pointer;
             color: var(--text-muted);
-            transition: color var(--t-normal);
-            font-family: 'Kanit', sans-serif;
+            cursor: pointer;
+            padding-bottom: 6px;
             position: relative;
-            z-index: 1;
+            transition: all 0.2s ease;
         }
 
-        .tab-btn.active {
-            color: var(--primary);
+        .auth-tab-btn.active {
+            color: var(--mentra-blue);
         }
 
-        /* Gliding pill indicator */
-        .tab-indicator {
+        .auth-tab-btn.active::after {
+            content: '';
             position: absolute;
-            top: 5px;
-            bottom: 5px;
-            left: 5px;
-            width: calc(50% - 5px);
-            background: var(--white);
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 2.5px;
+            background: var(--mentra-blue);
+            border-radius: 99px;
+        }
+
+        /* Form Inputs (With Mentra Signature Left-Border Accent) */
+        .login-form-body {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .input-group-styled {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-            transition: transform var(--t-normal) cubic-bezier(0.34, 1.56, 0.64, 1);
-            pointer-events: none;
+            border-left: 3.5px solid var(--mentra-blue);
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.25s ease;
         }
 
-        .tab-indicator.right {
-            transform: translateX(100%);
+        .input-group-styled:focus-within {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            border-left-color: var(--mentra-orange);
+            box-shadow: 0 4px 14px rgba(224, 123, 47, 0.12);
         }
 
-        /* ===========================
-           FORM FIELDS
-           =========================== */
-        .field-group {
-            margin-bottom: 18px;
-        }
-
-        .field-group label {
-            display: block;
-            font-size: 13.5px;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 7px;
-        }
-
-        .field-group label span {
-            color: var(--danger);
-        }
-
-        .input-wrap {
-            position: relative;
-        }
-
-        .input-wrap .input-icon {
+        .input-group-styled .field-icon {
             position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
+            left: 14px;
+            color: #94a3b8;
+            font-size: 17px;
             pointer-events: none;
-            transition: color var(--t-fast);
+            transition: color 0.2s ease;
         }
 
-        .input-wrap input {
+        .input-group-styled:focus-within .field-icon {
+            color: var(--mentra-blue);
+        }
+
+        .input-group-styled input {
             width: 100%;
-            padding: 12px 14px 12px 44px;
-            border: 2px solid var(--border);
-            border-radius: var(--radius-md);
-            font-size: 14.5px;
-            color: var(--text);
-            background: var(--white);
-            transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
-            font-family: 'Kanit', sans-serif;
-            outline: none;
-        }
-
-        .input-wrap input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px var(--primary-glow);
-            background: var(--primary-light);
-        }
-
-        .input-wrap input:focus+.input-icon,
-        .input-wrap:focus-within .input-icon {
-            color: var(--primary);
-        }
-
-        .input-wrap input::placeholder {
-            color: #b0bec5;
-        }
-
-        /* Valid/Invalid states */
-        .input-wrap input.input-valid {
-            border-color: var(--success);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
-        }
-
-        .input-wrap input.input-error {
-            border-color: var(--danger);
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
-            animation: inputShake 0.4s ease;
-        }
-
-        @keyframes inputShake {
-
-            0%,
-            100% {
-                transform: translateX(0);
-            }
-
-            20% {
-                transform: translateX(-5px);
-            }
-
-            60% {
-                transform: translateX(5px);
-            }
-        }
-
-        .input-wrap .toggle-pw {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: var(--text-muted);
-            background: none;
+            height: 48px;
+            background: transparent;
             border: none;
+            outline: none;
+            padding: 0 16px 0 42px;
+            font-family: var(--font-ui);
+            font-size: 14px;
+            color: var(--text-title);
+        }
+
+        .input-group-styled input::placeholder {
+            color: #94a3b8;
+        }
+
+        .pwd-toggle-btn {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 18px;
+            cursor: pointer;
             padding: 4px;
             display: flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 6px;
-            transition: color var(--t-fast), background var(--t-fast);
+            transition: color 0.2s ease;
         }
 
-        .input-wrap .toggle-pw:hover {
-            color: var(--primary);
-            background: var(--primary-light);
+        .pwd-toggle-btn:hover {
+            color: var(--mentra-orange);
         }
 
-        .field-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        /* ===========================
-           ALERT BOX
-           =========================== */
-        .alert {
-            display: none;
-            padding: 13px 16px;
-            border-radius: var(--radius-md);
-            font-size: 13.5px;
-            font-weight: 500;
-            margin-bottom: 18px;
-            align-items: flex-start;
-            gap: 10px;
-            animation: alertSlideDown 0.3s ease;
-        }
-
-        @keyframes alertSlideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .alert.show {
+        /* Auxiliary Controls */
+        .form-options-row {
             display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12.5px;
+            padding-top: 2px;
         }
 
-        .alert-icon {
-            font-size: 16px;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        .alert.error {
-            background: #fef2f2;
-            color: var(--danger);
-            border: 1.5px solid #fecaca;
-        }
-
-        .alert.success {
-            background: #f0fdf4;
-            color: var(--success);
-            border: 1.5px solid #bbf7d0;
-        }
-
-        .alert.info {
-            background: var(--primary-light);
-            color: var(--primary);
-            border: 1.5px solid #bfdbfe;
-        }
-
-        .alert.warning {
-            background: #fffbeb;
-            color: #92400e;
-            border: 1.5px solid #fde68a;
-        }
-
-        /* ===========================
-           SUBMIT BUTTON
-           =========================== */
-        .btn-primary {
-            width: 100%;
-            padding: 13px;
-            background: linear-gradient(135deg, var(--primary) 0%, #1e8a6e 100%);
-            color: white;
-            border: none;
-            border-radius: var(--radius-lg);
-            font-size: 15.5px;
-            font-weight: 700;
+        .keep-signed-wrap {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--text-body);
             cursor: pointer;
-            transition: all var(--t-normal);
-            font-family: 'Kanit', sans-serif;
+            user-select: none;
+        }
+
+        .keep-signed-wrap input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--mentra-blue);
+            cursor: pointer;
+        }
+
+        .aux-link {
+            color: var(--mentra-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .aux-link:hover {
+            color: var(--mentra-orange);
+            text-decoration: underline;
+        }
+
+        /* Primary Action Button (Mentra Signature Gradient) */
+        .subscribe-btn {
+            width: 100%;
+            height: 48px;
+            background: linear-gradient(135deg, var(--mentra-blue) 0%, #155da1 70%, #104b83 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 9999px;
+            font-family: var(--font-ui);
+            font-size: 14.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-top: 4px;
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 0.2px;
+            box-shadow: 0 10px 24px -6px rgba(26, 111, 191, 0.45);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: 6px;
         }
 
-        .btn-primary::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
-            opacity: 0;
-            transition: opacity var(--t-fast);
+        .subscribe-btn:hover {
+            transform: translateY(-1.5px);
+            box-shadow: 0 14px 28px -6px rgba(26, 111, 191, 0.55);
+            background: linear-gradient(135deg, #155da1 0%, #0e4477 100%);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(26, 111, 191, 0.42);
-        }
-
-        .btn-primary:hover::after {
-            opacity: 1;
-        }
-
-        .btn-primary:active {
+        .subscribe-btn:active {
             transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(26, 111, 191, 0.3);
         }
 
-        .btn-primary:disabled {
-            opacity: 0.72;
+        .subscribe-btn:disabled {
+            opacity: 0.65;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
 
-        .btn-spinner {
+        /* Inline Alert */
+        .inline-alert {
+            display: none;
+            padding: 9px 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 500;
+            align-items: center;
+            gap: 8px;
+            animation: fadeInAlert 0.25s ease;
+        }
+
+        @keyframes fadeInAlert {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .inline-alert.error { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+        .inline-alert.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+        .inline-alert.warning { background: #fffbeb; border: 1px solid #fde68a; color: #b45309; }
+
+        .spinner {
+            display: none;
             width: 18px;
             height: 18px;
-            border: 2.5px solid rgba(255, 255, 255, 0.4);
-            border-top-color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            animation: spin 0.75s linear infinite;
-            display: none;
-            flex-shrink: 0;
+            border-top-color: #ffffff;
+            animation: spin 0.8s linear infinite;
         }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Security Bar at Bottom */
+        .card-security-note {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 11.5px;
+            color: #64748b;
+            padding-top: 14px;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 4px;
         }
 
-        /* ===========================
-           DIVIDER + FORGOT
-           =========================== */
-        .divider {
-            text-align: center;
-            position: relative;
-            margin: 18px 0;
-            color: var(--text-muted);
-            font-size: 13px;
+        .card-security-note i {
+            color: var(--emerald);
+            font-size: 14px;
         }
 
-        .divider::before,
-        .divider::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 43%;
-            height: 1px;
-            background: var(--border);
-        }
-
-        .divider::before {
-            left: 0;
-        }
-
-        .divider::after {
-            right: 0;
-        }
-
-        .form-tab-content {
-            display: none;
-        }
-
-        .form-tab-content.active {
-            display: block;
-        }
-
-        .forgot-link {
-            text-align: right;
-            margin-top: -10px;
-            margin-bottom: 18px;
-        }
-
-        .forgot-link a {
-            font-size: 13px;
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            padding: 2px 4px;
-            border-radius: 4px;
-            transition: background var(--t-fast);
-        }
-
-        .forgot-link a:hover {
-            background: var(--primary-light);
-        }
-
-        /* ===========================
-           RESPONSIVE
-           =========================== */
-        @media (max-width: 900px) {
-            .brand-panel {
-                display: none;
-            }
-
-            body {
-                background: var(--primary-darker);
-                position: relative;
-                overflow: auto;
-                height: auto;
-                min-height: 100vh;
-            }
-
-            /* High-end animated mesh gradient background */
-            body::before,
-            body::after {
-                content: '';
-                position: absolute;
-                border-radius: 50%;
-                filter: blur(80px);
-                z-index: 0;
-                animation: premiumFloat 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-                pointer-events: none;
-            }
-
-            body::before {
-                top: -5%;
-                left: -20%;
-                width: 350px;
-                height: 400px;
-                background: var(--primary);
-                opacity: 0.6;
-            }
-
-            body::after {
-                bottom: -5%;
-                right: -20%;
-                width: 400px;
-                height: 350px;
-                background: #E07B2F;
-                /* Mentra Orange */
-                opacity: 0.35;
-                animation-delay: -7s;
-            }
-
-            @keyframes premiumFloat {
-                0% {
-                    transform: translate(0, 0) scale(1) rotate(0deg);
-                }
-
-                100% {
-                    transform: translate(30px, 50px) scale(1.1) rotate(10deg);
-                }
-            }
-
-            .form-panel {
-                background: transparent;
-                padding: 40px 16px;
-                position: relative;
-                z-index: 1;
-                display: flex;
-                align-items: center;
-                min-height: 100vh;
-                justify-content: center;
-                flex-direction: column;
-            }
-
-            /* Premium Dark Glassmorphism Card */
-            .form-card {
-                background: rgba(11, 49, 86, 0.4);
-                /* Deep dark blue glass */
-                backdrop-filter: blur(24px);
-                -webkit-backdrop-filter: blur(24px);
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                padding: 40px 24px;
-                border-radius: 36px;
-                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-                width: 100%;
-                max-width: 420px;
-                position: relative;
-                animation: formFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-            }
-
-            @keyframes formFadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(40px);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            /* Inside the Glass Card */
-            .form-mobile-logo {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                margin-bottom: 28px;
-                text-align: center;
-            }
-
-            .form-mobile-logo img {
-                width: 76px;
-                height: 76px;
-                border-radius: 20px;
-                margin-bottom: 20px;
-                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-                background: rgba(255, 255, 255, 0.9);
-                padding: 4px;
-                border: 1px solid rgba(255, 255, 255, 0.3);
-            }
-
-            .form-mobile-logo-text {
-                color: #ffffff;
-                font-size: 28px;
-                font-weight: 800;
-                letter-spacing: -0.5px;
-                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-            }
-
-            .form-mobile-logo-text span {
-                color: #FFB067;
-                /* Brighter orange for dark glass */
-            }
-
-            .form-mobile-desc {
-                color: rgba(255, 255, 255, 0.8);
-                font-size: 15px;
-                margin-top: 8px;
-                line-height: 1.5;
-            }
-
-            .form-mobile-badges {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 10px;
-                margin-top: 20px;
-            }
-
-            .m-badge {
-                background: rgba(255, 255, 255, 0.08);
-                color: rgba(255, 255, 255, 0.95);
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                font-size: 12px;
-                padding: 8px 16px;
-                border-radius: 20px;
-                font-weight: 500;
-                backdrop-filter: blur(10px);
-            }
-
-            .form-header {
-                display: none;
-            }
-
-            /* Hidden on mobile */
-
-            /* Redesign form elements for Dark Glass */
-            .field-group label {
-                color: rgba(255, 255, 255, 0.9);
-            }
-
-            .tab-switcher {
-                background: rgba(0, 0, 0, 0.2);
-                border: 1px solid rgba(255, 255, 255, 0.08);
-            }
-
-            .tab-btn {
-                color: rgba(255, 255, 255, 0.5);
-            }
-
-            .tab-btn.active {
-                color: var(--primary-darker);
-            }
-
-            .tab-indicator {
-                background: rgba(255, 255, 255, 0.95);
-            }
-
-            .input-wrap input {
-                background: rgba(255, 255, 255, 0.06);
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                color: #ffffff;
-                backdrop-filter: blur(12px);
-            }
-
-            .input-wrap input::placeholder {
-                color: rgba(255, 255, 255, 0.4);
-            }
-
-            .input-wrap input:focus {
-                background: rgba(255, 255, 255, 0.1);
-                border-color: #FFB067;
-                box-shadow: 0 0 0 4px rgba(224, 123, 47, 0.2);
-            }
-
-            .input-wrap .input-icon {
-                color: rgba(255, 255, 255, 0.5);
-            }
-
-            .input-wrap input:focus+.input-icon,
-            .input-wrap:focus-within .input-icon {
-                color: #FFB067;
-            }
-
-            .input-wrap .toggle-pw {
-                color: rgba(255, 255, 255, 0.5);
-            }
-
-            .btn-primary {
-                background: linear-gradient(135deg, #FFB067, #E07B2F);
-                box-shadow: 0 8px 24px rgba(224, 123, 47, 0.4);
-                border: none;
-                color: white;
-            }
-
-            .btn-primary:active {
-                transform: translateY(2px);
-                box-shadow: 0 4px 12px rgba(224, 123, 47, 0.3);
-            }
-
-            .forgot-link a {
-                color: #FFB067;
-            }
-
-            .forgot-link a:hover {
-                background: rgba(255, 255, 255, 0.1);
-            }
-
-            .static-footer {
-                color: rgba(255, 255, 255, 0.6) !important;
-            }
-
-            .static-footer .sf-top {
-                color: rgba(255, 255, 255, 0.9) !important;
-            }
-
-            .static-footer .sf-bot a {
-                color: #FFB067 !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .field-row {
+        /* Responsive */
+        @media (max-width: 860px) {
+            .master-card-container {
                 grid-template-columns: 1fr;
+                border-radius: 20px;
             }
-
-            .form-panel {
-                padding: 20px 12px;
+            .art-side {
+                padding: 32px 24px;
+                min-height: 280px;
             }
-
-            .form-card {
-                padding: 32px 20px;
-                border-radius: 32px;
+            .form-side {
+                padding: 36px 24px;
             }
-
-            .form-mobile-logo {
-                margin-bottom: 24px;
-            }
-        }
-
-        /* STATIC FOOTER */
-        .static-footer {
-            margin-top: auto;
-            padding: 20px 20px 10px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--text-muted);
-            width: 100%;
-        }
-
-        .static-footer .sf-top {
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-
-        .static-footer .sf-mid {
-            margin-bottom: 8px;
-        }
-
-        .static-footer .sf-bot a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .static-footer .sf-bot a:hover {
-            text-decoration: underline;
         }
     </style>
-    <link rel="stylesheet" href="assets/css/app-theme.css?v=1780690277137">
 </head>
 
 <body>
 
-    <!-- LEFT: Brand Panel -->
-    <div class="brand-panel">
-        <!-- Animated particles -->
-        <div class="brand-particles" id="brandParticles"></div>
+    <!-- Main Floating Master Card -->
+    <div class="master-card-container">
+        
+        <!-- ================= LEFT: MENTRA BLUE & ORANGE ARTWORK ================= -->
+        <div class="art-side">
+            
+            <!-- Grid Background Overlay -->
+            <div class="art-grid-bg"></div>
 
-        <div class="brand-content">
-            <img src="assets/img/logo.png" alt="Mentra Solution" class="brand-logo" onerror="this.style.display='none'">
-            <div class="brand-title">Mentra<br><span>Manager</span></div>
-            <p class="brand-subtitle">ระบบจัดการโครงการ<br>บริษัท เมนทร้า โซลูชั่น จำกัด</p>
-            <ul class="brand-features">
-                <li>
-                    <div class="feature-icon">📁</div>
-                    จัดการโครงการและเอกสาร
-                </li>
-                <li>
-                    <div class="feature-icon">☁️</div>
-                    เก็บไฟล์บน Google Drive
-                </li>
-                <li>
-                    <div class="feature-icon">📊</div>
-                    ติดตามงบประมาณและสถานะ
-                </li>
-                <li>
-                    <div class="feature-icon">👥</div>
-                    รองรับหลายผู้ใช้งาน
-                </li>
-            </ul>
-        </div>
-        <div class="brand-footer">
-            115/123 ม.12 ต.บางแก้ว อ.บางพลี<br>จ.สมุทรปราการ 10540
-        </div>
-    </div>
+            <!-- Ambient Warm Orange Glow (Mentra Accent) -->
+            <div class="art-orange-flare"></div>
 
-    <!-- RIGHT: Form Panel -->
-    <div class="form-panel">
-        <div class="form-card">
-            <!-- Mobile logo (hidden on desktop) -->
-            <div class="form-mobile-logo">
-                <img src="assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'">
-                <div class="form-mobile-logo-text">Mentra <span>Manager</span></div>
-                <div class="form-mobile-desc">ระบบจัดการโครงการและเอกสาร<br>บริษัท เมนทร้า โซลูชั่น จำกัด</div>
-                <div class="form-mobile-badges">
-                    <span class="m-badge">📁 จัดการโครงการ</span>
-                    <span class="m-badge">☁️ Google Drive</span>
-                    <span class="m-badge">👥 สมาชิกในทีม</span>
+            <!-- Top Flowing Waves (SVG with Mentra Blue & Amber) -->
+            <svg class="svg-wave-top" viewBox="0 0 500 220" fill="none" preserveAspectRatio="none">
+                <path d="M0,0 L500,0 L500,100 C400,170 320,80 220,130 C120,180 50,110 0,160 Z" fill="rgba(255,255,255,0.1)"/>
+                <path d="M0,0 L500,0 L500,60 C420,130 350,60 250,110 C150,160 70,80 0,120 Z" fill="rgba(224,123,47,0.18)"/>
+                <path d="M0,0 L500,0 L500,30 C440,90 380,30 280,80 C180,130 90,60 0,80 Z" fill="rgba(255,255,255,0.2)"/>
+            </svg>
+
+            <!-- Bottom Flowing Waves (SVG with Mentra Blue & Amber) -->
+            <svg class="svg-wave-bottom" viewBox="0 0 500 220" fill="none" preserveAspectRatio="none">
+                <path d="M0,90 C80,40 160,120 260,70 C360,20 430,100 500,50 L500,220 L0,220 Z" fill="rgba(224,123,47,0.22)"/>
+                <path d="M0,130 C100,80 190,150 290,100 C390,50 450,120 500,80 L500,220 L0,220 Z" fill="rgba(255,255,255,0.16)"/>
+                <path d="M0,160 C120,120 220,180 320,130 C420,80 470,140 500,110 L500,220 L0,220 Z" fill="rgba(255,255,255,0.24)"/>
+            </svg>
+
+            <!-- Constellation Geometric Rings & Nodes (With Mentra Orange Accents) -->
+            <div class="art-node node-ring-1"></div>
+            <div class="art-node node-ring-2"></div>
+            <div class="art-node node-ring-3"></div>
+            <div class="art-node node-dot-1"></div>
+            <div class="art-node node-dot-2"></div>
+            <div class="node-line" style="top: 145px; left: 65px; width: 90px; transform: rotate(35deg);"></div>
+            <div class="node-line" style="bottom: 145px; right: 130px; width: 110px; transform: rotate(-40deg);"></div>
+
+            <!-- Top Brand Identifier -->
+            <div class="art-content-top">
+                <div class="company-pill">
+                    <img src="assets/img/logo.png" alt="Mentra Solution Logo">
+                    <span><b>Mentra</b> <span>Solution</span></span>
                 </div>
+                <div class="version-badge">Enterprise Suite v3.2</div>
             </div>
 
-            <div class="form-header">
-                <h2 id="formHeading">ยินดีต้อนรับ</h2>
-                <p id="formSubheading">เข้าสู่ระบบเพื่อจัดการโครงการของคุณ</p>
+            <!-- Center Brand & Platform Typography -->
+            <div class="art-center-box">
+                <span class="art-sub-welcome">Enterprise ERP Solution</span>
+                <h1 class="art-main-welcome">MENTRA MANAGER</h1>
+                <div class="art-dash"></div>
+                <p class="art-desc">
+                    ระบบบริหารจัดการธุรกิจ โครงการ ใบเสนอราคา และงานจัดซื้อวัสดุระดับองค์กร ครบวงจรในที่เดียว
+                </p>
             </div>
 
-            <!-- Tab Switcher -->
-            <div class="tab-switcher" id="tabSwitcher">
-                <div class="tab-indicator" id="tabIndicator"></div>
-                <button class="tab-btn active" id="loginTabBtn" onclick="switchTab('login')">เข้าสู่ระบบ</button>
-                <button class="tab-btn" id="signupTabBtn" onclick="switchTab('signup')">สมัครสมาชิก</button>
+            <!-- Bottom Node Status -->
+            <div class="art-bottom-bar">
+                <span><i class='bx bx-check-shield'></i> Mentra Enterprise Platform</span>
+                <span><i class='bx bx-lock-alt'></i> SSL 256-Bit Protection</span>
             </div>
 
-            <!-- Alert Box -->
-            <div class="alert" id="alertBox">
-                <span class="alert-icon" id="alertIcon">⚠️</span>
-                <span id="alertText"></span>
-            </div>
+        </div>
 
-            <!-- ===== LOGIN FORM ===== -->
-            <div class="form-tab-content active" id="loginTab">
-                <div class="field-group">
-                    <label for="loginIdentifier">อีเมล หรือ ชื่อผู้ใช้ <span>*</span></label>
-                    <div class="input-wrap">
-                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        <input type="text" id="loginIdentifier" placeholder="กรอกอีเมล หรือ username"
-                            autocomplete="username">
+        <!-- ================= RIGHT: CLEAN WHITE LOGIN FORM ================= -->
+        <div class="form-side">
+            <div class="form-container">
+                
+                <!-- Form Header -->
+                <div class="form-header">
+                    <h2 id="formHeading">Login <span>Account</span></h2>
+                    <p id="formSubheading">ยินดีต้อนรับสู่ระบบ Mentra Manager กรุณากรอกข้อมูลบัญชีเพื่อเข้าใช้งาน</p>
+                </div>
+
+                <!-- Tab Switcher -->
+                <div class="auth-tab-bar" id="tabBar">
+                    <button type="button" class="auth-tab-btn active" id="loginTabBtn" onclick="switchTab('login')">
+                        เข้าสู่ระบบ
+                    </button>
+                    <button type="button" class="auth-tab-btn" id="signupTabBtn" onclick="switchTab('signup')">
+                        สมัครสมาชิกใหม่
+                    </button>
+                </div>
+
+                <!-- Inline Feedback Alert -->
+                <div class="inline-alert" id="inlineAlert">
+                    <i class='bx bx-info-circle' id="alertIcon"></i>
+                    <span id="alertMsg"></span>
+                </div>
+
+                <!-- ================= LOGIN FORM ================= -->
+                <form class="login-form-body" id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+                    
+                    <div class="input-group-styled">
+                        <i class='bx bx-user field-icon'></i>
+                        <input 
+                            type="text" 
+                            id="loginIdentifier" 
+                            placeholder="Email ID หรือ Username" 
+                            autocomplete="username" 
+                            required
+                        >
                     </div>
-                </div>
-                <div class="field-group">
-                    <label for="loginPassword">รหัสผ่าน <span>*</span></label>
-                    <div class="input-wrap">
-                        <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                        </svg>
-                        <input type="password" id="loginPassword" placeholder="กรอกรหัสผ่าน"
-                            autocomplete="current-password">
-                        <button class="toggle-pw" type="button" onclick="togglePw('loginPassword', this)">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
+
+                    <div class="input-group-styled">
+                        <i class='bx bx-lock-alt field-icon'></i>
+                        <input 
+                            type="password" 
+                            id="loginPassword" 
+                            placeholder="Password" 
+                            autocomplete="current-password" 
+                            required
+                        >
+                        <button type="button" class="pwd-toggle-btn" onclick="togglePassword('loginPassword', this)" title="แสดง/ซ่อนรหัสผ่าน">
+                            <i class='bx bx-hide'></i>
                         </button>
                     </div>
-                </div>
-                <div class="forgot-link">
-                    <a href="#" onclick="forgotPassword(); return false;">ลืมรหัสผ่าน?</a>
-                </div>
-                <button class="btn-primary" id="loginBtn" onclick="handleLogin()">
-                    <div class="btn-spinner" id="loginSpinner"></div>
-                    <span id="loginBtnText">เข้าสู่ระบบ</span>
-                </button>
-            </div>
 
-            <!-- ===== SIGNUP FORM ===== -->
-            <div class="form-tab-content" id="signupTab">
-                <div class="field-row">
-                    <div class="field-group">
-                        <label for="signupFirstName">ชื่อ <span>*</span></label>
-                        <div class="input-wrap">
-                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                            <input type="text" id="signupFirstName" placeholder="ชื่อจริง">
-                        </div>
+                    <div class="form-options-row">
+                        <label class="keep-signed-wrap">
+                            <input type="checkbox" id="rememberMe">
+                            <span>Keep me signed in</span>
+                        </label>
+                        <a href="javascript:void(0)" class="aux-link" onclick="handleForgotPassword()">ลืมรหัสผ่าน?</a>
                     </div>
-                    <div class="field-group">
-                        <label for="signupLastName">นามสกุล <span>*</span></label>
-                        <div class="input-wrap">
-                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
-                            <input type="text" id="signupLastName" placeholder="นามสกุล">
-                        </div>
-                    </div>
-                </div>
-                <div class="field-row">
-                    <div class="field-group">
-                        <label for="signupUsername">ชื่อผู้ใช้ (Username) <span>*</span></label>
-                        <div class="input-wrap">
-                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M12 8v4l3 3"></path>
-                            </svg>
-                            <input type="text" id="signupUsername" placeholder="ไม่มีช่องว่าง">
-                        </div>
-                    </div>
-                    <div class="field-group">
-                        <label for="signupEmail">อีเมล <span>*</span></label>
-                        <div class="input-wrap">
-                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z">
-                                </path>
-                                <polyline points="22,6 12,13 2,6"></polyline>
-                            </svg>
-                            <input type="email" id="signupEmail" placeholder="example@email.com" autocomplete="email">
-                        </div>
-                    </div>
-                </div>
-                <div class="field-row">
-                    <div class="field-group">
-                        <label for="signupPassword">รหัสผ่าน <span>*</span></label>
-                        <div class="input-wrap">
-                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                            <input type="password" id="signupPassword" placeholder="อย่างน้อย 8 ตัวอักษร"
-                                autocomplete="new-password">
-                            <button class="toggle-pw" type="button" onclick="togglePw('signupPassword', this)">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="field-group">
-                        <label for="signupConfirm">ยืนยันรหัสผ่าน <span>*</span></label>
-                        <div class="input-wrap">
-                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                            </svg>
-                            <input type="password" id="signupConfirm" placeholder="พิมพ์รหัสผ่านอีกครั้ง"
-                                autocomplete="new-password">
-                        </div>
-                    </div>
-                </div>
-                <button class="btn-primary" id="signupBtn" onclick="handleSignup()">
-                    <div class="btn-spinner" id="signupSpinner"></div>
-                    <span id="signupBtnText">สมัครสมาชิก</span>
-                </button>
-            </div>
 
+                    <button type="submit" class="subscribe-btn" id="loginBtn">
+                        <span class="spinner" id="loginSpinner"></span>
+                        <span id="loginBtnText">เข้าสู่ระบบ Mentra Manager</span>
+                    </button>
+
+                </form>
+
+                <!-- ================= SIGNUP FORM ================= -->
+                <form class="login-form-body" id="signupForm" style="display:none;" onsubmit="event.preventDefault(); handleSignup();">
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="input-group-styled">
+                            <i class='bx bx-user field-icon'></i>
+                            <input type="text" id="signupFirstName" placeholder="ชื่อ" required>
+                        </div>
+                        <div class="input-group-styled">
+                            <i class='bx bx-user-pin field-icon'></i>
+                            <input type="text" id="signupLastName" placeholder="นามสกุล" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group-styled">
+                        <i class='bx bx-at field-icon'></i>
+                        <input type="text" id="signupUsername" placeholder="Username (ภาษาอังกฤษ)" autocomplete="username" required>
+                    </div>
+
+                    <div class="input-group-styled">
+                        <i class='bx bx-envelope field-icon'></i>
+                        <input type="email" id="signupEmail" placeholder="Email Address" autocomplete="email" required>
+                    </div>
+
+                    <div class="input-group-styled">
+                        <i class='bx bx-lock-alt field-icon'></i>
+                        <input type="password" id="signupPassword" placeholder="Password (อย่างน้อย 6 ตัวอักษร)" autocomplete="new-password" required>
+                        <button type="button" class="pwd-toggle-btn" onclick="togglePassword('signupPassword', this)">
+                            <i class='bx bx-hide'></i>
+                        </button>
+                    </div>
+
+                    <div class="input-group-styled">
+                        <i class='bx bx-check-shield field-icon'></i>
+                        <input type="password" id="signupConfirmPassword" placeholder="Confirm Password" autocomplete="new-password" required>
+                        <button type="button" class="pwd-toggle-btn" onclick="togglePassword('signupConfirmPassword', this)">
+                            <i class='bx bx-hide'></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" class="subscribe-btn" id="signupBtn">
+                        <span class="spinner" id="signupSpinner"></span>
+                        <span id="signupBtnText">สร้างบัญชีผู้ใช้ใหม่</span>
+                    </button>
+
+                </form>
+
+                <!-- Security Assurance -->
+                <div class="card-security-note">
+                    <i class='bx bx-shield-quarter'></i>
+                    <span>Protected by Mentra Session Guard &bull; 5-Hour Auto Timeout</span>
+                </div>
+
+            </div>
         </div>
 
-    <footer class="page-footer" style="text-align: center; padding: 24px 20px; color: #64748b; font-size: 0.78rem; line-height: 1.8; margin-top: auto;">
-        <div>ระบบจัดการธุรกิจ Mentra Manager &copy; 2026 Mentra Solution Co., Ltd.</div>
-        <div>ผู้จัดทำ <a href="https://keexlab-th.github.io/" target="_blank" rel="noopener noreferrer" style="color: #1A6FBF; text-decoration: none; font-weight: 600;">นายธนภูมิ แดงประดับ</a></div>
-    </footer>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- UI Logic Script -->
+    <script>
+        // Tab switching
+        function switchTab(mode) {
+            const loginBtn = document.getElementById('loginTabBtn');
+            const signupBtn = document.getElementById('signupTabBtn');
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const heading = document.getElementById('formHeading');
+            const subheading = document.getElementById('formSubheading');
+
+            hideAlert();
+
+            if (mode === 'login') {
+                loginBtn.classList.add('active');
+                signupBtn.classList.remove('active');
+                loginForm.style.display = 'flex';
+                signupForm.style.display = 'none';
+                heading.innerHTML = 'Login <span>Account</span>';
+                subheading.innerText = 'ยินดีต้อนรับสู่ระบบ Mentra Manager กรุณากรอกข้อมูลบัญชีเพื่อเข้าใช้งาน';
+                document.getElementById('loginIdentifier').focus();
+            } else {
+                signupBtn.classList.add('active');
+                loginBtn.classList.remove('active');
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'flex';
+                heading.innerHTML = 'Create <span>Account</span>';
+                subheading.innerText = 'กรอกข้อมูลส่วนบุคคลเพื่อขอรับสิทธิ์เข้าใช้งานระบบ Mentra Manager';
+                document.getElementById('signupFirstName').focus();
+            }
+        }
+
+        // Password visibility toggle
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'bx bx-show';
+            } else {
+                input.type = 'password';
+                icon.className = 'bx bx-hide';
+            }
+        }
+
+        // Inline alert system
+        function showAlert(msg, type = 'error') {
+            const box = document.getElementById('inlineAlert');
+            const icon = document.getElementById('alertIcon');
+            const text = document.getElementById('alertMsg');
+            box.className = 'inline-alert ' + type;
+            text.innerText = msg;
+
+            if (type === 'error') icon.className = 'bx bx-error-circle';
+            else if (type === 'success') icon.className = 'bx bx-check-circle';
+            else icon.className = 'bx bx-info-circle';
+
+            box.style.display = 'flex';
+        }
+
+        function hideAlert() {
+            const box = document.getElementById('inlineAlert');
+            if (box) box.style.display = 'none';
+        }
+
+        // Remember Me username storage
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedUsername = localStorage.getItem('mentra_remembered_username');
+            const remCheckbox = document.getElementById('rememberMe');
+            const loginInput = document.getElementById('loginIdentifier');
+            if (savedUsername) {
+                loginInput.value = savedUsername;
+                if (remCheckbox) remCheckbox.checked = true;
+            }
+
+            if (remCheckbox) {
+                remCheckbox.addEventListener('change', () => {
+                    if (!remCheckbox.checked) {
+                        localStorage.removeItem('mentra_remembered_username');
+                    } else if (loginInput.value.trim()) {
+                        localStorage.setItem('mentra_remembered_username', loginInput.value.trim());
+                    }
+                });
+            }
+
+            loginInput.addEventListener('blur', () => {
+                if (remCheckbox && remCheckbox.checked && loginInput.value.trim()) {
+                    localStorage.setItem('mentra_remembered_username', loginInput.value.trim());
+                }
+            });
+        });
+    </script>
+
+    <!-- Firebase Authentication & Firestore Script -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import { initializeFirestore, doc, setDoc, getDoc, updateDoc, collection, query, limit, getDocs, where, addDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         // Load config from firebase-config.js (ใช้ globalThis เพราะ module scope)
@@ -1286,16 +971,43 @@
 
         // ===== SHOW ALERT =====
         function showAlert(message, type = 'error') {
+            const inlineBox = document.getElementById('inlineAlert');
+            const inlineMsg = document.getElementById('alertMsg');
+            const inlineIcon = document.getElementById('alertIcon');
+            if (inlineBox) {
+                inlineBox.className = 'inline-alert ' + type;
+                if (inlineMsg) inlineMsg.textContent = message;
+                if (inlineIcon) {
+                    if (type === 'error') inlineIcon.className = 'bx bx-error-circle';
+                    else if (type === 'success') inlineIcon.className = 'bx bx-check-circle';
+                    else inlineIcon.className = 'bx bx-info-circle';
+                }
+                inlineBox.style.display = 'flex';
+                return;
+            }
+
             const box = document.getElementById('alertBox');
-            const text = document.getElementById('alertText');
-            const icon = document.getElementById('alertIcon');
-            text.textContent = message;
-            icon.textContent = type === 'error' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
-            box.className = `alert show ${type}`;
+            if (box) {
+                const text = document.getElementById('alertText');
+                const icon = document.getElementById('alertIcon');
+                if (text) text.textContent = message;
+                if (icon) icon.textContent = type === 'error' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
+                box.className = `alert show ${type}`;
+                box.style.display = 'block';
+            } else if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: type,
+                    text: message,
+                    confirmButtonColor: '#1A6FBF'
+                });
+            }
         }
 
         function hideAlert() {
-            document.getElementById('alertBox').className = 'alert';
+            const inlineBox = document.getElementById('inlineAlert');
+            if (inlineBox) inlineBox.style.display = 'none';
+            const box = document.getElementById('alertBox');
+            if (box) box.style.display = 'none';
         }
 
         function setLoading(btn, spinner, btnText, loading) {
@@ -1328,6 +1040,17 @@
 
             setLoading(btn, spinner, btnText, true);
 
+            // Pre-seed session guard & flag to prevent onAuthStateChanged from calling signOut()
+            window.isLoggingIn = true;
+            if (window.MentraSessionGuard) {
+                window.MentraSessionGuard.startSession();
+            } else {
+                sessionStorage.setItem('mentra_session_alive', '1');
+                const now = Date.now().toString();
+                localStorage.setItem('mentra_session_start', now);
+                localStorage.setItem('mentra_last_activity', now);
+            }
+
             try {
                 let email = identifier;
 
@@ -1338,6 +1061,8 @@
                     const querySnapshot = await getDocs(q);
                     if (querySnapshot.empty) {
                         showAlert('ไม่พบชื่อผู้ใช้นี้ในระบบ หรือบัญชีถูกลบแล้ว', 'error');
+                        window.isLoggingIn = false;
+                        sessionStorage.removeItem('mentra_session_alive');
                         setLoading(btn, spinner, btnText, false);
                         return;
                     }
@@ -1345,10 +1070,14 @@
                     const status = userData.status || 'approved';
                     if (status === 'pending') {
                         showAlert('บัญชีของคุณอยู่ระหว่างการรออนุมัติจากผู้ดูแลระบบ', 'warning');
+                        window.isLoggingIn = false;
+                        sessionStorage.removeItem('mentra_session_alive');
                         setLoading(btn, spinner, btnText, false);
                         return;
                     } else if (status === 'rejected') {
                         showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ', 'error');
+                        window.isLoggingIn = false;
+                        sessionStorage.removeItem('mentra_session_alive');
                         setLoading(btn, spinner, btnText, false);
                         return;
                     }
@@ -1358,6 +1087,8 @@
                     const usernameDoc = await getDoc(doc(db, 'usernames', identifier.toLowerCase()));
                     if (!usernameDoc.exists()) {
                         showAlert('ไม่พบชื่อผู้ใช้นี้ในระบบ', 'error');
+                        window.isLoggingIn = false;
+                        sessionStorage.removeItem('mentra_session_alive');
                         setLoading(btn, spinner, btnText, false);
                         return;
                     }
@@ -1366,6 +1097,8 @@
                     const userDoc = await getDoc(doc(db, 'users', usernameDoc.data().uid));
                     if (!userDoc.exists()) {
                         showAlert('ไม่พบชื่อผู้ใช้นี้ในระบบ หรือบัญชีถูกลบแล้ว', 'error');
+                        window.isLoggingIn = false;
+                        sessionStorage.removeItem('mentra_session_alive');
                         setLoading(btn, spinner, btnText, false);
                         return;
                     }
@@ -1373,10 +1106,14 @@
                     const status = userData.status || 'approved';
                     if (status === 'pending') {
                         showAlert('บัญชีของคุณอยู่ระหว่างการรออนุมัติจากผู้ดูแลระบบ', 'warning');
+                        window.isLoggingIn = false;
+                        sessionStorage.removeItem('mentra_session_alive');
                         setLoading(btn, spinner, btnText, false);
                         return;
                     } else if (status === 'rejected') {
                         showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ', 'error');
+                        window.isLoggingIn = false;
+                        sessionStorage.removeItem('mentra_session_alive');
                         setLoading(btn, spinner, btnText, false);
                         return;
                     }
@@ -1385,9 +1122,35 @@
 
                 const cred = await signInWithEmailAndPassword(auth, email, password);
                 if (cred.user) {
+                    if (window.MentraSessionGuard) {
+                        window.MentraSessionGuard.startSession();
+                    } else {
+                        sessionStorage.setItem('mentra_session_alive', '1');
+                        const now = Date.now().toString();
+                        localStorage.setItem('mentra_session_start', now);
+                        localStorage.setItem('mentra_last_activity', now);
+                    }
+
                     const userSnap = await getDoc(doc(db, 'users', cred.user.uid)).catch(() => null);
                     const uData = userSnap && userSnap.exists() ? userSnap.data() : {};
                     const uname = uData.username || cred.user.displayName || cred.user.email.split('@')[0];
+
+                    try {
+                        localStorage.setItem('mentra_user_permissions', JSON.stringify({
+                            uid: cred.user.uid,
+                            role: uData.role || 'user',
+                            allowedPages: uData.allowedPages || {}
+                        }));
+                        localStorage.setItem('mentra_cached_user_profile', JSON.stringify({
+                            uid: cred.user.uid,
+                            displayName: uData.displayName || `${uData.firstName || ''} ${uData.lastName || ''}`.trim() || uname,
+                            email: uData.email || cred.user.email,
+                            username: uname,
+                            role: uData.role || 'user',
+                            photoURL: uData.photoURL || '',
+                            status: uData.status || 'approved'
+                        }));
+                    } catch(e) {}
 
                     await addDoc(collection(db, 'activity_logs'), {
                         uname: uname,
@@ -1402,10 +1165,14 @@
                         lastPageVisited: 'index.html (login)'
                     }).catch(() => null);
                 }
-                showAlert('เข้าสู่ระบบสำเร็จ กำลังส่งหน้า...', 'success');
-                setTimeout(() => { window.location.href = 'pages/accounting/quotation.html'; }, 150);
+                showAlert('เข้าสู่ระบบสำเร็จ กำลังพาเข้าสู่แดชบอร์ด...', 'success');
+                setTimeout(() => { 
+                    window.location.href = 'pages/admin/dashboard.html'; 
+                }, 250);
 
             } catch (err) {
+                window.isLoggingIn = false;
+                sessionStorage.removeItem('mentra_session_alive');
                 const msgs = {
                     'auth/user-not-found': 'ไม่พบบัญชีผู้ใช้นี้',
                     'auth/wrong-password': 'รหัสผ่านไม่ถูกต้อง',
@@ -1425,7 +1192,8 @@
             const username = document.getElementById('signupUsername').value.trim().toLowerCase();
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
-            const confirm = document.getElementById('signupConfirm').value;
+            const confirmEl = document.getElementById('signupConfirmPassword') || document.getElementById('signupConfirm');
+            const confirm = confirmEl ? confirmEl.value : '';
             const btn = document.getElementById('signupBtn');
             const spinner = document.getElementById('signupSpinner');
             const btnText = document.getElementById('signupBtnText');
@@ -1440,8 +1208,8 @@
                 showAlert('Username ใช้ได้เฉพาะตัวอักษรภาษาอังกฤษ ตัวเลข และ _ เท่านั้น', 'error');
                 return;
             }
-            if (password.length < 8) {
-                showAlert('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร', 'error');
+            if (password.length < 6) {
+                showAlert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', 'error');
                 return;
             }
             if (password !== confirm) {
@@ -1451,6 +1219,14 @@
 
             setLoading(btn, spinner, btnText, true);
             window.isSigningUp = true;
+            if (window.MentraSessionGuard) {
+                window.MentraSessionGuard.startSession();
+            } else {
+                sessionStorage.setItem('mentra_session_alive', '1');
+                const now = Date.now().toString();
+                localStorage.setItem('mentra_session_start', now);
+                localStorage.setItem('mentra_last_activity', now);
+            }
 
             try {
                 // ตรวจสอบว่า username ถูกใช้แล้วหรือยัง
@@ -1459,6 +1235,7 @@
                     showAlert('ชื่อผู้ใช้นี้ถูกใช้งานแล้ว กรุณาเลือกชื่ออื่น', 'error');
                     setLoading(btn, spinner, btnText, false);
                     window.isSigningUp = false;
+                    sessionStorage.removeItem('mentra_session_alive');
                     return;
                 }
 
@@ -1470,6 +1247,15 @@
                 // สร้างบัญชีใน Firebase Auth
                 const cred = await createUserWithEmailAndPassword(auth, email, password);
                 const uid = cred.user.uid;
+
+                if (window.MentraSessionGuard) {
+                    window.MentraSessionGuard.startSession();
+                } else {
+                    sessionStorage.setItem('mentra_session_alive', '1');
+                    const now = Date.now().toString();
+                    localStorage.setItem('mentra_session_start', now);
+                    localStorage.setItem('mentra_last_activity', now);
+                }
 
                 // บันทึกข้อมูลใน Firestore
                 await Promise.all([
@@ -1487,15 +1273,24 @@
                     setDoc(doc(db, 'usernames', username), { email, uid }),
                 ]);
 
+                try {
+                    localStorage.setItem('mentra_user_permissions', JSON.stringify({
+                        uid,
+                        role,
+                        allowedPages: {}
+                    }));
+                } catch(e) {}
+
                 window.isSigningUp = false;
                 const roleMsg = role === 'admin'
                     ? ' (คุณได้รับสิทธิ์ Admin เนื่องจากเป็นผู้ลงทะเบียนคนแรก)'
                     : ' (อยู่ระหว่างรอผู้ดูแลระบบอนุมัติบัญชี)';
-                showAlert(`สมัครสมาชิกสำเร็จ!${roleMsg} กำลังเข้าสู่ระบบ...`, 'success');
-                setTimeout(() => { window.location.href = 'pages/admin/dashboard.html'; }, 1500);
+                showAlert(`สมัครสมาชิกสำเร็จ!${roleMsg} กำลังเข้าสู่แดชบอร์ด...`, 'success');
+                setTimeout(() => { window.location.href = 'pages/admin/dashboard.html'; }, 1000);
 
             } catch (err) {
                 window.isSigningUp = false;
+                sessionStorage.removeItem('mentra_session_alive');
                 const msgs = {
                     'auth/email-already-in-use': 'อีเมลนี้ถูกใช้งานแล้ว',
                     'auth/invalid-email': 'รูปแบบอีเมลไม่ถูกต้อง',
@@ -1507,10 +1302,10 @@
         };
 
         // ===== FORGOT PASSWORD =====
-        window.forgotPassword = async function () {
+        window.handleForgotPassword = window.forgotPassword = async function () {
             const identifier = document.getElementById('loginIdentifier').value.trim();
             if (!identifier || !identifier.includes('@')) {
-                showAlert('กรุณากรอกอีเมลในช่องด้านบนก่อน', 'info');
+                showAlert('กรุณากรอกอีเมลในช่องด้านบนก่อน เพื่อรับลิงก์รีเซ็ตรหัสผ่าน', 'info');
                 return;
             }
             try {
@@ -1529,21 +1324,95 @@
 
 
         // ===== CHECK URL QUERY PARAMETERS & AUTO REDIRECT =====
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionMsg = urlParams.get('msg');
+        const isSessionInvalidated = ['session_expired', 'idle_timeout', 'browser_closed', 'logged_out'].includes(sessionMsg);
+
         window.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const msg = params.get('msg');
-            if (msg === 'pending') {
+            if (sessionMsg === 'pending') {
                 showAlert('บัญชีของคุณอยู่ระหว่างการรออนุมัติจากผู้ดูแลระบบ โปรดลองเข้าสู่ระบบอีกครั้งในภายหลัง', 'warning');
-            } else if (msg === 'rejected') {
+            } else if (sessionMsg === 'rejected') {
                 showAlert('บัญชีของคุณได้รับการปฏิเสธสิทธิ์เข้าใช้งานระบบ กรุณาติดต่อผู้ดูแลระบบ', 'error');
-            } else if (msg === 'deleted') {
+            } else if (sessionMsg === 'deleted') {
                 showAlert('บัญชีผู้ใช้นี้ถูกลบออกจากระบบแล้ว หรือไม่มีสิทธิ์เข้าใช้งาน', 'error');
+            } else if (sessionMsg === 'session_expired') {
+                showAlert('เซสชันการใช้งานหมดอายุ (ครบ 5 ชั่วโมง) เพื่อความปลอดภัย กรุณาเข้าสู่ระบบใหม่อีกครั้ง', 'warning');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'เซสชันหมดอายุ (5 ชั่วโมง)',
+                        text: 'คุณเข้าสู่ระบบเกิน 5 ชั่วโมงแล้ว เพื่อความปลอดภัยของข้อมูล กรุณาเข้าสู่ระบบใหม่อีกครั้ง',
+                        confirmButtonText: 'เข้าสู่ระบบ',
+                        confirmButtonColor: '#1A6FBF'
+                    });
+                }
+            } else if (sessionMsg === 'idle_timeout') {
+                showAlert('ไม่มีการใช้งานระบบเกิน 2 ชั่วโมง ระบบจึงออกจากระบบอัตโนมัติเพื่อความปลอดภัย', 'warning');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'หมดเวลาการใช้งาน (Inactivity)',
+                        text: 'ไม่มีการใช้งานระบบเกิน 2 ชั่วโมง ระบบจึงออกจากระบบอัตโนมัติเพื่อความปลอดภัย',
+                        confirmButtonText: 'เข้าสู่ระบบ',
+                        confirmButtonColor: '#1A6FBF'
+                    });
+                }
+            } else if (sessionMsg === 'browser_closed') {
+                showAlert('เซสชันเดิมถูกปิดแล้ว กรุณาเข้าสู่ระบบใหม่เพื่อความปลอดภัย', 'info');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'เซสชันเดิมสิ้นสุดลงแล้ว',
+                        text: 'มีการปิดเบราว์เซอร์หรือปิดแท็บทั้งหมด กรุณาเข้าสู่ระบบใหม่เพื่อความปลอดภัย',
+                        confirmButtonText: 'ตกลง',
+                        confirmButtonColor: '#1A6FBF'
+                    });
+                }
+            } else if (sessionMsg === 'logged_out') {
+                showAlert('ออกจากระบบเรียบร้อยแล้ว', 'success');
+            }
+
+            // Clean query param without page reload so refreshing is clean
+            if (sessionMsg) {
+                try {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch(e) {}
             }
         });
 
         // ===== AUTO REDIRECT IF LOGGED IN WITH VALIDATION =====
         auth.onAuthStateChanged(async (user) => {
-            if (user && !window.isSigningUp) {
+            // CRITICAL: If the user is actively submitting login or signup, DO NOT INTERFERE!
+            if (window.isLoggingIn || window.isSigningUp) {
+                return;
+            }
+
+            // If session was invalidated or explicit logout/timeout message exists
+            if (isSessionInvalidated) {
+                if (user) {
+                    await signOut(auth).catch(() => {});
+                }
+                if (window.MentraSessionGuard) {
+                    window.MentraSessionGuard.clearSessionData();
+                } else {
+                    sessionStorage.removeItem('mentra_session_alive');
+                    localStorage.removeItem('mentra_session_start');
+                    localStorage.removeItem('mentra_last_activity');
+                }
+                return; // Do NOT auto-redirect!
+            }
+
+            // If user closed the browser and opened index.html directly (sessionStorage is empty)
+            const isAlive = sessionStorage.getItem('mentra_session_alive') === '1';
+            if (!isAlive) {
+                // If this is a standalone visit to index.html without alive session, sign out and require login
+                if (user) {
+                    await signOut(auth).catch(() => {});
+                }
+                return; // Do NOT auto-redirect!
+            }
+
+            if (user) {
                 try {
                     const snap = await getDoc(doc(db, 'users', user.uid));
                     if (!snap.exists()) {
@@ -1566,6 +1435,15 @@
                                 role: userData.role || 'user',
                                 allowedPages: userData.allowedPages || {}
                             }));
+                            localStorage.setItem('mentra_cached_user_profile', JSON.stringify({
+                                uid: user.uid,
+                                displayName: userData.displayName || `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || user.displayName || 'User',
+                                email: userData.email || user.email,
+                                username: userData.username || user.email.split('@')[0],
+                                role: userData.role || 'user',
+                                photoURL: userData.photoURL || '',
+                                status: userData.status || 'approved'
+                            }));
                         } catch(e) {}
                         window.location.href = 'pages/admin/dashboard.html';
                     }
@@ -1576,88 +1454,5 @@
         });
     </script>
 
-    <script>
-        /* ============================================
-           MENTRA MANAGER — UI ENHANCEMENT LAYER
-           Pure UI/UX JS — no Firebase logic touched
-           ============================================ */
-
-        // ===== TAB SWITCHER WITH ANIMATED INDICATOR =====
-        function switchTab(tab) {
-            document.getElementById('loginTab').classList.toggle('active', tab === 'login');
-            document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
-            document.getElementById('loginTabBtn').classList.toggle('active', tab === 'login');
-            document.getElementById('signupTabBtn').classList.toggle('active', tab === 'signup');
-
-            // Animate the gliding pill indicator
-            const indicator = document.getElementById('tabIndicator');
-            if (indicator) {
-                indicator.classList.toggle('right', tab === 'signup');
-            }
-
-            document.getElementById('formHeading').textContent = tab === 'login' ? 'ยินดีต้อนรับ' : 'สร้างบัญชีใหม่';
-            document.getElementById('formSubheading').textContent = tab === 'login'
-                ? 'เข้าสู่ระบบเพื่อจัดการโครงการของคุณ'
-                : 'กรอกข้อมูลเพื่อสร้างบัญชีผู้ใช้';
-            document.getElementById('alertBox').className = 'alert';
-        }
-
-        // ===== TOGGLE PASSWORD VISIBILITY =====
-        function togglePw(inputId, btn) {
-            const input = document.getElementById(inputId);
-            const isText = input.type === 'text';
-            input.type = isText ? 'password' : 'text';
-            btn.innerHTML = isText
-                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
-                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-        }
-
-        // ===== FLOATING PARTICLES GENERATOR =====
-        (function initParticles() {
-            const container = document.getElementById('brandParticles');
-            if (!container) return;
-            const count = 18;
-            for (let i = 0; i < count; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                const size = Math.random() * 12 + 5;
-                const left = Math.random() * 100;
-                const delay = Math.random() * 12;
-                const dur = Math.random() * 10 + 8;
-                p.style.cssText = `
-                    width: ${size}px; height: ${size}px;
-                    left: ${left}%;
-                    animation-duration: ${dur}s;
-                    animation-delay: -${delay}s;
-                    opacity: ${Math.random() * 0.5 + 0.1};
-                `;
-                container.appendChild(p);
-            }
-        })();
-
-        // ===== ENTER KEY SUPPORT =====
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const activeTab = document.getElementById('loginTab').classList.contains('active');
-                if (activeTab) { if (typeof handleLogin === 'function') handleLogin(); }
-                else { if (typeof handleSignup === 'function') handleSignup(); }
-            }
-        });
-
-        // ===== INPUT FOCUS COLOR SYNC (icon tint) =====
-        document.querySelectorAll('.input-wrap input').forEach(input => {
-            input.addEventListener('focus', () => {
-                const icon = input.parentElement.querySelector('svg');
-                if (icon) icon.style.color = 'var(--primary)';
-            });
-            input.addEventListener('blur', () => {
-                const icon = input.parentElement.querySelector('svg');
-                if (icon) icon.style.color = '';
-            });
-        });
-
-    </script>
-    <script src="assets/js/app-ui.js?v=1780248654607" defer></script>
 </body>
-
 </html>
