@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th" style="background-color:#f8fafc">
 
 <head>
@@ -64,7 +64,7 @@
         }
 
         :root {
-            --sidebar-w: 260px;
+            --sidebar-w: 328px;
             --sidebar-w-collapsed: 72px;
             --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
             --header-h: 60px;
@@ -496,7 +496,7 @@
                 <!-- Projects -->
                 <button type="button" class="rail-icon-btn" onclick="handleRailTab('projects', this)" id="railBtnProjects">
                     <i class='bx bx-briefcase'></i>
-                    <span class="rail-tooltip">โครงการทั้งหมด (Projects)</span>
+                    <span class="rail-tooltip">งานประมูล (Bidding)</span>
                 </button>
 
                 <!-- Purchasing -->
@@ -587,7 +587,7 @@
                 <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('projects') : window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-briefcase'></i>
-                        <span>โครงการทั้งหมด</span>
+                        <span>งานประมูล (Bidding)</span>
                     </div>
                 </button>
 
@@ -626,12 +626,6 @@
                         <span>รายการสินค้า</span>
                     </div>
                 </button>
-                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('items') : window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-purchase-tag-alt'></i>
-                        <span>ราคาทุน / สิ่งของ</span>
-                    </div>
-                </button>
 
                 <!-- Module Section: Accounting -->
                 <div class="sec-nav-divider">งานบัญชี & การเงิน</div>
@@ -639,6 +633,12 @@
                     <div class="sec-nav-item-left">
                         <i class='bx bx-file-blank'></i>
                         <span>ออกเอกสารงานขาย</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/company_letters.html'" id="nav-company-letters">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-file'></i>
+                        <span>หนังสือส่งมอบงาน</span>
                     </div>
                 </button>
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">

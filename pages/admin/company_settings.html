@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th" style="background-color:#f0f4f9">
 
 <head>
@@ -50,7 +50,7 @@
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.06);
             --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-            --sidebar-w: 260px;
+            --sidebar-w: 328px;
         }
 
         *, *::before, *::after {
@@ -676,7 +676,7 @@
                 <!-- Projects -->
                 <button type="button" class="rail-icon-btn" onclick="handleRailTab('projects', this)" id="railBtnProjects">
                     <i class='bx bx-briefcase'></i>
-                    <span class="rail-tooltip">โครงการทั้งหมด (Projects)</span>
+                    <span class="rail-tooltip">งานประมูล (Bidding)</span>
                 </button>
 
                 <!-- Purchasing -->
@@ -767,7 +767,7 @@
                 <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('projects') : window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
                     <div class="sec-nav-item-left">
                         <i class='bx bx-briefcase'></i>
-                        <span>โครงการทั้งหมด</span>
+                        <span>งานประมูล (Bidding)</span>
                     </div>
                 </button>
 
@@ -806,12 +806,6 @@
                         <span>รายการสินค้า</span>
                     </div>
                 </button>
-                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('items') : window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-purchase-tag-alt'></i>
-                        <span>ราคาทุน / สิ่งของ</span>
-                    </div>
-                </button>
 
                 <!-- Module Section: Accounting -->
                 <div class="sec-nav-divider">งานบัญชี & การเงิน</div>
@@ -819,6 +813,12 @@
                     <div class="sec-nav-item-left">
                         <i class='bx bx-file-blank'></i>
                         <span>ออกเอกสารงานขาย</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/company_letters.html'" id="nav-company-letters">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-file'></i>
+                        <span>หนังสือส่งมอบงาน</span>
                     </div>
                 </button>
                 <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">

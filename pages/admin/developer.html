@@ -322,7 +322,7 @@ textarea.form-control{resize:vertical;min-height:90px;line-height:1.5}
             <!-- Projects -->
             <button type="button" class="rail-icon-btn" onclick="handleRailTab('projects', this)" id="railBtnProjects">
                 <i class='bx bx-briefcase'></i>
-                <span class="rail-tooltip">โครงการทั้งหมด (Projects)</span>
+                <span class="rail-tooltip">งานประมูล (Bidding)</span>
             </button>
 
             <!-- Purchasing -->
@@ -417,7 +417,7 @@ textarea.form-control{resize:vertical;min-height:90px;line-height:1.5}
             <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('projects') : window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
                 <div class="sec-nav-item-left">
                     <i class='bx bx-briefcase'></i>
-                    <span>โครงการทั้งหมด</span>
+                    <span>งานประมูล (Bidding)</span>
                 </div>
             </button>
 
@@ -466,12 +466,6 @@ textarea.form-control{resize:vertical;min-height:90px;line-height:1.5}
                     <span>รายการสินค้า</span>
                 </div>
             </button>
-            <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('items') : window.location.href='../admin/dashboard.html?view=items'" id="nav-items">
-                <div class="sec-nav-item-left">
-                    <i class='bx bx-purchase-tag-alt'></i>
-                    <span>ราคาทุน / สิ่งของ</span>
-                </div>
-            </button>
 
             <!-- Module Section: Accounting -->
             <div class="sec-nav-divider">งานบัญชี & การเงิน</div>
@@ -481,6 +475,12 @@ textarea.form-control{resize:vertical;min-height:90px;line-height:1.5}
                     <span>ออกเอกสารงานขาย</span>
                 </div>
             </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/company_letters.html'" id="nav-company-letters">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-file'></i>
+                        <span>หนังสือส่งมอบงาน</span>
+                    </div>
+                </button>
             <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">
                 <div class="sec-nav-item-left">
                     <i class='bx bx-folder-open'></i>

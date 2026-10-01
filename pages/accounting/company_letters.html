@@ -1,0 +1,2918 @@
+<!DOCTYPE html>
+<html lang="th" style="background-color:#f1f5f9">
+
+<head>
+    <!-- Security Headers -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+
+    <!-- Anti-Flash Instant Background -->
+    <style>html,body{background:#f1f5f9!important;}</style>
+    <script>
+    (function(){
+        var d=document,o=d.createElement('div');
+        o.id='mentra-page-transition-overlay';
+        o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(241,245,249,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:1;transition:opacity .22s ease-out;pointer-events:none;';
+        d.documentElement.appendChild(o);
+        function fadeOut(){if(o){o.style.opacity='0';setTimeout(function(){o.style.pointerEvents='none';},280);}}
+        if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',fadeOut);}else{fadeOut();}
+        window.addEventListener('pageshow',function(){if(o){o.style.opacity='0';o.style.pointerEvents='none';}});
+        setTimeout(fadeOut, 800);
+    })();
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mentra Manager — ออกหนังสือส่งมอบงาน (A4 แนวตั้ง)</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- html2pdf.js for A4 Portrait Vector PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Mentra App UI & Sidebars -->
+    <link rel="stylesheet" href="../../assets/css/app-ui.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard-dual-sidebar.css?v=2.5">
+    <script src="../../assets/js/app-ui.js" defer></script>
+    <script src="../../assets/js/session-guard.js"></script>
+    <script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5" defer></script>
+
+    <style>
+        :root {
+            --primary: #1A6FBF;
+            --primary-dark: #145999;
+            --primary-light: #eff6ff;
+            --secondary: #E07B2F;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --bg-page: #f1f5f9;
+            --sidebar-w: 328px;
+            --sidebar-w-collapsed: 72px;
+            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+            --card-shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Kanit', 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-left: var(--sidebar-w);
+            transition: margin-left 0.25s ease;
+            min-width: 0;
+            width: calc(100% - var(--sidebar-w));
+            background: #e2e8f0;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #cbd5e1;
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .topbar-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-title-wrap i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            background: #eff6ff;
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        .topbar-title-wrap h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .topbar-title-wrap p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 9px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: var(--text-dark);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-action:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 2px 4px rgba(26, 111, 191, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: #ffffff;
+            border-color: #10b981;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        /* Workspace */
+        .doc-workspace {
+            padding: 20px 20px 60px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* Comprehensive Word/Docs Toolbar */
+        .doc-editor-toolbar {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 920px;
+            margin-bottom: 18px;
+        }
+
+        .toolbar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-row.secondary-row {
+            padding-top: 8px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toolbar-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 22px;
+            background: #cbd5e1;
+            margin: 0 4px;
+        }
+
+        .btn-tool-sm {
+            padding: 5px 9px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 0.82rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.15s;
+            font-weight: 500;
+        }
+
+        .btn-tool-sm:hover {
+            background: #eff6ff;
+            color: var(--primary);
+            border-color: #93c5fd;
+        }
+
+        .btn-tool-sm.active {
+            background: #eff6ff;
+            color: var(--primary);
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .toolbar-slider {
+            width: 90px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .size-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            background: #eff6ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            min-width: 38px;
+            text-align: center;
+        }
+
+        .zoom-select {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.8rem;
+            color: #334155;
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        /* Help Info Banner */
+        .help-banner {
+            width: 100%;
+            max-width: 920px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            color: #1e40af;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Page Margins Popover & Controls */
+        .margin-dropdown-wrapper {
+            position: relative;
+        }
+
+        .margin-popover {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 380px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 14px;
+            z-index: 1000;
+            animation: fadeInDown 0.15s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .margin-popover-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 10px;
+        }
+
+        .margin-close-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .margin-close-btn:hover {
+            background: #f1f5f9;
+            color: #ef4444;
+        }
+
+        .margin-section {
+            margin-bottom: 10px;
+        }
+
+        .margin-section-label {
+            display: block;
+            font-size: 0.73rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 5px;
+        }
+
+        .margin-unit-pills {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .unit-pill {
+            padding: 5px 2px;
+            border: none;
+            background: transparent;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #64748b;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+
+        .unit-pill:hover {
+            color: var(--primary);
+        }
+
+        .unit-pill.active {
+            background: #ffffff;
+            color: var(--primary);
+            font-weight: 700;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .margin-presets-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .preset-chip {
+            padding: 6px 8px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            border-radius: 7px;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            transition: all 0.15s;
+        }
+
+        .preset-chip strong {
+            font-size: 0.74rem;
+            color: #1e293b;
+        }
+
+        .preset-chip span {
+            font-size: 0.65rem;
+            color: #64748b;
+        }
+
+        .preset-chip:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+        }
+
+        .preset-chip.active {
+            background: #eff6ff;
+            border-color: var(--primary);
+        }
+
+        .preset-chip.active strong {
+            color: var(--primary);
+        }
+
+        .margin-inputs-container {
+            display: grid;
+            grid-template-columns: 86px 1fr;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .margin-visual-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 4px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .mini-paper {
+            width: 66px;
+            height: 94px;
+            background: #ffffff;
+            border: 1.5px solid #94a3b8;
+            border-radius: 3px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .mini-sheet-content {
+            position: absolute;
+            inset: 6px 7px 6px 8px;
+            background: #eff6ff;
+            border: 1px dashed #3b82f6;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .mini-label {
+            position: absolute;
+            font-size: 8px;
+            font-weight: 700;
+            color: #1e40af;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0 2px;
+            border-radius: 2px;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .mini-top { top: 2px; left: 50%; transform: translateX(-50%); }
+        .mini-bottom { bottom: 2px; left: 50%; transform: translateX(-50%); }
+        .mini-left { left: 2px; top: 50%; transform: translateY(-50%); }
+        .mini-right { right: 2px; top: 50%; transform: translateY(-50%); }
+
+        .margin-steppers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .stepper-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .stepper-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .stepper-box {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 28px;
+            transition: border-color 0.15s;
+        }
+
+        .stepper-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 111, 191, 0.15);
+        }
+
+        .stepper-btn {
+            width: 24px;
+            height: 100%;
+            border: none;
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+            user-select: none;
+            padding: 0;
+        }
+
+        .stepper-btn:hover {
+            background: #e2e8f0;
+            color: var(--primary);
+        }
+
+        .stepper-input {
+            width: 36px;
+            flex: 1;
+            border: none;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #0f172a;
+            outline: none;
+            padding: 0 2px;
+            -moz-appearance: textfield;
+        }
+
+        .stepper-input::-webkit-outer-spin-button,
+        .stepper-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .stepper-unit {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #64748b;
+            padding-right: 5px;
+            user-select: none;
+        }
+
+        .margin-popover-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid #f1f5f9;
+            margin-top: 10px;
+        }
+
+        /* A4 Container */
+        .a4-page-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            padding-bottom: 40px;
+        }
+
+        /* A4 Sheet (210mm x 297mm) */
+        .a4-sheet {
+            width: 210mm;
+            min-height: 297mm;
+            height: 297mm;
+            max-width: 210mm;
+            max-height: 297mm;
+            background: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), 0 1px 4px rgba(0, 0, 0, 0.1);
+            padding: 18mm 22mm 20mm 25mm;
+            box-sizing: border-box;
+            color: #000000;
+            font-family: 'TH Sarabun New', 'Angsana New', 'Sarabun', 'Cordia New', sans-serif !important;
+            font-size: 15pt;
+            line-height: 1.25;
+            position: relative;
+            transform-origin: top center;
+            transition: transform 0.2s ease;
+        }
+
+        .a4-sheet * {
+            font-family: 'TH Sarabun New', 'Angsana New', 'Sarabun', 'Cordia New', sans-serif !important;
+        }
+
+        /* ContentEditable styles */
+        [contenteditable="true"] {
+            outline: none;
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+            border-radius: 3px;
+        }
+
+        [contenteditable="true"]:hover {
+            background: rgba(239, 246, 255, 0.8);
+            box-shadow: 0 0 0 1px #bfdbfe;
+            cursor: text;
+        }
+
+        [contenteditable="true"]:focus {
+            background: rgba(254, 252, 232, 0.9);
+            box-shadow: 0 0 0 2px #facc15;
+            cursor: text;
+        }
+
+        /* Header Row */
+        .doc-header-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .doc-logo-left {
+            width: 100px;
+            flex-shrink: 0;
+            padding-top: 2px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .doc-logo-left img {
+            width: 85px;
+            height: 85px;
+            display: block;
+            object-fit: contain;
+            transition: width 0.1s, height 0.1s;
+        }
+
+        .doc-company-right {
+            flex: 1;
+            text-align: right;
+            padding-left: 20px;
+            font-size: 11pt;
+            line-height: 1.28;
+            color: #000000;
+        }
+
+        /* Meta Row */
+        .doc-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-top: 14px;
+            margin-bottom: 22px;
+            font-size: 15pt;
+        }
+
+        .doc-meta-no {
+            width: 50%;
+        }
+
+        .doc-meta-date {
+            width: 50%;
+            text-align: right;
+            padding-right: 30px;
+        }
+
+        /* Subject, To, Reference Lines */
+        .doc-field-line {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 8px;
+            font-size: 15pt;
+            line-height: 1.35;
+        }
+
+        .doc-field-label {
+            width: 60px;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+
+        .doc-field-content {
+            flex: 1;
+        }
+
+        /* Body Paragraphs */
+        .doc-body-paragraph {
+            margin-top: 22px;
+            margin-bottom: 26px;
+            font-size: 15pt;
+            line-height: 1.45;
+            text-indent: 2.5cm;
+            text-align: justify;
+            text-justify: inter-cluster;
+            word-break: break-word;
+        }
+
+        /* Closing sentence */
+        .doc-closing-paragraph {
+            margin-top: 26px;
+            margin-bottom: 34px;
+            font-size: 15pt;
+        }
+
+        /* Signature Block */
+        .doc-signature-block {
+            float: right;
+            width: 270px;
+            text-align: center;
+            font-size: 15pt;
+            line-height: 1.3;
+            position: relative;
+        }
+
+        .doc-sign-stamp-wrap {
+            position: relative;
+            height: 80px;
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Logo Interactive Wrapper */
+        .logo-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed transparent;
+            border-radius: 6px;
+            padding: 2px;
+            transition: all 0.15s;
+        }
+
+        .logo-wrapper:hover {
+            border-color: #3b82f6;
+            background: rgba(239, 246, 255, 0.45);
+        }
+
+        /* Company Header Interactive Wrapper */
+        .doc-company-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px dashed transparent;
+            border-radius: 6px;
+            padding: 2px 4px;
+            transition: all 0.15s;
+        }
+
+        .doc-company-wrapper:hover,
+        .doc-company-wrapper:focus-within {
+            border-color: #3b82f6;
+            background: rgba(239, 246, 255, 0.45);
+        }
+
+        .company-controls-pill {
+            position: absolute;
+            top: -26px;
+            right: 0;
+            background: #1e293b;
+            color: #ffffff;
+            font-size: 11px;
+            font-family: 'Kanit', sans-serif !important;
+            padding: 2px 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s, transform 0.15s;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            z-index: 100;
+        }
+
+        .doc-company-wrapper:hover .company-controls-pill,
+        .doc-company-wrapper:focus-within .company-controls-pill {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Draggable Items for Signature & Stamp */
+        .draggable-item {
+            position: absolute;
+            cursor: grab;
+            user-select: none;
+            transition: box-shadow 0.15s, border-color 0.15s;
+            border: 1px dashed transparent;
+            border-radius: 6px;
+            padding: 3px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            touch-action: none;
+        }
+
+        .draggable-item:hover {
+            border-color: #3b82f6;
+            background: rgba(239, 246, 255, 0.45);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+        }
+
+        .draggable-item.is-dragging {
+            cursor: grabbing !important;
+            border-color: #2563eb !important;
+            background: rgba(219, 234, 254, 0.6) !important;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3) !important;
+            z-index: 999 !important;
+        }
+
+        /* Floating interactive control pills for Logo, Signature, Stamp */
+        .drag-controls-pill, .logo-controls-pill {
+            position: absolute;
+            top: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: #ffffff;
+            font-size: 11px;
+            font-family: 'Kanit', sans-serif !important;
+            padding: 2px 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s, transform 0.15s;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            z-index: 100;
+        }
+
+        .draggable-item:hover .drag-controls-pill,
+        .draggable-item.is-dragging .drag-controls-pill,
+        .logo-wrapper:hover .logo-controls-pill {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .stamp-pill {
+            background: #0369a1;
+        }
+
+        .pill-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: #ffffff;
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1;
+            padding: 0;
+            transition: background 0.12s;
+        }
+
+        .pill-btn:hover {
+            background: #2563eb;
+        }
+
+        .pill-size {
+            color: #93c5fd;
+            font-size: 10px;
+            font-weight: 600;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .pill-drag-label {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-weight: 500;
+            padding-right: 2px;
+        }
+
+        .doc-signature-img {
+            height: 65px;
+            object-fit: contain;
+            pointer-events: none;
+            display: block;
+        }
+
+        .doc-stamp-img {
+            height: 80px;
+            object-fit: contain;
+            pointer-events: none;
+            opacity: 0.95;
+            display: block;
+        }
+
+        /* Default Placement */
+        #dragSignature {
+            left: 20px;
+            top: 5px;
+        }
+
+        #dragStamp {
+            right: -25px;
+            top: -4px;
+        }
+
+        /* History Table Section */
+        .history-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            margin-top: 28px;
+            width: 100%;
+            max-width: 920px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #cbd5e1;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .history-table th {
+            background: #f8fafc;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .history-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+
+        .history-table tr:hover {
+            background: #f8fafc;
+        }
+
+        /* PRINT STYLES */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 15mm 20mm 15mm 20mm;
+            }
+
+            html, body {
+                background: #ffffff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+
+            .sidebar, .topbar, .doc-editor-toolbar, .help-banner, .history-card, #toastContainer, .sidebar-overlay, .drag-badge, .drag-controls-pill, .logo-controls-pill, .company-controls-pill {
+                display: none !important;
+            }
+
+            .main-wrapper {
+                margin: 0 !important;
+                width: 100% !important;
+                padding: 0 !important;
+                background: transparent !important;
+            }
+
+            .doc-workspace, .a4-page-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+            }
+
+            .a4-sheet {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: auto !important;
+                height: auto !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                transform: none !important;
+            }
+
+            .draggable-item, .logo-wrapper, .doc-company-wrapper {
+                border: none !important;
+                box-shadow: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+            }
+
+            [contenteditable="true"]:hover, [contenteditable="true"]:focus {
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer"></div>
+
+    <!-- SIDEBAR OVERLAY (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+        <!-- 1. PRIMARY SLIM DARK RAIL (LEFT) -->
+        <div class="rail-primary">
+            <!-- Brand Logo Mark -->
+            <div class="rail-logo-wrap" onclick="typeof navigateTo === 'function' ? navigateTo('dashboard') : window.location.href='../admin/dashboard.html'" title="Mentra Manager">
+                <img src="../../assets/img/logo.png" alt="Mentra" class="rail-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <i class='bx bxs-compass rail-logo-icon' style="display: none;"></i>
+            </div>
+
+            <!-- Icon Nav Stack -->
+            <div class="rail-nav-group">
+                <!-- Search -->
+                <button type="button" class="rail-icon-btn" onclick="focusQuickSearch()" id="railBtnSearch">
+                    <i class='bx bx-search'></i>
+                    <span class="rail-tooltip">ค้นหาด่วน (⌘F)</span>
+                </button>
+
+                <!-- Dashboard -->
+                <button type="button" class="rail-icon-btn" onclick="handleRailTab('dashboard', this)" id="railBtnDashboard">
+                    <i class='bx bx-grid-alt'></i>
+                    <span class="rail-tooltip">Dashboard / ภาพรวม</span>
+                </button>
+
+                <!-- Projects -->
+                <button type="button" class="rail-icon-btn" onclick="handleRailTab('projects', this)" id="railBtnProjects">
+                    <i class='bx bx-briefcase'></i>
+                    <span class="rail-tooltip">งานประมูล (Bidding)</span>
+                </button>
+
+                <!-- Purchasing -->
+                <button type="button" class="rail-icon-btn" onclick="handleRailTab('purchasing', this)" id="railBtnPurchasing">
+                    <i class='bx bx-cart'></i>
+                    <span class="rail-tooltip">ฝ่ายจัดซื้อ & สินค้า</span>
+                </button>
+
+                <!-- Accounting -->
+                <button type="button" class="rail-icon-btn active" onclick="handleRailTab('accounting', this)" id="railBtnAccounting">
+                    <i class='bx bx-receipt'></i>
+                    <span class="rail-tooltip">บัญชี & การเงิน</span>
+                </button>
+
+                <!-- Schedule -->
+                <button type="button" class="rail-icon-btn" onclick="handleRailTab('schedule', this)" id="railBtnSchedule">
+                    <i class='bx bx-calendar'></i>
+                    <span class="rail-tooltip">ตารางงาน & อบรม</span>
+                </button>
+            </div>
+
+            <!-- Rail Bottom: Collapse toggle & Admin Settings -->
+            <div class="rail-bottom">
+                <button type="button" class="rail-collapse-toggle" onclick="toggleSidebarCollapse()" id="railCollapseBtn" title="ย่อ/ขยายแถบเมนู">
+                    <i class='bx bx-chevron-left'></i>
+                </button>
+                <button type="button" class="rail-icon-btn" onclick="window.location.href='../admin/console_admin.html'" title="ตั้งค่าระบบ">
+                    <i class='bx bx-cog'></i>
+                    <span class="rail-tooltip">Admin Console</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. SECONDARY FLYOUT PANEL (WHITE) -->
+        <div class="rail-secondary" id="railSecondaryPanel">
+            <!-- Org Switcher Header -->
+            <div class="org-switcher-header">
+                <div class="org-switcher-btn" id="orgSwitcherBtn" onclick="toggleOrgPopover(event)">
+                    <div class="org-avatar">
+                        <img id="sidebarOrgLogo" src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <span id="sidebarOrgInitials" style="display:none;">M</span>
+                    </div>
+                    <div class="org-meta">
+                        <div class="org-title" id="sidebarOrgName">Mentra Solution</div>
+                        <div class="org-subtitle" id="sidebarUserEmail">accounts@mentrasolution.com</div>
+                    </div>
+                    <i class='bx bx-chevron-up-down org-caret'></i>
+                </div>
+
+                <!-- Floating Popover (Multi-Shop Management) -->
+                <div class="org-switcher-popover" id="orgSwitcherPopover">
+                    <div class="popover-section-label">เลือกร้านค้าที่จัดการ</div>
+                    <div class="popover-list" id="orgSwitcherPopoverList"></div>
+                    <div class="popover-divider"></div>
+                    <button type="button" class="popover-btn-action create-new" onclick="openShopModal()">
+                        <i class='bx bx-plus'></i> <span>เพิ่มร้านค้า</span>
+                    </button>
+                    <button type="button" class="popover-btn-action" onclick="window.location.href='../admin/company_settings.html'" style="color: #1A6FBF; font-weight: 600;">
+                        <i class='bx bx-buildings'></i> <span>จัดการข้อมูลบริษัท & ร้านค้า</span>
+                    </button>
+                    <button type="button" class="popover-btn-action logout" onclick="handleLogout()">
+                        <i class='bx bx-log-out'></i> <span>ออกจากระบบ (Logout)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Search Input -->
+            <div class="secondary-search-wrap">
+                <div class="secondary-search-box">
+                    <i class='bx bx-search'></i>
+                    <input type="text" id="sidebarQuickSearch" placeholder="Search...." oninput="filterSidebarNav(this.value)">
+                    <span class="search-kbd">⌘ F</span>
+                </div>
+            </div>
+
+            <!-- Secondary Navigation Items -->
+            <div class="secondary-nav-body" id="secondaryNavBody">
+                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('dashboard') : window.location.href='../admin/dashboard.html'" id="nav-dashboard">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-grid-alt'></i>
+                        <span>Dashboard</span>
+                    </div>
+                </button>
+
+                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('projects') : window.location.href='../admin/bidding.html'" id="nav-projects">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-briefcase'></i>
+                        <span>งานประมูล (Bidding)</span>
+                    </div>
+                </button>
+
+                <!-- Module Section: Administration -->
+                <div class="sec-nav-divider">ฝ่ายบริหาร</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/company_settings.html'" id="nav-company-settings">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-buildings'></i>
+                        <span>ข้อมูลบริษัท & ร้านค้า</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-id-card'></i>
+                        <span>นามบัตรดิจิทัล</span>
+                    </div>
+                </button>
+
+                <!-- Module Section: Purchasing -->
+                <div class="sec-nav-divider">จัดซื้อ & สินค้า</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing.html'" id="nav-purchasing-school">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-buildings'></i>
+                        <span>จัดซื้อ (สถานศึกษา)</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing_company.html'" id="nav-purchasing-company">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-briefcase-alt'></i>
+                        <span>จัดซื้อ (บริษัทเอกชน)</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/products.html'" id="nav-products">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-package'></i>
+                        <span>รายการสินค้า</span>
+                    </div>
+                </button>
+
+                <!-- Module Section: Accounting -->
+                <div class="sec-nav-divider">งานบัญชี & การเงิน</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/quotation.html'" id="nav-quotation">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-file-blank'></i>
+                        <span>ออกเอกสารงานขาย</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item active" onclick="window.location.href='../accounting/company_letters.html'" id="nav-company-letters">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-file'></i>
+                        <span>หนังสือส่งมอบงาน</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-folder-open'></i>
+                        <span>ประวัติเอกสารที่ออก</span>
+                    </div>
+                </button>
+
+                <!-- Module Section: Schedule -->
+                <div class="sec-nav-divider">ตารางงาน & การอบรม</div>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/tasks.html'" id="nav-tasks">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-check-square'></i>
+                        <span>งานที่ได้รับมอบหมาย</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/calendar.html'" id="nav-calendar">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-calendar-event'></i>
+                        <span>ปฏิทินตารางงาน</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/external_training.html'" id="nav-training">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-award'></i>
+                        <span>ระบบตารางจัดอบรม</span>
+                    </div>
+                </button>
+                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/internship_journal.html'" id="nav-internship">
+                    <div class="sec-nav-item-left">
+                        <i class='bx bx-book-bookmark'></i>
+                        <span>บันทึกการฝึกงาน</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT WRAPPER ===== -->
+    <div class="main-wrapper" id="mainWrapper">
+        <!-- Top Sticky Header -->
+        <header class="topbar">
+            <div class="topbar-title-wrap">
+                <i class='bx bx-file'></i>
+                <div>
+                    <h1>ออกหนังสือส่งมอบงาน (A4 แนวตั้ง)</h1>
+                    <p>ปรับขนาดโลโก้ ลายเซ็น ตราประทับ ลากย้ายตำแหน่งได้อิสระ จัดตัวอักษรหนาบางชิดซ้ายขวากลาง</p>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button type="button" class="btn-action" onclick="scrollToHistory()">
+                    <i class='bx bx-history'></i> ประวัติหนังสือ
+                </button>
+                <button type="button" class="btn-action btn-primary" onclick="window.print()">
+                    <i class='bx bx-printer'></i> พิมพ์ A4 แนวตั้ง
+                </button>
+                <button type="button" class="btn-action btn-success" onclick="exportToPdfA4()">
+                    <i class='bx bxs-file-pdf'></i> บันทึกเป็น PDF (A4)
+                </button>
+            </div>
+        </header>
+
+        <!-- Editor Workspace -->
+        <div class="doc-workspace">
+            <!-- Comprehensive Formatting Toolbar -->
+            <div class="doc-editor-toolbar">
+                <!-- Row 1: Font formatting & Alignments -->
+                <div class="toolbar-row">
+                    <!-- Font Size Controls -->
+                    <div class="toolbar-group">
+                        <span class="toolbar-label"><i class='bx bx-font-size'></i> ขนาดตัวหนังสือ:</span>
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeFontSize(-1)" title="ลดขนาดตัวหนังสือ (A-)"><i class='bx bx-minus'></i></button>
+                        <span class="size-badge" id="fontSizeBadge">15pt</span>
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeFontSize(1)" title="เพิ่มขนาดตัวหนังสือ (A+)"><i class='bx bx-plus'></i></button>
+                        <input type="range" class="toolbar-slider" id="sliderFontSize" min="8" max="24" value="15" oninput="setFontSize(this.value)">
+                        <select class="zoom-select" id="selectFontSize" onchange="setFontSize(this.value)" title="เลือกขนาดฟอนต์">
+                            <option value="9">9pt</option>
+                            <option value="10">10pt</option>
+                            <option value="11">11pt (หัวจดหมาย)</option>
+                            <option value="12">12pt</option>
+                            <option value="13">13pt</option>
+                            <option value="14">14pt</option>
+                            <option value="15" selected>15pt (มาตรฐานเนื้อหา)</option>
+                            <option value="16">16pt</option>
+                            <option value="18">18pt</option>
+                            <option value="20">20pt</option>
+                        </select>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Font Weight & Style -->
+                    <div class="toolbar-group">
+                        <span class="toolbar-label">ความหนา:</span>
+                        <button type="button" class="btn-tool-sm" id="btnWeightBold" onmousedown="event.preventDefault()" onclick="applyFontWeight('bold')" title="ตัวหนา (Bold)"><strong style="font-weight:700;">B หนา</strong></button>
+                        <button type="button" class="btn-tool-sm active" id="btnWeightNormal" onmousedown="event.preventDefault()" onclick="applyFontWeight('normal')" title="ตัวปกติ (Regular)">ปกติ</button>
+                        <button type="button" class="btn-tool-sm" id="btnWeightLight" onmousedown="event.preventDefault()" onclick="applyFontWeight('300')" title="ตัวบาง (Light)"><span style="font-weight:300;">บาง</span></button>
+                        <button type="button" class="btn-tool-sm" id="btnItalic" onmousedown="event.preventDefault()" onclick="execCmd('italic')" title="ตัวเอียง (Ctrl+I)"><em>I</em> เอียง</button>
+                        <button type="button" class="btn-tool-sm" id="btnUnderline" onmousedown="event.preventDefault()" onclick="execCmd('underline')" title="ขีดเส้นใต้ (Ctrl+U)"><u>U</u> ขีดเส้น</button>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Alignments -->
+                    <div class="toolbar-group">
+                        <span class="toolbar-label">จัดชิด:</span>
+                        <button type="button" class="btn-tool-sm" id="btnAlignLeft" onmousedown="event.preventDefault()" onclick="applyTextAlign('left')" title="ชิดซ้าย"><i class='bx bx-align-left'></i> ชิดซ้าย</button>
+                        <button type="button" class="btn-tool-sm" id="btnAlignCenter" onmousedown="event.preventDefault()" onclick="applyTextAlign('center')" title="กึ่งกลาง"><i class='bx bx-align-middle'></i> กึ่งกลาง</button>
+                        <button type="button" class="btn-tool-sm" id="btnAlignRight" onmousedown="event.preventDefault()" onclick="applyTextAlign('right')" title="ชิดขวา"><i class='bx bx-align-right'></i> ชิดขวา</button>
+                        <button type="button" class="btn-tool-sm" id="btnAlignJustify" onmousedown="event.preventDefault()" onclick="applyTextAlign('justify')" title="กระจายเต็มบรรทัด (Thai Justify)"><i class='bx bx-align-justify'></i> กระจาย</button>
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Page Margins Settings -->
+                    <div class="toolbar-group margin-dropdown-wrapper">
+                        <button type="button" class="btn-tool-sm" id="btnMarginSettings" onclick="toggleMarginPopover()" title="กำหนดระยะขอบหน้ากระดาษ (Margins)">
+                            <i class='bx bx-border-outer' style="font-size:1.1rem; color:var(--primary);"></i>
+                            <span>ขอบกระดาษ: <strong id="marginToolbarSummary" style="color:var(--primary);">ซ 25 ข 22 บ 18 ล 20 mm</strong></span>
+                            <i class='bx bx-chevron-down' id="marginChevron"></i>
+                        </button>
+
+                        <!-- Margin Popover Modal -->
+                        <div class="margin-popover" id="marginPopover" style="display:none;">
+                            <div class="margin-popover-header">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <i class='bx bx-slider-alt' style="color:var(--primary); font-size:1.1rem;"></i>
+                                    <span style="font-weight:600; font-size:0.88rem; color:#0f172a;">กำหนดระยะขอบกระดาษ</span>
+                                </div>
+                                <button type="button" class="margin-close-btn" onclick="closeMarginPopover()"><i class='bx bx-x'></i></button>
+                            </div>
+
+                            <!-- Unit Selector -->
+                            <div class="margin-section">
+                                <label class="margin-section-label">หน่วยวัดระยะขอบ:</label>
+                                <div class="margin-unit-pills">
+                                    <button type="button" class="unit-pill active" id="unitPill_mm" onclick="changeMarginUnit('mm')">มิลลิเมตร (mm)</button>
+                                    <button type="button" class="unit-pill" id="unitPill_pt" onclick="changeMarginUnit('pt')">พอยต์ (pt)</button>
+                                    <button type="button" class="unit-pill" id="unitPill_in" onclick="changeMarginUnit('in')">นิ้ว (in)</button>
+                                    <button type="button" class="unit-pill" id="unitPill_cm" onclick="changeMarginUnit('cm')">เซนติเมตร (cm)</button>
+                                </div>
+                            </div>
+
+                            <!-- Presets -->
+                            <div class="margin-section">
+                                <label class="margin-section-label">รูปแบบสำเร็จรูป:</label>
+                                <div class="margin-presets-grid">
+                                    <button type="button" class="preset-chip active" id="presetChip_default" onclick="applyMarginPreset('default')">
+                                        <strong>มาตรฐาน Mentra</strong>
+                                        <span>ซ 25 ข 22 บ 18 ล 20 มม.</span>
+                                    </button>
+                                    <button type="button" class="preset-chip" id="presetChip_thaigov" onclick="applyMarginPreset('thaigov')">
+                                        <strong>หนังสือราชการไทย</strong>
+                                        <span>ซ้าย 3cm (30มม.) / อื่นๆ 2cm</span>
+                                    </button>
+                                    <button type="button" class="preset-chip" id="presetChip_narrow" onclick="applyMarginPreset('narrow')">
+                                        <strong>ขอบแคบ (0.5")</strong>
+                                        <span>12.7 มม. ทุกด้าน</span>
+                                    </button>
+                                    <button type="button" class="preset-chip" id="presetChip_normal" onclick="applyMarginPreset('normal')">
+                                        <strong>สากลทั่วไป (1.0")</strong>
+                                        <span>25.4 มม. ทุกด้าน</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 4-Way Inputs + Visual Preview -->
+                            <div class="margin-section" style="margin-bottom:0;">
+                                <label class="margin-section-label">กำหนดระยะขอบ 4 ทิศทาง:</label>
+                                <div class="margin-inputs-container">
+                                    <!-- Visual Paper Preview -->
+                                    <div class="margin-visual-preview">
+                                        <div class="mini-paper">
+                                            <div class="mini-sheet-content" id="miniSheetVisual">
+                                                <span style="font-size:8px; color:#94a3b8; font-weight:600;">A4</span>
+                                            </div>
+                                            <span class="mini-label mini-top" id="lblMiniTop">18</span>
+                                            <span class="mini-label mini-bottom" id="lblMiniBottom">20</span>
+                                            <span class="mini-label mini-left" id="lblMiniLeft">25</span>
+                                            <span class="mini-label mini-right" id="lblMiniRight">22</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 4 Direction Steppers -->
+                                    <div class="margin-steppers-grid">
+                                        <!-- Top -->
+                                        <div class="stepper-item">
+                                            <span class="stepper-label"><i class='bx bx-arrow-to-top'></i> บน (Top):</span>
+                                            <div class="stepper-box">
+                                                <button type="button" class="stepper-btn" onclick="stepMargin('top', -1)"><i class='bx bx-minus'></i></button>
+                                                <input type="number" class="stepper-input" id="inputMarginTop" min="0" max="100" step="1" oninput="onMarginInputChange('top', this.value)">
+                                                <button type="button" class="stepper-btn" onclick="stepMargin('top', 1)"><i class='bx bx-plus'></i></button>
+                                                <span class="stepper-unit" id="unitLabelTop">mm</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Bottom -->
+                                        <div class="stepper-item">
+                                            <span class="stepper-label"><i class='bx bx-arrow-to-bottom'></i> ล่าง (Bottom):</span>
+                                            <div class="stepper-box">
+                                                <button type="button" class="stepper-btn" onclick="stepMargin('bottom', -1)"><i class='bx bx-minus'></i></button>
+                                                <input type="number" class="stepper-input" id="inputMarginBottom" min="0" max="100" step="1" oninput="onMarginInputChange('bottom', this.value)">
+                                                <button type="button" class="stepper-btn" onclick="stepMargin('bottom', 1)"><i class='bx bx-plus'></i></button>
+                                                <span class="stepper-unit" id="unitLabelBottom">mm</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Left -->
+                                        <div class="stepper-item">
+                                            <span class="stepper-label"><i class='bx bx-arrow-to-left'></i> ซ้าย (Left):</span>
+                                            <div class="stepper-box">
+                                                <button type="button" class="stepper-btn" onclick="stepMargin('left', -1)"><i class='bx bx-minus'></i></button>
+                                                <input type="number" class="stepper-input" id="inputMarginLeft" min="0" max="100" step="1" oninput="onMarginInputChange('left', this.value)">
+                                                <button type="button" class="stepper-btn" onclick="stepMargin('left', 1)"><i class='bx bx-plus'></i></button>
+                                                <span class="stepper-unit" id="unitLabelLeft">mm</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right -->
+                                        <div class="stepper-item">
+                                            <span class="stepper-label"><i class='bx bx-arrow-to-right'></i> ขวา (Right):</span>
+                                            <div class="stepper-box">
+                                                <button type="button" class="stepper-btn" onclick="stepMargin('right', -1)"><i class='bx bx-minus'></i></button>
+                                                <input type="number" class="stepper-input" id="inputMarginRight" min="0" max="100" step="1" oninput="onMarginInputChange('right', this.value)">
+                                                <button type="button" class="stepper-btn" onclick="stepMargin('right', 1)"><i class='bx bx-plus'></i></button>
+                                                <span class="stepper-unit" id="unitLabelRight">mm</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer with Reset and Close -->
+                            <div class="margin-popover-footer">
+                                <button type="button" class="btn-tool-sm" onclick="resetMarginsToDefault()" style="font-size:0.75rem;">
+                                    <i class='bx bx-reset'></i> คืนค่าเริ่มต้น
+                                </button>
+                                <button type="button" class="btn-tool-sm active" onclick="closeMarginPopover()" style="padding:4px 12px; font-size:0.78rem;">
+                                    <i class='bx bx-check'></i> เสร็จสิ้น
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Zoom -->
+                    <div class="toolbar-group" style="margin-left: auto;">
+                        <span class="toolbar-label"><i class='bx bx-zoom-in'></i> ซูม:</span>
+                        <select class="zoom-select" id="zoomSelect" onchange="changeZoom(this.value)">
+                            <option value="1">100%</option>
+                            <option value="0.9" selected>90% (พอดีจอ)</option>
+                            <option value="0.8">80%</option>
+                            <option value="0.75">75%</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Row 2: Logo, Signature & Stamp Size + Drag -->
+                <div class="toolbar-row secondary-row">
+                    <!-- Logo Size -->
+                    <div class="toolbar-group">
+                        <span class="toolbar-label"><i class='bx bx-image'></i> ขนาดโลโก้:</span>
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeLogoSize(-5)" title="ลดขนาดโลโก้"><i class='bx bx-minus'></i></button>
+                        <input type="range" class="toolbar-slider" id="sliderLogoSize" min="40" max="160" value="85" oninput="setLogoSize(this.value)">
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeLogoSize(5)" title="เพิ่มขนาดโลโก้"><i class='bx bx-plus'></i></button>
+                        <span class="size-badge" id="logoSizeBadge">85px</span>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Signature Size & Toggle -->
+                    <div class="toolbar-group">
+                        <span class="toolbar-label"><i class='bx bx-pen'></i> ขนาดลายเซ็น:</span>
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeSigSize(-5)" title="ลดขนาดลายเซ็น"><i class='bx bx-minus'></i></button>
+                        <input type="range" class="toolbar-slider" id="sliderSigSize" min="30" max="150" value="65" oninput="setSigSize(this.value)">
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeSigSize(5)" title="เพิ่มขนาดลายเซ็น"><i class='bx bx-plus'></i></button>
+                        <span class="size-badge" id="sigSizeBadge">65px</span>
+                        <button type="button" class="btn-tool-sm active" id="btnToggleSign" onclick="toggleSignature()" title="เปิด/ปิด ลายเซ็น">แสดง</button>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Stamp Size & Toggle -->
+                    <div class="toolbar-group">
+                        <span class="toolbar-label"><i class='bx bx-certification'></i> ขนาดตราประทับ:</span>
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeStampSize(-5)" title="ลดขนาดตราประทับ"><i class='bx bx-minus'></i></button>
+                        <input type="range" class="toolbar-slider" id="sliderStampSize" min="40" max="160" value="80" oninput="setStampSize(this.value)">
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeStampSize(5)" title="เพิ่มขนาดตราประทับ"><i class='bx bx-plus'></i></button>
+                        <span class="size-badge" id="stampSizeBadge">80px</span>
+                        <button type="button" class="btn-tool-sm active" id="btnToggleStamp" onclick="toggleStamp()" title="เปิด/ปิด ตราประทับ">แสดง</button>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Quick Placements & Resets -->
+                    <div class="toolbar-group">
+                        <button type="button" class="btn-tool-sm" onclick="resetPositions()" title="รีเซ็ตตำแหน่งลายเซ็นและตราประทับกลับที่เดิม">
+                            <i class='bx bx-crosshair'></i> รีเซ็ตตำแหน่ง
+                        </button>
+                        <button type="button" class="btn-tool-sm" onclick="placeSigCenter()" title="วางลายเซ็นกึ่งกลางชื่อ">
+                            <i class='bx bx-edit-alt'></i> วางบนชื่อ
+                        </button>
+                        <button type="button" class="btn-tool-sm" onclick="placeStampOverlap()" title="ประทับตราทับเยื้องลายเซ็น">
+                            <i class='bx bx-badge-check'></i> ประทับตราทับ
+                        </button>
+                        <button type="button" class="btn-tool-sm" onclick="resetSample()" title="โหลดข้อมูลตัวอย่างสัญญาอาชีวศึกษา">
+                            <i class='bx bx-refresh'></i> รีเซ็ตข้อความ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Helpful tip banner -->
+            <div class="help-banner">
+                <div>
+                    <i class='bx bx-bulb' style="margin-right: 6px;"></i>
+                    <strong>คำแนะนำ:</strong> สามารถคลิกพิมพ์แก้ไขข้อความบนกระดาษได้โดยตรง ปรับขนาดตัวหนังสือ/หนา/บาง/ชิดซ้าย/ขวา/กลางได้ และ<strong>คลิกลากที่ลายเซ็นหรือตราประทับ</strong>เพื่อย้ายไปวางตำแหน่งใดก็ได้ตามต้องการ
+                </div>
+                <div style="font-size:0.78rem; opacity:0.85;">A4 แนวตั้ง (Single Page)</div>
+            </div>
+
+            <!-- A4 Page Container (WYSIWYG on Document) -->
+            <div class="a4-page-container">
+                <div class="a4-sheet" id="a4PrintSheet">
+                    <!-- 1. Header Row (Logo on Left, Company details on Right) -->
+                    <div class="doc-header-row">
+                        <div class="doc-logo-left" id="docLogoBox">
+                            <div class="logo-wrapper" id="logoWrapper" title="ชี้เพื่อปรับขนาดโลโก้">
+                                <div class="logo-controls-pill">
+                                    <span class="pill-drag-label"><i class='bx bx-image'></i> โลโก้</span>
+                                    <button type="button" class="pill-btn" onmousedown="event.preventDefault()" onclick="changeLogoSize(-5)" title="ลดขนาด">-</button>
+                                    <span class="pill-size" id="logoPillSize">85px</span>
+                                    <button type="button" class="pill-btn" onmousedown="event.preventDefault()" onclick="changeLogoSize(5)" title="เพิ่มขนาด">+</button>
+                                </div>
+                                <img src="../../assets/img/logo.png" alt="Mentra Logo" id="docCompanyLogo">
+                            </div>
+                        </div>
+                        <div class="doc-company-wrapper" id="companyWrapper" title="คลิกเพื่อแก้ไขข้อความหรือปรับขนาดข้อมูลบริษัท">
+                            <div class="company-controls-pill">
+                                <span class="pill-drag-label"><i class='bx bx-building'></i> ข้อมูลบริษัท</span>
+                                <button type="button" class="pill-btn" onmousedown="event.preventDefault()" onclick="changeCompanyFontSize(-1)" title="ลดขนาดตัวหนังสือ">-</button>
+                                <span class="pill-size" id="companyFontBadge">11pt</span>
+                                <button type="button" class="pill-btn" onmousedown="event.preventDefault()" onclick="changeCompanyFontSize(1)" title="เพิ่มขนาดตัวหนังสือ">+</button>
+                                <button type="button" class="pill-btn" onmousedown="event.preventDefault()" onclick="toggleCompanyBold()" title="ตัวหนา/ปกติ" style="width:auto; padding:0 5px; font-size:10px;">หนา</button>
+                            </div>
+                            <div class="doc-company-right" contenteditable="true" id="fCompanyHeader">
+                                <div>บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่) 115/123 ม. 12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540</div>
+                                <div>MENTRA SOLUTION CO., LTD. (Head office) 115/123 Moo12 Bang Keao, Bang Phli, Samut Prakan 10540</div>
+                                <div style="margin-top: 2px;">TEL.: 089-924-9871 e-mail: wattanachai966@gmail.com</div>
+                                <div>เลขที่ประจำตัวผู้เสียภาษี 0115568026644</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Meta: Letter No (Left) & Date (Right) -->
+                    <div class="doc-meta-row">
+                        <div class="doc-meta-no">
+                            เลขที่ <span contenteditable="true" id="fDocNo">26/020</span>
+                        </div>
+                        <div class="doc-meta-date">
+                            วันที่ <span contenteditable="true" id="fDocDate">1 ตุลาคม 2569</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Subject, To, Reference Lines -->
+                    <div class="doc-field-line">
+                        <div class="doc-field-label">เรื่อง</div>
+                        <div class="doc-field-content" contenteditable="true" id="fSubject">แจ้งส่งมอบครุภัณฑ์</div>
+                    </div>
+
+                    <div class="doc-field-line">
+                        <div class="doc-field-label">เรียน</div>
+                        <div class="doc-field-content" contenteditable="true" id="fRecipient">เลขาธิการคณะกรรมการการอาชีวศึกษา</div>
+                    </div>
+
+                    <div class="doc-field-line">
+                        <div class="doc-field-label">อ้างถึง</div>
+                        <div class="doc-field-content" contenteditable="true" id="fReference">สัญญาเลขที่ ๐๑๘/๒๕๖๙ ลงวันที่ ๑๕ กันยายน ๒๕๖๙</div>
+                    </div>
+
+                    <!-- 4. Body Paragraph (Indented Thai government standard) -->
+                    <div class="doc-body-paragraph" contenteditable="true" id="fBodyText">
+                        ตามที่ บริษัท เมนทร้า โซลูชั่น ได้ลงนามในสัญญาซื้อขาย ซื้ออุปกรณ์ในการปฏิบัติงานด้านประชาสัมพันธ์ รายการกล้องถ่ายภาพดิจิทัล พร้อมอุปกรณ์ จำนวน ๑ ชุด (กลุ่มประชาสัมพันธ์) สำนักงานคณะกรรมการการอาชีวศึกษา นั้น ทางบริษัทฯ ขอแจ้งกำหนดส่งมอบครุภัณฑ์ฯ ดังกล่าว ณ สำนักงานคณะกรรมการการอาชีวศึกษา ใน วันที่ 6 ตุลาคม 2569 เวลา 14.00 น. – 15.00 น.
+                    </div>
+
+                    <!-- 5. Closing sentence -->
+                    <div class="doc-closing-paragraph" contenteditable="true" id="fClosingText">
+                        จึงเรียนมาเพื่อโปรดพิจารณา
+                    </div>
+
+                    <!-- 6. Signature Block (Aligned Right) with Draggable Signature & Stamp -->
+                    <div class="doc-signature-block" id="docSignatureBlock">
+                        <div contenteditable="true" style="margin-bottom:4px;">ขอแสดงความนับถือ</div>
+
+                        <div class="doc-sign-stamp-wrap" id="docSignStampArea">
+                            <!-- Draggable Signature Item -->
+                            <div class="draggable-item" id="dragSignature" title="คลิกค้างแล้วลากเพื่อย้าย หรือกด +/- เพื่อปรับขนาด">
+                                <div class="drag-controls-pill">
+                                    <span class="pill-drag-label"><i class='bx bx-move'></i> ลายเซ็น</span>
+                                    <button type="button" class="pill-btn" onmousedown="event.preventDefault()" onclick="changeSigSize(-5)" title="ลดขนาด">-</button>
+                                    <span class="pill-size" id="sigPillSize">65px</span>
+                                    <button type="button" class="pill-btn" onmousedown="event.preventDefault()" onclick="changeSigSize(5)" title="เพิ่มขนาด">+</button>
+                                </div>
+                                <img src="../../assets/img/doc_signature.png" class="doc-signature-img" id="imgSignature" alt="Signature">
+                            </div>
+
+                            <!-- Draggable Stamp Item -->
+                            <div class="draggable-item" id="dragStamp" title="คลิกค้างแล้วลากเพื่อย้าย หรือกด +/- เพื่อปรับขนาด">
+                                <div class="drag-controls-pill stamp-pill">
+                                    <span class="pill-drag-label"><i class='bx bx-move'></i> ตราประทับ</span>
+                                    <button type="button" class="pill-btn" onmousedown="event.preventDefault()" onclick="changeStampSize(-5)" title="ลดขนาด">-</button>
+                                    <span class="pill-size" id="stampPillSize">80px</span>
+                                    <button type="button" class="pill-btn" onmousedown="event.preventDefault()" onclick="changeStampSize(5)" title="เพิ่มขนาด">+</button>
+                                </div>
+                                <img src="../../assets/img/doc_stamp.png" class="doc-stamp-img" id="imgStamp" alt="Mentra Stamp">
+                            </div>
+                        </div>
+
+                        <div contenteditable="true" id="fSignatoryName">(นายวัฒนชัย เตียวแก)</div>
+                        <div contenteditable="true" id="fSignatoryPosition">(กรรมการผู้จัดการ)</div>
+                    </div>
+
+                    <div style="clear: both;"></div>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="history-card" id="historySection">
+                <div class="card-header">
+                    <h3><i class='bx bx-history' style="color:var(--primary);"></i> ประวัติหนังสือส่งมอบงานที่บันทึกไว้</h3>
+                    <button type="button" class="btn-action" style="font-size:0.8rem; padding:4px 10px;" onclick="clearHistory()">
+                        <i class='bx bx-trash'></i> ล้างประวัติ
+                    </button>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>วันที่</th>
+                                <th>เลขที่หนังสือ</th>
+                                <th>เรื่อง</th>
+                                <th>เรียน (ผู้รับ)</th>
+                                <th>อ้างถึง</th>
+                                <th style="text-align:center;">การจัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const STORAGE_KEY = 'mentra_delivery_letters_history';
+        let currentFontSize = 15;
+        let showSignature = true;
+        let showStamp = true;
+
+        const DEFAULT_DATA = {
+            companyHeader: `<div>บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่) 115/123 ม. 12 ต.บางแก้ว อ.บางพลี จ.สมุทรปราการ 10540</div>
+<div>MENTRA SOLUTION CO., LTD. (Head office) 115/123 Moo12 Bang Keao, Bang Phli, Samut Prakan 10540</div>
+<div style="margin-top: 2px;">TEL.: 089-924-9871 e-mail: wattanachai966@gmail.com</div>
+<div>เลขที่ประจำตัวผู้เสียภาษี 0115568026644</div>`,
+            docNo: '26/020',
+            docDate: '1 ตุลาคม 2569',
+            subject: 'แจ้งส่งมอบครุภัณฑ์',
+            recipient: 'เลขาธิการคณะกรรมการการอาชีวศึกษา',
+            reference: 'สัญญาเลขที่ ๐๑๘/๒๕๖๙ ลงวันที่ ๑๕ กันยายน ๒๕๖๙',
+            bodyText: 'ตามที่ บริษัท เมนทร้า โซลูชั่น ได้ลงนามในสัญญาซื้อขาย ซื้ออุปกรณ์ในการปฏิบัติงานด้านประชาสัมพันธ์ รายการกล้องถ่ายภาพดิจิทัล พร้อมอุปกรณ์ จำนวน ๑ ชุด (กลุ่มประชาสัมพันธ์) สำนักงานคณะกรรมการการอาชีวศึกษา นั้น ทางบริษัทฯ ขอแจ้งกำหนดส่งมอบครุภัณฑ์ฯ ดังกล่าว ณ สำนักงานคณะกรรมการการอาชีวศึกษา ใน วันที่ 6 ตุลาคม 2569 เวลา 14.00 น. – 15.00 น.',
+            closingText: 'จึงเรียนมาเพื่อโปรดพิจารณา',
+            signatoryName: '(นายวัฒนชัย เตียวแก)',
+            signatoryPosition: '(กรรมการผู้จัดการ)'
+        };
+
+        let lastActiveEditable = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadActiveWorkspaceLogo();
+            changeZoom('0.9');
+            initDraggable();
+            restorePositionsFromStorage();
+            restoreMarginsFromStorage();
+            trackEditableFocus();
+            renderHistoryTable();
+        });
+
+        // Load active workspace logo if available
+        function loadActiveWorkspaceLogo() {
+            try {
+                const storedWs = localStorage.getItem('mentra_managed_workspaces');
+                const activeWsName = localStorage.getItem('mentra_active_workspace') || 'Mentra Solution';
+                if (storedWs) {
+                    const list = JSON.parse(storedWs);
+                    const found = list.find(w => w.name === activeWsName);
+                    if (found && found.logo && found.logo.trim() !== '') {
+                        const logoImg = document.getElementById('docCompanyLogo');
+                        if (logoImg) logoImg.src = found.logo;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // ==============================================================================
+        // FORMATTING COMMANDS (Bold, Regular, Light, Italic, Underline, Alignments)
+        // ==============================================================================
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+        }
+
+        // Track active editable element to apply alignments & weights properly
+        function trackEditableFocus() {
+            const editables = document.querySelectorAll('[contenteditable="true"]');
+            editables.forEach(el => {
+                el.addEventListener('focus', () => {
+                    lastActiveEditable = el;
+                    detectActiveFormatting(el);
+                });
+                el.addEventListener('click', () => {
+                    lastActiveEditable = el;
+                    detectActiveFormatting(el);
+                });
+                el.addEventListener('keyup', () => {
+                    lastActiveEditable = el;
+                    detectActiveFormatting(el);
+                });
+            });
+        }
+
+        function detectActiveFormatting(el) {
+            if (!el) return;
+            const computed = window.getComputedStyle(el);
+            
+            // Font size detection & synchronization with toolbar
+            const fsPx = parseFloat(computed.fontSize);
+            if (fsPx) {
+                const fsPt = Math.round(fsPx * 0.75);
+                if (fsPt >= 8 && fsPt <= 30) {
+                    currentFontSize = fsPt;
+                    const badge = document.getElementById('fontSizeBadge');
+                    if (badge) badge.textContent = `${fsPt}pt`;
+                    const slider = document.getElementById('sliderFontSize');
+                    if (slider) slider.value = fsPt;
+                    const select = document.getElementById('selectFontSize');
+                    if (select) select.value = fsPt;
+                }
+            }
+
+            // Alignments
+            const ta = computed.textAlign;
+            ['btnAlignLeft', 'btnAlignCenter', 'btnAlignRight', 'btnAlignJustify'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.classList.remove('active');
+            });
+            if (ta === 'left' || ta === 'start') {
+                document.getElementById('btnAlignLeft')?.classList.add('active');
+            } else if (ta === 'center') {
+                document.getElementById('btnAlignCenter')?.classList.add('active');
+            } else if (ta === 'right') {
+                document.getElementById('btnAlignRight')?.classList.add('active');
+            } else if (ta === 'justify') {
+                document.getElementById('btnAlignJustify')?.classList.add('active');
+            }
+
+            // Weight
+            const fw = computed.fontWeight;
+            ['btnWeightBold', 'btnWeightNormal', 'btnWeightLight'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.classList.remove('active');
+            });
+            if (fw === 'bold' || parseInt(fw, 10) >= 600) {
+                document.getElementById('btnWeightBold')?.classList.add('active');
+            } else if (parseInt(fw, 10) <= 300) {
+                document.getElementById('btnWeightLight')?.classList.add('active');
+            } else {
+                document.getElementById('btnWeightNormal')?.classList.add('active');
+            }
+        }
+
+        // Apply Font Weight (Bold / Normal / Light)
+        function applyFontWeight(weight) {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+                const range = sel.getRangeAt(0);
+                const container = range.commonAncestorContainer;
+                const editable = container.nodeType === 1 ? container.closest('[contenteditable="true"]') : (container.parentElement ? container.parentElement.closest('[contenteditable="true"]') : null);
+                if (editable) {
+                    if (weight === 'bold') {
+                        document.execCommand('bold', false, null);
+                    } else {
+                        try {
+                            const span = document.createElement('span');
+                            span.style.fontWeight = weight;
+                            span.appendChild(range.extractContents());
+                            range.insertNode(span);
+                            sel.removeAllRanges();
+                            const newRange = document.createRange();
+                            newRange.selectNodeContents(span);
+                            sel.addRange(newRange);
+                        } catch (e) {
+                            document.execCommand('removeFormat', false, null);
+                        }
+                    }
+                }
+            } else if (lastActiveEditable) {
+                lastActiveEditable.style.fontWeight = weight;
+                if (lastActiveEditable.id === 'fCompanyHeader' || lastActiveEditable.closest('#fCompanyHeader')) {
+                    const ch = document.getElementById('fCompanyHeader');
+                    ch.querySelectorAll('div, span, p').forEach(c => {
+                        c.style.fontWeight = weight;
+                    });
+                }
+            } else {
+                const body = document.getElementById('fBodyText');
+                if (body) body.style.fontWeight = weight;
+            }
+
+            ['btnWeightBold', 'btnWeightNormal', 'btnWeightLight'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.classList.remove('active');
+            });
+            if (weight === 'bold') document.getElementById('btnWeightBold')?.classList.add('active');
+            else if (weight === '300') document.getElementById('btnWeightLight')?.classList.add('active');
+            else document.getElementById('btnWeightNormal')?.classList.add('active');
+        }
+
+        // Apply Alignment (Left, Center, Right, Justify)
+        function applyTextAlign(align) {
+            if (lastActiveEditable) {
+                lastActiveEditable.style.textAlign = align;
+                if (align === 'justify') {
+                    lastActiveEditable.style.textJustify = 'inter-cluster';
+                }
+                if (lastActiveEditable.id === 'fCompanyHeader' || lastActiveEditable.closest('#fCompanyHeader')) {
+                    const ch = document.getElementById('fCompanyHeader');
+                    ch.querySelectorAll('div, span, p').forEach(c => {
+                        c.style.textAlign = align;
+                    });
+                }
+            }
+            try {
+                if (align === 'left') document.execCommand('justifyLeft', false, null);
+                else if (align === 'center') document.execCommand('justifyCenter', false, null);
+                else if (align === 'right') document.execCommand('justifyRight', false, null);
+                else if (align === 'justify') document.execCommand('justifyFull', false, null);
+            } catch (e) {}
+
+            ['btnAlignLeft', 'btnAlignCenter', 'btnAlignRight', 'btnAlignJustify'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.classList.remove('active');
+            });
+            if (align === 'left') document.getElementById('btnAlignLeft')?.classList.add('active');
+            else if (align === 'center') document.getElementById('btnAlignCenter')?.classList.add('active');
+            else if (align === 'right') document.getElementById('btnAlignRight')?.classList.add('active');
+            else if (align === 'justify') document.getElementById('btnAlignJustify')?.classList.add('active');
+        }
+
+        // Font Size Adjustments
+        function setFontSize(val) {
+            currentFontSize = parseInt(val, 10);
+            document.getElementById('fontSizeBadge').textContent = `${currentFontSize}pt`;
+            document.getElementById('sliderFontSize').value = currentFontSize;
+            const select = document.getElementById('selectFontSize');
+            if (select) select.value = currentFontSize;
+
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+                try {
+                    const span = document.createElement('span');
+                    span.style.fontSize = `${currentFontSize}pt`;
+                    const range = sel.getRangeAt(0);
+                    span.appendChild(range.extractContents());
+                    range.insertNode(span);
+                } catch (e) {}
+            } else if (lastActiveEditable) {
+                lastActiveEditable.style.fontSize = `${currentFontSize}pt`;
+                if (lastActiveEditable.id === 'fCompanyHeader' || lastActiveEditable.closest('#fCompanyHeader')) {
+                    const ch = document.getElementById('fCompanyHeader');
+                    ch.style.fontSize = `${currentFontSize}pt`;
+                    ch.querySelectorAll('div, span, p').forEach(c => {
+                        c.style.fontSize = `${currentFontSize}pt`;
+                    });
+                    const pillBadge = document.getElementById('companyFontBadge');
+                    if (pillBadge) pillBadge.textContent = `${currentFontSize}pt`;
+                }
+            } else {
+                // Apply to all document blocks including company header
+                const targets = ['#fCompanyHeader', '#fDocNo', '#fDocDate', '#fSubject', '#fRecipient', '#fReference', '#fBodyText', '#fClosingText', '.doc-signature-block'];
+                document.querySelectorAll(targets.join(', ')).forEach(el => {
+                    el.style.fontSize = `${currentFontSize}pt`;
+                    if (el.id === 'fCompanyHeader') {
+                        el.querySelectorAll('div, span, p').forEach(c => {
+                            c.style.fontSize = `${currentFontSize}pt`;
+                        });
+                        const pillBadge = document.getElementById('companyFontBadge');
+                        if (pillBadge) pillBadge.textContent = `${currentFontSize}pt`;
+                    }
+                });
+            }
+        }
+
+        function changeFontSize(delta) {
+            let newSize = currentFontSize + delta;
+            if (newSize < 8) newSize = 8;
+            if (newSize > 24) newSize = 24;
+            setFontSize(newSize);
+        }
+
+        // Dedicated Company Header Font Size
+        function changeCompanyFontSize(delta) {
+            const ch = document.getElementById('fCompanyHeader');
+            if (!ch) return;
+            const computed = window.getComputedStyle(ch);
+            const fsPx = parseFloat(computed.fontSize) || 14.6;
+            let currentPt = Math.round(fsPx * 0.75);
+            let nextPt = currentPt + delta;
+            if (nextPt < 8) nextPt = 8;
+            if (nextPt > 24) nextPt = 24;
+
+            ch.style.fontSize = `${nextPt}pt`;
+            ch.querySelectorAll('div, span, p').forEach(c => {
+                c.style.fontSize = `${nextPt}pt`;
+            });
+            const pillBadge = document.getElementById('companyFontBadge');
+            if (pillBadge) pillBadge.textContent = `${nextPt}pt`;
+
+            // If active, sync toolbar
+            if (lastActiveEditable === ch) {
+                currentFontSize = nextPt;
+                document.getElementById('fontSizeBadge').textContent = `${nextPt}pt`;
+                document.getElementById('sliderFontSize').value = nextPt;
+                document.getElementById('selectFontSize').value = nextPt;
+            }
+        }
+
+        function setCompanyFontSize(pt) {
+            const ch = document.getElementById('fCompanyHeader');
+            if (!ch) return;
+            ch.style.fontSize = `${pt}pt`;
+            ch.querySelectorAll('div, span, p').forEach(c => {
+                c.style.fontSize = `${pt}pt`;
+            });
+            const pillBadge = document.getElementById('companyFontBadge');
+            if (pillBadge) pillBadge.textContent = `${pt}pt`;
+        }
+
+        function toggleCompanyBold() {
+            const ch = document.getElementById('fCompanyHeader');
+            if (!ch) return;
+            const currentWeight = window.getComputedStyle(ch).fontWeight;
+            const isBold = currentWeight === 'bold' || parseInt(currentWeight, 10) >= 600;
+            const newWeight = isBold ? 'normal' : 'bold';
+            ch.style.fontWeight = newWeight;
+            ch.querySelectorAll('div, span, p').forEach(c => {
+                c.style.fontWeight = newWeight;
+            });
+        }
+
+        // ==============================================================================
+        // LOGO SIZE CONTROL
+        // ==============================================================================
+        function setLogoSize(val) {
+            const size = parseInt(val, 10);
+            const img = document.getElementById('docCompanyLogo');
+            const box = document.getElementById('docLogoBox');
+            if (img) {
+                img.style.width = `${size}px`;
+                img.style.height = `${size}px`;
+            }
+            if (box) {
+                box.style.width = `${size + 15}px`;
+            }
+            document.getElementById('logoSizeBadge').textContent = `${size}px`;
+            const pill = document.getElementById('logoPillSize');
+            if (pill) pill.textContent = `${size}px`;
+            document.getElementById('sliderLogoSize').value = size;
+        }
+
+        function changeLogoSize(delta) {
+            const cur = parseInt(document.getElementById('sliderLogoSize').value, 10);
+            let next = cur + delta;
+            if (next < 35) next = 35;
+            if (next > 180) next = 180;
+            setLogoSize(next);
+        }
+
+        // ==============================================================================
+        // SIGNATURE SIZE CONTROL
+        // ==============================================================================
+        function setSigSize(val) {
+            const size = parseInt(val, 10);
+            const img = document.getElementById('imgSignature');
+            if (img) {
+                img.style.height = `${size}px`;
+            }
+            document.getElementById('sigSizeBadge').textContent = `${size}px`;
+            const pill = document.getElementById('sigPillSize');
+            if (pill) pill.textContent = `${size}px`;
+            document.getElementById('sliderSigSize').value = size;
+        }
+
+        function changeSigSize(delta) {
+            const cur = parseInt(document.getElementById('sliderSigSize').value, 10);
+            let next = cur + delta;
+            if (next < 25) next = 25;
+            if (next > 180) next = 180;
+            setSigSize(next);
+        }
+
+        // ==============================================================================
+        // STAMP SIZE CONTROL (ขนาดตราประทับ)
+        // ==============================================================================
+        function setStampSize(val) {
+            const size = parseInt(val, 10);
+            const img = document.getElementById('imgStamp');
+            if (img) {
+                img.style.height = `${size}px`;
+            }
+            document.getElementById('stampSizeBadge').textContent = `${size}px`;
+            const pill = document.getElementById('stampPillSize');
+            if (pill) pill.textContent = `${size}px`;
+            document.getElementById('sliderStampSize').value = size;
+        }
+
+        function changeStampSize(delta) {
+            const cur = parseInt(document.getElementById('sliderStampSize').value, 10);
+            let next = cur + delta;
+            if (next < 30) next = 30;
+            if (next > 200) next = 200;
+            setStampSize(next);
+        }
+
+        // Zoom controller
+        function getCurrentZoom() {
+            const sheet = document.getElementById('a4PrintSheet');
+            if (!sheet) return 1;
+            const match = sheet.style.transform && sheet.style.transform.match(/scale\(([^)]+)\)/);
+            return match ? parseFloat(match[1]) : 1;
+        }
+
+        function changeZoom(val) {
+            const sheet = document.getElementById('a4PrintSheet');
+            if (sheet) {
+                sheet.style.transform = `scale(${val})`;
+            }
+        }
+
+        // ==============================================================================
+        // PAGE MARGINS MANAGEMENT (กำหนดระยะขอบหน้ากระดาษ: mm / pt / นิ้ว / cm)
+        // ==============================================================================
+        const MARGIN_STORAGE_KEY = 'mentra_doc_margins';
+
+        // Default Mentra Margins: Top 18mm, Right 22mm, Bottom 20mm, Left 25mm
+        let currentMargins = {
+            top: 18,
+            right: 22,
+            bottom: 20,
+            left: 25,
+            unit: 'mm'
+        };
+
+        const MARGIN_PRESETS = {
+            default: { top: 18, right: 22, bottom: 20, left: 25, unit: 'mm', label: 'มาตรฐาน Mentra' },
+            thaigov: { top: 25, right: 20, bottom: 20, left: 30, unit: 'mm', label: 'หนังสือราชการไทย' },
+            narrow:  { top: 12.7, right: 12.7, bottom: 12.7, left: 12.7, unit: 'mm', label: 'ขอบแคบ (0.5")' },
+            normal:  { top: 25.4, right: 25.4, bottom: 25.4, left: 25.4, unit: 'mm', label: 'สากลทั่วไป (1.0")' }
+        };
+
+        // Unit conversion factors:
+        // 1 in = 25.4 mm = 72 pt = 2.54 cm
+        // 1 mm = 0.03937 in = 2.83465 pt = 0.1 cm
+        // 1 pt = 0.352778 mm = 0.01389 in = 0.0352778 cm
+        // 1 cm = 10 mm = 0.3937 in = 28.3465 pt
+        function convertMarginValue(val, fromUnit, toUnit) {
+            val = parseFloat(val);
+            if (isNaN(val)) return 0;
+            if (fromUnit === toUnit) return val;
+
+            // Normalize to mm first
+            let inMm = val;
+            if (fromUnit === 'in') inMm = val * 25.4;
+            else if (fromUnit === 'pt') inMm = val * (25.4 / 72);
+            else if (fromUnit === 'cm') inMm = val * 10;
+
+            // Convert mm to target unit
+            if (toUnit === 'in') {
+                return Math.round((inMm / 25.4) * 100) / 100;
+            } else if (toUnit === 'pt') {
+                return Math.round((inMm * (72 / 25.4)) * 10) / 10;
+            } else if (toUnit === 'cm') {
+                return Math.round((inMm / 10) * 100) / 100;
+            } else { // mm
+                return Math.round(inMm * 10) / 10;
+            }
+        }
+
+        function getMarginStepAndLimits(unit) {
+            switch (unit) {
+                case 'in': return { step: 0.05, min: 0.1, max: 3.5, decimals: 2 };
+                case 'pt': return { step: 2, min: 5, max: 250, decimals: 1 };
+                case 'cm': return { step: 0.1, min: 0.3, max: 9.0, decimals: 2 };
+                case 'mm':
+                default:   return { step: 1, min: 3, max: 90, decimals: 1 };
+            }
+        }
+
+        function toggleMarginPopover() {
+            const pop = document.getElementById('marginPopover');
+            const btn = document.getElementById('btnMarginSettings');
+            const chevron = document.getElementById('marginChevron');
+            if (!pop) return;
+            const isShowing = pop.style.display !== 'none';
+            if (isShowing) {
+                closeMarginPopover();
+            } else {
+                pop.style.display = 'block';
+                if (btn) btn.classList.add('active');
+                if (chevron) chevron.className = 'bx bx-chevron-up';
+                syncMarginInputsUI();
+            }
+        }
+
+        function closeMarginPopover() {
+            const pop = document.getElementById('marginPopover');
+            const btn = document.getElementById('btnMarginSettings');
+            const chevron = document.getElementById('marginChevron');
+            if (pop) pop.style.display = 'none';
+            if (btn) btn.classList.remove('active');
+            if (chevron) chevron.className = 'bx bx-chevron-down';
+        }
+
+        function changeMarginUnit(newUnit) {
+            if (currentMargins.unit === newUnit) return;
+            const oldUnit = currentMargins.unit;
+
+            currentMargins.top = convertMarginValue(currentMargins.top, oldUnit, newUnit);
+            currentMargins.right = convertMarginValue(currentMargins.right, oldUnit, newUnit);
+            currentMargins.bottom = convertMarginValue(currentMargins.bottom, oldUnit, newUnit);
+            currentMargins.left = convertMarginValue(currentMargins.left, oldUnit, newUnit);
+            currentMargins.unit = newUnit;
+
+            applyMarginsToSheet();
+            syncMarginInputsUI();
+            saveMarginsToStorage();
+        }
+
+        function applyMarginPreset(presetKey) {
+            const preset = MARGIN_PRESETS[presetKey];
+            if (!preset) return;
+
+            // Convert preset values (stored in mm) to current unit
+            currentMargins.top = convertMarginValue(preset.top, preset.unit, currentMargins.unit);
+            currentMargins.right = convertMarginValue(preset.right, preset.unit, currentMargins.unit);
+            currentMargins.bottom = convertMarginValue(preset.bottom, preset.unit, currentMargins.unit);
+            currentMargins.left = convertMarginValue(preset.left, preset.unit, currentMargins.unit);
+
+            document.querySelectorAll('.preset-chip').forEach(el => el.classList.remove('active'));
+            const activeChip = document.getElementById(`presetChip_${presetKey}`);
+            if (activeChip) activeChip.classList.add('active');
+
+            applyMarginsToSheet();
+            syncMarginInputsUI();
+            saveMarginsToStorage();
+        }
+
+        function stepMargin(dir, factor) {
+            const limits = getMarginStepAndLimits(currentMargins.unit);
+            let val = parseFloat(currentMargins[dir]) || 0;
+            val = val + (factor * limits.step);
+            if (val < limits.min) val = limits.min;
+            if (val > limits.max) val = limits.max;
+
+            val = Math.round(val * Math.pow(10, limits.decimals)) / Math.pow(10, limits.decimals);
+            currentMargins[dir] = val;
+
+            document.querySelectorAll('.preset-chip').forEach(el => el.classList.remove('active'));
+
+            applyMarginsToSheet();
+            syncMarginInputsUI();
+            saveMarginsToStorage();
+        }
+
+        function onMarginInputChange(dir, inputVal) {
+            let val = parseFloat(inputVal);
+            if (isNaN(val)) return;
+            const limits = getMarginStepAndLimits(currentMargins.unit);
+            if (val < 0) val = 0;
+            if (val > limits.max * 1.5) val = limits.max * 1.5;
+
+            currentMargins[dir] = Math.round(val * Math.pow(10, limits.decimals)) / Math.pow(10, limits.decimals);
+
+            document.querySelectorAll('.preset-chip').forEach(el => el.classList.remove('active'));
+
+            applyMarginsToSheet();
+            updateMiniPreviewVisual();
+            updateMarginToolbarSummary();
+            saveMarginsToStorage();
+        }
+
+        function applyMarginsToSheet() {
+            const sheet = document.getElementById('a4PrintSheet');
+            if (!sheet) return;
+
+            const u = currentMargins.unit;
+            const t = currentMargins.top;
+            const r = currentMargins.right;
+            const b = currentMargins.bottom;
+            const l = currentMargins.left;
+
+            // Apply padding to on-screen sheet & for html2pdf
+            sheet.style.padding = `${t}${u} ${r}${u} ${b}${u} ${l}${u}`;
+
+            // Apply dynamic print styles for Ctrl+P / window.print()
+            updatePrintMarginStyle();
+            updateMiniPreviewVisual();
+            updateMarginToolbarSummary();
+        }
+
+        function updatePrintMarginStyle() {
+            let styleEl = document.getElementById('dynamicPrintMarginStyle');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamicPrintMarginStyle';
+                document.head.appendChild(styleEl);
+            }
+            const u = currentMargins.unit;
+            const t = currentMargins.top;
+            const r = currentMargins.right;
+            const b = currentMargins.bottom;
+            const l = currentMargins.left;
+
+            styleEl.textContent = `
+                @media print {
+                    @page {
+                        size: A4 portrait !important;
+                        margin: ${t}${u} ${r}${u} ${b}${u} ${l}${u} !important;
+                    }
+                }
+            `;
+        }
+
+        function syncMarginInputsUI() {
+            const u = currentMargins.unit;
+            const limits = getMarginStepAndLimits(u);
+
+            // Update active unit pill
+            ['mm', 'pt', 'in', 'cm'].forEach(un => {
+                const pill = document.getElementById(`unitPill_${un}`);
+                if (pill) pill.classList.toggle('active', un === u);
+            });
+
+            // Update unit labels on steppers
+            ['Top', 'Bottom', 'Left', 'Right'].forEach(side => {
+                const lbl = document.getElementById(`unitLabel${side}`);
+                if (lbl) lbl.textContent = u;
+            });
+
+            // Update stepper input values and step/min/max
+            ['top', 'bottom', 'left', 'right'].forEach(dir => {
+                const idName = `inputMargin${dir.charAt(0).toUpperCase() + dir.slice(1)}`;
+                const input = document.getElementById(idName);
+                if (input) {
+                    input.value = currentMargins[dir];
+                    input.step = limits.step;
+                    input.min = limits.min;
+                    input.max = limits.max;
+                }
+            });
+
+            updateMiniPreviewVisual();
+            updateMarginToolbarSummary();
+        }
+
+        function updateMiniPreviewVisual() {
+            const topMm = convertMarginValue(currentMargins.top, currentMargins.unit, 'mm');
+            const rightMm = convertMarginValue(currentMargins.right, currentMargins.unit, 'mm');
+            const bottomMm = convertMarginValue(currentMargins.bottom, currentMargins.unit, 'mm');
+            const leftMm = convertMarginValue(currentMargins.left, currentMargins.unit, 'mm');
+
+            // Scale to mini-paper px (approx 1mm = 0.32px)
+            const scaleX = 66 / 210;
+            const scaleY = 94 / 297;
+
+            const tPx = Math.max(3, Math.min(28, Math.round(topMm * scaleY)));
+            const rPx = Math.max(3, Math.min(24, Math.round(rightMm * scaleX)));
+            const bPx = Math.max(3, Math.min(28, Math.round(bottomMm * scaleY)));
+            const lPx = Math.max(3, Math.min(24, Math.round(leftMm * scaleX)));
+
+            const visual = document.getElementById('miniSheetVisual');
+            if (visual) {
+                visual.style.top = `${tPx}px`;
+                visual.style.right = `${rPx}px`;
+                visual.style.bottom = `${bPx}px`;
+                visual.style.left = `${lPx}px`;
+            }
+
+            const lt = document.getElementById('lblMiniTop');
+            const lb = document.getElementById('lblMiniBottom');
+            const ll = document.getElementById('lblMiniLeft');
+            const lr = document.getElementById('lblMiniRight');
+            if (lt) lt.textContent = currentMargins.top;
+            if (lb) lb.textContent = currentMargins.bottom;
+            if (ll) ll.textContent = currentMargins.left;
+            if (lr) lr.textContent = currentMargins.right;
+        }
+
+        function updateMarginToolbarSummary() {
+            const summary = document.getElementById('marginToolbarSummary');
+            if (summary) {
+                summary.textContent = `ซ ${currentMargins.left} ข ${currentMargins.right} บ ${currentMargins.top} ล ${currentMargins.bottom} ${currentMargins.unit}`;
+            }
+        }
+
+        function resetMarginsToDefault() {
+            applyMarginPreset('default');
+        }
+
+        function saveMarginsToStorage() {
+            try {
+                localStorage.setItem(MARGIN_STORAGE_KEY, JSON.stringify(currentMargins));
+            } catch (e) {}
+        }
+
+        function restoreMarginsFromStorage() {
+            try {
+                const stored = localStorage.getItem(MARGIN_STORAGE_KEY);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (parsed && typeof parsed.top === 'number' && parsed.unit) {
+                        currentMargins = parsed;
+                    }
+                }
+            } catch (e) {}
+            applyMarginsToSheet();
+            syncMarginInputsUI();
+        }
+
+        // Close margin popover when clicking outside
+        document.addEventListener('click', (e) => {
+            const pop = document.getElementById('marginPopover');
+            const btn = document.getElementById('btnMarginSettings');
+            if (!pop || pop.style.display === 'none') return;
+            if (!pop.contains(e.target) && !btn.contains(e.target)) {
+                closeMarginPopover();
+            }
+        });
+
+        // Toggle Signature & Stamp
+        function toggleSignature() {
+            showSignature = !showSignature;
+            const el = document.getElementById('dragSignature');
+            const btn = document.getElementById('btnToggleSign');
+            if (el) el.style.display = showSignature ? 'inline-flex' : 'none';
+            if (btn) {
+                btn.classList.toggle('active', showSignature);
+                btn.textContent = showSignature ? 'แสดง' : 'ซ่อน';
+            }
+        }
+
+        function toggleStamp() {
+            showStamp = !showStamp;
+            const el = document.getElementById('dragStamp');
+            const btn = document.getElementById('btnToggleStamp');
+            if (el) el.style.display = showStamp ? 'inline-flex' : 'none';
+            if (btn) {
+                btn.classList.toggle('active', showStamp);
+                btn.textContent = showStamp ? 'แสดง' : 'ซ่อน';
+            }
+        }
+
+        // Quick Placements
+        function placeSigCenter() {
+            const sig = document.getElementById('dragSignature');
+            if (sig) {
+                sig.style.left = '45px';
+                sig.style.top = '10px';
+                sig.style.right = 'auto';
+                sig.style.bottom = 'auto';
+            }
+            savePositionsToStorage();
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'จัดวางลายเซ็นกึ่งกลางชื่อแล้ว',
+                showConfirmButton: false,
+                timer: 1200
+            });
+        }
+
+        function placeStampOverlap() {
+            const stamp = document.getElementById('dragStamp');
+            if (stamp) {
+                stamp.style.left = '115px';
+                stamp.style.top = '-6px';
+                stamp.style.right = 'auto';
+                stamp.style.bottom = 'auto';
+            }
+            savePositionsToStorage();
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'จัดตราประทับเยื้องทับลายเซ็นแล้ว',
+                showConfirmButton: false,
+                timer: 1200
+            });
+        }
+
+        // Reset Signature & Stamp Positions
+        function resetPositions() {
+            const sig = document.getElementById('dragSignature');
+            const stamp = document.getElementById('dragStamp');
+            if (sig) {
+                sig.style.left = '20px';
+                sig.style.top = '5px';
+                sig.style.right = 'auto';
+                sig.style.bottom = 'auto';
+            }
+            if (stamp) {
+                stamp.style.right = '-25px';
+                stamp.style.top = '-4px';
+                stamp.style.left = 'auto';
+                stamp.style.bottom = 'auto';
+            }
+            try {
+                localStorage.removeItem('mentra_doc_sig_pos');
+                localStorage.removeItem('mentra_doc_stamp_pos');
+            } catch (e) {}
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'รีเซ็ตตำแหน่งลายเซ็นและตราประทับแล้ว',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        function savePositionsToStorage() {
+            try {
+                const sig = document.getElementById('dragSignature');
+                const stamp = document.getElementById('dragStamp');
+                if (sig) {
+                    localStorage.setItem('mentra_doc_sig_pos', JSON.stringify({ left: sig.style.left, top: sig.style.top, right: sig.style.right, bottom: sig.style.bottom }));
+                }
+                if (stamp) {
+                    localStorage.setItem('mentra_doc_stamp_pos', JSON.stringify({ left: stamp.style.left, top: stamp.style.top, right: stamp.style.right, bottom: stamp.style.bottom }));
+                }
+            } catch (e) {}
+        }
+
+        function restorePositionsFromStorage() {
+            try {
+                const sigPos = localStorage.getItem('mentra_doc_sig_pos');
+                if (sigPos) {
+                    const pos = JSON.parse(sigPos);
+                    const sig = document.getElementById('dragSignature');
+                    if (sig) {
+                        if (pos.left) sig.style.left = pos.left;
+                        if (pos.top) sig.style.top = pos.top;
+                        if (pos.right) sig.style.right = pos.right;
+                        if (pos.bottom) sig.style.bottom = pos.bottom;
+                    }
+                }
+                const stampPos = localStorage.getItem('mentra_doc_stamp_pos');
+                if (stampPos) {
+                    const pos = JSON.parse(stampPos);
+                    const stamp = document.getElementById('dragStamp');
+                    if (stamp) {
+                        if (pos.left) stamp.style.left = pos.left;
+                        if (pos.top) stamp.style.top = pos.top;
+                        if (pos.right) stamp.style.right = pos.right;
+                        if (pos.bottom) stamp.style.bottom = pos.bottom;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // ==============================================================================
+        // DRAG AND DROP CONTROLLER FOR SIGNATURE AND STAMP (Zoom Corrected)
+        // ==============================================================================
+        function initDraggable() {
+            const items = [
+                document.getElementById('dragSignature'),
+                document.getElementById('dragStamp')
+            ];
+
+            items.forEach(el => {
+                if (!el) return;
+
+                let isDragging = false;
+                let startX, startY;
+                let initialLeft, initialTop;
+
+                el.addEventListener('mousedown', dragStart);
+                el.addEventListener('touchstart', dragStart, { passive: false });
+
+                function dragStart(e) {
+                    // Do not drag if user clicked on button inside control pill
+                    if (e.target.closest('.pill-btn') || e.target.closest('button')) return;
+
+                    isDragging = true;
+                    el.classList.add('is-dragging');
+
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    startX = clientX;
+                    startY = clientY;
+
+                    const container = el.offsetParent || document.getElementById('docSignStampArea');
+                    const cRect = container.getBoundingClientRect();
+                    const eRect = el.getBoundingClientRect();
+                    const zoom = getCurrentZoom();
+
+                    initialLeft = (eRect.left - cRect.left) / zoom;
+                    initialTop = (eRect.top - cRect.top) / zoom;
+
+                    document.addEventListener('mousemove', onDrag);
+                    document.addEventListener('mouseup', dragEnd);
+                    document.addEventListener('touchmove', onDrag, { passive: false });
+                    document.addEventListener('touchend', dragEnd);
+
+                    if (e.cancelable) e.preventDefault();
+                }
+
+                function onDrag(e) {
+                    if (!isDragging) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                    const zoom = getCurrentZoom();
+                    const dx = (clientX - startX) / zoom;
+                    const dy = (clientY - startY) / zoom;
+
+                    el.style.left = `${initialLeft + dx}px`;
+                    el.style.top = `${initialTop + dy}px`;
+                    el.style.right = 'auto';
+                    el.style.bottom = 'auto';
+
+                    if (e.cancelable) e.preventDefault();
+                }
+
+                function dragEnd() {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    el.classList.remove('is-dragging');
+                    document.removeEventListener('mousemove', onDrag);
+                    document.removeEventListener('mouseup', dragEnd);
+                    document.removeEventListener('touchmove', onDrag);
+                    document.removeEventListener('touchend', dragEnd);
+                    savePositionsToStorage();
+                }
+            });
+        }
+
+        // Reset to original sample
+        function resetSample() {
+            document.getElementById('fCompanyHeader').innerHTML = DEFAULT_DATA.companyHeader;
+            document.getElementById('fDocNo').textContent = DEFAULT_DATA.docNo;
+            document.getElementById('fDocDate').textContent = DEFAULT_DATA.docDate;
+            document.getElementById('fSubject').textContent = DEFAULT_DATA.subject;
+            document.getElementById('fRecipient').textContent = DEFAULT_DATA.recipient;
+            document.getElementById('fReference').textContent = DEFAULT_DATA.reference;
+            document.getElementById('fBodyText').textContent = DEFAULT_DATA.bodyText;
+            document.getElementById('fClosingText').textContent = DEFAULT_DATA.closingText;
+            document.getElementById('fSignatoryName').textContent = DEFAULT_DATA.signatoryName;
+            document.getElementById('fSignatoryPosition').textContent = DEFAULT_DATA.signatoryPosition;
+
+            setFontSize(15);
+            setCompanyFontSize(11);
+            applyFontWeight('normal');
+            applyTextAlign('justify');
+            setLogoSize(85);
+            setSigSize(65);
+            setStampSize(80);
+            resetPositions();
+
+            showSignature = true;
+            showStamp = true;
+            document.getElementById('dragSignature').style.display = 'inline-flex';
+            document.getElementById('dragStamp').style.display = 'inline-flex';
+            document.getElementById('btnToggleSign').classList.add('active');
+            document.getElementById('btnToggleSign').textContent = 'แสดง';
+            document.getElementById('btnToggleStamp').classList.add('active');
+            document.getElementById('btnToggleStamp').textContent = 'แสดง';
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'รีเซ็ตข้อมูลตามแบบฉบับจริงเรียบร้อย',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        // Export PDF A4 Portrait
+        async function exportToPdfA4() {
+            const sheet = document.getElementById('a4PrintSheet');
+            const docNo = (document.getElementById('fDocNo').textContent || '26_020').trim().replace(/[\/\\:]/g, '_');
+            const filename = `หนังสือส่งมอบงาน_${docNo}.pdf`;
+
+            // Auto save to history
+            saveToHistory(false);
+
+            // Temporarily reset scale to 1 for crisp vector canvas render
+            const prevTransform = sheet.style.transform;
+            sheet.style.transform = 'scale(1)';
+
+            Swal.fire({
+                title: 'กำลังสร้างไฟล์ PDF (A4 แนวตั้ง)...',
+                html: 'ระบบกำลังจัดทำเอกสาร PDF ขนาด A4 แนวตั้งความละเอียดสูง กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const opt = {
+                margin: [0, 0, 0, 0],
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2.5,
+                    useCORS: true,
+                    logging: false,
+                    letterRendering: true,
+                    backgroundColor: '#ffffff'
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                }
+            };
+
+            try {
+                await html2pdf().set(opt).from(sheet).save();
+                sheet.style.transform = prevTransform;
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึก PDF สำเร็จ!',
+                    text: `ดาวน์โหลดไฟล์ ${filename} เรียบร้อยแล้ว`,
+                    confirmButtonColor: '#1A6FBF'
+                });
+            } catch (err) {
+                sheet.style.transform = prevTransform;
+                console.error('PDF export error:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่สามารถสร้าง PDF ได้',
+                    text: 'กรุณาใช้ปุ่ม "พิมพ์ A4 แนวตั้ง" เพื่อพิมพ์หรือบันทึกเป็น PDF แทน',
+                    confirmButtonColor: '#1A6FBF'
+                });
+            }
+        }
+
+        // History Management
+        function getHistory() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveToHistory(showAlert = true) {
+            const docNo = document.getElementById('fDocNo').textContent.trim();
+            const date = document.getElementById('fDocDate').textContent.trim();
+            const subject = document.getElementById('fSubject').textContent.trim();
+            const recipient = document.getElementById('fRecipient').textContent.trim();
+            const reference = document.getElementById('fReference').textContent.trim();
+            const body = document.getElementById('fBodyText').textContent.trim();
+            const closing = document.getElementById('fClosingText').textContent.trim();
+            const signName = document.getElementById('fSignatoryName').textContent.trim();
+            const signPos = document.getElementById('fSignatoryPosition').textContent.trim();
+
+            const item = {
+                id: 'del_' + Date.now(),
+                docNo,
+                date,
+                subject,
+                recipient,
+                reference,
+                body,
+                closing,
+                signName,
+                signPos,
+                createdAt: new Date().toISOString()
+            };
+
+            const list = getHistory();
+            const existingIdx = list.findIndex(x => x.docNo === docNo);
+            if (existingIdx >= 0) {
+                list[existingIdx] = item;
+            } else {
+                list.unshift(item);
+            }
+
+            if (list.length > 30) list.pop();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            renderHistoryTable();
+
+            if (showAlert) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'บันทึกหนังสือส่งมอบงานเรียบร้อย',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            const list = getHistory();
+
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">
+                            ยังไม่มีประวัติหนังสือที่บันทึกไว้
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = list.map(item => `
+                <tr>
+                    <td><span style="font-size:0.82rem; color:#64748b;">${escapeHtml(item.date || '-')}</span></td>
+                    <td><strong style="color:var(--primary); font-family:monospace; font-size:0.95rem;">${escapeHtml(item.docNo || '-')}</strong></td>
+                    <td>${escapeHtml(item.subject || '-')}</td>
+                    <td>${escapeHtml(item.recipient || '-')}</td>
+                    <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(item.reference)}">${escapeHtml(item.reference || '-')}</td>
+                    <td style="text-align:center;">
+                        <button type="button" class="btn-action" style="padding:4px 10px; font-size:0.78rem;" onclick="loadHistoryItem('${item.id}')" title="ดึงข้อมูลมาแสดงบนกระดาษ">
+                            <i class='bx bx-edit'></i> ดึงข้อมูล
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function loadHistoryItem(id) {
+            const list = getHistory();
+            const found = list.find(x => x.id === id);
+            if (found) {
+                document.getElementById('fDocNo').textContent = found.docNo || '';
+                document.getElementById('fDocDate').textContent = found.date || '';
+                document.getElementById('fSubject').textContent = found.subject || '';
+                document.getElementById('fRecipient').textContent = found.recipient || '';
+                document.getElementById('fReference').textContent = found.reference || '';
+                document.getElementById('fBodyText').textContent = found.body || '';
+                if (found.closing) document.getElementById('fClosingText').textContent = found.closing;
+                document.getElementById('fSignatoryName').textContent = found.signName || '';
+                document.getElementById('fSignatoryPosition').textContent = found.signPos || '';
+
+                window.scrollTo({ top: 120, behavior: 'smooth' });
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: `โหลดหนังสือเลขที่ ${found.docNo} ขึ้นกระดาษเรียบร้อย`,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+        function clearHistory() {
+            Swal.fire({
+                title: 'ยืนยันการล้างประวัติ?',
+                text: 'ประวัติหนังสือที่บันทึกไว้ในเครื่องจะถูกลบทั้งหมด',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'ล้างประวัติ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    renderHistoryTable();
+                }
+            });
+        }
+
+        function scrollToHistory() {
+            document.getElementById('historySection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+
+    <!-- Firebase Auth & Permissions Guard -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+        import {
+            initializeFirestore, doc, getDoc,
+            persistentLocalCache, persistentMultipleTabManager
+        } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        // Fast cached permissions check to prevent flash of unauthorized content
+        try {
+            const raw = localStorage.getItem('mentra_user_permissions');
+            if (raw) {
+                const p = JSON.parse(raw);
+                if (p && p.allowedPages && p.allowedPages['company_letters.html'] === false) {
+                    if (window.checkPageAccess) {
+                        window.checkPageAccess(p);
+                    } else {
+                        window.location.replace('../admin/dashboard.html');
+                    }
+                }
+            }
+        } catch (e) {}
+
+        let FIREBASE_CONFIG = null;
+        try {
+            const cfg = await import('../../assets/js/firebase-config.js');
+            FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
+        } catch (e) {}
+
+        if (FIREBASE_CONFIG) {
+            const app = initializeApp(FIREBASE_CONFIG);
+            const auth = getAuth(app);
+            const db = initializeFirestore(app, {
+                localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+            });
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    try {
+                        const userSnap = await getDoc(doc(db, 'users', user.uid));
+                        if (userSnap.exists()) {
+                            const currentUserData = userSnap.data();
+                            if (window.checkPageAccess && !window.checkPageAccess(currentUserData)) return;
+                        }
+                    } catch (e) {
+                        console.warn('Could not check page access:', e);
+                    }
+                    const overlay = document.getElementById('mentra-page-transition-overlay');
+                    if (overlay) {
+                        overlay.style.opacity = '0';
+                        overlay.style.pointerEvents = 'none';
+                    }
+                } else {
+                    window.location.href = '../../index.html';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

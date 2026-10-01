@@ -834,6 +834,8 @@
             setNavActive('nav-products', 'railBtnPurchasing');
         } else if (path.includes('quotation.html')) {
             setNavActive('nav-quotation', 'railBtnAccounting');
+        } else if (path.includes('company_letters.html')) {
+            setNavActive('nav-company-letters', 'railBtnAccounting');
         } else if (path.includes('sales_documents.html')) {
             setNavActive('nav-sales-documents', 'railBtnAccounting');
         } else if (path.includes('sales_invoice.html')) {

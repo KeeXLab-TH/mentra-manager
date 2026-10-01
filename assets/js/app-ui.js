@@ -1050,6 +1050,12 @@ window.applySidebarPermissions = function(userData) {
             '#nav-quotation', 'a[href*="quotation.html"]', 'button[onclick*="quotation.html"]',
             '[data-page*="quotation.html"]'
         ],
+        'company_letters.html': [
+            '#nav-company-letters',
+            'a[href*="company_letters.html"]',
+            'button[onclick*="company_letters.html"]',
+            '[data-page*="company_letters.html"]'
+        ],
         'sales_documents.html': [
             '#nav-sales-documents',
             'a[href*="sales_documents.html"]',

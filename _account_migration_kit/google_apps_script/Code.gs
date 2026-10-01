@@ -41,10 +41,11 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
     var action = body.action;
 
-    if (action === 'getUploadUrl')  return handleGetUploadToken(body);
-    if (action === 'createFolder')  return handleCreateFolder(body);
-    if (action === 'uploadChunk')   return handleUploadChunk(body);
-    if (action === 'deleteFile')    return handleDeleteFile(body);
+    if (action === 'getUploadUrl')   return handleGetUploadToken(body);
+    if (action === 'createFolder')   return handleCreateFolder(body);
+    if (action === 'uploadChunk')    return handleUploadChunk(body);
+    if (action === 'deleteFile')     return handleDeleteFile(body);
+    if (action === 'createGoogleDoc') return handleCreateGoogleDoc(body);
 
     // Legacy: base64 upload
     if (body.base64 && body.filename) return handleLegacyUpload(body);
@@ -216,6 +217,183 @@ function listFilesInFolder(folderId) {
     });
   }
   return result;
+}
+
+// ==============================================================================
+// handleCreateGoogleDoc — สร้างหรือคัดลอก Google Doc จากเทมเพลตและแทนที่ข้อความ
+// ==============================================================================
+function handleCreateGoogleDoc(body) {
+  try {
+    var templateId = body.templateId;
+    var folderId = body.folderId || '1a0B6l56PAVCZ4v8lzSeIRslq78XSJh8e';
+    var title = body.title || ('หนังสือบริษัท - ' + (body.docNo || Utilities.formatDate(new Date(), 'Asia/Bangkok', 'yyyyMMdd-HHmmss')));
+    var replacements = body.replacements || {};
+    var letter = body.letterData || {};
+
+    var targetFolder;
+    try {
+      targetFolder = folderId ? DriveApp.getFolderById(folderId) : DriveApp.getRootFolder();
+    } catch (fErr) {
+      targetFolder = DriveApp.getRootFolder();
+    }
+
+    var newDocId;
+    var newDoc;
+
+    if (templateId) {
+      // 1. คัดลอกและแทนที่ตัวแปรใน Google Docs Template
+      var templateFile = DriveApp.getFileById(templateId);
+      var copiedFile = templateFile.makeCopy(title, targetFolder);
+      newDocId = copiedFile.getId();
+      newDoc = DocumentApp.openById(newDocId);
+      var docBody = newDoc.getBody();
+
+      for (var key in replacements) {
+        if (replacements.hasOwnProperty(key)) {
+          var val = replacements[key] === null || replacements[key] === undefined ? '' : String(replacements[key]);
+          docBody.replaceText(key, val);
+        }
+      }
+      newDoc.saveAndClose();
+    } else {
+      // 2. สร้างเอกสารใหม่ตามรูปแบบมาตรฐานหนังสือบริษัท
+      newDoc = DocumentApp.create(title);
+      newDocId = newDoc.getId();
+      var docFile = DriveApp.getFileById(newDocId);
+      docFile.moveTo(targetFolder);
+
+      var docBody = newDoc.getBody();
+      docBody.setMarginTop(54);
+      docBody.setMarginBottom(54);
+      docBody.setMarginLeft(72);
+      docBody.setMarginRight(72);
+
+      buildCompanyLetterDoc(docBody, letter);
+      newDoc.saveAndClose();
+    }
+
+    var docUrl = 'https://docs.google.com/document/d/' + newDocId + '/edit';
+    var pdfUrl = 'https://docs.google.com/document/d/' + newDocId + '/export?format=pdf';
+
+    return jsonResponse({
+      status: 'success',
+      docId: newDocId,
+      docUrl: docUrl,
+      pdfUrl: pdfUrl,
+      title: title
+    });
+  } catch (err) {
+    Logger.log('handleCreateGoogleDoc error: ' + err.message);
+    return jsonResponse({ status: 'error', message: err.message });
+  }
+}
+
+// Helper: สร้างเนื้อหาเอกสารมาตรฐาน
+function buildCompanyLetterDoc(body, letter) {
+  var companyName = letter.companyName || 'บริษัท เมนทร้า โซลูชั่น จำกัด';
+  var companyAddress = letter.companyAddress || '';
+  var companyContact = letter.companyContact || '';
+  var docNo = letter.docNo || '-';
+  var docDate = letter.docDate || '';
+  var subject = letter.subject || '-';
+  var recipient = letter.recipient || '-';
+  var reference = letter.reference || '';
+  var attachments = letter.attachments || [];
+  var content = letter.content || '';
+  var paragraphs = letter.paragraphs || [];
+  var signatoryName = letter.signatoryName || '';
+  var signatoryPosition = letter.signatoryPosition || '';
+  var companyTaxId = letter.companyTaxId || '';
+
+  // หัวจดหมายบริษัท
+  var headerTable = body.appendTable([
+    [companyName + (companyAddress ? '\n' + companyAddress : '') + (companyTaxId ? '\nเลขประจำตัวผู้เสียภาษี: ' + companyTaxId : '') + (companyContact ? '\nโทร: ' + companyContact : ''), '']
+  ]);
+  headerTable.setBorderWidth(0);
+
+  body.appendHorizontalRule();
+
+  // เลขที่และวันที่
+  var metaTable = body.appendTable([
+    ['ที่: ' + docNo, 'วันที่: ' + docDate]
+  ]);
+  metaTable.setBorderWidth(0);
+
+  // เรื่องและเรียน
+  var pSub = body.appendParagraph('เรื่อง: ' + subject);
+  pSub.setBold(true);
+  pSub.setSpacingAfter(4);
+
+  var pRec = body.appendParagraph('เรียน: ' + recipient);
+  pRec.setSpacingAfter(4);
+
+  if (reference) {
+    var pRef = body.appendParagraph('อ้างถึง: ' + reference);
+    pRef.setSpacingAfter(4);
+  }
+
+  if (attachments && attachments.length > 0) {
+    var attachText = 'สิ่งที่ส่งมาด้วย: ';
+    if (attachments.length === 1) {
+      body.appendParagraph(attachText + attachments[0]);
+    } else {
+      body.appendParagraph(attachText);
+      for (var a = 0; a < attachments.length; a++) {
+        body.appendParagraph('   ' + (a + 1) + '. ' + attachments[a]);
+      }
+    }
+  }
+
+  body.appendParagraph('').setSpacingAfter(6);
+
+  // ย่อหน้าเนื้อหา
+  if (paragraphs && paragraphs.length > 0) {
+    for (var i = 0; i < paragraphs.length; i++) {
+      if (paragraphs[i].trim()) {
+        var p = body.appendParagraph('       ' + paragraphs[i].trim());
+        p.setLineSpacing(1.15);
+        p.setSpacingAfter(6);
+      }
+    }
+  } else if (content) {
+    var rawParas = content.split('\n');
+    for (var j = 0; j < rawParas.length; j++) {
+      if (rawParas[j].trim()) {
+        var pRaw = body.appendParagraph('       ' + rawParas[j].trim());
+        pRaw.setLineSpacing(1.15);
+        pRaw.setSpacingAfter(6);
+      }
+    }
+  }
+
+  // ตารางรายการส่งมอบ (ถ้ามี)
+  if (letter.items && letter.items.length > 0) {
+    var itemTableData = [['ลำดับ', 'รายการ', 'จำนวน', 'หน่วย', 'หมายเหตุ']];
+    for (var k = 0; k < letter.items.length; k++) {
+      var itm = letter.items[k];
+      itemTableData.push([
+        String(k + 1),
+        itm.name || '',
+        String(itm.qty || ''),
+        itm.unit || '',
+        itm.remark || ''
+      ]);
+    }
+    var tbl = body.appendTable(itemTableData);
+    tbl.setBorderWidth(0.5);
+    tbl.getRow(0).editAsText().setBold(true);
+  }
+
+  // คำลงท้าย
+  var pClose = body.appendParagraph('       จึงเรียนมาเพื่อโปรดทราบและพิจารณา');
+  pClose.setSpacingBefore(12);
+  pClose.setSpacingAfter(24);
+
+  // ลายมือชื่อ
+  var sigTable = body.appendTable([
+    ['', 'ขอแสดงความนับถือ\n\n\n\n(' + (signatoryName || '....................................................') + ')\n' + (signatoryPosition || 'กรรมการผู้จัดการ') + '\n' + companyName]
+  ]);
+  sigTable.setBorderWidth(0);
 }
 
 // ==============================================================================
