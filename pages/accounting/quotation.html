@@ -4760,6 +4760,9 @@
                 if (pendingProjData.shop && !urlShop) {
                     urlShop = pendingProjData.shop;
                 }
+                if (pendingProjData.company && !urlShop && pendingProjData.company !== pendingProjInstitution) {
+                    urlShop = pendingProjData.company;
+                }
             } else if (!autoImportId) {
                 // Only clear if completely stale
                 try {
@@ -5032,13 +5035,23 @@
                             });
                         }
 
-                        // Apply template for the current displayed issuer if selected
+                        // Apply template for the current displayed issuer if selected (skip default override if importing project or if issuer is already set)
                         try {
-                            let currentIssuerDisplay = document.getElementById('currentIssuerDisplay')?.innerText?.trim();
-                            if (!currentIssuerDisplay || currentIssuerDisplay.includes('กรุณาเลือกบริษัท')) {
-                                currentIssuerDisplay = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                            const urlParamsCheck = new URLSearchParams(window.location.search);
+                            const hasProjectImport = urlParamsCheck.get('projectId') || 
+                                                     urlParamsCheck.get('shop') || 
+                                                     sessionStorage.getItem('pending_quotation_project') || 
+                                                     localStorage.getItem('pending_quotation_project') ||
+                                                     localStorage.getItem('pending_load_quotation');
+                            
+                            if (!hasAutoImported && !hasProjectImport) {
+                                let currentIssuerDisplay = document.getElementById('currentIssuerDisplay')?.innerText?.trim();
+                                if (!currentIssuerDisplay || currentIssuerDisplay.includes('กรุณาเลือกบริษัท')) {
+                                    const savedShop = localStorage.getItem('selected_issuer_company') || localStorage.getItem('mentra_active_workspace');
+                                    currentIssuerDisplay = (savedShop && !savedShop.includes('กรุณาเลือกบริษัท')) ? savedShop.trim() : 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                                }
+                                applyIssuerTemplate(currentIssuerDisplay);
                             }
-                            applyIssuerTemplate(currentIssuerDisplay);
                         } catch (e) {
                             console.error("Error applying default issuer template:", e);
                         }
@@ -9699,6 +9712,7 @@
                 if (targetIssuer) {
                     try {
                         applyIssuerTemplate(targetIssuer);
+                        localStorage.setItem('selected_issuer_company', targetIssuer);
                     } catch(e) {
                         console.warn("Could not apply issuer template:", e);
                     }

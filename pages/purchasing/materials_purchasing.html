@@ -4648,7 +4648,7 @@
                 document.getElementById('modal-proj-code').value = `PRJ-${year}-${randomNum}`;
             },
             
-            saveProject() {
+            async saveProject() {
                 const name = document.getElementById('modal-proj-name').value.trim();
                 const code = document.getElementById('modal-proj-code').value.trim();
                 const date = document.getElementById('modal-proj-date').value;
@@ -4683,6 +4683,13 @@
                         this.updateWorkflowUI(proj);
                         this.renderProjects();
                         
+                        // Immediately update selected issuer in localStorage
+                        if (company) {
+                            try {
+                                localStorage.setItem('selected_issuer_company', company);
+                            } catch(e) {}
+                        }
+
                         // Immediately refresh lightweight localStorage cache so cross-page actions have fresh shop
                         try {
                             const lightProjects = this.projects.map(p => {
@@ -4700,7 +4707,7 @@
                         
                         // Sync to firebase
                         if (window.saveProjectToFirestore) {
-                            window.saveProjectToFirestore(proj);
+                            window.saveProjectToFirestore(proj).catch(e => console.warn('Background saveProjectToFirestore error:', e));
                         }
                     }
                 } else {
@@ -4718,8 +4725,13 @@
                         remarks: remarks,
                         items: []
                     };
+                    if (company) {
+                        try {
+                            localStorage.setItem('selected_issuer_company', company);
+                        } catch(e) {}
+                    }
                     if (window.saveProjectToFirestore) {
-                        window.saveProjectToFirestore(newProj);
+                        window.saveProjectToFirestore(newProj).catch(e => console.warn('Background saveProjectToFirestore error:', e));
                     } else {
                         this.projects.unshift(newProj);
                         this.renderProjects();
@@ -4763,7 +4775,7 @@
                 return String(shop).trim();
             },
             
-            openQuotationForProject() {
+            async openQuotationForProject() {
                 if (this.currentProjectId) {
                     let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
                     if (!proj) {
@@ -4861,9 +4873,16 @@
                             localStorage.setItem('material_projects', JSON.stringify(lightProjects));
                         } catch(e) {}
 
-                        // Ensure latest data is synced to Firestore
+                        // Ensure latest data is synced to Firestore (await with short timeout so navigation does not cancel the request)
                         if (window.saveProjectToFirestore) {
-                            window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on openQuotation error:', e));
+                            try {
+                                await Promise.race([
+                                    window.saveProjectToFirestore(proj),
+                                    new Promise(r => setTimeout(r, 400))
+                                ]);
+                            } catch(e) {
+                                console.warn('Sync on openQuotation error:', e);
+                            }
                         }
                     }
                     window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}`;
