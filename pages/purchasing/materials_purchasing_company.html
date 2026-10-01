@@ -4377,7 +4377,7 @@
                 }
                 
                 if (this.isEditMode) {
-                    const proj = this.projects.find(p => p.id === this.currentProjectId);
+                    const proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
                     if (proj) {
                         proj.name = name;
                         proj.code = code;
@@ -4389,11 +4389,29 @@
                         proj.status = status;
                         proj.remarks = remarks;
                         
+                        // Immediately update UI & workflow
+                        this.updateProjectDetailsUI(proj);
+                        this.updateWorkflowUI(proj);
+                        this.renderProjects();
+                        
+                        // Immediately refresh lightweight localStorage cache so cross-page actions have fresh shop
+                        try {
+                            const lightProjects = this.projects.map(p => {
+                                const pCopy = { ...p };
+                                if (Array.isArray(pCopy.items)) {
+                                    pCopy.items = pCopy.items.map(it => {
+                                        const { images, ...lightItem } = it;
+                                        return lightItem;
+                                    });
+                                }
+                                return pCopy;
+                            });
+                            localStorage.setItem('company_material_projects', JSON.stringify(lightProjects));
+                        } catch(e) {}
+                        
                         // Sync to firebase
                         if (window.saveProjectToFirestore) {
                             window.saveProjectToFirestore(proj);
-                        } else {
-                            this.updateProjectDetailsUI(proj);
                         }
                     }
                 } else {

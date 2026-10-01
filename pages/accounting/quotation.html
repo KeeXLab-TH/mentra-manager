@@ -4696,6 +4696,13 @@
         let isImportingProject = false;
         let hasAutoImported = false;
 
+        // Auto-refresh if restored from browser bfcache (Back/Forward navigation)
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
         // --- Initialization ---
         async function initializePage() {
             const urlParams = new URLSearchParams(window.location.search);

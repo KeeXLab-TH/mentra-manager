@@ -4604,7 +4604,10 @@
                 document.getElementById('modal-proj-date').value = proj.date || new Date().toISOString().split('T')[0];
                 document.getElementById('modal-proj-dept').value = proj.department || '';
                 document.getElementById('modal-proj-inst').value = proj.institution || '';
-                const validCompany = (proj.company && proj.company !== proj.institution) ? proj.company : '';
+                let validCompany = (proj.company && proj.company !== proj.institution) ? proj.company : '';
+                if (!validCompany && proj.shop && proj.shop !== proj.institution) {
+                    validCompany = proj.shop;
+                }
                 this.selectedShopsForForm = Array.isArray(validCompany) ? [...validCompany] : (validCompany ? [validCompany] : []);
                 this.updateShopDisplay();
                 this.populateShopDropdown();
@@ -4662,7 +4665,7 @@
                 }
                 
                 if (this.isEditMode) {
-                    const proj = this.projects.find(p => p.id === this.currentProjectId);
+                    const proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
                     if (proj) {
                         proj.name = name;
                         proj.code = code;
@@ -4670,15 +4673,34 @@
                         proj.department = dept;
                         proj.institution = inst;
                         proj.company = company;
+                        proj.shop = company; // Synchronize shop with selected company issuer
                         proj.teacher = teacher;
                         proj.status = status;
                         proj.remarks = remarks;
                         
+                        // Immediately update UI & workflow
+                        this.updateProjectDetailsUI(proj);
+                        this.updateWorkflowUI(proj);
+                        this.renderProjects();
+                        
+                        // Immediately refresh lightweight localStorage cache so cross-page actions have fresh shop
+                        try {
+                            const lightProjects = this.projects.map(p => {
+                                const pCopy = { ...p };
+                                if (Array.isArray(pCopy.items)) {
+                                    pCopy.items = pCopy.items.map(it => {
+                                        const { images, ...lightItem } = it;
+                                        return lightItem;
+                                    });
+                                }
+                                return pCopy;
+                            });
+                            localStorage.setItem('material_projects', JSON.stringify(lightProjects));
+                        } catch(e) {}
+                        
                         // Sync to firebase
                         if (window.saveProjectToFirestore) {
                             window.saveProjectToFirestore(proj);
-                        } else {
-                            this.updateProjectDetailsUI(proj);
                         }
                     }
                 } else {
@@ -4690,6 +4712,7 @@
                         department: dept,
                         institution: inst,
                         company: company,
+                        shop: company,
                         teacher: teacher,
                         status: status,
                         remarks: remarks,
@@ -4710,18 +4733,18 @@
                 if (!proj) return '';
                 let shop = '';
                 const instStr = (proj.institution || '').trim();
-                // 1. Try proj.shop
-                if (proj.shop) {
-                    const s = Array.isArray(proj.shop) ? proj.shop[0] : proj.shop;
-                    if (s && String(s).trim() && String(s).trim() !== instStr) {
-                        shop = String(s).trim();
-                    }
-                }
-                // 2. If no valid proj.shop, try proj.company
-                if (!shop && proj.company) {
+                // 1. Prioritize proj.company (selected by user in the project form)
+                if (proj.company) {
                     const c = Array.isArray(proj.company) ? proj.company[0] : proj.company;
                     if (c && String(c).trim() && String(c).trim() !== instStr) {
                         shop = String(c).trim();
+                    }
+                }
+                // 2. Try proj.shop
+                if (!shop && proj.shop) {
+                    const s = Array.isArray(proj.shop) ? proj.shop[0] : proj.shop;
+                    if (s && String(s).trim() && String(s).trim() !== instStr) {
+                        shop = String(s).trim();
                     }
                 }
                 // 3. Fallback to active workspace or saved issuer company
