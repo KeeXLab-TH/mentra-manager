@@ -1105,7 +1105,6 @@
                             <i class="fa-solid fa-school-flag text-brand-500"></i> เลือกสถานศึกษา
                         </h2>
                     </div>
-                    </div>
                     <div class="flex gap-3">
                         <button onclick="appData.openManageShopsModal()" class="bg-white text-brand-600 border border-brand-200 px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:bg-brand-50 transition-all flex items-center justify-center gap-2" title="จัดการร้านค้า/บริษัท">
                             <i class="fa-solid fa-shop"></i> จัดการร้านค้า
@@ -1114,6 +1113,7 @@
                             <i class="fa-solid fa-plus"></i> เพิ่มสถานศึกษา
                         </button>
                     </div>
+                </div>
 
                 <!-- Institutions List -->
                 <div class="flex flex-col gap-4" id="institutions-grid">
@@ -1952,7 +1952,6 @@
                                 ลบข้อมูล
                             </button>
                         </div>
-                    </div>
                     </div>
                 </div>
             </div>
@@ -6862,23 +6861,6 @@
                             this.hideExcelLoader();
                             setTimeout(() => this.showToast('เกิดข้อผิดพลาดในการวางข้อมูล', 'error'), 300);
                         }
-                        
-                        if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
-
-                        // Update User Online Presence Heartbeat in Firestore
-                        const pingPresence = async () => {
-                            try {
-                                await updateDoc(doc(db, 'users', user.uid), {
-                                    lastActiveAt: new Date().toISOString(),
-                                    isOnline: true,
-                                    lastPageVisited: 'purchasing/materials_purchasing.html'
-                                });
-                            } catch (e) {}
-                        };
-                        pingPresence();
-                        setInterval(pingPresence, 20000);
-
-                        appData.currentUserId = user.uid;
                     }, 400); // Slight delay for UI rendering
                 }
                 

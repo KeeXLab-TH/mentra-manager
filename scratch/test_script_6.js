@@ -1,4 +1,5 @@
-tailwind.config = {
+
+        tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
@@ -22,3 +23,4 @@ tailwind.config = {
                 }
             }
         }
+    

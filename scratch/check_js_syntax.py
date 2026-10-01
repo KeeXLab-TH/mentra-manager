@@ -1,26 +1,35 @@
-import sys, re, subprocess
+import re
+import subprocess
+import tempfile
+import os
 
 with open('pages/purchasing/materials_purchasing.html', 'r', encoding='utf-8') as f:
     html = f.read()
 
-scripts = re.findall(r'<script(?:\s+[^>]*)?>([\s\S]*?)</script>', html, re.IGNORECASE)
+# Extract script tags with inline js
+script_matches = list(re.finditer(r'<script(?:\s+[^>]*)?>(.*?)</script>', html, re.DOTALL | re.I))
 
-print(f"Found {len(scripts)} script tags in materials_purchasing.html")
-
-for idx, script in enumerate(scripts):
-    code = script.strip()
-    if not code:
+for i, match in enumerate(script_matches):
+    tag = match.group(0)
+    # Check if it has src
+    src_match = re.search(r'src=["\']([^"\']+)["\']', tag[:tag.find('>')])
+    if src_match:
+        print(f"Script {i}: external src = {src_match.group(1)}")
         continue
-    # write to temp file and test with node
-    temp_file = f"scratch/test_script_{idx}.js"
-    with open(temp_file, 'w', encoding='utf-8') as tf:
+    
+    code = match.group(1)
+    if not code.strip():
+        continue
+        
+    print(f"Script {i}: inline code length {len(code)}")
+    # write to temp file and test syntax with node -c
+    temp_path = f"scratch/test_script_{i}.js"
+    with open(temp_path, "w", encoding="utf-8") as tf:
         tf.write(code)
-    try:
-        res = subprocess.run(["node", "--check", temp_file], capture_output=True, text=True)
-        if res.returncode != 0:
-            print(f"[ERROR] Script #{idx} has syntax error:")
-            print(res.stderr[:500])
-        else:
-            print(f"[OK] Script #{idx} passed syntax check.")
-    except Exception as e:
-        print(f"Could not run node: {e}")
+    
+    res = subprocess.run(["node", "-c", temp_path], capture_output=True, text=True)
+    if res.returncode != 0:
+        print(f"ERROR in script {i}:")
+        print(res.stderr)
+    else:
+        print(f"Script {i}: JS syntax OK")

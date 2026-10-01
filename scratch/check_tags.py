@@ -5,42 +5,55 @@ class TagChecker(HTMLParser):
         super().__init__()
         self.stack = []
         self.errors = []
-        self.void_elements = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'}
+        self.main_wrapper_closed_at = None
 
     def handle_starttag(self, tag, attrs):
-        if tag.lower() not in self.void_elements:
-            self.stack.append((tag.lower(), self.getpos()))
+        if tag in ('br', 'hr', 'img', 'input', 'link', 'meta', 'source', 'area', 'base', 'col', 'embed', 'param', 'wbr', 'track'):
+            return
+        attrs_dict = dict(attrs)
+        line = self.getpos()[0]
+        self.stack.append((tag, attrs_dict, line))
 
     def handle_endtag(self, tag):
-        t = tag.lower()
-        if t in self.void_elements:
+        if tag in ('br', 'hr', 'img', 'input', 'link', 'meta', 'source', 'area', 'base', 'col', 'embed', 'param', 'wbr', 'track'):
             return
+        line = self.getpos()[0]
         if not self.stack:
-            self.errors.append(f"Unexpected closing tag </{t}> at line {self.getpos()[0]}")
+            self.errors.append(f"Line {line}: Unexpected closing </{tag}> with empty stack")
             return
-        last, pos = self.stack[-1]
-        if last == t:
-            self.stack.pop()
+        
+        # Check if matching top
+        top_tag, top_attrs, top_line = self.stack[-1]
+        if top_tag == tag:
+            popped = self.stack.pop()
+            if 'main-wrapper' in popped[1].get('class', ''):
+                self.main_wrapper_closed_at = line
+                print(f"*** MAIN-WRAPPER CLOSED AT LINE {line} ***")
         else:
-            # find if it matches an earlier tag
-            for i in range(len(self.stack) - 1, -1, -1):
-                if self.stack[i][0] == t:
-                    # popped everything above it
-                    unclosed = self.stack[i+1:]
-                    self.errors.append(f"Mismatched closing </{t}> at line {self.getpos()[0]}, unclosed before it: {[x[0] + '@' + str(x[1][0]) for x in unclosed]}")
-                    self.stack = self.stack[:i]
-                    return
-            self.errors.append(f"Unmatched closing </{t}> at line {self.getpos()[0]} (expected </{last}> from line {pos[0]})")
+            # Mismatched tag
+            # search backwards
+            found_idx = -1
+            for idx in range(len(self.stack) - 1, -1, -1):
+                if self.stack[idx][0] == tag:
+                    found_idx = idx
+                    break
+            if found_idx != -1:
+                # tags unclosed between found_idx and top
+                unclosed = self.stack[found_idx + 1:]
+                for u in unclosed:
+                    if 'main-wrapper' in u[1].get('class', ''):
+                        print(f"*** MAIN-WRAPPER FORCIBLY CLOSED BY </{tag}> AT LINE {line} ***")
+                self.errors.append(f"Line {line}: </{tag}> closed tag from Line {self.stack[found_idx][2]}, leaving unclosed {[u[0] for u in unclosed]} from lines {[u[2] for u in unclosed]}")
+                self.stack = self.stack[:found_idx]
+            else:
+                self.errors.append(f"Line {line}: Stray closing </{tag}> (no matching open tag)")
+
+with open('pages/purchasing/materials_purchasing.html', 'r', encoding='utf-8') as f:
+    html = f.read()
 
 checker = TagChecker()
-with open('pages/purchasing/materials_purchasing.html', 'r', encoding='utf-8') as f:
-    checker.feed(f.read())
+checker.feed(html)
 
-print(f"Total errors: {len(checker.errors)}")
-for err in checker.errors[:20]:
-    print("  ", err)
-
-if checker.stack:
-    print(f"Unclosed tags at EOF: {len(checker.stack)}")
-    for tag, pos in checker.stack[-10:]:
-        print(f"   <{tag}> at line {pos[0]}")
+print(f"\nTotal errors found: {len(checker.errors)}")
+for err in checker.errors[:30]:
+    print(err)
