@@ -1336,12 +1336,18 @@
         }
         #pPageWrapper.compact-fit-1page #pSellerSignatureSpace,
         #pPageWrapper.compact-fit-1page #pBuyerSignatureSpace,
+        #pPageWrapper.compact-fit-1page #pMiddleSignatureSpace,
         #pInvPageWrapper.compact-fit-1page #pSellerSignatureSpace,
-        #pInvPageWrapper.compact-fit-1page #pBuyerSignatureSpace {
+        #pInvPageWrapper.compact-fit-1page #pBuyerSignatureSpace,
+        #pInvPageWrapper.compact-fit-1page #pMiddleSignatureSpace {
             height: 45px !important;
         }
         #pPageWrapper.compact-fit-1page #pLeftSignerTitle,
-        #pPageWrapper.compact-fit-1page #pRightSignerTitle {
+        #pPageWrapper.compact-fit-1page #pMiddleSignerTitle,
+        #pPageWrapper.compact-fit-1page #pRightSignerTitle,
+        #pInvPageWrapper.compact-fit-1page #pLeftSignerTitle,
+        #pInvPageWrapper.compact-fit-1page #pMiddleSignerTitle,
+        #pInvPageWrapper.compact-fit-1page #pRightSignerTitle {
             margin-bottom: 3px !important;
         }
         #pPageWrapper.compact-fit-1page #pDocumentFooter {
@@ -4261,6 +4267,11 @@
                     if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
                     const showDate = document.getElementById('settingShowSignatureDate')?.checked || false;
                     if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showDate ? 'flex' : 'none';
+                    const pBuyerSpaceEl = document.getElementById('pBuyerSignatureSpace');
+                    const pMiddleSpaceEl = document.getElementById('pMiddleSignatureSpace');
+                    if (pBuyerSpaceEl && pMiddleSpaceEl && pBuyerSpaceEl.style.height) {
+                        pMiddleSpaceEl.style.height = pBuyerSpaceEl.style.height;
+                    }
                 }
                 if (pSellerBlock) pSellerBlock.style.width = '215px';
                 if (pBuyerName) {
@@ -6491,6 +6502,11 @@
                     if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
                     const showDate = document.getElementById('settingShowSignatureDate')?.checked || false;
                     if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showDate ? 'flex' : 'none';
+                    const pBuyerSpaceEl = document.getElementById('pBuyerSignatureSpace');
+                    const pMiddleSpaceEl = document.getElementById('pMiddleSignatureSpace');
+                    if (pBuyerSpaceEl && pMiddleSpaceEl && pBuyerSpaceEl.style.height) {
+                        pMiddleSpaceEl.style.height = pBuyerSpaceEl.style.height;
+                    }
                 }
                 if (pSellerBlock) pSellerBlock.style.width = '215px';
                 if (pBuyerNameEl) {
@@ -9039,11 +9055,20 @@
                 pSellerBlock.style.width = (currentDocType === 'invoice') ? '215px' : '280px';
             }
 
+            const pMiddleTitle = document.getElementById('pMiddleSignerTitle');
+            const pMiddleSpace = document.getElementById('pMiddleSignatureSpace');
+
             if (pLeftTitle) {
                 pLeftTitle.style.marginBottom = '4px';
             }
+            if (pMiddleTitle) {
+                pMiddleTitle.style.marginBottom = '4px';
+            }
             if (pBuyerSpace) {
                 pBuyerSpace.style.height = sigSize + 'px';
+            }
+            if (pMiddleSpace) {
+                pMiddleSpace.style.height = sigSize + 'px';
             }
             if (pSellerSpace) {
                 pSellerSpace.style.height = sigSize + 'px';
