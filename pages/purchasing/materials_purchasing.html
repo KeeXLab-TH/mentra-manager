@@ -4908,18 +4908,28 @@
                         } catch(e) {}
                     }
 
+                    let instDetails = {};
                     if (proj) {
+                        instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
+                        
+                        const parsePrice = (v) => {
+                            if (v === undefined || v === null || v === '') return '';
+                            const clean = typeof v === 'string' ? v.replace(/[฿,\s]/g, '') : v;
+                            const num = Number(clean);
+                            return !isNaN(num) ? num : '';
+                        };
+
                         const cleanItems = rawItems.map(it => {
-                            const rawPrice = it.unitPrice !== undefined && it.unitPrice !== null && it.unitPrice !== '' ? Number(it.unitPrice)
-                                           : it.targetPrice !== undefined && it.targetPrice !== null && it.targetPrice !== '' ? Number(it.targetPrice)
-                                           : it.foundPrice !== undefined && it.foundPrice !== null && it.foundPrice !== '' ? Number(it.foundPrice)
+                            const rawPrice = parsePrice(it.unitPrice) !== '' ? parsePrice(it.unitPrice)
+                                           : parsePrice(it.targetPrice) !== '' ? parsePrice(it.targetPrice)
+                                           : parsePrice(it.foundPrice) !== '' ? parsePrice(it.foundPrice)
                                            : '';
                             const hasPrice = rawPrice !== '' && !isNaN(rawPrice) && rawPrice > 0;
                             const price = rawPrice !== '' && !isNaN(rawPrice) ? rawPrice : '';
 
-                            const rawQty = it.qty !== undefined && it.qty !== null && it.qty !== '' ? Number(it.qty) : '';
-                            const qty = rawQty !== '' ? rawQty : (hasPrice ? 1 : '');
+                            const rawQty = it.qty !== undefined && it.qty !== null && it.qty !== '' ? Number(String(it.qty).replace(/[฿,\s]/g, '')) : '';
+                            const qty = rawQty !== '' && !isNaN(rawQty) ? rawQty : (hasPrice ? 1 : '');
 
                             return {
                                 id: it.id,
@@ -4936,7 +4946,6 @@
                             };
                         });
 
-                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const pendingData = {
                             source: 'school',
                             projectId: this.currentProjectId,
@@ -5761,32 +5770,45 @@
 
                     let shopParam = '';
                     let parentRefParam = '';
+                    let instDetails = {};
                     if (proj) {
+                        instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const shopName = this.getProjectShopName(proj);
                         if (shopName) {
                             shopParam = `&shop=${encodeURIComponent(shopName)}`;
                         }
                         const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
-                        const cleanItems = rawItems.map(it => ({
-                            id: it.id,
-                            isHeader: !!it.isHeader,
-                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
-                            customNo: it.customNo || '',
-                            name: it.name || it.desc || '',
-                            desc: it.desc || it.name || '',
-                            qty: Number(it.qty) || 1,
-                            unit: it.unit || 'ชุด',
-                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            storeInfo: it.storeInfo || ''
-                        }));
+                        
+                        const parsePrice = (v, defaultVal = 0) => {
+                            if (v === undefined || v === null || v === '') return defaultVal;
+                            const clean = typeof v === 'string' ? v.replace(/[฿,\s]/g, '') : v;
+                            const num = Number(clean);
+                            return !isNaN(num) ? num : defaultVal;
+                        };
+
+                        const cleanItems = rawItems.map(it => {
+                            const p = parsePrice(it.unitPrice) || parsePrice(it.targetPrice) || parsePrice(it.foundPrice) || 0;
+                            const q = parsePrice(it.qty, 1) || 1;
+                            return {
+                                id: it.id,
+                                isHeader: !!it.isHeader,
+                                mainNo: it.mainNo !== undefined ? it.mainNo : '',
+                                customNo: it.customNo || '',
+                                name: it.name || it.desc || '',
+                                desc: it.desc || it.name || '',
+                                qty: q,
+                                unit: it.unit || 'ชุด',
+                                unitPrice: p,
+                                price: p,
+                                storeInfo: it.storeInfo || ''
+                            };
+                        });
 
                         const parentRef = proj.docWorkflow?.invoice?.parentRef || proj.docWorkflow?.quotation?.docNumber || '';
                         if (parentRef) {
                             parentRefParam = `&parentRef=${encodeURIComponent(parentRef)}`;
                         }
 
-                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const pendingData = {
                             source: 'school',
                             projectId: this.currentProjectId,
@@ -5872,7 +5894,9 @@
 
                     let shopParam = '';
                     let parentRefParam = '';
+                    let instDetails = {};
                     if (proj) {
+                        instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const shopName = this.getProjectShopName(proj);
                         if (shopName) {
                             shopParam = `&shop=${encodeURIComponent(shopName)}`;
@@ -5882,21 +5906,32 @@
                             parentRefParam = `&parentRef=${encodeURIComponent(parentRef)}`;
                         }
                         const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
-                        const cleanItems = rawItems.map(it => ({
-                            id: it.id,
-                            isHeader: !!it.isHeader,
-                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
-                            customNo: it.customNo || '',
-                            name: it.name || it.desc || '',
-                            desc: it.desc || it.name || '',
-                            qty: Number(it.qty) || 1,
-                            unit: it.unit || 'ชุด',
-                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            storeInfo: it.storeInfo || ''
-                        }));
+                        
+                        const parsePrice = (v, defaultVal = 0) => {
+                            if (v === undefined || v === null || v === '') return defaultVal;
+                            const clean = typeof v === 'string' ? v.replace(/[฿,\s]/g, '') : v;
+                            const num = Number(clean);
+                            return !isNaN(num) ? num : defaultVal;
+                        };
 
-                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
+                        const cleanItems = rawItems.map(it => {
+                            const p = parsePrice(it.unitPrice) || parsePrice(it.targetPrice) || parsePrice(it.foundPrice) || 0;
+                            const q = parsePrice(it.qty, 1) || 1;
+                            return {
+                                id: it.id,
+                                isHeader: !!it.isHeader,
+                                mainNo: it.mainNo !== undefined ? it.mainNo : '',
+                                customNo: it.customNo || '',
+                                name: it.name || it.desc || '',
+                                desc: it.desc || it.name || '',
+                                qty: q,
+                                unit: it.unit || 'ชุด',
+                                unitPrice: p,
+                                price: p,
+                                storeInfo: it.storeInfo || ''
+                            };
+                        });
+
                         const pendingData = {
                             source: 'school',
                             projectId: this.currentProjectId,
