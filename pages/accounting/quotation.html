@@ -3200,7 +3200,7 @@
             subName: "",
             themeColor: "#1A6FBF",
             signer: "นายวัฒนชัย เตียวแก",
-            signerRole: "ผู้มีอำนาจลงนาม",
+            signerRole: "ผู้เสนอราคา",
             logo: "../../assets/img/logo.png",
             taxId: "0115568026644",
             phone: "089-924-9871",
@@ -3319,7 +3319,7 @@
                             code: (w.code || w.shortCode || 'MT').toUpperCase(),
                             themeColor: w.color || '#1A6FBF',
                             signer: w.signer || '',
-                            signerRole: w.signerRole || 'ผู้มีอำนาจลงนาม',
+                            signerRole: w.signerRole || 'ผู้เสนอราคา',
                             logo: w.logo || '',
                             taxId: w.taxId || '',
                             phone: w.phone || '',
@@ -3630,9 +3630,9 @@
                 badgeBorder: '#bbf7d0',
                 leftSignerTitle: 'ผู้จ่ายเงิน',
                 buyerRole: '',
-                rightSignerTitle: 'ผู้รับเงิน / ผู้มีอำนาจลงนาม',
+                rightSignerTitle: 'ผู้รับเงิน / ผู้เสนอราคา',
                 sellerRole: '',
-                sellerNameLabel: 'ชื่อผู้รับเงิน / ผู้มีอำนาจลงนาม (Authorized Signer)',
+                sellerNameLabel: 'ชื่อผู้รับเงิน / ผู้เสนอราคา (Authorized Signer)',
                 sellerRoleLabel: 'ตำแหน่ง / หน้าที่ (Position)',
                 firestoreCollection: 'receipts_history',
                 telegramLabel: '🧾 <b>แจ้งเตือนการออกใบเสร็จรับเงิน (Receipt)</b>',
@@ -7978,7 +7978,7 @@
                                 name: w.name || 'บริษัทของท่าน',
                                 themeColor: w.color || '#1A6FBF',
                                 signer: w.signer || '',
-                                signerRole: w.signerRole || 'ผู้มีอำนาจลงนาม',
+                                signerRole: w.signerRole || 'ผู้เสนอราคา',
                                 logo: w.logo || '',
                                 taxId: w.taxId || '',
                                 phone: w.phone || '',
@@ -9678,7 +9678,7 @@
             }
             if (settings.leftSignerTitle) document.getElementById('settingLeftSignerTitle').value = settings.leftSignerTitle;
             if (settings.buyerName !== undefined && document.getElementById('settingBuyerName')) document.getElementById('settingBuyerName').value = settings.buyerName;
-            if (settings.buyerRole !== undefined && settings.buyerRole !== 'ผู้มีอำนาจลงนาม') {
+            if (settings.buyerRole !== undefined && settings.buyerRole !== 'ผู้เสนอราคา') {
                 document.getElementById('settingBuyerRole').value = settings.buyerRole;
             } else {
                 document.getElementById('settingBuyerRole').value = '';
