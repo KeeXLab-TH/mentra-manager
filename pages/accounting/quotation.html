@@ -3152,7 +3152,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
-            initializeFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc, deleteField,
+            initializeFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc, deleteField, onSnapshot,
             persistentLocalCache, persistentMultipleTabManager
         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -3383,6 +3383,7 @@
         // ── Shared Cloud Settings Sync (Admin & Users share the EXACT same templates & signatures) ──
         async function syncQuotationSettingsToCloud(extraData = {}) {
             if (!currentUser) return;
+            window._lastLocalSettingsSaveTime = Date.now();
             try {
                 const payload = {
                     quotationTemplates: window.quotationTemplates || {},
@@ -5075,6 +5076,60 @@
                         if (!globalSettings && (Object.keys(cloudTemplates).length > 0 || Object.keys(window.savedSignaturesByCompany).length > 0)) {
                             syncQuotationSettingsToCloud().catch(() => {});
                         }
+
+                        // ── Setup Real-time Listener for Shared Quotation Templates, Fonts, Sizes & Signatures ──
+                        if (window.unsubscribeSharedTemplates) {
+                            try { window.unsubscribeSharedTemplates(); } catch(e) {}
+                        }
+                        window.unsubscribeSharedTemplates = onSnapshot(doc(db, 'material_settings', 'quotation_templates'), (docSnap) => {
+                            if (!docSnap.exists()) return;
+                            const remoteData = docSnap.data();
+                            if (!remoteData) return;
+
+                            // Skip echo-back if updated by this local client in the last 1.5 seconds
+                            if (window._lastLocalSettingsSaveTime && (Date.now() - window._lastLocalSettingsSaveTime < 1500)) {
+                                return;
+                            }
+
+                            let hasChanges = false;
+                            if (remoteData.quotationTemplates && typeof remoteData.quotationTemplates === 'object') {
+                                Object.keys(remoteData.quotationTemplates).forEach(k => {
+                                    if (remoteData.quotationTemplates[k] && (isEmail(remoteData.quotationTemplates[k].sellerName) || (typeof remoteData.quotationTemplates[k].sellerName === 'string' && remoteData.quotationTemplates[k].sellerName.includes('ธนภูมิ')))) {
+                                        delete remoteData.quotationTemplates[k].sellerName;
+                                    }
+                                });
+                                window.quotationTemplates = Object.assign({}, window.quotationTemplates || {}, remoteData.quotationTemplates);
+                                localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
+                                hasChanges = true;
+                            }
+
+                            if (remoteData.savedSignaturesByCompany && typeof remoteData.savedSignaturesByCompany === 'object') {
+                                window.savedSignaturesByCompany = remoteData.savedSignaturesByCompany;
+                                localStorage.setItem('saved_signatures_by_company', JSON.stringify(window.savedSignaturesByCompany));
+                                renderSavedSignaturesGallery();
+                                hasChanges = true;
+                            }
+
+                            if (remoteData.quotation_global_typography) {
+                                localStorage.setItem('quotation_global_typography', JSON.stringify(remoteData.quotation_global_typography));
+                                hasChanges = true;
+                            }
+                            if (remoteData.quotation_preferred_font) {
+                                localStorage.setItem('quotation_preferred_font', remoteData.quotation_preferred_font);
+                                hasChanges = true;
+                            }
+
+                            if (hasChanges) {
+                                const currentIssuer = (typeof getCurrentIssuerName === 'function') ? getCurrentIssuerName() : null;
+                                if (currentIssuer && !currentIssuer.includes('กรุณาเลือกบริษัท')) {
+                                    applyIssuerTemplate(currentIssuer);
+                                } else {
+                                    applyLivePreview();
+                                }
+                            }
+                        }, (err) => {
+                            console.warn("Shared quotation templates realtime sync error:", err);
+                        });
 
                         renderSavedSignaturesGallery();
 
@@ -7340,9 +7395,9 @@
             };
 
             window.quotationTemplates[currentIssuerDisplay] = templateSettings;
-            localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
-            localStorage.setItem('quotation_preferred_font', templateSettings.fontFamily || 'Sarabun');
-            localStorage.setItem('quotation_global_typography', JSON.stringify({
+
+            // Link global typography across all companies so everyone shares the same font, font sizes, padding, and table styling
+            const globalTypoObj = {
                 fontFamily: templateSettings.fontFamily,
                 fontWeight: templateSettings.fontWeight,
                 fontSize: templateSettings.fontSize,
@@ -7353,8 +7408,20 @@
                 tableHeaderStyle: templateSettings.tableHeaderStyle,
                 tableHeaderAlign: templateSettings.tableHeaderAlign,
                 zebraStripes: templateSettings.zebraStripes,
-                autoPageBreak: templateSettings.autoPageBreak
-            }));
+                autoPageBreak: templateSettings.autoPageBreak,
+                itemsPage1: templateSettings.itemsPage1,
+                itemsPage2Plus: templateSettings.itemsPage2Plus
+            };
+
+            Object.keys(window.quotationTemplates).forEach(k => {
+                if (window.quotationTemplates[k] && typeof window.quotationTemplates[k] === 'object') {
+                    Object.assign(window.quotationTemplates[k], globalTypoObj);
+                }
+            });
+
+            localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
+            localStorage.setItem('quotation_preferred_font', templateSettings.fontFamily || 'Sarabun');
+            localStorage.setItem('quotation_global_typography', JSON.stringify(globalTypoObj));
 
             // Debounced cloud sync (Sync to shared global Firestore so all users & admin share identical templates)
             if (autoSaveTemplateTimeout) clearTimeout(autoSaveTemplateTimeout);
@@ -8162,11 +8229,21 @@
                 finalSettings.sellerRole = shopRole;
             }
 
-            // If this company's saved settings don't explicitly set a custom font, inherit user's preferred font!
-            if (savedSettings) {
-                if (!savedSettings.fontFamily) finalSettings.fontFamily = preferredFont;
-                if (!savedSettings.fontWeight) finalSettings.fontWeight = preferredWeight;
-                if (!savedSettings.fontSize) finalSettings.fontSize = preferredSize;
+            // Always inherit global linked typography across all companies so font, size, and styling stay linked
+            if (globalTypo && Object.keys(globalTypo).length > 0) {
+                if (globalTypo.fontFamily) finalSettings.fontFamily = globalTypo.fontFamily;
+                if (globalTypo.fontWeight) finalSettings.fontWeight = globalTypo.fontWeight;
+                if (globalTypo.fontSize) finalSettings.fontSize = globalTypo.fontSize;
+                if (globalTypo.headerFontSize) finalSettings.headerFontSize = globalTypo.headerFontSize;
+                if (globalTypo.rowPadding !== undefined) finalSettings.rowPadding = globalTypo.rowPadding;
+                if (globalTypo.hdrPadding !== undefined) finalSettings.hdrPadding = globalTypo.hdrPadding;
+                if (globalTypo.tableBorder) finalSettings.tableBorder = globalTypo.tableBorder;
+                if (globalTypo.tableHeaderStyle) finalSettings.tableHeaderStyle = globalTypo.tableHeaderStyle;
+                if (globalTypo.tableHeaderAlign) finalSettings.tableHeaderAlign = globalTypo.tableHeaderAlign;
+                if (globalTypo.zebraStripes !== undefined) finalSettings.zebraStripes = globalTypo.zebraStripes;
+                if (globalTypo.autoPageBreak !== undefined) finalSettings.autoPageBreak = globalTypo.autoPageBreak;
+                if (globalTypo.itemsPage1 !== undefined) finalSettings.itemsPage1 = globalTypo.itemsPage1;
+                if (globalTypo.itemsPage2Plus !== undefined) finalSettings.itemsPage2Plus = globalTypo.itemsPage2Plus;
             }
             
             // Ensure deep properties are not lost if savedSettings exists but lacks them
@@ -8757,6 +8834,13 @@
                     syncFormToPrintArea();
                 });
             }
+
+            // Auto-sync live changes when settings modal is open
+            if (document.getElementById('templateSettingsModal')?.style.display === 'flex') {
+                if (typeof autoSaveCurrentIssuerTemplate === 'function') {
+                    autoSaveCurrentIssuerTemplate();
+                }
+            }
         }
 
         function getCurrentHeaderLayout() {
@@ -8882,9 +8966,8 @@
                 if (!window.quotationTemplates) window.quotationTemplates = {};
                 window.quotationTemplates[currentIssuerDisplay] = templateSettings;
                 
-                localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
-                localStorage.setItem('quotation_preferred_font', templateSettings.fontFamily || 'Sarabun');
-                localStorage.setItem('quotation_global_typography', JSON.stringify({
+                // Link global typography across all companies so everyone shares the same font, font sizes, padding, and table styling
+                const globalTypoObj = {
                     fontFamily: templateSettings.fontFamily,
                     fontWeight: templateSettings.fontWeight,
                     fontSize: templateSettings.fontSize,
@@ -8895,8 +8978,20 @@
                     tableHeaderStyle: templateSettings.tableHeaderStyle,
                     tableHeaderAlign: templateSettings.tableHeaderAlign,
                     zebraStripes: templateSettings.zebraStripes,
-                    autoPageBreak: templateSettings.autoPageBreak
-                }));
+                    autoPageBreak: templateSettings.autoPageBreak,
+                    itemsPage1: templateSettings.itemsPage1,
+                    itemsPage2Plus: templateSettings.itemsPage2Plus
+                };
+
+                Object.keys(window.quotationTemplates).forEach(k => {
+                    if (window.quotationTemplates[k] && typeof window.quotationTemplates[k] === 'object') {
+                        Object.assign(window.quotationTemplates[k], globalTypoObj);
+                    }
+                });
+
+                localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
+                localStorage.setItem('quotation_preferred_font', templateSettings.fontFamily || 'Sarabun');
+                localStorage.setItem('quotation_global_typography', JSON.stringify(globalTypoObj));
                 applyTemplateSettings(templateSettings);
 
                 // Also persist signature to registered shop in memory if matched
