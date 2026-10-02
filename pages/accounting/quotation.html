@@ -3659,10 +3659,11 @@
                 badgeBg: '#f0fdf4',
                 badgeBorder: '#bbf7d0',
                 leftSignerTitle: 'ผู้จ่ายเงิน',
+                middleSignerTitle: 'ผู้รับเงิน',
+                rightSignerTitle: 'ผู้มีอำนาจลงนาม',
                 buyerRole: '',
-                rightSignerTitle: 'ผู้รับเงิน / ผู้เสนอราคา',
                 sellerRole: '',
-                sellerNameLabel: 'ชื่อผู้รับเงิน / ผู้เสนอราคา (Authorized Signer)',
+                sellerNameLabel: 'ผู้มีอำนาจลงนาม (Authorized Signer)',
                 sellerRoleLabel: 'ตำแหน่ง / หน้าที่ (Position)',
                 firestoreCollection: 'receipts_history',
                 telegramLabel: '🧾 <b>แจ้งเตือนการออกใบเสร็จรับเงิน (Receipt)</b>',
@@ -4258,12 +4259,12 @@
             const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
             const companyAuthorizedSigner = getAuthorizedSignerForCompany(currentIssuer);
 
-            if (type === 'invoice') {
+            if (type === 'invoice' || type === 'receipt') {
                 if (pBuyerBlock) pBuyerBlock.style.width = '215px';
                 if (pMiddleBlock) {
                     pMiddleBlock.style.display = 'flex';
                     pMiddleBlock.style.width = '215px';
-                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = 'ผู้ส่งของ';
+                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = config.middleSignerTitle || (type === 'receipt' ? 'ผู้รับเงิน' : 'ผู้ส่งของ');
                     if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
                     const showDate = document.getElementById('settingShowSignatureDate')?.checked || false;
                     if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showDate ? 'flex' : 'none';
@@ -4305,20 +4306,8 @@
             }
             const pSellerName = document.getElementById('pSellerName');
             if (pSellerName) {
-                if (type === 'invoice') {
-                    pSellerName.innerText = formatSignerDisplay(companyAuthorizedSigner);
-                    pSellerName.style.display = 'flex';
-                } else if (type === 'receipt') {
-                    pSellerName.innerText = '';
-                    pSellerName.style.display = 'none';
-                } else {
-                    pSellerName.innerText = formatSignerDisplay(companyAuthorizedSigner);
-                    pSellerName.style.display = 'flex';
-                }
-            }
-            const pSellerSpaceEl = document.getElementById('pSellerSignatureSpace');
-            if (pSellerSpaceEl && type === 'receipt') {
-                pSellerSpaceEl.innerHTML = '';
+                pSellerName.innerText = formatSignerDisplay(companyAuthorizedSigner);
+                pSellerName.style.display = 'flex';
             }
 
             // Form inputs on left panel
@@ -6457,10 +6446,7 @@
             const sellerNameInput = document.getElementById('sellerName');
             const pSellerName = document.getElementById('pSellerName');
             if (sellerNameInput && pSellerName) {
-                if (currentDocType === 'receipt') {
-                    pSellerName.innerText = '';
-                    pSellerName.style.display = 'none';
-                } else if (currentDocType === 'invoice') {
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
                     let sVal = sellerNameInput.value.trim();
                     if (!sVal || isEmail(sVal) || sVal.includes('ธนภูมิ')) {
                         const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
@@ -6484,7 +6470,7 @@
                 }
             }
 
-            // Sync 3-column signature block on invoice
+            // Sync 3-column signature block on invoice and receipt
             const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
             const pMiddleBlock = document.getElementById('pMiddleSignatureBlock');
             const pSellerBlock = document.getElementById('pSellerSignatureBlock');
@@ -6493,12 +6479,13 @@
             const pMiddleSignatureDate = document.getElementById('pMiddleSignatureDate');
             const pBuyerNameEl = document.getElementById('pBuyerName');
 
-            if (currentDocType === 'invoice') {
+            if (currentDocType === 'invoice' || currentDocType === 'receipt') {
                 if (pBuyerBlock) pBuyerBlock.style.width = '215px';
                 if (pMiddleBlock) {
                     pMiddleBlock.style.display = 'flex';
                     pMiddleBlock.style.width = '215px';
-                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = 'ผู้ส่งของ';
+                    const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
+                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = docConfig?.middleSignerTitle || (currentDocType === 'receipt' ? 'ผู้รับเงิน' : 'ผู้ส่งของ');
                     if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
                     const showDate = document.getElementById('settingShowSignatureDate')?.checked || false;
                     if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showDate ? 'flex' : 'none';
@@ -9002,7 +8989,7 @@
             const buyerNameInput = document.getElementById('settingBuyerName');
             let buyerNameVal = buyerNameInput ? buyerNameInput.value.trim() : '';
             if (pBuyerName) {
-                if (currentDocType === 'invoice') {
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
                     pBuyerName.style.display = 'flex';
                     pBuyerName.innerText = '( .................................................... )';
                 } else if (sigFormat === 'line_only' || !buyerNameVal) {
@@ -9015,7 +9002,7 @@
             }
 
             if (pBuyerBlock) {
-                if (currentDocType === 'invoice') {
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
                     pBuyerBlock.style.visibility = 'visible';
                     pBuyerBlock.style.width = '215px';
                     if (pBuyerDots) pBuyerDots.style.display = 'none';
@@ -9041,15 +9028,16 @@
                 }
             }
 
-            // Middle Signature Block (for invoice: ผู้ส่งของ)
+            // Middle Signature Block (for invoice: ผู้ส่งของ, for receipt: ผู้รับเงิน)
             if (pMiddleBlock) {
-                if (currentDocType === 'invoice') {
+                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
                     pMiddleBlock.style.display = 'flex';
                     pMiddleBlock.style.width = '215px';
                     const pMiddleSignerTitle = document.getElementById('pMiddleSignerTitle');
                     const pMiddleSignerName = document.getElementById('pMiddleSignerName');
                     const pMiddleSignatureDate = document.getElementById('pMiddleSignatureDate');
-                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = 'ผู้ส่งของ';
+                    const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
+                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = docConfig?.middleSignerTitle || (currentDocType === 'receipt' ? 'ผู้รับเงิน' : 'ผู้ส่งของ');
                     if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
                     if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showSigDate ? 'flex' : 'none';
                 } else {
@@ -9058,7 +9046,7 @@
             }
 
             if (pSellerBlock) {
-                pSellerBlock.style.width = (currentDocType === 'invoice') ? '215px' : '280px';
+                pSellerBlock.style.width = (currentDocType === 'invoice' || currentDocType === 'receipt') ? '215px' : '280px';
             }
 
             const pMiddleTitle = document.getElementById('pMiddleSignerTitle');
@@ -9080,10 +9068,7 @@
                 pSellerSpace.style.height = sigSize + 'px';
             }
             if (pSellerSpace) {
-                if (currentDocType === 'receipt') {
-                    // ใบเสร็จรับเงิน: ช่องให้เซ็นสด ไม่ใส่ลายเซ็นและไม่ใส่ตราประทับ
-                    pSellerSpace.innerHTML = '';
-                } else if (useSigImg && window.activeSignatures && window.activeSignatures.length > 0) {
+                if (useSigImg && window.activeSignatures && window.activeSignatures.length > 0) {
                     pSellerSpace.innerHTML = window.activeSignatures.map((item, idx) => {
                         const itemSize = item.size || 45;
                         return `
@@ -9097,7 +9082,7 @@
                 }
             }
 
-            // ช่อง ผู้ส่งของ (กลาง) เป็นช่องให้เซ็นสดเท่านั้น ไม่ใส่ลายเซ็นดิจิทัล
+            // ช่อง ผู้ส่งของ / ผู้รับเงิน (กลาง) เป็นช่องให้เซ็นสดเท่านั้น ไม่ใส่ลายเซ็นดิจิทัล
             if (pMiddleSpace) {
                 pMiddleSpace.innerHTML = '';
             }
@@ -9117,10 +9102,10 @@
             const pBuyerRoleEl = document.getElementById('pBuyerRole');
             
             if (pSellerName) {
-                if (currentDocType === 'receipt' || (sigFormat === 'line_only' && currentDocType !== 'invoice')) {
+                if (sigFormat === 'line_only' && currentDocType !== 'invoice' && currentDocType !== 'receipt') {
                     pSellerName.style.display = 'none';
                     pSellerName.innerText = '';
-                } else if (currentDocType === 'invoice') {
+                } else if (currentDocType === 'invoice' || currentDocType === 'receipt') {
                     let sVal = sellerName;
                     if (!sVal || isEmail(sVal) || sVal.includes('ธนภูมิ')) {
                         const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
@@ -10838,12 +10823,8 @@
                 if (formSeller) formSeller.value = sSigner;
                 const pSeller = document.getElementById('pSellerName');
                 if (pSeller) {
-                    if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                        pSeller.innerText = '';
-                        pSeller.style.display = 'none';
-                    } else {
-                        pSeller.innerText = formattedSigner;
-                    }
+                    pSeller.innerText = formattedSigner;
+                    pSeller.style.display = 'flex';
                 }
 
                 const safeSSignerRole = (sSignerRole === 'ผู้มีอำนาจลงนาม' || !sSignerRole) ? 'ผู้เสนอราคา' : sSignerRole;
@@ -10897,12 +10878,8 @@
                 if (formSeller) formSeller.value = mSigner;
                 const pSeller = document.getElementById('pSellerName');
                 if (pSeller) {
-                    if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                        pSeller.innerText = '';
-                        pSeller.style.display = 'none';
-                    } else {
-                        pSeller.innerText = formattedSigner;
-                    }
+                    pSeller.innerText = formattedSigner;
+                    pSeller.style.display = 'flex';
                 }
 
                 const safeMSignerRole = (mSignerRole === 'ผู้มีอำนาจลงนาม' || !mSignerRole) ? 'ผู้เสนอราคา' : mSignerRole;
