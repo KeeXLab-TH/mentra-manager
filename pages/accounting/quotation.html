@@ -2160,6 +2160,22 @@
                                         <!-- Rows added dynamically via JS -->
                                     </tbody>
                                 </table>
+                                <datalist id="standardUnitList">
+                                    <option value="ชุด">
+                                    <option value="อัน">
+                                    <option value="ชิ้น">
+                                    <option value="ตัว">
+                                    <option value="เครื่อง">
+                                    <option value="กล่อง">
+                                    <option value="แพ็ค">
+                                    <option value="เส้น">
+                                    <option value="งาน">
+                                    <option value="งวด">
+                                    <option value="เมตร">
+                                    <option value="รายการ">
+                                    <option value="ครั้ง">
+                                    <option value="เดือน">
+                                </datalist>
                             </div>
                         </div>
 
@@ -5746,25 +5762,16 @@
                     <input type="text" class="table-input item-custom-no" value="${customNoVal}" placeholder="เช่น 1.1" style="text-align: center; color: #475569; font-size: 0.9rem; width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 4px 2px;" oninput="updateRowNumbers(); triggerLiveSync()" title="เลขข้อย่อย (สามารถเว้นว่างหรือแก้ไขได้อิสระ)">
                 </td>
                 <td><input type="text" class="table-input item-desc" value="${data?.desc || ''}" placeholder="ชื่อสินค้า/บริการ หรือรายละเอียดงาน" oninput="triggerLiveSync()"></td>
-                <td><input type="number" class="table-input item-qty" value="${data?.qty !== undefined && data?.qty !== null ? data.qty : 1}" min="0" oninput="calculateRow(this); triggerLiveSync()" style="text-align: center;" placeholder="-"></td>
-                <td>
-                    <select class="table-input item-unit" onchange="triggerLiveSync()">
-                        <option value="" ${(data && data.unit === '') ? 'selected' : ''}>- (เว้นว่าง)</option>
-                        <option value="ชุด" ${(!data || data?.unit === 'ชุด') ? 'selected' : ''}>ชุด</option>
-                        <option value="ตัว" ${data?.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
-                        <option value="ชิ้น" ${data?.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
-                        <option value="เครื่อง" ${data?.unit === 'เครื่อง' ? 'selected' : ''}>เครื่อง</option>
-                        <option value="กล่อง" ${data?.unit === 'กล่อง' ? 'selected' : ''}>กล่อง</option>
-                        <option value="แพ็ค" ${data?.unit === 'แพ็ค' ? 'selected' : ''}>แพ็ค</option>
-                        <option value="เส้น" ${data?.unit === 'เส้น' ? 'selected' : ''}>เส้น</option>
-                        <option value="งาน" ${data?.unit === 'งาน' ? 'selected' : ''}>งาน</option>
-                        <option value="งวด" ${data?.unit === 'งวด' ? 'selected' : ''}>งวด</option>
-                        <option value="เมตร" ${data?.unit === 'เมตร' ? 'selected' : ''}>เมตร</option>
-                        ${(data?.unit && !['', 'ชุด','ตัว','ชิ้น','เครื่อง','กล่อง','แพ็ค','เส้น','งาน','งวด','เมตร'].includes(data.unit)) ? `<option value="${data.unit}" selected>${data.unit}</option>` : ''}
-                    </select>
+                <td style="text-align: center; vertical-align: middle; padding: 4px;">
+                    <input type="number" class="table-input item-qty" value="${(data && data.qty !== undefined && data.qty !== null) ? data.qty : (!data ? 1 : '')}" min="0" oninput="calculateRow(this); triggerLiveSync()" style="text-align: center; width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 4px 2px;" placeholder="-">
                 </td>
-                <td><input type="number" class="table-input item-price" value="${data?.price !== undefined && data?.price !== null && data?.price !== '' ? data.price : ''}" min="0" step="0.01" oninput="calculateRow(this); triggerLiveSync()" style="text-align: right;" placeholder="-"></td>
-                <td style="vertical-align: middle; text-align: right; font-weight: 600; color: #1e293b;" class="item-total-text">-</td>
+                <td style="text-align: center; vertical-align: middle; padding: 4px;">
+                    <input type="text" list="standardUnitList" class="table-input item-unit" value="${data?.unit !== undefined && data?.unit !== null ? data.unit : (!data ? 'ชุด' : '')}" placeholder="หน่วย" oninput="triggerLiveSync()" style="text-align: center; width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 4px 2px;" title="พิมพ์หน่วยเอง หรือเลือกจากรายการ (เว้นว่างได้)">
+                </td>
+                <td style="text-align: right; vertical-align: middle; padding: 4px;">
+                    <input type="number" class="table-input item-price" value="${(data && data.price !== undefined && data.price !== null && data.price !== '') ? data.price : ''}" min="0" step="0.01" oninput="calculateRow(this); triggerLiveSync()" style="text-align: right; width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 4px 2px;" placeholder="-">
+                </td>
+                <td style="vertical-align: middle; text-align: right; font-weight: 600; color: #1e293b; padding-right: 8px;" class="item-total-text">-</td>
                 <td class="col-action" style="vertical-align: middle;">
                     <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
                         <button type="button" class="btn btn-outline" style="padding: 0.25rem 0.45rem; border-color: #cbd5e1; color: #475569;" onclick="duplicateTableRow(this)" title="คัดลอกรายการนี้"><i class='bx bx-copy'></i></button>
@@ -5841,9 +5848,9 @@
             if (isHeader) {
                 addHeaderRow({ mainNo, customNo, desc });
             } else {
-                const qty = tr.querySelector('.item-qty')?.value || '1';
-                const unit = tr.querySelector('.item-unit')?.value || 'ชุด';
-                const price = tr.querySelector('.item-price')?.value || '0';
+                const qty = tr.querySelector('.item-qty')?.value ?? '';
+                const unit = tr.querySelector('.item-unit')?.value ?? '';
+                const price = tr.querySelector('.item-price')?.value ?? '';
                 addTableRow({ mainNo, customNo, desc, qty, unit, price });
             }
             if (typeof showToast === 'function') {
@@ -10465,10 +10472,14 @@
                 tbody.innerHTML = '';
                 
                 proj.items.forEach(item => {
-                    const price = item.unitPrice || item.targetPrice || item.foundPrice || 0;
-                    const qtyVal = item.qty || 1;
+                    const rawPrice = item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '' ? Number(item.unitPrice) : (item.price !== undefined && item.price !== null && item.price !== '' ? Number(item.price) : (item.targetPrice !== undefined && item.targetPrice !== null && item.targetPrice !== '' ? Number(item.targetPrice) : (item.foundPrice !== undefined && item.foundPrice !== null && item.foundPrice !== '' ? Number(item.foundPrice) : '')));
+                    const hasPrice = rawPrice !== '' && !isNaN(Number(rawPrice)) && Number(rawPrice) > 0;
+                    const price = hasPrice ? Number(rawPrice) : (rawPrice !== '' && !isNaN(Number(rawPrice)) ? Number(rawPrice) : '');
                     
-                    let displayName = item.name || '';
+                    const rawQty = item.qty !== undefined && item.qty !== null && item.qty !== '' ? Number(item.qty) : '';
+                    const qtyVal = rawQty !== '' ? rawQty : (hasPrice ? 1 : '');
+                    
+                    let displayName = item.desc || item.name || '';
                     if (item.storeInfo && item.storeInfo.trim() !== '') {
                         displayName += ` (ร้าน: ${item.storeInfo.trim()})`;
                     }
@@ -10481,7 +10492,7 @@
                             customNo: item.customNo || '',
                             desc: displayName,
                             qty: qtyVal,
-                            unit: item.unit || 'ชุด',
+                            unit: item.unit || '',
                             price: price
                         });
                     }
