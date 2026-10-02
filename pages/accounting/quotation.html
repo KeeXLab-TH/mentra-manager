@@ -3282,9 +3282,10 @@
         function getAuthorizedSignerRoleForCompany(companyName) {
             const shop = findRegisteredShop(companyName);
             if (shop && shop.signerRole && shop.signerRole.trim()) {
-                return shop.signerRole.trim();
+                const r = shop.signerRole.trim();
+                return (r === 'ผู้มีอำนาจลงนาม') ? 'ผู้เสนอราคา' : r;
             }
-            return MENTRA_OFFICIAL.signerRole;
+            return MENTRA_OFFICIAL.signerRole || 'ผู้เสนอราคา';
         }
 
         function getCurrentShopCode() {
@@ -4989,16 +4990,16 @@
                             pSeller.innerText = formatSignerDisplay(authorizedSigner);
                         }
                         const sellerRoleInput = document.getElementById('sellerRole');
-                        if (sellerRoleInput && (!sellerRoleInput.value || sellerRoleInput.value.trim() === '')) {
-                            sellerRoleInput.value = authorizedRole;
+                        if (sellerRoleInput && (!sellerRoleInput.value || sellerRoleInput.value.trim() === '' || sellerRoleInput.value.trim() === 'ผู้มีอำนาจลงนาม')) {
+                            sellerRoleInput.value = authorizedRole || 'ผู้เสนอราคา';
                         }
                         const settingRole = document.getElementById('settingSellerRole');
-                        if (settingRole && (!settingRole.value || settingRole.value.trim() === '')) {
-                            settingRole.value = authorizedRole;
+                        if (settingRole && (!settingRole.value || settingRole.value.trim() === '' || settingRole.value.trim() === 'ผู้มีอำนาจลงนาม')) {
+                            settingRole.value = authorizedRole || 'ผู้เสนอราคา';
                         }
                         const pSellerRole = document.getElementById('pSellerRole');
-                        if (pSellerRole && (!pSellerRole.innerText || pSellerRole.innerText.trim() === '')) {
-                            pSellerRole.innerText = authorizedRole;
+                        if (pSellerRole && (!pSellerRole.innerText || pSellerRole.innerText.trim() === '' || pSellerRole.innerText.trim() === 'ผู้มีอำนาจลงนาม')) {
+                            pSellerRole.innerText = authorizedRole || 'ผู้เสนอราคา';
                         }
 
                         // Robust Local & Cloud Sync: Merge data instead of overwriting to prevent data loss
@@ -6407,14 +6408,15 @@
                     pSellerRole.style.display = 'none';
                 } else {
                     let rVal = sellerRoleInput.value.trim();
-                    if (!rVal) {
+                    if (!rVal || rVal === 'ผู้มีอำนาจลงนาม') {
                         const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                        rVal = getAuthorizedSignerRoleForCompany(currentIssuer);
+                        rVal = getAuthorizedSignerRoleForCompany(currentIssuer) || 'ผู้เสนอราคา';
+                        if (rVal === 'ผู้มีอำนาจลงนาม') rVal = 'ผู้เสนอราคา';
                         sellerRoleInput.value = rVal;
                     }
                     const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
                     const defaultRole = (docConfig && currentDocType !== 'quotation') ? docConfig.sellerRole : rVal;
-                    pSellerRole.innerText = defaultRole || 'ผู้เสนอราคา';
+                    pSellerRole.innerText = (defaultRole === 'ผู้มีอำนาจลงนาม' || !defaultRole) ? 'ผู้เสนอราคา' : defaultRole;
                     if (document.getElementById('settingSignatureFormat')?.value !== 'line_only') {
                         pSellerRole.style.display = 'flex';
                     }
@@ -8573,7 +8575,12 @@
                 sellerName = formatSignerDisplay(getAuthorizedSignerForCompany(currentIssuer));
                 if (sellerNameInput) sellerNameInput.value = sellerName;
             }
-            const sellerRole = document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา';
+            let sellerRole = document.getElementById('settingSellerRole')?.value || 'ผู้เสนอราคา';
+            if (sellerRole === 'ผู้มีอำนาจลงนาม') {
+                sellerRole = 'ผู้เสนอราคา';
+                const sRoleEl = document.getElementById('settingSellerRole');
+                if (sRoleEl) sRoleEl.value = 'ผู้เสนอราคา';
+            }
             const leftSignerTitle = document.getElementById('settingLeftSignerTitle') ? document.getElementById('settingLeftSignerTitle').value : 'ผู้สั่งซื้อ';
             const buyerRole = document.getElementById('settingBuyerRole') ? document.getElementById('settingBuyerRole').value : '';
             const sincerelyYours = document.getElementById('settingSincerelyYours') ? document.getElementById('settingSincerelyYours').value : 'ขอแสดงความนับถือ / Sincerely Yours,';
@@ -8977,7 +8984,7 @@
                 if (pLeftSigner) pLeftSigner.innerText = docConfig.leftSignerTitle;
                 if (pRightSigner) pRightSigner.innerText = docConfig.rightSignerTitle;
             } else {
-                if (pSellerRole) pSellerRole.innerText = sellerRole;
+                if (pSellerRole) pSellerRole.innerText = (sellerRole === 'ผู้มีอำนาจลงนาม' || !sellerRole) ? 'ผู้เสนอราคา' : sellerRole;
                 if (pLeftSigner) pLeftSigner.innerText = leftSignerTitle;
                 if (pRightSigner) pRightSigner.innerText = sincerelyYours;
                 if (pBuyerRoleEl) pBuyerRoleEl.innerText = buyerRole || '';
@@ -9668,13 +9675,15 @@
                 if (formSellerName) formSellerName.value = companyAuthorizedSigner;
             }
             if (settings.sellerRole && settings.sellerRole.trim()) {
-                document.getElementById('settingSellerRole').value = settings.sellerRole;
+                const sRoleClean = (settings.sellerRole.trim() === 'ผู้มีอำนาจลงนาม') ? 'ผู้เสนอราคา' : settings.sellerRole.trim();
+                document.getElementById('settingSellerRole').value = sRoleClean;
                 const formSellerRole = document.getElementById('sellerRole');
-                if (formSellerRole) formSellerRole.value = settings.sellerRole;
+                if (formSellerRole) formSellerRole.value = sRoleClean;
             } else {
-                document.getElementById('settingSellerRole').value = companyAuthorizedRole;
+                const sRoleClean = (companyAuthorizedRole === 'ผู้มีอำนาจลงนาม' || !companyAuthorizedRole) ? 'ผู้เสนอราคา' : companyAuthorizedRole;
+                document.getElementById('settingSellerRole').value = sRoleClean;
                 const formSellerRole = document.getElementById('sellerRole');
-                if (formSellerRole) formSellerRole.value = companyAuthorizedRole;
+                if (formSellerRole) formSellerRole.value = sRoleClean;
             }
             if (settings.leftSignerTitle) document.getElementById('settingLeftSignerTitle').value = settings.leftSignerTitle;
             if (settings.buyerName !== undefined && document.getElementById('settingBuyerName')) document.getElementById('settingBuyerName').value = settings.buyerName;
@@ -10668,17 +10677,18 @@
                     }
                 }
 
+                const safeSSignerRole = (sSignerRole === 'ผู้มีอำนาจลงนาม' || !sSignerRole) ? 'ผู้เสนอราคา' : sSignerRole;
                 const setRole = document.getElementById('settingSellerRole');
-                if (setRole) setRole.value = sSignerRole;
+                if (setRole) setRole.value = safeSSignerRole;
                 const formRole = document.getElementById('sellerRole');
-                if (formRole) formRole.value = sSignerRole;
+                if (formRole) formRole.value = safeSSignerRole;
                 const pRole = document.getElementById('pSellerRole');
                 if (pRole) {
                     if (currentDocType === 'invoice' || currentDocType === 'receipt') {
                         pRole.innerText = '';
                         pRole.style.display = 'none';
                     } else {
-                        pRole.innerText = sSignerRole;
+                        pRole.innerText = safeSSignerRole;
                     }
                 }
             } else {
@@ -10726,17 +10736,18 @@
                     }
                 }
 
+                const safeMSignerRole = (mSignerRole === 'ผู้มีอำนาจลงนาม' || !mSignerRole) ? 'ผู้เสนอราคา' : mSignerRole;
                 const setRole = document.getElementById('settingSellerRole');
-                if (setRole) setRole.value = mSignerRole;
+                if (setRole) setRole.value = safeMSignerRole;
                 const formRole = document.getElementById('sellerRole');
-                if (formRole) formRole.value = mSignerRole;
+                if (formRole) formRole.value = safeMSignerRole;
                 const pRole = document.getElementById('pSellerRole');
                 if (pRole) {
                     if (currentDocType === 'invoice' || currentDocType === 'receipt') {
                         pRole.innerText = '';
                         pRole.style.display = 'none';
                     } else {
-                        pRole.innerText = mSignerRole;
+                        pRole.innerText = safeMSignerRole;
                     }
                 }
             }

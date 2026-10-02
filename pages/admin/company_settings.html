@@ -1078,7 +1078,7 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">ตำแหน่ง</label>
-                        <input type="text" class="form-input" id="inputSignerRole" placeholder="เช่น ผู้มีอำนาจลงนาม / ผู้จัดการ">
+                        <input type="text" class="form-input" id="inputSignerRole" placeholder="เช่น ผู้เสนอราคา / ผู้จัดการ">
                     </div>
                 </div>
 
@@ -1190,7 +1190,7 @@
                                 phone: w.phone || '',
                                 email: w.email || '',
                                 signer: w.signer || '',
-                                signerRole: w.signerRole || 'ผู้มีอำนาจลงนาม',
+                                signerRole: w.signerRole || 'ผู้เสนอราคา',
                                 themeColor: w.color || '#1A6FBF',
                                 logo: w.logo || ''
                             }));
@@ -1360,7 +1360,7 @@
             document.getElementById('inputPhone').value = '';
             document.getElementById('inputEmail').value = '';
             document.getElementById('inputSigner').value = '';
-            document.getElementById('inputSignerRole').value = 'ผู้มีอำนาจลงนาม';
+            document.getElementById('inputSignerRole').value = 'ผู้เสนอราคา';
             document.getElementById('inputThemeColor').value = '#1A6FBF';
             
             currentUploadedLogoBase64 = '';
@@ -1392,7 +1392,7 @@
             document.getElementById('inputPhone').value = shop.phone || shop.tel || '';
             document.getElementById('inputEmail').value = shop.email || '';
             document.getElementById('inputSigner').value = shop.signer || '';
-            document.getElementById('inputSignerRole').value = shop.signerRole || 'ผู้มีอำนาจลงนาม';
+            document.getElementById('inputSignerRole').value = shop.signerRole || 'ผู้เสนอราคา';
             document.getElementById('inputThemeColor').value = shop.themeColor || '#1A6FBF';
 
             currentUploadedLogoBase64 = shop.logo || '';

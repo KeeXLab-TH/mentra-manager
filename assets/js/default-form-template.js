@@ -15,7 +15,7 @@ window.MENTRA_DEFAULT_TEMPLATES = window.MENTRA_DEFAULT_TEMPLATES || {
         hdrPadding: "6.5",
         tableMarginTop: "0",
         sellerName: "นายวัฒนชัย เตียวแก",
-        sellerRole: "ผู้มีอำนาจลงนาม",
+        sellerRole: "ผู้เสนอราคา",
         leftSignerTitle: "ผู้สั่งซื้อ",
         buyerRole: "ผู้มีอำนาจลงนาม",
         sincerelyYours: "ขอแสดงความนับถือ / Sincerely Yours,",
