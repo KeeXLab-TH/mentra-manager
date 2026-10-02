@@ -5318,10 +5318,6 @@
                                 const el = document.getElementById('toEmail');
                                 if (el) el.value = data.toEmail;
                             }
-                            if (data.toTaxId) {
-                                const el = document.getElementById('toTaxId');
-                                if (el) el.value = data.toTaxId;
-                            }
                             if (data.docDate) {
                                 const el = document.getElementById('docDate');
                                 if (el) el.value = data.docDate;
@@ -10253,35 +10249,37 @@
                         if (document.getElementById('toEmail')) document.getElementById('toEmail').value = proj.email || '';
                         if (document.getElementById('toTaxId')) document.getElementById('toTaxId').value = proj.taxId || '';
 
-                        // Fetch company_details in background to ensure up-to-date address and info
-                        getDoc(doc(db, 'company_material_settings', 'company_details')).then(compSnap => {
-                            if (compSnap.exists()) {
-                                const compDetails = compSnap.data()[instName] || {};
-                                if (compDetails.branchType === 'branch') {
-                                    instName += ` (สาขา: ${compDetails.branchNo || '-'})`;
-                                    if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
-                                } else if (compDetails.branchType === 'hq') {
-                                    instName += ` (สำนักงานใหญ่)`;
-                                    if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
+                        // If address or taxId is missing, try fetching company_details in background without blocking
+                        if (!proj.address || !proj.taxId) {
+                            getDoc(doc(db, 'company_material_settings', 'company_details')).then(compSnap => {
+                                if (compSnap.exists()) {
+                                    const compDetails = compSnap.data()[instName] || {};
+                                    if (compDetails.branchType === 'branch') {
+                                        instName += ` (สาขา: ${compDetails.branchNo || '-'})`;
+                                        if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
+                                    } else if (compDetails.branchType === 'hq') {
+                                        instName += ` (สำนักงานใหญ่)`;
+                                        if (document.getElementById('toCompany')) document.getElementById('toCompany').value = instName;
+                                    }
+                                    if (document.getElementById('toAddress') && !document.getElementById('toAddress').value) {
+                                        document.getElementById('toAddress').value = compDetails.address || '';
+                                    }
+                                    if (document.getElementById('toAttn') && !document.getElementById('toAttn').value) {
+                                        document.getElementById('toAttn').value = compDetails.contact || '';
+                                    }
+                                    if (document.getElementById('toTel') && !document.getElementById('toTel').value) {
+                                        document.getElementById('toTel').value = compDetails.phone || '';
+                                    }
+                                    if (document.getElementById('toEmail') && !document.getElementById('toEmail').value) {
+                                        document.getElementById('toEmail').value = compDetails.email || '';
+                                    }
+                                    if (document.getElementById('toTaxId') && !document.getElementById('toTaxId').value) {
+                                        document.getElementById('toTaxId').value = compDetails.taxId || '';
+                                    }
+                                    triggerLiveSync();
                                 }
-                                if (compDetails.address && document.getElementById('toAddress')) {
-                                    document.getElementById('toAddress').value = compDetails.address;
-                                }
-                                if (compDetails.taxId && document.getElementById('toTaxId')) {
-                                    document.getElementById('toTaxId').value = compDetails.taxId;
-                                }
-                                if (compDetails.contact && document.getElementById('toAttn') && !document.getElementById('toAttn').value) {
-                                    document.getElementById('toAttn').value = compDetails.contact;
-                                }
-                                if (compDetails.phone && document.getElementById('toTel') && !document.getElementById('toTel').value) {
-                                    document.getElementById('toTel').value = compDetails.phone;
-                                }
-                                if (compDetails.email && document.getElementById('toEmail') && !document.getElementById('toEmail').value) {
-                                    document.getElementById('toEmail').value = compDetails.email;
-                                }
-                                triggerLiveSync();
-                            }
-                        }).catch(e => console.warn("Failed background company details:", e));
+                            }).catch(e => console.warn("Failed background company details:", e));
+                        }
                     }
                 } else if (proj.institution && proj.institution.trim() !== '' && proj.institution.trim() !== 'ไม่ระบุสถานศึกษา') {
                     const instName = proj.institution.trim();
@@ -10294,28 +10292,30 @@
                     const resolvedTaxId = proj.taxId || urlTaxParam || '';
                     if (document.getElementById('toTaxId')) document.getElementById('toTaxId').value = resolvedTaxId;
 
-                    // Always fetch latest institution_details from Firestore so recipient address, taxId, contact are never stale
-                    getDoc(doc(db, 'material_settings', 'institution_details')).then(instSnap => {
-                        if (instSnap.exists()) {
-                            const instDetails = instSnap.data()[instName] || {};
-                            if (instDetails.address && document.getElementById('toAddress')) {
-                                document.getElementById('toAddress').value = instDetails.address;
+                    // If address or taxId is missing, try fetching institution_details in background without blocking
+                    if (!proj.address || !resolvedTaxId) {
+                        getDoc(doc(db, 'material_settings', 'institution_details')).then(instSnap => {
+                            if (instSnap.exists()) {
+                                const instDetails = instSnap.data()[instName] || {};
+                                if (document.getElementById('toAddress') && !document.getElementById('toAddress').value) {
+                                    document.getElementById('toAddress').value = instDetails.address || '';
+                                }
+                                if (document.getElementById('toAttn') && !document.getElementById('toAttn').value) {
+                                    document.getElementById('toAttn').value = instDetails.contact || '';
+                                }
+                                if (document.getElementById('toTel') && !document.getElementById('toTel').value) {
+                                    document.getElementById('toTel').value = instDetails.phone || '';
+                                }
+                                if (document.getElementById('toEmail') && !document.getElementById('toEmail').value) {
+                                    document.getElementById('toEmail').value = instDetails.email || '';
+                                }
+                                if (document.getElementById('toTaxId') && !document.getElementById('toTaxId').value) {
+                                    document.getElementById('toTaxId').value = instDetails.taxId || '';
+                                }
+                                triggerLiveSync();
                             }
-                            if (instDetails.taxId && document.getElementById('toTaxId')) {
-                                document.getElementById('toTaxId').value = instDetails.taxId;
-                            }
-                            if (instDetails.contact && document.getElementById('toAttn') && !document.getElementById('toAttn').value) {
-                                document.getElementById('toAttn').value = instDetails.contact;
-                            }
-                            if (instDetails.phone && document.getElementById('toTel') && !document.getElementById('toTel').value) {
-                                document.getElementById('toTel').value = instDetails.phone;
-                            }
-                            if (instDetails.email && document.getElementById('toEmail') && !document.getElementById('toEmail').value) {
-                                document.getElementById('toEmail').value = instDetails.email;
-                            }
-                            triggerLiveSync();
-                        }
-                    }).catch(e => console.warn("Failed background inst details:", e));
+                        }).catch(e => console.warn("Failed background inst details:", e));
+                    }
                 } else {
                     if (proj.company && document.getElementById('toCompany')) document.getElementById('toCompany').value = proj.company;
                     if (proj.address && document.getElementById('toAddress')) document.getElementById('toAddress').value = proj.address;

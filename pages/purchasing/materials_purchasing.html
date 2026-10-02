@@ -3110,10 +3110,6 @@
                         if (p.institution === oldName) {
                             p.institution = newName;
                             p.taxId = taxId;
-                            p.address = address;
-                            p.attn = contact;
-                            p.tel = phone;
-                            p.email = email;
                             if (window.saveProjectToFirestore) {
                                 window.saveProjectToFirestore(p);
                             }
@@ -3121,35 +3117,16 @@
                     });
                 } else {
                     this.institutionDetails[oldName] = newDetails;
-                    // Also propagate taxId, address, contact, phone, email to projects under this institution
+                    // Also propagate taxId to projects under this institution
                     this.projects.forEach(p => {
                         if (p.institution === oldName) {
                             p.taxId = taxId;
-                            p.address = address;
-                            p.attn = contact;
-                            p.tel = phone;
-                            p.email = email;
                             if (window.saveProjectToFirestore) {
                                 window.saveProjectToFirestore(p);
                             }
                         }
                     });
                 }
-
-                // Immediately refresh lightweight localStorage cache so cross-page actions have fresh data
-                try {
-                    const lightProjects = this.projects.map(p => {
-                        const pCopy = { ...p };
-                        if (Array.isArray(pCopy.items)) {
-                            pCopy.items = pCopy.items.map(it => {
-                                const { images, ...lightItem } = it;
-                                return lightItem;
-                            });
-                        }
-                        return pCopy;
-                    });
-                    localStorage.setItem('material_projects', JSON.stringify(lightProjects));
-                } catch(e) {}
                 
                 if (window.saveInstitutionDetailsToFirestore) {
                     await window.saveInstitutionDetailsToFirestore(this.institutionDetails);
@@ -4898,7 +4875,6 @@
                     }
 
                     let shopParam = '';
-                    let instDetails = {};
                     if (proj) {
                         const shopName = this.getProjectShopName(proj);
                         if (shopName) {
@@ -4921,21 +4897,7 @@
                             storeInfo: it.storeInfo || ''
                         }));
 
-                        instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
-                        
-                        // Always prioritize the latest edited institution details
-                        const finalAddress = (instDetails.address !== undefined && instDetails.address !== '') ? instDetails.address : (proj.address || '');
-                        const finalContact = (instDetails.contact !== undefined && instDetails.contact !== '') ? instDetails.contact : (proj.teacher || proj.attn || '');
-                        const finalPhone = (instDetails.phone !== undefined && instDetails.phone !== '') ? instDetails.phone : (proj.tel || '');
-                        const finalEmail = (instDetails.email !== undefined && instDetails.email !== '') ? instDetails.email : (proj.email || '');
-                        const finalTaxId = (instDetails.taxId !== undefined && instDetails.taxId !== '') ? instDetails.taxId : (proj.taxId || '');
-
-                        proj.address = finalAddress;
-                        proj.taxId = finalTaxId;
-                        proj.tel = finalPhone;
-                        proj.email = finalEmail;
-                        proj.attn = finalContact;
-
+                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const pendingData = {
                             source: 'school',
                             projectId: this.currentProjectId,
@@ -4945,11 +4907,11 @@
                             shop: shopName,
                             name: proj.name || '',
                             code: proj.code || '',
-                            address: finalAddress,
-                            attn: finalContact,
-                            tel: finalPhone,
-                            email: finalEmail,
-                            taxId: finalTaxId,
+                            address: proj.address || instDetails.address || '',
+                            attn: proj.teacher || proj.attn || instDetails.contact || '',
+                            tel: proj.tel || instDetails.phone || '',
+                            email: proj.email || instDetails.email || '',
+                            taxId: proj.taxId || instDetails.taxId || '',
                             discountType: proj.discountType || 'percent',
                             discountValue: proj.discountValue || 0,
                             timestamp: Date.now()
@@ -4971,11 +4933,11 @@
                                 docType: 'quotation',
                                 projectId: this.currentProjectId,
                                 toCompany: proj.institution || '',
-                                toAddress: finalAddress,
-                                toAttn: finalContact,
-                                toTel: finalPhone,
-                                toEmail: finalEmail,
-                                toTaxId: finalTaxId,
+                                toAddress: proj.address || instDetails.address || '',
+                                toAttn: proj.teacher || proj.attn || instDetails.contact || '',
+                                toTel: proj.tel || instDetails.phone || '',
+                                toEmail: proj.email || instDetails.email || '',
+                                toTaxId: proj.taxId || instDetails.taxId || '',
                                 items: cleanItems,
                                 shop: shopName,
                                 timestamp: Date.now()
@@ -5786,18 +5748,6 @@
                         }
 
                         const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
-                        const finalAddress = (instDetails.address !== undefined && instDetails.address !== '') ? instDetails.address : (proj.address || '');
-                        const finalContact = (instDetails.contact !== undefined && instDetails.contact !== '') ? instDetails.contact : (proj.teacher || proj.attn || '');
-                        const finalPhone = (instDetails.phone !== undefined && instDetails.phone !== '') ? instDetails.phone : (proj.tel || '');
-                        const finalEmail = (instDetails.email !== undefined && instDetails.email !== '') ? instDetails.email : (proj.email || '');
-                        const finalTaxId = (instDetails.taxId !== undefined && instDetails.taxId !== '') ? instDetails.taxId : (proj.taxId || '');
-
-                        proj.address = finalAddress;
-                        proj.taxId = finalTaxId;
-                        proj.tel = finalPhone;
-                        proj.email = finalEmail;
-                        proj.attn = finalContact;
-
                         const pendingData = {
                             source: 'school',
                             projectId: this.currentProjectId,
@@ -5808,11 +5758,11 @@
                             name: proj.name || '',
                             code: proj.code || '',
                             parentRefNo: parentRef,
-                            address: finalAddress,
-                            attn: finalContact,
-                            tel: finalPhone,
-                            email: finalEmail,
-                            taxId: finalTaxId,
+                            address: proj.address || instDetails.address || '',
+                            attn: proj.teacher || proj.attn || instDetails.contact || '',
+                            tel: proj.tel || instDetails.phone || '',
+                            email: proj.email || instDetails.email || '',
+                            taxId: proj.taxId || instDetails.taxId || '',
                             discountType: proj.discountType || 'percent',
                             discountValue: proj.discountValue || 0,
                             timestamp: Date.now()
@@ -5831,11 +5781,11 @@
                                 docType: 'invoice',
                                 projectId: this.currentProjectId,
                                 toCompany: proj.institution || '',
-                                toAddress: finalAddress,
-                                toAttn: finalContact,
-                                toTel: finalPhone,
-                                toEmail: finalEmail,
-                                toTaxId: finalTaxId,
+                                toAddress: proj.address || instDetails.address || '',
+                                toAttn: proj.teacher || proj.attn || instDetails.contact || '',
+                                toTel: proj.tel || instDetails.phone || '',
+                                toEmail: proj.email || instDetails.email || '',
+                                toTaxId: proj.taxId || instDetails.taxId || '',
                                 parentRefNo: parentRef,
                                 items: cleanItems,
                                 shop: shopName,
@@ -5883,7 +5833,6 @@
 
                     let shopParam = '';
                     let parentRefParam = '';
-                    let instDetails = {};
                     if (proj) {
                         const shopName = this.getProjectShopName(proj);
                         if (shopName) {
@@ -5908,19 +5857,7 @@
                             storeInfo: it.storeInfo || ''
                         }));
 
-                        instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
-                        const finalAddress = (instDetails.address !== undefined && instDetails.address !== '') ? instDetails.address : (proj.address || '');
-                        const finalContact = (instDetails.contact !== undefined && instDetails.contact !== '') ? instDetails.contact : (proj.teacher || proj.attn || '');
-                        const finalPhone = (instDetails.phone !== undefined && instDetails.phone !== '') ? instDetails.phone : (proj.tel || '');
-                        const finalEmail = (instDetails.email !== undefined && instDetails.email !== '') ? instDetails.email : (proj.email || '');
-                        const finalTaxId = (instDetails.taxId !== undefined && instDetails.taxId !== '') ? instDetails.taxId : (proj.taxId || '');
-
-                        proj.address = finalAddress;
-                        proj.taxId = finalTaxId;
-                        proj.tel = finalPhone;
-                        proj.email = finalEmail;
-                        proj.attn = finalContact;
-
+                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const pendingData = {
                             source: 'school',
                             projectId: this.currentProjectId,
@@ -5931,11 +5868,11 @@
                             name: proj.name || '',
                             code: proj.code || '',
                             parentRefNo: parentRef,
-                            address: finalAddress,
-                            attn: finalContact,
-                            tel: finalPhone,
-                            email: finalEmail,
-                            taxId: finalTaxId,
+                            address: proj.address || instDetails.address || '',
+                            attn: proj.teacher || proj.attn || instDetails.contact || '',
+                            tel: proj.tel || instDetails.phone || '',
+                            email: proj.email || instDetails.email || '',
+                            taxId: proj.taxId || instDetails.taxId || '',
                             discountType: proj.discountType || 'percent',
                             discountValue: proj.discountValue || 0,
                             timestamp: Date.now()
@@ -5954,11 +5891,11 @@
                                 docType: 'receipt',
                                 projectId: this.currentProjectId,
                                 toCompany: proj.institution || '',
-                                toAddress: finalAddress,
-                                toAttn: finalContact,
-                                toTel: finalPhone,
-                                toEmail: finalEmail,
-                                toTaxId: finalTaxId,
+                                toAddress: proj.address || instDetails.address || '',
+                                toAttn: proj.teacher || proj.attn || instDetails.contact || '',
+                                toTel: proj.tel || instDetails.phone || '',
+                                toEmail: proj.email || instDetails.email || '',
+                                toTaxId: proj.taxId || instDetails.taxId || '',
                                 parentRefNo: parentRef,
                                 items: cleanItems,
                                 shop: shopName,
