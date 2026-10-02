@@ -5441,23 +5441,33 @@
                         let authImportId = urlParams.get('projectId');
                         let authImportSource = urlParams.get('source') || 'school';
 
-                        if (!hasAutoImported && !isImportingProject) {
-                            if (!authImportId) {
-                                try {
-                                    const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
-                                    if (pRaw) {
-                                        const pData = JSON.parse(pRaw);
-                                        if (pData && pData.projectId && (Date.now() - (pData.timestamp || 0) < 600000)) {
-                                            authImportId = String(pData.projectId);
-                                            authImportSource = pData.source || 'school';
+                        // Auth-phase import: retry-safe (handles race when initializePage is still awaiting Firestore)
+                        (async () => {
+                            // If initializePage is still in-flight, wait until it releases the lock (up to 4 seconds)
+                            if (isImportingProject) {
+                                for (let i = 0; i < 40 && isImportingProject; i++) {
+                                    await new Promise(r => setTimeout(r, 100));
+                                }
+                            }
+
+                            if (!hasAutoImported) {
+                                if (!authImportId) {
+                                    try {
+                                        const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
+                                        if (pRaw) {
+                                            const pData = JSON.parse(pRaw);
+                                            if (pData && pData.projectId && (Date.now() - (pData.timestamp || 0) < 600000)) {
+                                                authImportId = String(pData.projectId);
+                                                authImportSource = pData.source || 'school';
+                                            }
                                         }
-                                    }
-                                } catch(e) {}
+                                    } catch(e) {}
+                                }
+                                if (authImportId) {
+                                    autoImportProject(authImportId, authImportSource).catch(e => console.error("Auth auto-import error:", e));
+                                }
                             }
-                            if (authImportId) {
-                                autoImportProject(authImportId, authImportSource).catch(e => console.error("Auth auto-import error:", e));
-                            }
-                        }
+                        })();
                     } else {
                         // User document deleted!
                         alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
