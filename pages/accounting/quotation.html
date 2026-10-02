@@ -5061,32 +5061,88 @@
                             const docTypeToSwitch = data.docType || (data.refNo?.startsWith('MTI') ? 'invoice' : (data.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
                             switchDocType(docTypeToSwitch, { generateNewRef: false });
 
-                            if (data.refNo) document.getElementById('refNo').value = data.refNo;
-                            if (data.toCompany) document.getElementById('toCompany').value = data.toCompany;
-                            if (data.toAddress) document.getElementById('toAddress').value = data.toAddress;
-                            if (data.toAttn) document.getElementById('toAttn').value = data.toAttn;
-                            if (data.toTel) document.getElementById('toTel').value = data.toTel;
-                            if (data.toEmail) document.getElementById('toEmail').value = data.toEmail;
-                            if (data.docDate) document.getElementById('docDate').value = data.docDate;
-                            if (data.termValidity) document.getElementById('termValidity').value = data.termValidity;
-                            if (data.termDelivery) document.getElementById('termDelivery').value = data.termDelivery;
-                            if (data.termPayment) document.getElementById('termPayment').value = data.termPayment;
-                            if (data.remark) document.getElementById('remark').value = data.remark;
+                            // Apply issuer / shop branding template if present
+                            if (data.issuer && typeof applyIssuerTemplate === 'function') {
+                                try {
+                                    applyIssuerTemplate(data.issuer);
+                                } catch (e) {
+                                    console.warn("Could not apply issuer template:", e);
+                                }
+                            }
+
+                            if (data.refNo) {
+                                const el = document.getElementById('refNo');
+                                if (el) el.value = data.refNo;
+                            }
+                            if (data.parentRefNo) {
+                                const pEl = document.getElementById('parentRefNo');
+                                if (pEl) pEl.value = data.parentRefNo;
+                                if (typeof workflowHistory !== 'undefined') {
+                                    workflowHistory.parentRefNo = data.parentRefNo;
+                                }
+                            }
+                            if (data.toCompany) {
+                                const el = document.getElementById('toCompany');
+                                if (el) el.value = data.toCompany;
+                            }
+                            if (data.toAddress) {
+                                const el = document.getElementById('toAddress');
+                                if (el) el.value = data.toAddress;
+                            }
+                            if (data.toAttn) {
+                                const el = document.getElementById('toAttn');
+                                if (el) el.value = data.toAttn;
+                            }
+                            if (data.toTel) {
+                                const el = document.getElementById('toTel');
+                                if (el) el.value = data.toTel;
+                            }
+                            if (data.toEmail) {
+                                const el = document.getElementById('toEmail');
+                                if (el) el.value = data.toEmail;
+                            }
+                            if (data.docDate) {
+                                const el = document.getElementById('docDate');
+                                if (el) el.value = data.docDate;
+                            }
+                            if (data.termValidity) {
+                                const el = document.getElementById('termValidity');
+                                if (el) el.value = data.termValidity;
+                            }
+                            if (data.termDelivery) {
+                                const el = document.getElementById('termDelivery');
+                                if (el) el.value = data.termDelivery;
+                            }
+                            if (data.termPayment) {
+                                const el = document.getElementById('termPayment');
+                                if (el) el.value = data.termPayment;
+                            }
+                            if (data.remark) {
+                                const el = document.getElementById('remark');
+                                if (el) el.value = data.remark;
+                            }
 
                             const tbody = document.getElementById('itemsBody');
-                            if (tbody && data.items && data.items.length > 0) {
+                            if (tbody) {
                                 tbody.innerHTML = '';
-                                data.items.forEach(item => {
-                                    if (item.isHeader) {
-                                        addHeaderRow(item);
-                                    } else {
-                                        addTableRow(item);
-                                    }
-                                });
+                                if (data.items && data.items.length > 0) {
+                                    data.items.forEach(item => {
+                                        if (item.isHeader) {
+                                            addHeaderRow(item);
+                                        } else {
+                                            addTableRow(item);
+                                        }
+                                    });
+                                } else {
+                                    addTableRow();
+                                }
                                 updateRowNumbers();
                                 calculateAll();
                             }
                             triggerLiveSync();
+                            if (typeof showToast === 'function') {
+                                showToast(`โหลดข้อมูลเอกสาร ${data.refNo || ''} เรียบร้อยแล้ว`, 'success');
+                            }
                         }
                         window.loadQuotationData = loadQuotationData;
 
@@ -5107,19 +5163,62 @@
 
                         // Support loadPending from sales_documents.html / materials_purchasing.html
                         if (urlParams.get('loadPending') === 'true' && !hasAutoImported) {
-                            try {
-                                const rawPending = localStorage.getItem('pending_load_quotation');
-                                if (rawPending) {
-                                    const docData = JSON.parse(rawPending);
-                                    if (docData && (Date.now() - (docData.timestamp || 0) < 600000)) {
-                                        loadQuotationData(docData);
-                                        hasAutoImported = true;
-                                        localStorage.removeItem('pending_load_quotation');
+                            (async () => {
+                                try {
+                                    let docLoaded = false;
+                                    const rawPending = localStorage.getItem('pending_load_quotation') || sessionStorage.getItem('pending_load_quotation');
+                                    if (rawPending) {
+                                        const docData = JSON.parse(rawPending);
+                                        if (docData) {
+                                            const isExpired = docData.timestamp && (Date.now() - docData.timestamp > 3600000);
+                                            if (!isExpired) {
+                                                loadQuotationData(docData);
+                                                hasAutoImported = true;
+                                                docLoaded = true;
+                                                localStorage.removeItem('pending_load_quotation');
+                                                sessionStorage.removeItem('pending_load_quotation');
+                                            }
+                                        }
                                     }
+
+                                    // Fallback to fetch directly from Firestore if storage was empty
+                                    if (!docLoaded) {
+                                        const paramRef = urlParams.get('refNo');
+                                        const paramDocId = urlParams.get('docId');
+                                        let fetchedData = null;
+
+                                        if (paramDocId) {
+                                            try {
+                                                const sDoc = await getDoc(doc(db, 'sales_documents', paramDocId));
+                                                if (sDoc.exists()) fetchedData = sDoc.data();
+                                            } catch(e) {}
+                                        }
+                                        if (!fetchedData && paramRef) {
+                                            try {
+                                                const sq = query(collection(db, 'sales_documents'), where('refNo', '==', paramRef));
+                                                const sSnap = await getDocs(sq);
+                                                if (!sSnap.empty) fetchedData = sSnap.docs[0].data();
+                                            } catch(e) {}
+                                        }
+                                        if (!fetchedData && currentUser && paramDocId) {
+                                            const collectionsToCheck = ['quotations_history', 'invoices_history', 'receipts_history', 'sales_documents'];
+                                            for (const col of collectionsToCheck) {
+                                                try {
+                                                    const uDoc = await getDoc(doc(db, 'users', currentUser.uid, col, paramDocId));
+                                                    if (uDoc.exists()) { fetchedData = uDoc.data(); break; }
+                                                } catch(e) {}
+                                            }
+                                        }
+
+                                        if (fetchedData) {
+                                            loadQuotationData(fetchedData);
+                                            hasAutoImported = true;
+                                        }
+                                    }
+                                } catch(e) {
+                                    console.error("Error loading pending quotation:", e);
                                 }
-                            } catch(e) {
-                                console.error("Error loading pending quotation:", e);
-                            }
+                            })();
                         }
 
                         let authImportId = urlParams.get('projectId');

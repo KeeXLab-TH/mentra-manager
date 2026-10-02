@@ -1698,15 +1698,23 @@
             const d = filteredDocuments[index];
             if (!d) return;
 
-            // Save document into localStorage so quotation.html can load it
+            const payload = {
+                ...d,
+                timestamp: Date.now()
+            };
+
+            // Save document into both localStorage and sessionStorage
             try {
-                localStorage.setItem('pending_load_quotation', JSON.stringify(d));
+                localStorage.setItem('pending_load_quotation', JSON.stringify(payload));
+                sessionStorage.setItem('pending_load_quotation', JSON.stringify(payload));
             } catch (e) {
                 console.error("Error setting pending_load_quotation:", e);
             }
 
             const type = d.docType || (d.refNo?.startsWith('MTI') ? 'invoice' : (d.refNo?.startsWith('MTR') ? 'receipt' : 'quotation'));
-            window.location.href = `quotation.html?docType=${encodeURIComponent(type)}&loadPending=true`;
+            const cleanRef = (d.refNo && d.refNo.trim() !== '-') ? d.refNo.trim() : '';
+            const docId = d.id || '';
+            window.location.href = `quotation.html?docType=${encodeURIComponent(type)}&loadPending=true&refNo=${encodeURIComponent(cleanRef)}&docId=${encodeURIComponent(docId)}`;
         };
 
         // Delete document modal from detail view
