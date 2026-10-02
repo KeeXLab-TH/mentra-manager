@@ -5746,9 +5746,10 @@
                     <input type="text" class="table-input item-custom-no" value="${customNoVal}" placeholder="เช่น 1.1" style="text-align: center; color: #475569; font-size: 0.9rem; width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 4px 2px;" oninput="updateRowNumbers(); triggerLiveSync()" title="เลขข้อย่อย (สามารถเว้นว่างหรือแก้ไขได้อิสระ)">
                 </td>
                 <td><input type="text" class="table-input item-desc" value="${data?.desc || ''}" placeholder="ชื่อสินค้า/บริการ หรือรายละเอียดงาน" oninput="triggerLiveSync()"></td>
-                <td><input type="number" class="table-input item-qty" value="${data?.qty ?? 1}" min="1" oninput="calculateRow(this); triggerLiveSync()" style="text-align: center;"></td>
+                <td><input type="number" class="table-input item-qty" value="${data?.qty !== undefined && data?.qty !== null ? data.qty : 1}" min="0" oninput="calculateRow(this); triggerLiveSync()" style="text-align: center;" placeholder="-"></td>
                 <td>
                     <select class="table-input item-unit" onchange="triggerLiveSync()">
+                        <option value="" ${(data && data.unit === '') ? 'selected' : ''}>- (เว้นว่าง)</option>
                         <option value="ชุด" ${(!data || data?.unit === 'ชุด') ? 'selected' : ''}>ชุด</option>
                         <option value="ตัว" ${data?.unit === 'ตัว' ? 'selected' : ''}>ตัว</option>
                         <option value="ชิ้น" ${data?.unit === 'ชิ้น' ? 'selected' : ''}>ชิ้น</option>
@@ -5759,11 +5760,11 @@
                         <option value="งาน" ${data?.unit === 'งาน' ? 'selected' : ''}>งาน</option>
                         <option value="งวด" ${data?.unit === 'งวด' ? 'selected' : ''}>งวด</option>
                         <option value="เมตร" ${data?.unit === 'เมตร' ? 'selected' : ''}>เมตร</option>
-                        ${(data?.unit && !['ชุด','ตัว','ชิ้น','เครื่อง','กล่อง','แพ็ค','เส้น','งาน','งวด','เมตร'].includes(data.unit)) ? `<option value="${data.unit}" selected>${data.unit}</option>` : ''}
+                        ${(data?.unit && !['', 'ชุด','ตัว','ชิ้น','เครื่อง','กล่อง','แพ็ค','เส้น','งาน','งวด','เมตร'].includes(data.unit)) ? `<option value="${data.unit}" selected>${data.unit}</option>` : ''}
                     </select>
                 </td>
-                <td><input type="number" class="table-input item-price" value="${data?.price ?? 0}" min="0" step="0.01" oninput="calculateRow(this); triggerLiveSync()" style="text-align: right;"></td>
-                <td style="vertical-align: middle; text-align: right; font-weight: 600; color: #1e293b;" class="item-total-text">0.00</td>
+                <td><input type="number" class="table-input item-price" value="${data?.price !== undefined && data?.price !== null && data?.price !== '' ? data.price : ''}" min="0" step="0.01" oninput="calculateRow(this); triggerLiveSync()" style="text-align: right;" placeholder="-"></td>
+                <td style="vertical-align: middle; text-align: right; font-weight: 600; color: #1e293b;" class="item-total-text">-</td>
                 <td class="col-action" style="vertical-align: middle;">
                     <div style="display: flex; gap: 4px; justify-content: center; align-items: center;">
                         <button type="button" class="btn btn-outline" style="padding: 0.25rem 0.45rem; border-color: #cbd5e1; color: #475569;" onclick="duplicateTableRow(this)" title="คัดลอกรายการนี้"><i class='bx bx-copy'></i></button>
@@ -5886,12 +5887,23 @@
         function calculateRow(input) {
             const tr = input.closest('tr');
             if (!tr) return;
-            const qty = parseFloat(tr.querySelector('.item-qty')?.value) || 0;
-            const price = parseFloat(tr.querySelector('.item-price')?.value) || 0;
-            const total = qty * price;
+            const qtyStr = tr.querySelector('.item-qty')?.value;
+            const priceStr = tr.querySelector('.item-price')?.value;
+            const qty = parseFloat(qtyStr);
+            const price = parseFloat(priceStr);
             const totalEl = tr.querySelector('.item-total-text');
-            if (totalEl) totalEl.innerText = formatNumber(total);
-            tr.dataset.total = total;
+            
+            if (!isNaN(qty) && !isNaN(price) && priceStr !== '' && qtyStr !== '' && price > 0) {
+                const total = qty * price;
+                if (totalEl) totalEl.innerText = formatNumber(total);
+                tr.dataset.total = total;
+            } else if (!isNaN(qty) && !isNaN(price) && priceStr !== '' && qtyStr !== '' && price === 0) {
+                if (totalEl) totalEl.innerText = formatNumber(0);
+                tr.dataset.total = 0;
+            } else {
+                if (totalEl) totalEl.innerText = '-';
+                tr.dataset.total = 0;
+            }
             calculateAll();
         }
 
@@ -6540,11 +6552,19 @@
                     const mainNo = (tr.querySelector('.item-main-no')?.value || '').trim();
                     const customNo = (tr.querySelector('.item-custom-no')?.value || '').trim();
                     const desc = tr.querySelector('.item-desc')?.value || '-';
-                    const qty = tr.querySelector('.item-qty')?.value || '0';
-                    const unit = tr.querySelector('.item-unit')?.value || '-';
-                    const price = parseFloat(tr.querySelector('.item-price')?.value || 0);
-                    const totalText = tr.querySelector('.item-total-text')?.innerText || '0.00';
+                    const qtyStr = tr.querySelector('.item-qty')?.value;
+                    const unitStr = tr.querySelector('.item-unit')?.value || '';
+                    const priceStr = tr.querySelector('.item-price')?.value;
+                    const totalStr = tr.querySelector('.item-total-text')?.innerText || '';
                     const isHeader = tr.querySelector('.item-is-header') ? true : false;
+                    
+                    const hasPrice = priceStr !== '' && priceStr !== null && priceStr !== undefined && !isNaN(parseFloat(priceStr)) && parseFloat(priceStr) > 0;
+                    const hasQty = qtyStr !== '' && qtyStr !== null && qtyStr !== undefined && !isNaN(parseFloat(qtyStr)) && parseFloat(qtyStr) > 0;
+                    
+                    const displayQty = (hasPrice || unitStr !== '') ? (qtyStr !== '' && qtyStr !== undefined ? qtyStr : '') : (hasQty ? qtyStr : '');
+                    const displayUnit = unitStr;
+                    const displayPrice = hasPrice ? formatNumber(parseFloat(priceStr)) : (priceStr === '0' && unitStr !== '' ? formatNumber(0) : '');
+                    const displayTotal = (totalStr !== '-' && totalStr !== '' && (hasPrice || (priceStr === '0' && unitStr !== ''))) ? totalStr : '';
 
                     const formattedDesc = addThaiBreaks(desc || '-');
 
@@ -6588,10 +6608,10 @@
                             <tr style="${rowBorder} letter-spacing: normal; page-break-inside: avoid;">
                                 <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
                                 <td style="padding: ${curRowPadding}px 6px ${curRowPadding}px ${descPadding}; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">${descContent}</td>
-                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
-                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
-                                <td style="padding: ${curRowPadding}px 6px; text-align: right; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
-                                <td style="padding: ${curRowPadding}px 6px; text-align: right; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-weight: 500; font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${displayQty}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${displayUnit}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: right; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${displayPrice}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: right; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-weight: 500; font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${displayTotal}</td>
                             </tr>
                         `;
                     }
@@ -10157,8 +10177,12 @@
 
                 if (finalItems.length > 0) {
                     finalItems.forEach(item => {
-                        const price = Number(item.unitPrice) || Number(item.price) || Number(item.targetPrice) || Number(item.foundPrice) || 0;
-                        const qtyVal = Number(item.qty) || 1;
+                        const rawPrice = item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '' ? Number(item.unitPrice) : (item.price !== undefined && item.price !== null && item.price !== '' ? Number(item.price) : (item.targetPrice !== undefined && item.targetPrice !== null && item.targetPrice !== '' ? Number(item.targetPrice) : (item.foundPrice !== undefined && item.foundPrice !== null && item.foundPrice !== '' ? Number(item.foundPrice) : '')));
+                        const hasPrice = rawPrice !== '' && !isNaN(Number(rawPrice)) && Number(rawPrice) > 0;
+                        const price = hasPrice ? Number(rawPrice) : (rawPrice !== '' && !isNaN(Number(rawPrice)) ? Number(rawPrice) : '');
+                        
+                        const rawQty = item.qty !== undefined && item.qty !== null && item.qty !== '' ? Number(item.qty) : '';
+                        const qtyVal = rawQty !== '' ? rawQty : (hasPrice ? 1 : '');
                         
                         let displayName = item.desc || item.name || '';
                         if (item.storeInfo && item.storeInfo.trim() !== '') {
@@ -10173,7 +10197,7 @@
                                 customNo: item.customNo || '',
                                 desc: displayName,
                                 qty: qtyVal,
-                                unit: item.unit || 'ชุด',
+                                unit: item.unit || '',
                                 price: price
                             });
                         }

@@ -6400,22 +6400,36 @@
 
                 proj.items.forEach((item, index) => {
                     // Calculations
-                    const totalAmt = (item.qty || 0) * (item.unitPrice || 0);
+                    const hasSellPrice = item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '' && !isNaN(Number(item.unitPrice)) && Number(item.unitPrice) > 0;
+                    const hasQty = item.qty !== undefined && item.qty !== null && item.qty !== '' && !isNaN(Number(item.qty)) && Number(item.qty) > 0;
+                    const totalAmt = (hasQty && hasSellPrice) ? (Number(item.qty) * Number(item.unitPrice)) : 0;
+                    
+                    // Display for total sell amount: show currency if priced, '-' if blank/unset
+                    let displayTotalAmt = '-';
+                    if (hasSellPrice && hasQty) {
+                        displayTotalAmt = this.formatCurrency(totalAmt);
+                    } else if (item.unitPrice !== '' && item.unitPrice !== null && item.unitPrice !== undefined && Number(item.unitPrice) === 0 && item.unit) {
+                        displayTotalAmt = this.formatCurrency(0);
+                    }
                     
                     // Profit (%) calculation based on requirement: diff between unitPrice and foundPrice
                     // Profit = unitPrice - foundPrice
                     // Profit % = (Profit / unitPrice) * 100
                     let profitPct = 0;
-                    if (item.unitPrice && item.foundPrice) {
-                        profitPct = ((item.unitPrice - item.foundPrice) / item.foundPrice) * 100;
+                    if (hasSellPrice && item.foundPrice && Number(item.foundPrice) > 0) {
+                        profitPct = ((Number(item.unitPrice) - Number(item.foundPrice)) / Number(item.foundPrice)) * 100;
                     }
                     
                     let profitClass = profitPct > 0 ? 'text-emerald-600' : (profitPct < 0 ? 'text-red-500' : 'text-slate-500');
 
                     // Sum all valid non-header items
                     if (!item.isHeader) {
-                        sumTotal += totalAmt;
-                        sumTarget += (parseFloat(item.qty) || 0) * (parseFloat(item.targetPrice) || 0);
+                        if (hasSellPrice && hasQty) {
+                            sumTotal += totalAmt;
+                        }
+                        if (item.targetPrice !== '' && item.targetPrice !== null && item.targetPrice !== undefined && Number(item.targetPrice) > 0) {
+                            sumTarget += (parseFloat(item.qty) || 0) * (parseFloat(item.targetPrice) || 0);
+                        }
                         const actualFoundTotal = item.foundTotalPrice !== undefined && item.foundTotalPrice !== null && item.foundTotalPrice !== '' ? (parseFloat(item.foundTotalPrice) || 0) : ((parseFloat(item.qty) || 0) * (parseFloat(item.foundPrice) || 0));
                         sumFound += actualFoundTotal;
                     }
@@ -6490,6 +6504,10 @@
                         `;
                     } else {
                         const displayFoundTotal = item.foundTotalPrice !== undefined && item.foundTotalPrice !== null && item.foundTotalPrice !== '' ? item.foundTotalPrice : (item.foundPrice ? Math.round((item.qty || 0) * item.foundPrice * 100) / 100 : '');
+                        const qtyDisplayVal = (item.qty !== undefined && item.qty !== null && item.qty !== '') ? item.qty : '';
+                        const unitPriceDisplayVal = (item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '') ? item.unitPrice : '';
+                        const targetPriceDisplayVal = (item.targetPrice !== undefined && item.targetPrice !== null && item.targetPrice !== '') ? item.targetPrice : '';
+                        
                         tr.innerHTML = `
                             <td class="text-center p-0">
                                 <input type="text" class="excel-input text-center text-slate-700 font-bold" data-id="${item.id}" data-field="mainNo" value="${this.escapeAttr(mainNoDisplay)}" onchange="appData.updateItem('${item.id}', 'mainNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="-" title="เลขข้อหลัก (สามารถเว้นว่างหรือแก้ไขได้อิสระ)">
@@ -6501,19 +6519,19 @@
                                 <input type="text" class="excel-input font-medium text-slate-800 ${nameIndentClass}" data-id="${item.id}" data-field="name" value="${this.escapeAttr(item.name || '')}" onchange="appData.updateItem('${item.id}', 'name', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="ชื่อรายการ">
                             </td>
                             <td>
-                                <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="qty" value="${item.qty}" onchange="appData.updateItem('${item.id}', 'qty', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
+                                <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="qty" value="${qtyDisplayVal}" onchange="appData.updateItem('${item.id}', 'qty', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0" placeholder="-">
                             </td>
                             <td>
                                 <input type="text" class="excel-input text-center" data-id="${item.id}" data-field="unit" value="${this.escapeAttr(item.unit || '')}" onchange="appData.updateItem('${item.id}', 'unit', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="หน่วย">
                             </td>
                             <td>
-                                <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="unitPrice" value="${item.unitPrice}" onchange="appData.updateItem('${item.id}', 'unitPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
+                                <input type="number" class="excel-input text-right" data-id="${item.id}" data-field="unitPrice" value="${unitPriceDisplayVal}" onchange="appData.updateItem('${item.id}', 'unitPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0" step="any" placeholder="-">
                             </td>
                             <td class="col-total p-0">
-                                <div class="px-1 py-2 text-amber-900 text-[13px] sm:text-sm truncate" title="${this.formatCurrency(totalAmt)}">${this.formatCurrency(totalAmt)}</div>
+                                <div class="px-1 py-2 ${displayTotalAmt === '-' ? 'text-slate-400 font-normal text-center' : 'text-amber-900'} text-[13px] sm:text-sm truncate" title="${displayTotalAmt}">${displayTotalAmt}</div>
                             </td>
                             <td>
-                                <input type="number" class="excel-input text-right text-blue-700" data-id="${item.id}" data-field="targetPrice" value="${item.targetPrice}" onchange="appData.updateItem('${item.id}', 'targetPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0">
+                                <input type="number" class="excel-input text-right text-blue-700" data-id="${item.id}" data-field="targetPrice" value="${targetPriceDisplayVal}" onchange="appData.updateItem('${item.id}', 'targetPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0" step="any" placeholder="-">
                             </td>
                             <td>
                                 <input type="number" class="excel-input text-right text-emerald-700 font-semibold" data-id="${item.id}" data-field="foundPrice" value="${item.foundPrice || ''}" onchange="appData.updateItem('${item.id}', 'foundPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0" step="any" placeholder="ทุน/ชิ้น">
@@ -6522,7 +6540,7 @@
                                 <input type="number" class="excel-input text-right text-emerald-700 font-semibold" data-id="${item.id}" data-field="foundTotalPrice" value="${displayFoundTotal}" onchange="appData.updateItem('${item.id}', 'foundTotalPrice', this.value)" onkeydown="appData.handleExcelKeydown(event)" min="0" step="any" placeholder="ทุนรวม">
                             </td>
                             <td class="text-center font-bold ${profitClass}">
-                                ${profitPct !== 0 ? profitPct.toFixed(2) + '%' : '-'}
+                                ${hasSellPrice && item.foundPrice && profitPct !== 0 ? profitPct.toFixed(2) + '%' : '-'}
                             </td>
                             <td>
                                 <input type="text" class="excel-input text-xs" data-id="${item.id}" data-field="storeInfo" placeholder="ชื่อ/เบอร์ร้าน" value="${this.escapeAttr(item.storeInfo || '')}" onchange="appData.updateItem('${item.id}', 'storeInfo', this.value)" onkeydown="appData.handleExcelKeydown(event)">
@@ -6750,10 +6768,10 @@
                     name: '',
                     qty: 1,
                     unit: '',
-                    unitPrice: 0,
-                    targetPrice: 0,
-                    foundPrice: 0,
-                    foundTotalPrice: 0,
+                    unitPrice: '',
+                    targetPrice: '',
+                    foundPrice: '',
+                    foundTotalPrice: '',
                     storeInfo: '',
                     link: ''
                 });
@@ -6776,12 +6794,12 @@
                     mainNo: '',
                     customNo: '',
                     name: '',
-                    qty: 0,
+                    qty: '',
                     unit: '',
-                    unitPrice: 0,
-                    targetPrice: 0,
-                    foundPrice: 0,
-                    foundTotalPrice: 0,
+                    unitPrice: '',
+                    targetPrice: '',
+                    foundPrice: '',
+                    foundTotalPrice: '',
                     storeInfo: '',
                     link: ''
                 });
@@ -6827,44 +6845,54 @@
                 if (!item) return;
 
                 if (['qty', 'unitPrice', 'targetPrice', 'foundPrice', 'foundTotalPrice'].includes(field)) {
-                    const numVal = Number(value) || 0;
-                    
-                    if (field === 'qty') {
-                        item.qty = numVal;
-                        if (item.foundPrice > 0) {
-                            item.foundTotalPrice = Math.round(item.foundPrice * item.qty * 100) / 100;
-                        } else if (item.foundTotalPrice > 0 && item.qty > 0) {
-                            item.foundPrice = Math.round((item.foundTotalPrice / item.qty) * 100) / 100;
+                    const rawVal = (value !== null && value !== undefined) ? String(value).trim() : '';
+                    if (rawVal === '') {
+                        item[field] = '';
+                        if (field === 'qty') {
+                            if (item.foundPrice && Number(item.foundPrice) > 0) item.foundTotalPrice = '';
+                        } else if (field === 'foundPrice') {
+                            item.foundTotalPrice = '';
+                        } else if (field === 'foundTotalPrice') {
+                            item.foundPrice = '';
                         }
-                    } else if (field === 'foundPrice') {
-                        item.foundPrice = numVal;
-                        item.foundTotalPrice = Math.round(numVal * (item.qty || 0) * 100) / 100;
-                        
-                        // Auto-calculate unitPrice if autoMarkup35 is enabled and foundPrice is changed
-                        if (this.autoMarkup35 && item.foundPrice > 0) {
-                            const calculatedPrice = item.foundPrice * 1.35;
-                            // Round up to nearest 5 (e.g. 4 -> 5, 6 -> 10)
-                            item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
-                            item.targetPrice = Math.round(item.unitPrice / 1.35);
+                    } else {
+                        const numVal = Number(rawVal) || 0;
+                        if (field === 'qty') {
+                            item.qty = numVal;
+                            if (item.foundPrice > 0) {
+                                item.foundTotalPrice = Math.round(item.foundPrice * item.qty * 100) / 100;
+                            } else if (item.foundTotalPrice > 0 && item.qty > 0) {
+                                item.foundPrice = Math.round((item.foundTotalPrice / item.qty) * 100) / 100;
+                            }
+                        } else if (field === 'foundPrice') {
+                            item.foundPrice = numVal;
+                            item.foundTotalPrice = Math.round(numVal * (item.qty || 0) * 100) / 100;
+                            
+                            // Auto-calculate unitPrice if autoMarkup35 is enabled and foundPrice is changed
+                            if (this.autoMarkup35 && item.foundPrice > 0) {
+                                const calculatedPrice = item.foundPrice * 1.35;
+                                item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
+                                item.targetPrice = Math.round(item.unitPrice / 1.35);
+                            }
+                        } else if (field === 'foundTotalPrice') {
+                            item.foundTotalPrice = numVal;
+                            const qty = item.qty && item.qty > 0 ? item.qty : 1;
+                            item.foundPrice = Math.round((numVal / qty) * 100) / 100;
+                            
+                            // Auto-calculate unitPrice if autoMarkup35 is enabled and foundPrice is changed
+                            if (this.autoMarkup35 && item.foundPrice > 0) {
+                                const calculatedPrice = item.foundPrice * 1.35;
+                                item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
+                                item.targetPrice = Math.round(item.unitPrice / 1.35);
+                            }
+                        } else if (field === 'unitPrice') {
+                            item.unitPrice = numVal;
+                            if (item.unitPrice > 0) {
+                                item.targetPrice = Math.round(item.unitPrice / 1.35);
+                            }
+                        } else if (field === 'targetPrice') {
+                            item.targetPrice = numVal;
                         }
-                    } else if (field === 'foundTotalPrice') {
-                        item.foundTotalPrice = numVal;
-                        const qty = item.qty && item.qty > 0 ? item.qty : 1;
-                        item.foundPrice = Math.round((numVal / qty) * 100) / 100;
-                        
-                        // Auto-calculate unitPrice if autoMarkup35 is enabled and foundPrice is changed
-                        if (this.autoMarkup35 && item.foundPrice > 0) {
-                            const calculatedPrice = item.foundPrice * 1.35;
-                            item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
-                            item.targetPrice = Math.round(item.unitPrice / 1.35);
-                        }
-                    } else if (field === 'unitPrice') {
-                        item.unitPrice = numVal;
-                        if (item.unitPrice > 0) {
-                            item.targetPrice = Math.round(item.unitPrice / 1.35);
-                        }
-                    } else if (field === 'targetPrice') {
-                        item.targetPrice = numVal;
                     }
                 } else {
                     item[field] = value;
@@ -6945,16 +6973,16 @@
                 }
 
                 const name = (item.name || '').trim();
-                const qty = Number(item.qty) || 0;
+                const qtyVal = (item.qty !== '' && item.qty !== undefined && item.qty !== null) ? Number(item.qty) : null;
                 const unit = (item.unit || '').trim();
-                const unitPrice = Number(item.unitPrice) || 0;
-                const targetPrice = Number(item.targetPrice) || 0;
-                const foundPrice = Number(item.foundPrice) || 0;
+                const unitPriceVal = (item.unitPrice !== '' && item.unitPrice !== undefined && item.unitPrice !== null) ? Number(item.unitPrice) : null;
+                const targetPriceVal = (item.targetPrice !== '' && item.targetPrice !== undefined && item.targetPrice !== null) ? Number(item.targetPrice) : null;
+                const foundPriceVal = (item.foundPrice !== '' && item.foundPrice !== undefined && item.foundPrice !== null) ? Number(item.foundPrice) : null;
                 const link = (item.link || '').trim();
                 const storeInfo = (item.storeInfo || '').trim();
 
                 // Check if row has any data at all
-                const hasAnyData = Boolean(name || qty > 0 || unit || unitPrice > 0 || targetPrice > 0 || foundPrice > 0 || link || storeInfo);
+                const hasAnyData = Boolean(name || (qtyVal !== null && qtyVal > 0) || unit || (unitPriceVal !== null && unitPriceVal > 0) || (targetPriceVal !== null && targetPriceVal > 0) || (foundPriceVal !== null && foundPriceVal > 0) || link || storeInfo);
                 if (!hasAnyData) {
                     return ''; // Completely empty / untouched row
                 }
@@ -6962,12 +6990,17 @@
                 const hasLinkOrStore = Boolean(link !== '' || storeInfo !== '');
 
                 // 🟢 GREEN Criteria: Complete item (name, qty > 0, unit, and price > 0)
-                if (name !== '' && qty > 0 && unit !== '' && unitPrice > 0) {
+                if (name !== '' && qtyVal !== null && qtyVal > 0 && unit !== '' && unitPriceVal !== null && unitPriceVal > 0) {
                     return 'green';
                 }
 
-                // 🔴 RED Criteria: Item added (name, qty, unit) BUT no price AND no store link
-                if (name !== '' && qty > 0 && unit !== '' && unitPrice === 0 && !hasLinkOrStore) {
+                // ⚪ Clean / Title / Note Row: Has a name/title but no unit and no prices (e.g. "แฟลช 2 อัน คือ" / header / note)
+                if (name !== '' && unit === '' && (unitPriceVal === null || unitPriceVal === 0) && (foundPriceVal === null || foundPriceVal === 0) && (targetPriceVal === null || targetPriceVal === 0) && !hasLinkOrStore) {
+                    return ''; // Clean neutral white row, not red or yellow
+                }
+
+                // 🔴 RED Criteria: Item specified with unit (intended to buy unit item) BUT no price AND no store link
+                if (name !== '' && unit !== '' && (unitPriceVal === null || unitPriceVal === 0) && !hasLinkOrStore) {
                     return 'red';
                 }
 
