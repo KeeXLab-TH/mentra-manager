@@ -4317,7 +4317,7 @@
                 }
             }
             const pSellerSpaceEl = document.getElementById('pSellerSignatureSpace');
-            if (pSellerSpaceEl && (type === 'invoice' || type === 'receipt')) {
+            if (pSellerSpaceEl && type === 'receipt') {
                 pSellerSpaceEl.innerHTML = '';
             }
 
@@ -7971,91 +7971,105 @@
 
         // --- Interactive Dragging on Live Preview Signature ---
         function initSignatureDraggable() {
-            const container = document.getElementById('pSellerSignatureSpace');
-            if (!container || container._dragBound) return;
-            container._dragBound = true;
+            const containers = [
+                document.getElementById('pSellerSignatureSpace'),
+                document.getElementById('pMiddleSignatureSpace'),
+            ].filter(Boolean);
 
-            let activeDragItem = null;
-            let startMouseX = 0, startMouseY = 0;
-            let startOffsetX = 0, startOffsetY = 0;
-            let currentActiveObj = null;
+            containers.forEach(container => {
+                if (container._dragBound) return;
+                container._dragBound = true;
 
-            const onMouseDown = (e) => {
-                const targetWrapper = e.target.closest('.sig-drag-item');
-                if (!targetWrapper) return;
+                let activeDragItem = null;
+                let startMouseX = 0, startMouseY = 0;
+                let startOffsetX = 0, startOffsetY = 0;
+                let currentActiveObj = null;
 
-                const activeId = targetWrapper.dataset.id;
-                if (!activeId || !window.activeSignatures) return;
+                const onMouseDown = (e) => {
+                    const targetWrapper = e.target.closest('.sig-drag-item');
+                    if (!targetWrapper) return;
 
-                currentActiveObj = window.activeSignatures.find(a => a.id === activeId);
-                if (!currentActiveObj) return;
+                    const activeId = targetWrapper.dataset.id;
+                    if (!activeId || !window.activeSignatures) return;
 
-                e.preventDefault();
-                e.stopPropagation();
-                activeDragItem = targetWrapper;
+                    currentActiveObj = window.activeSignatures.find(a => a.id === activeId);
+                    if (!currentActiveObj) return;
 
-                startMouseX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-                startMouseY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    activeDragItem = targetWrapper;
 
-                startOffsetX = currentActiveObj.offsetX || 0;
-                startOffsetY = currentActiveObj.offsetY || 0;
+                    startMouseX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+                    startMouseY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
 
-                targetWrapper.style.cursor = 'grabbing';
-                targetWrapper.style.outline = '2px dashed #2563eb';
-                targetWrapper.style.background = 'rgba(37, 99, 235, 0.08)';
-                targetWrapper.style.borderRadius = '4px';
+                    startOffsetX = currentActiveObj.offsetX || 0;
+                    startOffsetY = currentActiveObj.offsetY || 0;
 
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-                document.addEventListener('touchmove', onMouseMove, { passive: false });
-                document.addEventListener('touchend', onMouseUp);
-            };
+                    targetWrapper.style.cursor = 'grabbing';
+                    targetWrapper.style.outline = '2px dashed #2563eb';
+                    targetWrapper.style.background = 'rgba(37, 99, 235, 0.08)';
+                    targetWrapper.style.borderRadius = '4px';
 
-            const onMouseMove = (e) => {
-                if (!activeDragItem || !currentActiveObj) return;
-                if (e.cancelable) e.preventDefault();
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                    document.addEventListener('touchmove', onMouseMove, { passive: false });
+                    document.addEventListener('touchend', onMouseUp);
+                };
 
-                const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-                const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+                const onMouseMove = (e) => {
+                    if (!activeDragItem || !currentActiveObj) return;
+                    if (e.cancelable) e.preventDefault();
 
-                const deltaX = clientX - startMouseX;
-                const deltaY = -(clientY - startMouseY);
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+                    const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
 
-                currentActiveObj.offsetX = Math.max(-120, Math.min(120, Math.round(startOffsetX + deltaX)));
-                currentActiveObj.offsetY = Math.max(-60, Math.min(40, Math.round(startOffsetY + deltaY)));
+                    const deltaX = clientX - startMouseX;
+                    const deltaY = -(clientY - startMouseY);
 
-                activeDragItem.style.bottom = `${-4 + currentActiveObj.offsetY}px`;
-                activeDragItem.style.transform = `translate(calc(-50% + ${currentActiveObj.offsetX}px), 0)`;
+                    currentActiveObj.offsetX = Math.max(-120, Math.min(120, Math.round(startOffsetX + deltaX)));
+                    currentActiveObj.offsetY = Math.max(-60, Math.min(40, Math.round(startOffsetY + deltaY)));
 
-                // Update slider inputs in sidebar
-                const xInput = document.getElementById(`input_x_${currentActiveObj.id}`);
-                const yInput = document.getElementById(`input_y_${currentActiveObj.id}`);
-                const xLbl = document.getElementById(`lbl_x_${currentActiveObj.id}`);
-                const yLbl = document.getElementById(`lbl_y_${currentActiveObj.id}`);
-                if (xInput) xInput.value = currentActiveObj.offsetX;
-                if (yInput) yInput.value = currentActiveObj.offsetY;
-                if (xLbl) xLbl.innerText = currentActiveObj.offsetX + 'px';
-                if (yLbl) yLbl.innerText = currentActiveObj.offsetY + 'px';
-            };
+                    activeDragItem.style.bottom = `${-4 + currentActiveObj.offsetY}px`;
+                    activeDragItem.style.transform = `translate(calc(-50% + ${currentActiveObj.offsetX}px), 0)`;
 
-            const onMouseUp = () => {
-                if (!activeDragItem) return;
-                activeDragItem.style.cursor = 'grab';
-                activeDragItem.style.outline = 'none';
-                activeDragItem.style.background = 'transparent';
-                activeDragItem = null;
-                currentActiveObj = null;
+                    // Sync sibling wrapper (seller & middle share same offset)
+                    const siblingId = activeDragItem.id.replace('pMiddleSigWrapper_', 'pSellerSigWrapper_').replace('pSellerSigWrapper_', 'pMiddleSigWrapper_');
+                    const sibling = document.getElementById(siblingId);
+                    if (sibling) {
+                        sibling.style.bottom = activeDragItem.style.bottom;
+                        sibling.style.transform = activeDragItem.style.transform;
+                    }
 
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-                document.removeEventListener('touchmove', onMouseMove);
-                document.removeEventListener('touchend', onMouseUp);
+                    // Update slider inputs in sidebar
+                    const xInput = document.getElementById(`input_x_${currentActiveObj.id}`);
+                    const yInput = document.getElementById(`input_y_${currentActiveObj.id}`);
+                    const xLbl = document.getElementById(`lbl_x_${currentActiveObj.id}`);
+                    const yLbl = document.getElementById(`lbl_y_${currentActiveObj.id}`);
+                    if (xInput) xInput.value = currentActiveObj.offsetX;
+                    if (yInput) yInput.value = currentActiveObj.offsetY;
+                    if (xLbl) xLbl.innerText = currentActiveObj.offsetX + 'px';
+                    if (yLbl) yLbl.innerText = currentActiveObj.offsetY + 'px';
+                };
 
-                autoSaveCurrentIssuerTemplate();
-            };
+                const onMouseUp = () => {
+                    if (!activeDragItem) return;
+                    activeDragItem.style.cursor = 'grab';
+                    activeDragItem.style.outline = 'none';
+                    activeDragItem.style.background = 'transparent';
+                    activeDragItem = null;
+                    currentActiveObj = null;
 
-            container.addEventListener('mousedown', onMouseDown);
-            container.addEventListener('touchstart', onMouseDown, { passive: false });
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                    document.removeEventListener('touchmove', onMouseMove);
+                    document.removeEventListener('touchend', onMouseUp);
+
+                    autoSaveCurrentIssuerTemplate();
+                };
+
+                container.addEventListener('mousedown', onMouseDown);
+                container.addEventListener('touchstart', onMouseDown, { passive: false });
+            });
         }
 
         async function fetchRegisteredShops() {
@@ -9074,8 +9088,8 @@
                 pSellerSpace.style.height = sigSize + 'px';
             }
             if (pSellerSpace) {
-                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                    // ในหน้าใบส่งของ/ใบแจ้งหนี้ และ ใบเสร็จรับเงิน เป็นช่องให้เซ็นสด ไม่ใส่ลายเซ็นและไม่ใส่ตราประทับ
+                if (currentDocType === 'receipt') {
+                    // ใบเสร็จรับเงิน: ช่องให้เซ็นสด ไม่ใส่ลายเซ็นและไม่ใส่ตราประทับ
                     pSellerSpace.innerHTML = '';
                 } else if (useSigImg && window.activeSignatures && window.activeSignatures.length > 0) {
                     pSellerSpace.innerHTML = window.activeSignatures.map((item, idx) => {
@@ -9088,6 +9102,22 @@
                     }).join('');
                 } else {
                     pSellerSpace.innerHTML = '';
+                }
+            }
+
+            // Render signatures on middle (ผู้ส่งของ) box for invoice
+            if (pMiddleSpace && currentDocType === 'invoice') {
+                if (useSigImg && window.activeSignatures && window.activeSignatures.length > 0) {
+                    pMiddleSpace.innerHTML = window.activeSignatures.map((item, idx) => {
+                        const itemSize = item.size || 45;
+                        return `
+                            <div id="pMiddleSigWrapper_${item.id}" class="sig-drag-item" data-id="${item.id}" style="position: absolute; bottom: ${-4 + (item.offsetY || 0)}px; left: 50%; transform: translate(calc(-50% + ${(item.offsetX || 0)}px), 0); cursor: grab; user-select: none; display: inline-flex; align-items: center; justify-content: center; z-index: ${5 + idx}; transition: outline 0.1s;" title="คลิกลากเพื่อปรับตำแหน่ง (${item.name || 'ลายเซ็น'})">
+                                <img id="mid_sig_img_${item.id}" src="${item.dataUrl}" style="height: ${itemSize}px; max-width: 220px; object-fit: contain; pointer-events: none;" alt="${item.name || 'Signature'}">
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    pMiddleSpace.innerHTML = '';
                 }
             }
 
