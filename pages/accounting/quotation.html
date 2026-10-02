@@ -2530,6 +2530,28 @@
                                     </div>
                                 </div>
 
+                                <!-- Middle Signer Box (Used for Invoice: ผู้ส่งของ) -->
+                                <div id="pMiddleSignatureBlock"
+                                    style="display: none; width: 215px; text-align: center; flex-direction: column; align-items: center; justify-content: flex-start;">
+                                    <div id="pMiddleSignerTitle"
+                                        style="font-weight: 700; font-size: 11px; color: #1e1b4b; margin-bottom: 4px; height: 16px; line-height: 16px; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Sarabun', sans-serif;">
+                                        ผู้ส่งของ</div>
+                                    <div id="pMiddleSignatureSpace"
+                                        style="height: 55px; width: 100%; border-bottom: 1px solid #9ca3af; margin-top: 2px; position: relative; display: flex; align-items: flex-end; justify-content: center; overflow: visible;"></div>
+                                    <div id="pMiddleSignerName"
+                                        style="font-size: 10.5px; color: #374151; margin-top: 4px; height: 16px; line-height: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; font-family: 'Sarabun', sans-serif;">
+                                        ( .................................................... )</div>
+                                    <!-- Middle Date Line -->
+                                    <div id="pMiddleSignatureDate"
+                                        style="display: none; align-items: flex-end; font-size: 10.5px; color: #374151; width: 100%; margin-top: 4px;">
+                                        <span id="pMiddleDateLabel" style="white-space: nowrap; margin-right: 4px; font-weight: 600;">วันที่ / Date:</span>
+                                        <div
+                                            style="flex: 1; border-bottom: 1px dashed #9ca3af; height: 14px; margin-bottom: 1px; text-align: center; font-size: 9.5px; color: #9ca3af; letter-spacing: 1.5px;">
+                                            ..... / ..... / .........
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Right Signer Box -->
                                 <div id="pSellerSignatureBlock"
                                     style="width: 280px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
@@ -3602,10 +3624,11 @@
                 badgeBg: '#fffbeb',
                 badgeBorder: '#fde68a',
                 leftSignerTitle: 'ผู้รับของ',
+                middleSignerTitle: 'ผู้ส่งของ',
+                rightSignerTitle: 'ผู้มีอำนาจลงนาม',
                 buyerRole: '',
-                rightSignerTitle: 'ผู้ส่งของ',
                 sellerRole: '',
-                sellerNameLabel: 'ชื่อผู้ส่งของ (Delivered By)',
+                sellerNameLabel: 'ผู้มีอำนาจลงนาม (Authorized Signer)',
                 sellerRoleLabel: 'ตำแหน่ง / หน้าที่ (Position)',
                 firestoreCollection: 'invoices_history',
                 telegramLabel: '📋 <b>แจ้งเตือนการออกใบส่งของ/ใบแจ้งหนี้ (Invoice)</b>',
@@ -4218,6 +4241,38 @@
             if (pIntro) pIntro.innerText = config.introText;
 
             // 4. Update Signer Titles & Roles
+            const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
+            const pMiddleBlock = document.getElementById('pMiddleSignatureBlock');
+            const pSellerBlock = document.getElementById('pSellerSignatureBlock');
+            const pMiddleSignerTitle = document.getElementById('pMiddleSignerTitle');
+            const pMiddleSignerName = document.getElementById('pMiddleSignerName');
+            const pMiddleSignatureDate = document.getElementById('pMiddleSignatureDate');
+            const pBuyerName = document.getElementById('pBuyerName');
+
+            const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+            const companyAuthorizedSigner = getAuthorizedSignerForCompany(currentIssuer);
+
+            if (type === 'invoice') {
+                if (pBuyerBlock) pBuyerBlock.style.width = '215px';
+                if (pMiddleBlock) {
+                    pMiddleBlock.style.display = 'flex';
+                    pMiddleBlock.style.width = '215px';
+                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = 'ผู้ส่งของ';
+                    if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
+                    const showDate = document.getElementById('settingShowSignatureDate')?.checked || false;
+                    if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showDate ? 'flex' : 'none';
+                }
+                if (pSellerBlock) pSellerBlock.style.width = '215px';
+                if (pBuyerName) {
+                    pBuyerName.style.display = 'flex';
+                    pBuyerName.innerText = '( .................................................... )';
+                }
+            } else {
+                if (pBuyerBlock) pBuyerBlock.style.width = '280px';
+                if (pMiddleBlock) pMiddleBlock.style.display = 'none';
+                if (pSellerBlock) pSellerBlock.style.width = '280px';
+            }
+
             const pLeftSigner = document.getElementById('pLeftSignerTitle');
             if (pLeftSigner) pLeftSigner.innerText = config.leftSignerTitle;
             const pBuyerRole = document.getElementById('pBuyerRole');
@@ -4238,9 +4293,17 @@
                 }
             }
             const pSellerName = document.getElementById('pSellerName');
-            if (pSellerName && (type === 'invoice' || type === 'receipt')) {
-                pSellerName.innerText = '';
-                pSellerName.style.display = 'none';
+            if (pSellerName) {
+                if (type === 'invoice') {
+                    pSellerName.innerText = formatSignerDisplay(companyAuthorizedSigner);
+                    pSellerName.style.display = 'flex';
+                } else if (type === 'receipt') {
+                    pSellerName.innerText = '';
+                    pSellerName.style.display = 'none';
+                } else {
+                    pSellerName.innerText = formatSignerDisplay(companyAuthorizedSigner);
+                    pSellerName.style.display = 'flex';
+                }
             }
             const pSellerSpaceEl = document.getElementById('pSellerSignatureSpace');
             if (pSellerSpaceEl && (type === 'invoice' || type === 'receipt')) {
@@ -6383,9 +6446,18 @@
             const sellerNameInput = document.getElementById('sellerName');
             const pSellerName = document.getElementById('pSellerName');
             if (sellerNameInput && pSellerName) {
-                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
+                if (currentDocType === 'receipt') {
                     pSellerName.innerText = '';
                     pSellerName.style.display = 'none';
+                } else if (currentDocType === 'invoice') {
+                    let sVal = sellerNameInput.value.trim();
+                    if (!sVal || isEmail(sVal) || sVal.includes('ธนภูมิ')) {
+                        const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                        sVal = getAuthorizedSignerForCompany(currentIssuer);
+                        sellerNameInput.value = sVal;
+                    }
+                    pSellerName.innerText = sVal ? formatSignerDisplay(sVal) : '';
+                    pSellerName.style.display = 'flex';
                 } else {
                     let sVal = sellerNameInput.value.trim();
                     // Ensure email address or invalid developer name is NEVER displayed as signer name
@@ -6399,6 +6471,36 @@
                         pSellerName.style.display = 'flex';
                     }
                 }
+            }
+
+            // Sync 3-column signature block on invoice
+            const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
+            const pMiddleBlock = document.getElementById('pMiddleSignatureBlock');
+            const pSellerBlock = document.getElementById('pSellerSignatureBlock');
+            const pMiddleSignerTitle = document.getElementById('pMiddleSignerTitle');
+            const pMiddleSignerName = document.getElementById('pMiddleSignerName');
+            const pMiddleSignatureDate = document.getElementById('pMiddleSignatureDate');
+            const pBuyerNameEl = document.getElementById('pBuyerName');
+
+            if (currentDocType === 'invoice') {
+                if (pBuyerBlock) pBuyerBlock.style.width = '215px';
+                if (pMiddleBlock) {
+                    pMiddleBlock.style.display = 'flex';
+                    pMiddleBlock.style.width = '215px';
+                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = 'ผู้ส่งของ';
+                    if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
+                    const showDate = document.getElementById('settingShowSignatureDate')?.checked || false;
+                    if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showDate ? 'flex' : 'none';
+                }
+                if (pSellerBlock) pSellerBlock.style.width = '215px';
+                if (pBuyerNameEl) {
+                    pBuyerNameEl.style.display = 'flex';
+                    pBuyerNameEl.innerText = '( .................................................... )';
+                }
+            } else {
+                if (pBuyerBlock) pBuyerBlock.style.width = '280px';
+                if (pMiddleBlock) pMiddleBlock.style.display = 'none';
+                if (pSellerBlock) pSellerBlock.style.width = '280px';
             }
             const sellerRoleInput = document.getElementById('sellerRole');
             const pSellerRole = document.getElementById('pSellerRole');
@@ -8857,6 +8959,8 @@
 
             // Apply Signature Settings
             const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
+            const pMiddleBlock = document.getElementById('pMiddleSignatureBlock');
+            const pSellerBlock = document.getElementById('pSellerSignatureBlock');
             const pBuyerDots = document.getElementById('pBuyerSignatureDots');
             const pBuyerName = document.getElementById('pBuyerName');
             const pBuyerRole = document.getElementById('pBuyerRole');
@@ -8876,7 +8980,10 @@
             const buyerNameInput = document.getElementById('settingBuyerName');
             let buyerNameVal = buyerNameInput ? buyerNameInput.value.trim() : '';
             if (pBuyerName) {
-                if (sigFormat === 'line_only' || !buyerNameVal) {
+                if (currentDocType === 'invoice') {
+                    pBuyerName.style.display = 'flex';
+                    pBuyerName.innerText = '( .................................................... )';
+                } else if (sigFormat === 'line_only' || !buyerNameVal) {
                     pBuyerName.style.display = 'none';
                     pBuyerName.innerText = '';
                 } else {
@@ -8886,22 +8993,52 @@
             }
 
             if (pBuyerBlock) {
-                if (sigFormat === 'hidden') {
+                if (currentDocType === 'invoice') {
+                    pBuyerBlock.style.visibility = 'visible';
+                    pBuyerBlock.style.width = '215px';
+                    if (pBuyerDots) pBuyerDots.style.display = 'none';
+                    if (pBuyerRole) pBuyerRole.style.display = 'none';
+                    if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
+                } else if (sigFormat === 'hidden') {
                     pBuyerBlock.style.visibility = 'hidden';
+                    pBuyerBlock.style.width = '280px';
                 } else if (sigFormat === 'line_only') {
                     pBuyerBlock.style.visibility = 'visible';
+                    pBuyerBlock.style.width = '280px';
                     if (pBuyerDots) pBuyerDots.style.display = 'none';
                     if (pBuyerName) pBuyerName.style.display = 'none';
                     if (pBuyerRole) pBuyerRole.style.display = 'none';
                     if (pBuyerDate) pBuyerDate.style.display = 'none';
                 } else {
                     pBuyerBlock.style.visibility = 'visible';
+                    pBuyerBlock.style.width = '280px';
                     if (pBuyerDots) pBuyerDots.style.display = 'none';
                     if (pBuyerName) pBuyerName.style.display = buyerNameVal ? 'flex' : 'none';
                     if (pBuyerRole) pBuyerRole.style.display = buyerRole ? 'flex' : 'none';
                     if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
                 }
             }
+
+            // Middle Signature Block (for invoice: ผู้ส่งของ)
+            if (pMiddleBlock) {
+                if (currentDocType === 'invoice') {
+                    pMiddleBlock.style.display = 'flex';
+                    pMiddleBlock.style.width = '215px';
+                    const pMiddleSignerTitle = document.getElementById('pMiddleSignerTitle');
+                    const pMiddleSignerName = document.getElementById('pMiddleSignerName');
+                    const pMiddleSignatureDate = document.getElementById('pMiddleSignatureDate');
+                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = 'ผู้ส่งของ';
+                    if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
+                    if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showSigDate ? 'flex' : 'none';
+                } else {
+                    pMiddleBlock.style.display = 'none';
+                }
+            }
+
+            if (pSellerBlock) {
+                pSellerBlock.style.width = (currentDocType === 'invoice') ? '215px' : '280px';
+            }
+
             if (pLeftTitle) {
                 pLeftTitle.style.marginBottom = '4px';
             }
@@ -8944,9 +9081,17 @@
             const pBuyerRoleEl = document.getElementById('pBuyerRole');
             
             if (pSellerName) {
-                if (currentDocType === 'invoice' || currentDocType === 'receipt' || sigFormat === 'line_only') {
+                if (currentDocType === 'receipt' || (sigFormat === 'line_only' && currentDocType !== 'invoice')) {
                     pSellerName.style.display = 'none';
                     pSellerName.innerText = '';
+                } else if (currentDocType === 'invoice') {
+                    let sVal = sellerName;
+                    if (!sVal || isEmail(sVal) || sVal.includes('ธนภูมิ')) {
+                        const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                        sVal = getAuthorizedSignerForCompany(currentIssuer);
+                    }
+                    pSellerName.style.display = 'flex';
+                    pSellerName.innerText = formatSignerDisplay(sVal);
                 } else {
                     pSellerName.style.display = 'flex';
                     pSellerName.innerText = formatSignerDisplay(sellerName);
