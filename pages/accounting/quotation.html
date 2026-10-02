@@ -10201,9 +10201,6 @@
                         const qtyVal = rawQty !== '' ? rawQty : (hasPrice ? 1 : '');
                         
                         let displayName = item.desc || item.name || '';
-                        if (item.storeInfo && item.storeInfo.trim() !== '') {
-                            displayName += ` (ร้าน: ${item.storeInfo.trim()})`;
-                        }
                         
                         if (item.isHeader) {
                             addHeaderRow({ mainNo: item.mainNo || '', customNo: item.customNo || '', desc: displayName });
@@ -10230,44 +10227,38 @@
                 let targetIssuer = '';
                 const instName = (proj.institution || '').trim();
 
-                // Check paramShop (must not match customer institution)
-                if (paramShop && paramShop.trim() && paramShop.trim() !== instName) {
-                    targetIssuer = paramShop.trim();
-                }
-
-                // 1. If proj.shop is explicitly set
-                if (!targetIssuer && proj.shop) {
-                    const s = Array.isArray(proj.shop) ? proj.shop[0] : proj.shop;
-                    if (s && String(s).trim() && String(s).trim() !== instName) {
-                        targetIssuer = String(s).trim();
+                // If source === 'company', allow registered issuer match
+                if (source === 'company') {
+                    if (paramShop && paramShop.trim() && paramShop.trim() !== instName) {
+                        const matched = findRegisteredShop(paramShop.trim());
+                        if (matched) targetIssuer = matched.name;
+                    }
+                    if (!targetIssuer && proj.company && proj.company !== proj.institution) {
+                        const shopName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
+                        const matched = findRegisteredShop(shopName);
+                        if (matched) targetIssuer = matched.name;
                     }
                 }
 
-                // 2. If proj.company is different from customer institution
-                if (!targetIssuer && proj.company && proj.company !== proj.institution && source !== 'company') {
-                    const shopName = Array.isArray(proj.company) ? proj.company[0] : proj.company;
-                    if (shopName && String(shopName).trim() && String(shopName).trim() !== instName) {
-                        targetIssuer = String(shopName).trim();
-                    }
-                }
-
-                // 3. Keep current issuer if already selected and not default placeholder and not matching institution
+                // Keep current issuer if already selected and is a valid registered company
                 if (!targetIssuer) {
                     const currentIssuerText = document.getElementById('currentIssuerDisplay')?.innerText?.trim();
                     if (currentIssuerText && !currentIssuerText.includes('กรุณาเลือกบริษัท') && currentIssuerText !== instName) {
-                        targetIssuer = currentIssuerText;
+                        const matched = findRegisteredShop(currentIssuerText);
+                        if (matched) targetIssuer = matched.name;
                     }
                 }
 
-                // 4. Fallback to active workspace / saved issuer company
+                // Fallback to active workspace / saved issuer company (must be registered)
                 if (!targetIssuer) {
                     const savedShop = localStorage.getItem('selected_issuer_company') || localStorage.getItem('mentra_active_workspace');
                     if (savedShop && !savedShop.includes('กรุณาเลือกบริษัท') && savedShop.trim() !== instName) {
-                        targetIssuer = savedShop.trim();
+                        const matched = findRegisteredShop(savedShop.trim());
+                        if (matched) targetIssuer = matched.name;
                     }
                 }
 
-                // 5. Final fallback
+                // Final fallback: Always Mentra Solution
                 if (!targetIssuer) {
                     targetIssuer = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
                 }
@@ -10489,9 +10480,6 @@
                     const qtyVal = rawQty !== '' ? rawQty : (hasPrice ? 1 : '');
                     
                     let displayName = item.desc || item.name || '';
-                    if (item.storeInfo && item.storeInfo.trim() !== '') {
-                        displayName += ` (ร้าน: ${item.storeInfo.trim()})`;
-                    }
                     
                     if (item.isHeader) {
                         addHeaderRow({ mainNo: item.mainNo || '', customNo: item.customNo || '', desc: displayName });

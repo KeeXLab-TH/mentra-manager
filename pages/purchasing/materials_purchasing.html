@@ -4874,14 +4874,7 @@
                         } catch(e) {}
                     }
 
-                    let shopParam = '';
                     if (proj) {
-                        const shopName = this.getProjectShopName(proj);
-                        if (shopName) {
-                            shopParam = `&shop=${encodeURIComponent(shopName)}`;
-                        }
-                        
-                        // Clean items of heavy base64 images to prevent localStorage quota issues
                         const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
                         const cleanItems = rawItems.map(it => {
                             const rawPrice = it.unitPrice !== undefined && it.unitPrice !== null && it.unitPrice !== '' ? Number(it.unitPrice)
@@ -4915,8 +4908,8 @@
                             projectId: this.currentProjectId,
                             institution: proj.institution || '',
                             items: cleanItems,
-                            company: (proj.company && proj.company !== proj.institution) ? proj.company : (shopName || ''),
-                            shop: shopName,
+                            company: '',
+                            shop: '',
                             name: proj.name || '',
                             code: proj.code || '',
                             address: proj.address || instDetails.address || '',
@@ -4951,7 +4944,7 @@
                                 toEmail: proj.email || instDetails.email || '',
                                 toTaxId: proj.taxId || instDetails.taxId || '',
                                 items: cleanItems,
-                                shop: shopName,
+                                shop: '',
                                 timestamp: Date.now()
                             };
                             localStorage.setItem('pending_load_quotation', JSON.stringify(loadQuotationFallback));
@@ -4989,7 +4982,7 @@
                     if (instTax) {
                         taxParam = `&taxId=${encodeURIComponent(instTax)}`;
                     }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}${taxParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}${taxParam}`;
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${taxParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${taxParam}`;
                 }
             },
 
