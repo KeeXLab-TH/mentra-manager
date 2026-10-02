@@ -7973,7 +7973,6 @@
         function initSignatureDraggable() {
             const containers = [
                 document.getElementById('pSellerSignatureSpace'),
-                document.getElementById('pMiddleSignatureSpace'),
             ].filter(Boolean);
 
             containers.forEach(container => {
@@ -8032,13 +8031,6 @@
                     activeDragItem.style.bottom = `${-4 + currentActiveObj.offsetY}px`;
                     activeDragItem.style.transform = `translate(calc(-50% + ${currentActiveObj.offsetX}px), 0)`;
 
-                    // Sync sibling wrapper (seller & middle share same offset)
-                    const siblingId = activeDragItem.id.replace('pMiddleSigWrapper_', 'pSellerSigWrapper_').replace('pSellerSigWrapper_', 'pMiddleSigWrapper_');
-                    const sibling = document.getElementById(siblingId);
-                    if (sibling) {
-                        sibling.style.bottom = activeDragItem.style.bottom;
-                        sibling.style.transform = activeDragItem.style.transform;
-                    }
 
                     // Update slider inputs in sidebar
                     const xInput = document.getElementById(`input_x_${currentActiveObj.id}`);
@@ -9105,20 +9097,9 @@
                 }
             }
 
-            // Render signatures on middle (ผู้ส่งของ) box for invoice
-            if (pMiddleSpace && currentDocType === 'invoice') {
-                if (useSigImg && window.activeSignatures && window.activeSignatures.length > 0) {
-                    pMiddleSpace.innerHTML = window.activeSignatures.map((item, idx) => {
-                        const itemSize = item.size || 45;
-                        return `
-                            <div id="pMiddleSigWrapper_${item.id}" class="sig-drag-item" data-id="${item.id}" style="position: absolute; bottom: ${-4 + (item.offsetY || 0)}px; left: 50%; transform: translate(calc(-50% + ${(item.offsetX || 0)}px), 0); cursor: grab; user-select: none; display: inline-flex; align-items: center; justify-content: center; z-index: ${5 + idx}; transition: outline 0.1s;" title="คลิกลากเพื่อปรับตำแหน่ง (${item.name || 'ลายเซ็น'})">
-                                <img id="mid_sig_img_${item.id}" src="${item.dataUrl}" style="height: ${itemSize}px; max-width: 220px; object-fit: contain; pointer-events: none;" alt="${item.name || 'Signature'}">
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    pMiddleSpace.innerHTML = '';
-                }
+            // ช่อง ผู้ส่งของ (กลาง) เป็นช่องให้เซ็นสดเท่านั้น ไม่ใส่ลายเซ็นดิจิทัล
+            if (pMiddleSpace) {
+                pMiddleSpace.innerHTML = '';
             }
 
             // Apply Logo
