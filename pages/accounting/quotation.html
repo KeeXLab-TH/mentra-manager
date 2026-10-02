@@ -3385,11 +3385,29 @@
             if (!currentUser) return;
             window._lastLocalSettingsSaveTime = Date.now();
             try {
+                const currentFont = localStorage.getItem('quotation_preferred_font') || 'Sarabun';
+                let currentTypo = {};
+                try {
+                    const raw = localStorage.getItem('quotation_global_typography');
+                    if (raw) currentTypo = JSON.parse(raw);
+                } catch(e) {}
+                currentTypo.fontFamily = currentFont;
+
+                // Enforce current font and typography uniformly across every company template in payload
+                if (window.quotationTemplates && typeof window.quotationTemplates === 'object') {
+                    Object.keys(window.quotationTemplates).forEach(k => {
+                        if (window.quotationTemplates[k] && typeof window.quotationTemplates[k] === 'object') {
+                            window.quotationTemplates[k].fontFamily = currentFont;
+                            Object.assign(window.quotationTemplates[k], currentTypo);
+                        }
+                    });
+                }
+
                 const payload = {
                     quotationTemplates: window.quotationTemplates || {},
                     savedSignaturesByCompany: window.savedSignaturesByCompany || {},
-                    quotation_global_typography: JSON.parse(localStorage.getItem('quotation_global_typography') || '{}'),
-                    quotation_preferred_font: localStorage.getItem('quotation_preferred_font') || 'Sarabun',
+                    quotation_global_typography: currentTypo,
+                    quotation_preferred_font: currentFont,
                     updatedAt: new Date().toISOString(),
                     updatedBy: currentUser.email || currentUser.uid,
                     ...extraData
@@ -5007,6 +5025,20 @@
                             console.warn("Could not load shared quotation_templates from Firestore:", err);
                         }
 
+                        // Determine Cloud Preferred Font
+                        const cloudFont = (globalSettings && globalSettings.quotation_preferred_font) || 
+                                          (globalSettings && globalSettings.quotation_global_typography && globalSettings.quotation_global_typography.fontFamily) || null;
+                        if (cloudFont) {
+                            localStorage.setItem('quotation_preferred_font', cloudFont);
+                            const fontEl = document.getElementById('settingFontFamily');
+                            if (fontEl) fontEl.value = cloudFont;
+                        }
+                        if (globalSettings && globalSettings.quotation_global_typography) {
+                            try {
+                                localStorage.setItem('quotation_global_typography', JSON.stringify(globalSettings.quotation_global_typography));
+                            } catch(e) {}
+                        }
+
                         window.quotationTemplates = {};
                         let localTemplates = {};
                         try {
@@ -5033,6 +5065,18 @@
 
                         // Merging order: default templates < local templates < shared cloud templates (cloud takes highest precedence)
                         window.quotationTemplates = Object.assign({}, window.MENTRA_DEFAULT_TEMPLATES || {}, localTemplates, cloudTemplates);
+
+                        // Enforce cloud font and typography across all templates
+                        if (cloudFont) {
+                            Object.keys(window.quotationTemplates).forEach(k => {
+                                if (window.quotationTemplates[k] && typeof window.quotationTemplates[k] === 'object') {
+                                    window.quotationTemplates[k].fontFamily = cloudFont;
+                                    if (globalSettings && globalSettings.quotation_global_typography) {
+                                        Object.assign(window.quotationTemplates[k], globalSettings.quotation_global_typography);
+                                    }
+                                }
+                            });
+                        }
                         localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
 
                         // Load shared signatures
@@ -5060,17 +5104,16 @@
                             }
                         }
 
-                        // Also load typography if in globalSettings
-                        if (globalSettings && globalSettings.quotation_global_typography) {
-                            try {
-                                localStorage.setItem('quotation_global_typography', JSON.stringify(globalSettings.quotation_global_typography));
-                            } catch(e) {}
-                        }
-                        if (globalSettings && globalSettings.quotation_preferred_font) {
-                            try {
-                                localStorage.setItem('quotation_preferred_font', globalSettings.quotation_preferred_font);
-                            } catch(e) {}
-                        }
+                        // Apply current issuer template with newly loaded cloud settings
+                        try {
+                            let initIssuer = (typeof getCurrentIssuerName === 'function') ? getCurrentIssuerName() : null;
+                            if (!initIssuer || initIssuer.includes('กรุณาเลือกบริษัท')) {
+                                const savedShop = localStorage.getItem('selected_issuer_company') || localStorage.getItem('mentra_active_workspace');
+                                initIssuer = (savedShop && !savedShop.includes('กรุณาเลือกบริษัท')) ? savedShop.trim() : 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                            }
+                            applyIssuerTemplate(initIssuer);
+                            applyLivePreview();
+                        } catch(e) {}
 
                         // If globalSettings did not exist in Firestore yet, write it now to migrate existing settings so all other users get it
                         if (!globalSettings && (Object.keys(cloudTemplates).length > 0 || Object.keys(window.savedSignaturesByCompany).length > 0)) {
@@ -5092,6 +5135,19 @@
                             }
 
                             let hasChanges = false;
+                            const remoteFont = remoteData.quotation_preferred_font || (remoteData.quotation_global_typography && remoteData.quotation_global_typography.fontFamily);
+                            if (remoteFont) {
+                                localStorage.setItem('quotation_preferred_font', remoteFont);
+                                const fontEl = document.getElementById('settingFontFamily');
+                                if (fontEl) fontEl.value = remoteFont;
+                                hasChanges = true;
+                            }
+
+                            if (remoteData.quotation_global_typography) {
+                                localStorage.setItem('quotation_global_typography', JSON.stringify(remoteData.quotation_global_typography));
+                                hasChanges = true;
+                            }
+
                             if (remoteData.quotationTemplates && typeof remoteData.quotationTemplates === 'object') {
                                 Object.keys(remoteData.quotationTemplates).forEach(k => {
                                     if (remoteData.quotationTemplates[k] && (isEmail(remoteData.quotationTemplates[k].sellerName) || (typeof remoteData.quotationTemplates[k].sellerName === 'string' && remoteData.quotationTemplates[k].sellerName.includes('ธนภูมิ')))) {
@@ -5099,6 +5155,16 @@
                                     }
                                 });
                                 window.quotationTemplates = Object.assign({}, window.quotationTemplates || {}, remoteData.quotationTemplates);
+                                if (remoteFont) {
+                                    Object.keys(window.quotationTemplates).forEach(k => {
+                                        if (window.quotationTemplates[k] && typeof window.quotationTemplates[k] === 'object') {
+                                            window.quotationTemplates[k].fontFamily = remoteFont;
+                                            if (remoteData.quotation_global_typography) {
+                                                Object.assign(window.quotationTemplates[k], remoteData.quotation_global_typography);
+                                            }
+                                        }
+                                    });
+                                }
                                 localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
                                 hasChanges = true;
                             }
@@ -5110,21 +5176,15 @@
                                 hasChanges = true;
                             }
 
-                            if (remoteData.quotation_global_typography) {
-                                localStorage.setItem('quotation_global_typography', JSON.stringify(remoteData.quotation_global_typography));
-                                hasChanges = true;
-                            }
-                            if (remoteData.quotation_preferred_font) {
-                                localStorage.setItem('quotation_preferred_font', remoteData.quotation_preferred_font);
-                                hasChanges = true;
-                            }
-
                             if (hasChanges) {
                                 const currentIssuer = (typeof getCurrentIssuerName === 'function') ? getCurrentIssuerName() : null;
                                 if (currentIssuer && !currentIssuer.includes('กรุณาเลือกบริษัท')) {
                                     applyIssuerTemplate(currentIssuer);
                                 } else {
                                     applyLivePreview();
+                                }
+                                if (typeof renderPaginatedTables === 'function') {
+                                    try { renderPaginatedTables(); } catch(e) {}
                                 }
                             }
                         }, (err) => {
@@ -6342,7 +6402,7 @@
             const primaryColor = document.getElementById('settingPrimaryColor')?.value || '#1A6FBF';
             const zebraStripes = document.getElementById('settingZebraStripes') ? document.getElementById('settingZebraStripes').checked : true;
 
-            const fontFamilyRaw = document.getElementById('settingFontFamily') ? document.getElementById('settingFontFamily').value : 'Sarabun';
+            const fontFamilyRaw = localStorage.getItem('quotation_preferred_font') || (document.getElementById('settingFontFamily') ? document.getElementById('settingFontFamily').value : null) || 'Sarabun';
             const fontFamily = `'${fontFamilyRaw}', 'Sarabun', 'Tahoma', sans-serif`;
             const fontWeight = document.getElementById('settingFontWeight')?.value || '400';
             const tableBorder = document.getElementById('settingTableBorder') ? document.getElementById('settingTableBorder').value : 'rounded';
@@ -6504,19 +6564,19 @@
                     if (isHeader) {
                         rowHTML = `
                             <tr style="${rowBorder} letter-spacing: normal; page-break-inside: avoid;">
-                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
-                                <td colspan="5" style="padding: ${curRowPadding}px 6px ${curRowPadding}px ${descPadding}; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; letter-spacing: normal !important; text-align: left;">${descContent}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
+                                <td colspan="5" style="padding: ${curRowPadding}px 6px ${curRowPadding}px ${descPadding}; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; font-weight: 700; color: #374151; letter-spacing: normal !important; text-align: left;">${descContent}</td>
                             </tr>
                         `;
                     } else {
                         rowHTML = `
                             <tr style="${rowBorder} letter-spacing: normal; page-break-inside: avoid;">
-                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
-                                <td style="padding: ${curRowPadding}px 6px ${curRowPadding}px ${descPadding}; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">${descContent}</td>
-                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
-                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
-                                <td style="padding: ${curRowPadding}px 6px; text-align: right; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
-                                <td style="padding: ${curRowPadding}px 6px; text-align: right; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-weight: 500; font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; font-weight: 700; color: #374151; background-color: #f8fafc; letter-spacing: normal !important; white-space: nowrap;">${col1Content}</td>
+                                <td style="padding: ${curRowPadding}px 6px ${curRowPadding}px ${descPadding}; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">${descContent}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${qty}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: center; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${unit}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: right; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${formatNumber(price)}</td>
+                                <td style="padding: ${curRowPadding}px 6px; text-align: right; line-height: 1.32 !important; vertical-align: middle; ${cellBorder} font-weight: 500; font-family: inherit !important; font-size: inherit; letter-spacing: normal !important; white-space: nowrap;">${totalText}</td>
                             </tr>
                         `;
                     }
@@ -6724,12 +6784,12 @@
                 const zebraColor = (zebraStripes && idx % 2 === 1) ? '#f8fafc' : 'transparent';
                 return `
                     <tr style="${rowBorder} letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; text-align: center; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: ${fontFamily} !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; text-align: center; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
                     </tr>
                 `;
             };
@@ -7339,7 +7399,7 @@
                 headerRows: document.getElementById('settingHeaderRows')?.value || '3',
                 headerTextAlign: document.getElementById('settingHeaderTextAlign')?.value || 'auto',
                 headerVAlign: document.getElementById('settingHeaderVAlign')?.value || 'flex-start',
-                fontFamily: document.getElementById('settingFontFamily')?.value || "Sarabun",
+                fontFamily: document.getElementById('settingFontFamily')?.value || localStorage.getItem('quotation_preferred_font') || "Sarabun",
                 fontWeight: document.getElementById('settingFontWeight')?.value || "400",
                 tableBorder: document.getElementById('settingTableBorder')?.value || 'rounded',
                 tableHeaderAlign: document.getElementById('settingTableHeaderAlign')?.value || 'auto',
@@ -7422,18 +7482,6 @@
             localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
             localStorage.setItem('quotation_preferred_font', templateSettings.fontFamily || 'Sarabun');
             localStorage.setItem('quotation_global_typography', JSON.stringify(globalTypoObj));
-
-            // Debounced cloud sync (Sync to shared global Firestore so all users & admin share identical templates)
-            if (autoSaveTemplateTimeout) clearTimeout(autoSaveTemplateTimeout);
-            autoSaveTemplateTimeout = setTimeout(async () => {
-                if (currentUser) {
-                    try {
-                        await syncQuotationSettingsToCloud();
-                    } catch (err) {
-                        console.error("Auto cloud sync quotation template error:", err);
-                    }
-                }
-            }, 800);
         }
 
         function toggleSignatureToDocument(sigId) {
@@ -8113,7 +8161,7 @@
             const mainCompanyName = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
             const primaryTemplate = (window.quotationTemplates && (window.quotationTemplates[mainCompanyName] || Object.values(window.quotationTemplates)[0])) || {};
 
-            const preferredFont = globalTypo.fontFamily || primaryTemplate.fontFamily || localStorage.getItem('quotation_preferred_font') || 'Sarabun';
+            const preferredFont = localStorage.getItem('quotation_preferred_font') || globalTypo.fontFamily || primaryTemplate.fontFamily || 'Sarabun';
             const preferredWeight = globalTypo.fontWeight || primaryTemplate.fontWeight || '400';
             const preferredSize = globalTypo.fontSize || primaryTemplate.fontSize || 11;
             const preferredHeaderSize = globalTypo.headerFontSize || primaryTemplate.headerFontSize || 11;
@@ -8230,8 +8278,11 @@
             }
 
             // Always inherit global linked typography across all companies so font, size, and styling stay linked
+            const activeLinkedFont = localStorage.getItem('quotation_preferred_font') || (globalTypo && globalTypo.fontFamily) || finalSettings.fontFamily || 'Sarabun';
+            finalSettings.fontFamily = activeLinkedFont;
+
             if (globalTypo && Object.keys(globalTypo).length > 0) {
-                if (globalTypo.fontFamily) finalSettings.fontFamily = globalTypo.fontFamily;
+                if (activeLinkedFont) finalSettings.fontFamily = activeLinkedFont;
                 if (globalTypo.fontWeight) finalSettings.fontWeight = globalTypo.fontWeight;
                 if (globalTypo.fontSize) finalSettings.fontSize = globalTypo.fontSize;
                 if (globalTypo.headerFontSize) finalSettings.headerFontSize = globalTypo.headerFontSize;
@@ -8368,6 +8419,69 @@
                     }));
                 }
             });
+
+            // Sync typography and form controls to active cloud/local preference
+            let globalTypoModal = {};
+            try {
+                const rawTypo = localStorage.getItem('quotation_global_typography');
+                if (rawTypo) globalTypoModal = JSON.parse(rawTypo);
+            } catch(e) {}
+
+            const activeFont = localStorage.getItem('quotation_preferred_font') || globalTypoModal.fontFamily || savedTemplate?.fontFamily || 'Sarabun';
+            const fontEl = document.getElementById('settingFontFamily');
+            if (fontEl) fontEl.value = activeFont;
+
+            const weightEl = document.getElementById('settingFontWeight');
+            if (weightEl) weightEl.value = globalTypoModal.fontWeight || savedTemplate?.fontWeight || '400';
+
+            const fsEl = document.getElementById('settingFontSize');
+            if (fsEl) {
+                fsEl.value = globalTypoModal.fontSize || savedTemplate?.fontSize || '11';
+                const fsLbl = document.getElementById('fontSizeLabel');
+                if (fsLbl) fsLbl.innerText = fsEl.value;
+            }
+
+            const hfsEl = document.getElementById('settingHeaderFontSize');
+            if (hfsEl) {
+                hfsEl.value = globalTypoModal.headerFontSize || savedTemplate?.headerFontSize || '11';
+                const hfsLbl = document.getElementById('hdrFontSizeLabel');
+                if (hfsLbl) hfsLbl.innerText = hfsEl.value;
+            }
+
+            const rpEl = document.getElementById('settingTableRowPadding');
+            if (rpEl) {
+                rpEl.value = globalTypoModal.rowPadding !== undefined ? globalTypoModal.rowPadding : (savedTemplate?.rowPadding !== undefined ? savedTemplate.rowPadding : '5');
+                const rpLbl = document.getElementById('rowPaddingLabel');
+                if (rpLbl) rpLbl.innerText = rpEl.value;
+            }
+
+            const hpEl = document.getElementById('settingTableHeaderPadding');
+            if (hpEl) {
+                hpEl.value = globalTypoModal.hdrPadding !== undefined ? globalTypoModal.hdrPadding : (savedTemplate?.hdrPadding !== undefined ? savedTemplate.hdrPadding : '6.5');
+                const hpLbl = document.getElementById('hdrPaddingLabel');
+                if (hpLbl) hpLbl.innerText = hpEl.value;
+            }
+
+            const tbEl = document.getElementById('settingTableBorder');
+            if (tbEl) tbEl.value = globalTypoModal.tableBorder || savedTemplate?.tableBorder || 'rounded';
+
+            const thsEl = document.getElementById('settingTableHeaderStyle');
+            if (thsEl) thsEl.value = globalTypoModal.tableHeaderStyle || savedTemplate?.tableHeaderStyle || 'solid';
+
+            const thaEl = document.getElementById('settingTableHeaderAlign');
+            if (thaEl) thaEl.value = globalTypoModal.tableHeaderAlign || savedTemplate?.tableHeaderAlign || 'auto';
+
+            const zebraEl = document.getElementById('settingZebraStripes');
+            if (zebraEl) zebraEl.checked = globalTypoModal.zebraStripes !== undefined ? globalTypoModal.zebraStripes : (savedTemplate?.zebraStripes !== undefined ? savedTemplate.zebraStripes : true);
+
+            const autoBreakEl = document.getElementById('settingAutoPageBreak');
+            if (autoBreakEl) autoBreakEl.checked = globalTypoModal.autoPageBreak !== undefined ? globalTypoModal.autoPageBreak : (savedTemplate?.autoPageBreak !== undefined ? savedTemplate.autoPageBreak : true);
+
+            const p1El = document.getElementById('settingItemsPage1');
+            if (p1El) p1El.value = globalTypoModal.itemsPage1 || savedTemplate?.itemsPage1 || '14';
+
+            const p2El = document.getElementById('settingItemsPage2Plus');
+            if (p2El) p2El.value = globalTypoModal.itemsPage2Plus || savedTemplate?.itemsPage2Plus || '18';
 
             applyLivePreview(); // Sync the panel sliders to current preview
             renderSavedSignaturesGallery();
@@ -8906,8 +9020,7 @@
                     headerDirection: document.getElementById('settingHeaderDirection')?.value || 'row',
                     headerRows: document.getElementById('settingHeaderRows')?.value || '3',
                     headerTextAlign: document.getElementById('settingHeaderTextAlign')?.value || 'auto',
-                    headerVAlign: document.getElementById('settingHeaderVAlign')?.value || 'flex-start',
-                    fontFamily: document.getElementById('settingFontFamily')?.value || "Sarabun",
+                    fontFamily: document.getElementById('settingFontFamily')?.value || localStorage.getItem('quotation_preferred_font') || "Sarabun",
                     fontWeight: document.getElementById('settingFontWeight')?.value || "400",
                     tableBorder: document.getElementById('settingTableBorder')?.value || 'rounded',
                     tableHeaderAlign: document.getElementById('settingTableHeaderAlign')?.value || 'auto',
@@ -8985,6 +9098,7 @@
 
                 Object.keys(window.quotationTemplates).forEach(k => {
                     if (window.quotationTemplates[k] && typeof window.quotationTemplates[k] === 'object') {
+                        window.quotationTemplates[k].fontFamily = templateSettings.fontFamily;
                         Object.assign(window.quotationTemplates[k], globalTypoObj);
                     }
                 });
@@ -8993,6 +9107,9 @@
                 localStorage.setItem('quotation_preferred_font', templateSettings.fontFamily || 'Sarabun');
                 localStorage.setItem('quotation_global_typography', JSON.stringify(globalTypoObj));
                 applyTemplateSettings(templateSettings);
+                if (typeof renderPaginatedTables === 'function') {
+                    try { renderPaginatedTables(); } catch(e) {}
+                }
 
                 // Also persist signature to registered shop in memory if matched
                 if (registeredShopsCache && Array.isArray(registeredShopsCache)) {
