@@ -4,11 +4,11 @@
  * assets/js/session-guard.js
  * 
  * ระบบความปลอดภัยและการจัดการเซสชันระดับองค์กร:
- * 1. Absolute Timeout (5 ชั่วโมง): บังคับออกจากระบบเมื่อล็อกอินครบ 5 ชั่วโมง
- * 2. Inactivity / Idle Timeout (2 ชั่วโมง): ออกจากระบบเมื่อไม่มีการขยับ/ใช้งานเกิน 2 ชม.
- * 3. Browser / Tab Close Detection: เมื่อปิดเบราว์เซอร์หรือปิดแท็บทั้งหมด เซสชันจะสิ้นสุด
- * 4. Multi-Tab Synchronization: ซิงค์สถานะล็อกอิน-ล็อกเอาต์ข้ามทุกแท็บด้วย BroadcastChannel
- * 5. Instant Wakeup Check: ตรวจสอบทันทีเมื่อเปิดแท็บกลับมา (focus / visibilitychange)
+ * 1. Absolute Timeout (12 ชั่วโมง): ครอบคลุมการทำงานตลอดวัน (พร้อม Sliding Session สำหรับผู้ใช้งานต่อเนื่อง)
+ * 2. Inactivity / Idle Timeout (6 ชั่วโมง): ออกจากระบบเมื่อไม่มีการขยับ/ใช้งานเกิน 6 ชม. (ปลอดภัยเมื่อพักเที่ยง/ประชุม)
+ * 3. Multi-Tab Session Inheritance: ถ่ายทอดเซสชันข้ามแท็บอัตโนมัติ ไม่เด้งหลุดเมื่อเปิดดูเอกสารหรือแท็บใหม่
+ * 4. Multi-Tab Synchronization: ซิงค์สถานะล็อกเอาต์ข้ามทุกแท็บด้วย BroadcastChannel เมื่อกดออกจากระบบ
+ * 5. Instant Wakeup Check: ตรวจสอบความถูกต้องเมื่อเปิดแท็บกลับมา (focus / visibilitychange)
  * 6. Clean URL Redirects: แจ้งเตือนข้อความภาษาไทยที่ชัดเจนเมื่อเซสชันหมดอายุ
  * ==============================================================================
  */
@@ -21,11 +21,10 @@
 
     // --- Configuration & Storage Keys ---
     const CONFIG = Object.assign({
-        ABSOLUTE_TIMEOUT_MS: 5 * 60 * 60 * 1000,  // 5 Hours
-        IDLE_TIMEOUT_MS: 2 * 60 * 60 * 1000,      // 2 Hours
-        CHECK_INTERVAL_MS: 15 * 1000,              // Check every 15s
-        ACTIVITY_THROTTLE_MS: 30 * 1000,           // Throttle activity writes to 30s
-        HANDSHAKE_TIMEOUT_MS: 250,                 // Multi-tab ping wait time
+        ABSOLUTE_TIMEOUT_MS: 12 * 60 * 60 * 1000, // 12 Hours (covers full workday)
+        IDLE_TIMEOUT_MS: 6 * 60 * 60 * 1000,      // 6 Hours (safe idle window for meetings/lunch)
+        CHECK_INTERVAL_MS: 30 * 1000,             // Check every 30s
+        ACTIVITY_THROTTLE_MS: 30 * 1000,          // Throttle activity writes to 30s
         CHANNEL_NAME: 'mentra_security_session_channel'
     }, global.MENTRA_SECURITY_CONFIG || {});
 
@@ -103,21 +102,6 @@
         if (!event || !event.data) return;
         const msg = event.data;
 
-        // Handle Ping from a newly opened tab
-        if (msg.type === 'PING_SESSION') {
-            const isAlive = sessionStorage.getItem(KEYS.SESSION_ALIVE) === '1';
-            const sessionStart = localStorage.getItem(KEYS.SESSION_START);
-            if (isAlive && sessionStart) {
-                // Respond to pinging tab that an active session exists
-                broadcastChannel.postMessage({
-                    type: 'PONG_SESSION',
-                    targetTabId: msg.tabId,
-                    start: sessionStart,
-                    lastActivity: localStorage.getItem(KEYS.LAST_ACTIVITY) || Date.now().toString()
-                });
-            }
-        }
-
         // Handle global logout triggered by another tab
         if (msg.type === 'LOGOUT_ALL') {
             if (!isTerminating && !isLoginPage()) {
@@ -174,12 +158,23 @@
         global.location.href = getLoginUrl(reason);
     }
 
-    // --- Activity Tracking (Throttled) ---
+    // --- Activity Tracking (Throttled & Sliding Session) ---
     function recordUserActivity() {
         const now = Date.now();
         if (now - lastThrottledActivity > CONFIG.ACTIVITY_THROTTLE_MS) {
             lastThrottledActivity = now;
             localStorage.setItem(KEYS.LAST_ACTIVITY, now.toString());
+            sessionStorage.setItem(KEYS.SESSION_ALIVE, '1');
+
+            // Sliding session: If user is actively working, keep session active
+            // so active data entry / document viewing is never cut short
+            const sessionStart = parseInt(localStorage.getItem(KEYS.SESSION_START) || '0', 10);
+            if (!sessionStart || isNaN(sessionStart)) {
+                localStorage.setItem(KEYS.SESSION_START, now.toString());
+            } else if (now - sessionStart > 8 * 60 * 60 * 1000) {
+                // If user has been working continuously past 8 hours, advance start to now - 4 hours
+                localStorage.setItem(KEYS.SESSION_START, (now - 4 * 60 * 60 * 1000).toString());
+            }
         }
     }
 
@@ -198,28 +193,28 @@
         const lastActivity = parseInt(localStorage.getItem(KEYS.LAST_ACTIVITY), 10);
         const now = Date.now();
 
-        // 1. Check Absolute Timeout (5 Hours)
+        // 1. Check Absolute Timeout (12 Hours)
         if (sessionStart && !isNaN(sessionStart)) {
             const sessionElapsed = now - sessionStart;
             if (sessionElapsed >= CONFIG.ABSOLUTE_TIMEOUT_MS) {
-                console.warn('[MentraSessionGuard] Absolute session timeout (5 hrs) exceeded.');
+                console.warn('[MentraSessionGuard] Absolute session timeout exceeded.');
                 terminateSession('session_expired');
                 return;
             }
         }
 
-        // 2. Check Inactivity / Idle Timeout (2 Hours)
+        // 2. Check Inactivity / Idle Timeout (6 Hours)
         if (lastActivity && !isNaN(lastActivity)) {
             const idleElapsed = now - lastActivity;
             if (idleElapsed >= CONFIG.IDLE_TIMEOUT_MS) {
-                console.warn('[MentraSessionGuard] Inactivity timeout (2 hrs) exceeded.');
+                console.warn('[MentraSessionGuard] Inactivity timeout exceeded.');
                 terminateSession('idle_timeout');
                 return;
             }
         }
     }
 
-    // --- Browser / Tab Close Handshake (Multi-Tab Aware) ---
+    // --- Tab Session Inheritance & Verification ---
     async function verifySessionAlive() {
         if (isExemptPage()) return;
 
@@ -235,42 +230,29 @@
             return;
         }
 
-        // Stored start exists, but this tab has no sessionStorage.
-        // Did the user just open a new tab while another tab is active? Or reopen browser after closing?
-        // Ask other tabs via BroadcastChannel
-        if (broadcastChannel) {
-            const hasOtherActiveTab = await new Promise(function (resolve) {
-                let resolved = false;
+        const sessionStart = parseInt(storedStart, 10);
+        const lastActivity = parseInt(localStorage.getItem(KEYS.LAST_ACTIVITY) || storedStart, 10);
+        const now = Date.now();
 
-                function onMessage(event) {
-                    if (event && event.data && event.data.type === 'PONG_SESSION' && event.data.targetTabId === TAB_ID) {
-                        resolved = true;
-                        broadcastChannel.removeEventListener('message', onMessage);
-                        resolve(true);
-                    }
-                }
+        // Check if session has genuinely expired
+        const isAbsoluteExpired = sessionStart && (now - sessionStart >= CONFIG.ABSOLUTE_TIMEOUT_MS);
+        const isIdleExpired = lastActivity && (now - lastActivity >= CONFIG.IDLE_TIMEOUT_MS);
 
-                broadcastChannel.addEventListener('message', onMessage);
-                broadcastChannel.postMessage({ type: 'PING_SESSION', tabId: TAB_ID });
-
-                setTimeout(function () {
-                    if (!resolved) {
-                        broadcastChannel.removeEventListener('message', onMessage);
-                        resolve(false);
-                    }
-                }, CONFIG.HANDSHAKE_TIMEOUT_MS);
-            });
-
-            if (hasOtherActiveTab) {
-                // Another tab is actively open! Inherit session state.
-                sessionStorage.setItem(KEYS.SESSION_ALIVE, '1');
-                return;
-            }
+        if (isAbsoluteExpired) {
+            console.warn('[MentraSessionGuard] Absolute session timeout exceeded.');
+            terminateSession('session_expired');
+            return;
         }
 
-        // No other tab responded -> The user closed all previous tabs / closed browser!
-        console.warn('[MentraSessionGuard] No active tabs found. Session ended upon browser/tab close.');
-        terminateSession('browser_closed');
+        if (isIdleExpired) {
+            console.warn('[MentraSessionGuard] Inactivity timeout exceeded.');
+            terminateSession('idle_timeout');
+            return;
+        }
+
+        // Valid active session on this device! Inherit session state into this tab seamlessly
+        sessionStorage.setItem(KEYS.SESSION_ALIVE, '1');
+        localStorage.setItem(KEYS.LAST_ACTIVITY, now.toString());
     }
 
     // --- Public API ---

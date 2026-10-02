@@ -1336,23 +1336,23 @@
             } else if (sessionMsg === 'deleted') {
                 showAlert('บัญชีผู้ใช้นี้ถูกลบออกจากระบบแล้ว หรือไม่มีสิทธิ์เข้าใช้งาน', 'error');
             } else if (sessionMsg === 'session_expired') {
-                showAlert('เซสชันการใช้งานหมดอายุ (ครบ 5 ชั่วโมง) เพื่อความปลอดภัย กรุณาเข้าสู่ระบบใหม่อีกครั้ง', 'warning');
+                showAlert('เซสชันการใช้งานหมดอายุ เพื่อความปลอดภัย กรุณาเข้าสู่ระบบใหม่อีกครั้ง', 'warning');
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'เซสชันหมดอายุ (5 ชั่วโมง)',
-                        text: 'คุณเข้าสู่ระบบเกิน 5 ชั่วโมงแล้ว เพื่อความปลอดภัยของข้อมูล กรุณาเข้าสู่ระบบใหม่อีกครั้ง',
+                        title: 'เซสชันหมดอายุ',
+                        text: 'เซสชันการใช้งานหมดอายุ เพื่อความปลอดภัยของข้อมูล กรุณาเข้าสู่ระบบใหม่อีกครั้ง',
                         confirmButtonText: 'เข้าสู่ระบบ',
                         confirmButtonColor: '#1A6FBF'
                     });
                 }
             } else if (sessionMsg === 'idle_timeout') {
-                showAlert('ไม่มีการใช้งานระบบเกิน 2 ชั่วโมง ระบบจึงออกจากระบบอัตโนมัติเพื่อความปลอดภัย', 'warning');
+                showAlert('ไม่มีการใช้งานระบบเป็นเวลานาน ระบบจึงออกจากระบบอัตโนมัติเพื่อความปลอดภัย', 'warning');
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         icon: 'warning',
                         title: 'หมดเวลาการใช้งาน (Inactivity)',
-                        text: 'ไม่มีการใช้งานระบบเกิน 2 ชั่วโมง ระบบจึงออกจากระบบอัตโนมัติเพื่อความปลอดภัย',
+                        text: 'ไม่มีการใช้งานระบบเป็นเวลานาน ระบบจึงออกจากระบบอัตโนมัติเพื่อความปลอดภัย',
                         confirmButtonText: 'เข้าสู่ระบบ',
                         confirmButtonColor: '#1A6FBF'
                     });
@@ -1363,7 +1363,7 @@
                     Swal.fire({
                         icon: 'info',
                         title: 'เซสชันเดิมสิ้นสุดลงแล้ว',
-                        text: 'มีการปิดเบราว์เซอร์หรือปิดแท็บทั้งหมด กรุณาเข้าสู่ระบบใหม่เพื่อความปลอดภัย',
+                        text: 'มีการปิดเบราว์เซอร์หรือเซสชันสิ้นสุดลง กรุณาเข้าสู่ระบบใหม่เพื่อความปลอดภัย',
                         confirmButtonText: 'ตกลง',
                         confirmButtonColor: '#1A6FBF'
                     });
@@ -1402,10 +1402,23 @@
                 return; // Do NOT auto-redirect!
             }
 
-            // If user closed the browser and opened index.html directly (sessionStorage is empty)
+            // Check if user has an active valid session on this device/browser
             const isAlive = sessionStorage.getItem('mentra_session_alive') === '1';
-            if (!isAlive) {
-                // If this is a standalone visit to index.html without alive session, sign out and require login
+            const sessionStart = parseInt(localStorage.getItem('mentra_session_start') || '0', 10);
+            const lastActivity = parseInt(localStorage.getItem('mentra_last_activity') || '0', 10);
+            const now = Date.now();
+            const MAX_SESSION_TIME = 12 * 60 * 60 * 1000; // 12 Hours
+            const MAX_IDLE_TIME = 6 * 60 * 60 * 1000;    // 6 Hours
+
+            const isSessionValid = sessionStart > 0 &&
+                (now - sessionStart < MAX_SESSION_TIME) &&
+                (lastActivity > 0 ? (now - lastActivity < MAX_IDLE_TIME) : true);
+
+            if (isSessionValid) {
+                // Recover/inherit session flag into this tab's sessionStorage
+                sessionStorage.setItem('mentra_session_alive', '1');
+            } else if (!isAlive) {
+                // If there is really NO valid session and not alive, sign out and require login
                 if (user) {
                     await signOut(auth).catch(() => {});
                 }

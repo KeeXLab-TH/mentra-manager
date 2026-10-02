@@ -2124,6 +2124,11 @@
                                         title="ดึงรายการพัสดุจากโครงการที่บันทึกไว้">
                                         <i class='bx bx-import'></i> ดึงจากโครงการ
                                     </button>
+                                    <button type="button" class="btn" onclick="autoReorderItemNumbers()"
+                                        style="padding: 0.45rem 0.95rem; font-size: 0.84rem; border: 1px solid #cbd5e1; color: #475569; background: #f8fafc; border-radius: 9px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"
+                                        title="รันเลขข้อหลัก (1, 2, 3...) ให้อัตโนมัติทุกแถว">
+                                        <i class='bx bx-list-ol'></i> รันเลขอัตโนมัติ
+                                    </button>
                                     <button type="button" class="btn" onclick="addHeaderRow()"
                                         style="padding: 0.45rem 0.95rem; font-size: 0.84rem; border: 1px solid #e2e8f0; color: #334155; background: #f8fafc; border-radius: 9px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;"
                                         title="เพิ่มแถบหัวข้อหมวดหมู่">
@@ -2141,8 +2146,8 @@
                                 <table class="pro-table" id="itemsTable">
                                     <thead>
                                         <tr>
-                                            <th style="width: 50px; text-align: center;">ลำดับ</th>
-                                            <th style="width: 70px; text-align: center;">ย่อย</th>
+                                            <th style="width: 65px; text-align: center;" title="เลขข้อหลัก (แก้ไขเลขได้ หรือเว้นว่างได้)">ลำดับ</th>
+                                            <th style="width: 75px; text-align: center;" title="เลขข้อย่อย เช่น 1.1 (แก้ไขเลขได้ หรือเว้นว่างได้)">ย่อย</th>
                                             <th style="min-width: 220px; text-align: left;">รายการ / รายละเอียด</th>
                                             <th style="width: 85px; text-align: center;">จำนวน</th>
                                             <th style="width: 95px; text-align: center;">หน่วย</th>
@@ -5452,13 +5457,72 @@
         }
 
         // --- Table Management & Pro Helpers ---
+        function getNextAutoMainNo() {
+            const rows = document.getElementById('itemsBody')?.children || [];
+            let maxNo = 0;
+            for (let i = 0; i < rows.length; i++) {
+                const val = (rows[i].querySelector('.item-main-no')?.value || '').trim();
+                const n = parseInt(val, 10);
+                if (!isNaN(n) && n > maxNo) {
+                    maxNo = n;
+                }
+            }
+            return maxNo + 1;
+        }
+
+        function autoReorderItemNumbers() {
+            const rows = document.getElementById('itemsBody')?.children || [];
+            let currentNo = 1;
+            for (let i = 0; i < rows.length; i++) {
+                const tr = rows[i];
+                const mainInput = tr.querySelector('.item-main-no');
+                const customInput = tr.querySelector('.item-custom-no');
+                if (!mainInput) continue;
+                
+                const customVal = (customInput?.value || '').trim();
+                // If this row has a sub-item number (e.g. 1.1), keep mainNo blank
+                if (customVal !== '') {
+                    mainInput.value = '';
+                } else {
+                    mainInput.value = (currentNo++).toString();
+                }
+            }
+            updateRowNumbers();
+            triggerLiveSync();
+            if (typeof showToast === 'function') {
+                showToast('รันเลขลำดับ 1, 2, 3... ให้อัตโนมัติเรียบร้อย', 'success');
+            }
+        }
+        window.autoReorderItemNumbers = autoReorderItemNumbers;
+
         function addTableRow(data = null) {
             const tbody = document.getElementById('itemsBody');
 
+            let mainNoVal = '';
+            if (data) {
+                if (data.mainNo !== undefined) {
+                    mainNoVal = data.mainNo;
+                } else if (!data.customNo) {
+                    // Backwards compatibility for older saved data
+                    mainNoVal = getNextAutoMainNo().toString();
+                } else {
+                    mainNoVal = '';
+                }
+            } else {
+                // New empty row: propose next number (can be freely edited or blanked out)
+                mainNoVal = getNextAutoMainNo().toString();
+            }
+
+            const customNoVal = data?.customNo || '';
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f8fafc; font-size: 0.95rem;"></td>
-                <td><input type="text" class="table-input item-custom-no" value="${data?.customNo || ''}" placeholder="เช่น 1.1" oninput="updateRowNumbers(); triggerLiveSync()"></td>
+                <td style="text-align: center; vertical-align: middle; background-color: #f8fafc; padding: 4px;">
+                    <input type="text" class="table-input item-main-no" value="${mainNoVal}" placeholder="-" style="text-align: center; font-weight: 700; color: #374151; font-size: 0.92rem; width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 4px 2px;" oninput="updateRowNumbers(); triggerLiveSync()" title="เลขข้อหลัก (สามารถเว้นว่างหรือแก้ไขได้อิสระ)">
+                </td>
+                <td style="text-align: center; vertical-align: middle; padding: 4px;">
+                    <input type="text" class="table-input item-custom-no" value="${customNoVal}" placeholder="เช่น 1.1" style="text-align: center; color: #475569; font-size: 0.9rem; width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 4px 2px;" oninput="updateRowNumbers(); triggerLiveSync()" title="เลขข้อย่อย (สามารถเว้นว่างหรือแก้ไขได้อิสระ)">
+                </td>
                 <td><input type="text" class="table-input item-desc" value="${data?.desc || ''}" placeholder="ชื่อสินค้า/บริการ หรือรายละเอียดงาน" oninput="triggerLiveSync()"></td>
                 <td><input type="number" class="table-input item-qty" value="${data?.qty ?? 1}" min="1" oninput="calculateRow(this); triggerLiveSync()" style="text-align: center;"></td>
                 <td>
@@ -5496,11 +5560,30 @@
         function addHeaderRow(data = null) {
             const tbody = document.getElementById('itemsBody');
             
+            let mainNoVal = '';
+            if (data) {
+                if (data.mainNo !== undefined) {
+                    mainNoVal = data.mainNo;
+                } else if (!data.customNo) {
+                    mainNoVal = getNextAutoMainNo().toString();
+                } else {
+                    mainNoVal = '';
+                }
+            } else {
+                mainNoVal = '';
+            }
+
+            const customNoVal = data?.customNo || '';
+
             const tr = document.createElement('tr');
             tr.className = 'is-header-row';
             tr.innerHTML = `
-                <td style="text-align: center; vertical-align: middle; font-weight: 700; color: #374151; background-color: #f1f5f9; font-size: 0.95rem;"></td>
-                <td><input type="text" class="table-input item-custom-no" value="${data?.customNo || ''}" placeholder="เช่น 1." oninput="updateRowNumbers(); triggerLiveSync()"></td>
+                <td style="text-align: center; vertical-align: middle; background-color: #f1f5f9; padding: 4px;">
+                    <input type="text" class="table-input item-main-no" value="${mainNoVal}" placeholder="-" style="text-align: center; font-weight: 700; color: #1e293b; font-size: 0.92rem; width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 4px 2px; background: transparent;" oninput="updateRowNumbers(); triggerLiveSync()" title="เลขข้อหลักของหมวดหมู่ (เว้นว่างได้)">
+                </td>
+                <td style="text-align: center; vertical-align: middle; padding: 4px; background-color: #f8fafc;">
+                    <input type="text" class="table-input item-custom-no" value="${customNoVal}" placeholder="เช่น 1." style="text-align: center; color: #475569; font-size: 0.9rem; width: 100%; border: 1px solid transparent; border-radius: 6px; padding: 4px 2px; background: transparent;" oninput="updateRowNumbers(); triggerLiveSync()" title="เลขข้อย่อย (เว้นว่างได้)">
+                </td>
                 <td colspan="5" style="background-color: #f8fafc;">
                     <input type="text" class="table-input item-desc" value="${data?.desc || ''}" placeholder="📌 ชื่อหัวข้อ/หมวดหมู่หลัก (เช่น งานระบบไฟฟ้า)" style="font-weight: 700; color: #1A6FBF; font-size: 0.95rem;" oninput="triggerLiveSync()">
                     <input type="hidden" class="item-is-header" value="true">
@@ -5527,19 +5610,22 @@
         function duplicateTableRow(btn) {
             const tr = btn.closest('tr');
             if (!tr) return;
+            const mainNo = tr.querySelector('.item-main-no')?.value || '';
             const customNo = tr.querySelector('.item-custom-no')?.value || '';
             const desc = tr.querySelector('.item-desc')?.value || '';
             const isHeader = tr.querySelector('.item-is-header') ? true : false;
             
             if (isHeader) {
-                addHeaderRow({ customNo, desc });
+                addHeaderRow({ mainNo, customNo, desc });
             } else {
                 const qty = tr.querySelector('.item-qty')?.value || '1';
                 const unit = tr.querySelector('.item-unit')?.value || 'ชุด';
                 const price = tr.querySelector('.item-price')?.value || '0';
-                addTableRow({ customNo, desc, qty, unit, price });
+                addTableRow({ mainNo, customNo, desc, qty, unit, price });
             }
-            showToast('คัดลอกรายการสำเร็จ', 'success');
+            if (typeof showToast === 'function') {
+                showToast('คัดลอกรายการสำเร็จ', 'success');
+            }
         }
 
         function removeTableRow(btn) {
@@ -5550,30 +5636,23 @@
                 calculateAll();
                 triggerLiveSync();
             } else {
-                showToast("ต้องมีรายการอย่างน้อย 1 รายการ", "warning");
+                if (typeof showToast === 'function') {
+                    showToast("ต้องมีรายการอย่างน้อย 1 รายการ", "warning");
+                }
             }
         }
 
         function updateRowNumbers() {
             const rows = document.getElementById('itemsBody')?.children || [];
-            let currentNo = 1;
             for (let i = 0; i < rows.length; i++) {
                 const tr = rows[i];
-                const customNo = tr.querySelector('.item-custom-no');
-                let displayNoStr = '';
-                
-                if (customNo && customNo.value.trim() !== '') {
-                    displayNoStr = customNo.value.trim();
-                    tr.cells[0].innerHTML = '';
-                } else {
-                    displayNoStr = currentNo.toString();
-                    tr.cells[0].innerHTML = currentNo++;
-                }
+                const customNo = (tr.querySelector('.item-custom-no')?.value || '').trim();
+                const mainNo = (tr.querySelector('.item-main-no')?.value || '').trim();
 
                 // Indent description in UI if it's a sub-item
                 const descInput = tr.querySelector('.item-desc');
                 if (descInput) {
-                    if (displayNoStr.includes('.')) {
+                    if (customNo !== '' || (mainNo !== '' && mainNo.includes('.'))) {
                         descInput.style.paddingLeft = '24px';
                     } else {
                         descInput.style.paddingLeft = '12px';
@@ -6233,34 +6312,45 @@
 
             // Helper to build rows data array
             const buildRowsData = (curRowPadding, curFontSize) => {
-                let currentNo = 1;
                 const arr = [];
                 for (let i = 0; i < rows.length; i++) {
                     const tr = rows[i];
-                    const customNo = tr.querySelector('.item-custom-no') ? tr.querySelector('.item-custom-no').value : '';
-                    const desc = tr.querySelector('.item-desc').value || '-';
-                    const qty = tr.querySelector('.item-qty').value || '0';
-                    const unit = tr.querySelector('.item-unit').value || '-';
-                    const price = parseFloat(tr.querySelector('.item-price').value || 0);
-                    const totalText = tr.querySelector('.item-total-text').innerText;
-
-                    let displayNo = '';
-                    if (customNo && customNo.trim() !== '') {
-                        displayNo = customNo;
-                    } else {
-                        displayNo = currentNo++;
-                    }
-
+                    const mainNo = (tr.querySelector('.item-main-no')?.value || '').trim();
+                    const customNo = (tr.querySelector('.item-custom-no')?.value || '').trim();
+                    const desc = tr.querySelector('.item-desc')?.value || '-';
+                    const qty = tr.querySelector('.item-qty')?.value || '0';
+                    const unit = tr.querySelector('.item-unit')?.value || '-';
+                    const price = parseFloat(tr.querySelector('.item-price')?.value || 0);
+                    const totalText = tr.querySelector('.item-total-text')?.innerText || '0.00';
                     const isHeader = tr.querySelector('.item-is-header') ? true : false;
-                    const isSubItem = displayNo.toString().includes('.');
-                    const descPadding = isSubItem ? '24px' : '6px';
-                    const col1Content = isSubItem ? '' : displayNo;
+
                     const formattedDesc = addThaiBreaks(desc || '-');
-                    const descContent = isSubItem ?
-                        `<div style="display: flex; align-items: flex-start; gap: 6px;">
-                            <span style="color: #374151; font-weight: 700; flex-shrink: 0;">${displayNo}</span>
-                            <span>${formattedDesc}</span>
-                        </div>` : formattedDesc;
+
+                    let col1Content = '';
+                    let descPadding = '6px';
+                    let descContent = formattedDesc;
+
+                    if (customNo !== '') {
+                        // Sub-item row: e.g. customNo = "1.1" or "ก"
+                        col1Content = mainNo; // Will show mainNo if user entered it, otherwise empty
+                        descPadding = '24px';
+                        descContent = `
+                            <div style="display: flex; align-items: flex-start; gap: 6px;">
+                                <span style="color: #374151; font-weight: 700; flex-shrink: 0;">${customNo}</span>
+                                <span>${formattedDesc}</span>
+                            </div>
+                        `;
+                    } else if (mainNo !== '') {
+                        // Main item row with custom or sequential number
+                        col1Content = mainNo;
+                        descPadding = '6px';
+                        descContent = formattedDesc;
+                    } else {
+                        // BOTH mainNo and customNo are empty: Leave blank in col 1 and normal alignment
+                        col1Content = '';
+                        descPadding = '6px';
+                        descContent = formattedDesc;
+                    }
 
                     // Generate the row HTML
                     let rowHTML = '';
@@ -9767,9 +9857,10 @@
                         }
                         
                         if (item.isHeader) {
-                            addHeaderRow({ customNo: item.customNo || '', desc: displayName });
+                            addHeaderRow({ mainNo: item.mainNo || '', customNo: item.customNo || '', desc: displayName });
                         } else {
                             addTableRow({
+                                mainNo: item.mainNo || '',
                                 customNo: item.customNo || '',
                                 desc: displayName,
                                 qty: qtyVal,
@@ -10048,9 +10139,10 @@
                     }
                     
                     if (item.isHeader) {
-                        addHeaderRow({ customNo: item.customNo || '', desc: displayName });
+                        addHeaderRow({ mainNo: item.mainNo || '', customNo: item.customNo || '', desc: displayName });
                     } else {
                         addTableRow({
+                            mainNo: item.mainNo || '',
                             customNo: item.customNo || '',
                             desc: displayName,
                             qty: qtyVal,
@@ -10358,7 +10450,8 @@
             for (let i = 0; i < rows.length; i++) {
                 const tr = rows[i];
                 items.push({
-                    customNo: tr.querySelector('.item-custom-no')?.value || '',
+                    mainNo: tr.querySelector('.item-main-no')?.value ?? '',
+                    customNo: tr.querySelector('.item-custom-no')?.value ?? '',
                     desc: tr.querySelector('.item-desc')?.value || '',
                     qty: tr.querySelector('.item-qty')?.value || '',
                     unit: tr.querySelector('.item-unit')?.value || '',
