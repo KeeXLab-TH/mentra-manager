@@ -729,6 +729,7 @@
 
         .doc-field-content {
             flex: 1;
+            word-break: break-word;
         }
 
         /* Body Paragraphs */
@@ -740,7 +741,85 @@
             text-indent: 2.5cm;
             text-align: justify;
             text-justify: inter-cluster;
+            text-align-last: left;
             word-break: break-word;
+        }
+
+        .doc-body-paragraph div.doc-para-indented,
+        .doc-body-paragraph p.doc-para-indented {
+            margin: 8px 0 0 0;
+            padding: 0;
+            text-indent: 2.5cm;
+            line-height: inherit;
+            text-align: inherit;
+            text-justify: inherit;
+            text-align-last: inherit;
+        }
+
+        .doc-body-paragraph div.doc-para-plain,
+        .doc-body-paragraph p.doc-para-plain {
+            margin: 4px 0 0 0;
+            padding: 0;
+            text-indent: 0 !important;
+            line-height: inherit;
+            text-align: inherit;
+            text-justify: inherit;
+            text-align-last: inherit;
+        }
+
+        .doc-body-paragraph br {
+            line-height: inherit;
+        }
+
+        /* Modal for Text & Line Break Editor */
+        .text-break-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        .text-break-modal {
+            background: #ffffff;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .text-break-modal-header {
+            padding: 16px 22px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+        }
+
+        .text-break-modal-body {
+            padding: 18px 22px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .text-break-modal-footer {
+            padding: 14px 22px;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
         }
 
         /* Closing sentence */
@@ -1029,7 +1108,7 @@
                 width: 100% !important;
             }
 
-            .sidebar, .topbar, .doc-editor-toolbar, .help-banner, .history-card, #toastContainer, .sidebar-overlay, .drag-badge, .drag-controls-pill, .logo-controls-pill, .company-controls-pill {
+            .sidebar, .topbar, .doc-editor-toolbar, .help-banner, .history-card, #toastContainer, .sidebar-overlay, .drag-badge, .drag-controls-pill, .logo-controls-pill, .company-controls-pill, .text-break-modal-overlay {
                 display: none !important;
             }
 
@@ -1358,6 +1437,35 @@
                         <button type="button" class="btn-tool-sm" id="btnAlignCenter" onmousedown="event.preventDefault()" onclick="applyTextAlign('center')" title="กึ่งกลาง"><i class='bx bx-align-middle'></i> กึ่งกลาง</button>
                         <button type="button" class="btn-tool-sm" id="btnAlignRight" onmousedown="event.preventDefault()" onclick="applyTextAlign('right')" title="ชิดขวา"><i class='bx bx-align-right'></i> ชิดขวา</button>
                         <button type="button" class="btn-tool-sm" id="btnAlignJustify" onmousedown="event.preventDefault()" onclick="applyTextAlign('justify')" title="กระจายเต็มบรรทัด (Thai Justify)"><i class='bx bx-align-justify'></i> กระจาย</button>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Line Breaks & Paragraphs Controls -->
+                    <div class="toolbar-group">
+                        <span class="toolbar-label"><i class='bx bx-paragraph'></i> ขึ้นบรรทัด:</span>
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="insertLineBreak()" title="ขึ้นบรรทัดใหม่ธรรมดา (ไม่เยื้อง) [Shift+Enter]">
+                            <i class='bx bx-subdirectory-left'></i> ขึ้นบรรทัดใหม่
+                        </button>
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="insertNewParagraph()" title="ขึ้นย่อหน้าใหม่ (เยื้อง 2.5 ซม.) [Enter]">
+                            <i class='bx bx-paragraph'></i> ย่อหน้าใหม่
+                        </button>
+                        <select class="zoom-select" id="selectLineHeight" onchange="setLineHeight(this.value)" title="เลือกระยะห่างระหว่างบรรทัด (Line-Height)">
+                            <option value="1.2">บรรทัดชิด (1.2)</option>
+                            <option value="1.35">บรรทัดพอดี (1.35)</option>
+                            <option value="1.45" selected>มาตรฐาน (1.45)</option>
+                            <option value="1.6">บรรทัดโปร่ง (1.6)</option>
+                            <option value="1.8">บรรทัดกว้าง (1.8)</option>
+                        </select>
+                        <select class="zoom-select" id="selectEnterMode" onchange="changeEnterMode(this.value)" title="กำหนดว่าเมื่อกดปุ่ม Enter จะให้ขึ้นย่อหน้าใหม่หรือขึ้นบรรทัดใหม่">
+                            <option value="paragraph" selected>Enter: ขึ้นย่อหน้าใหม่ (เยื้อง)</option>
+                            <option value="linebreak">Enter: ขึ้นบรรทัดใหม่ (ไม่เยื้อง)</option>
+                        </select>
+                        <button type="button" class="btn-tool-sm" onclick="openTextBreakModal()" title="เปิดหน้าต่างพิมพ์ข้อความและกำหนดการตัดบรรทัด/ย่อหน้า">
+                            <i class='bx bx-edit'></i> จัดการข้อความ & บรรทัด
+                        </button>
+                    </div>
+
                     <div class="toolbar-divider"></div>
 
                     <!-- Page Margins Settings -->
@@ -1563,9 +1671,9 @@
             <div class="help-banner">
                 <div>
                     <i class='bx bx-bulb' style="margin-right: 6px;"></i>
-                    <strong>คำแนะนำ:</strong> สามารถคลิกพิมพ์แก้ไขข้อความบนกระดาษได้โดยตรง ปรับขนาดตัวหนังสือ/หนา/บาง/ชิดซ้าย/ขวา/กลางได้ และ<strong>คลิกลากที่ลายเซ็นหรือตราประทับ</strong>เพื่อย้ายไปวางตำแหน่งใดก็ได้ตามต้องการ
+                    <strong>คำแนะนำ:</strong> คลิกพิมพ์แก้ไขข้อความได้โดยตรง | <strong>การขึ้นบรรทัดใหม่:</strong> กด <kbd style="background:#fff; border:1px solid #cbd5e1; border-radius:3px; padding:1px 5px; font-size:0.75rem;">Shift</kbd> + <kbd style="background:#fff; border:1px solid #cbd5e1; border-radius:3px; padding:1px 5px; font-size:0.75rem;">Enter</kbd> เพื่อขึ้นบรรทัดใหม่ธรรมดา (ไม่เยื้อง) หรือกด <kbd style="background:#fff; border:1px solid #cbd5e1; border-radius:3px; padding:1px 5px; font-size:0.75rem;">Enter</kbd> เพื่อขึ้นย่อหน้าใหม่ (เยื้อง 2.5 ซม.) หรือใช้ปุ่มในแถบเครื่องมือ
                 </div>
-                <div style="font-size:0.78rem; opacity:0.85;">A4 แนวตั้ง (Single Page)</div>
+                <div style="font-size:0.78rem; opacity:0.85; white-space:nowrap; margin-left:10px;">A4 แนวตั้ง</div>
             </div>
 
             <!-- A4 Page Container (WYSIWYG on Document) -->
@@ -1733,6 +1841,8 @@
             initDraggable();
             restorePositionsFromStorage();
             restoreMarginsFromStorage();
+            restoreLineBreakSettings();
+            setupKeyboardLineBreaks();
             trackEditableFocus();
             renderHistoryTable();
         });
@@ -2612,13 +2722,13 @@
             document.getElementById('fCompanyHeader').innerHTML = DEFAULT_DATA.companyHeader;
             document.getElementById('fDocNo').textContent = DEFAULT_DATA.docNo;
             document.getElementById('fDocDate').textContent = DEFAULT_DATA.docDate;
-            document.getElementById('fSubject').textContent = DEFAULT_DATA.subject;
-            document.getElementById('fRecipient').textContent = DEFAULT_DATA.recipient;
-            document.getElementById('fReference').textContent = DEFAULT_DATA.reference;
-            document.getElementById('fBodyText').textContent = DEFAULT_DATA.bodyText;
-            document.getElementById('fClosingText').textContent = DEFAULT_DATA.closingText;
-            document.getElementById('fSignatoryName').textContent = DEFAULT_DATA.signatoryName;
-            document.getElementById('fSignatoryPosition').textContent = DEFAULT_DATA.signatoryPosition;
+            document.getElementById('fSubject').innerHTML = DEFAULT_DATA.subject;
+            document.getElementById('fRecipient').innerHTML = DEFAULT_DATA.recipient;
+            document.getElementById('fReference').innerHTML = DEFAULT_DATA.reference;
+            document.getElementById('fBodyText').innerHTML = DEFAULT_DATA.bodyText;
+            document.getElementById('fClosingText').innerHTML = DEFAULT_DATA.closingText;
+            document.getElementById('fSignatoryName').innerHTML = DEFAULT_DATA.signatoryName;
+            document.getElementById('fSignatoryPosition').innerHTML = DEFAULT_DATA.signatoryPosition;
 
             setFontSize(15);
             setCompanyFontSize(11);
@@ -2720,16 +2830,421 @@
             }
         }
 
+        // ==============================================================================
+        // LINE BREAKS & PARAGRAPHS CONTROLLER (การขึ้นบรรทัดใหม่ & ย่อหน้า)
+        // ==============================================================================
+        let enterKeyMode = 'paragraph'; // 'paragraph' or 'linebreak'
+        let currentLineHeight = '1.45';
+
+        function changeEnterMode(val) {
+            enterKeyMode = val;
+            try {
+                localStorage.setItem('mentra_doc_enter_mode', val);
+            } catch (e) {}
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: val === 'paragraph' ? 'ปุ่ม Enter: ขึ้นย่อหน้าใหม่ (เยื้อง 2.5 ซม.)' : 'ปุ่ม Enter: ขึ้นบรรทัดใหม่ (ไม่เยื้อง)',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        function setLineHeight(val) {
+            currentLineHeight = val;
+            const body = document.getElementById('fBodyText');
+            if (body) {
+                body.style.lineHeight = val;
+            }
+            if (lastActiveEditable && lastActiveEditable !== body) {
+                lastActiveEditable.style.lineHeight = val;
+            }
+            const sel = document.getElementById('selectLineHeight');
+            if (sel) sel.value = val;
+            try {
+                localStorage.setItem('mentra_doc_line_height', val);
+            } catch (e) {}
+        }
+
+        function restoreLineBreakSettings() {
+            try {
+                const savedMode = localStorage.getItem('mentra_doc_enter_mode');
+                if (savedMode) {
+                    enterKeyMode = savedMode;
+                    const sel = document.getElementById('selectEnterMode');
+                    if (sel) sel.value = savedMode;
+                }
+                const savedLh = localStorage.getItem('mentra_doc_line_height');
+                if (savedLh) {
+                    currentLineHeight = savedLh;
+                    setLineHeight(savedLh);
+                }
+            } catch (e) {}
+        }
+
+        // Insert Line Break (<br>) at cursor position without indent
+        function insertLineBreak() {
+            const sel = window.getSelection();
+            let target = lastActiveEditable || document.getElementById('fBodyText');
+
+            if (!sel || sel.rangeCount === 0 || !document.contains(sel.anchorNode)) {
+                if (target) {
+                    target.focus();
+                    const br = document.createElement('br');
+                    target.appendChild(br);
+                    const range = document.createRange();
+                    range.setStartAfter(br);
+                    range.collapse(true);
+                    const s = window.getSelection();
+                    s.removeAllRanges();
+                    s.addRange(range);
+                }
+                return;
+            }
+
+            const range = sel.getRangeAt(0);
+            range.deleteContents();
+
+            const br = document.createElement('br');
+            range.insertNode(br);
+
+            // Move cursor right after the <br>
+            range.setStartAfter(br);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            // If <br> is at the very end of block element, append an extra <br> so cursor can be visible on the new line
+            if (!br.nextSibling) {
+                const spacer = document.createElement('br');
+                br.parentNode.appendChild(spacer);
+            }
+        }
+
+        // Insert New Paragraph (<div class="doc-para-indented">) with 2.5cm indent at cursor
+        function insertNewParagraph() {
+            const bodyEl = document.getElementById('fBodyText');
+            const sel = window.getSelection();
+
+            if (!sel || sel.rangeCount === 0 || !bodyEl.contains(sel.anchorNode)) {
+                if (bodyEl) {
+                    bodyEl.focus();
+                    const p = document.createElement('div');
+                    p.className = 'doc-para-indented';
+                    p.innerHTML = '<br>';
+                    bodyEl.appendChild(p);
+                    const range = document.createRange();
+                    range.setStart(p, 0);
+                    range.collapse(true);
+                    const s = window.getSelection();
+                    s.removeAllRanges();
+                    s.addRange(range);
+                }
+                return;
+            }
+
+            const range = sel.getRangeAt(0);
+            range.deleteContents();
+
+            const p = document.createElement('div');
+            p.className = 'doc-para-indented';
+            p.innerHTML = '<br>';
+
+            range.insertNode(p);
+
+            const newRange = document.createRange();
+            newRange.setStart(p, 0);
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+        }
+
+        // Setup global keyboard & paste listeners for line breaks
+        function setupKeyboardLineBreaks() {
+            document.addEventListener('keydown', function(e) {
+                const editable = e.target.closest('[contenteditable="true"]');
+                if (!editable) return;
+
+                if (e.key === 'Enter') {
+                    // Single-line meta headers
+                    if (editable.id === 'fDocNo' || editable.id === 'fDocDate') {
+                        e.preventDefault();
+                        return;
+                    }
+
+                    // Field lines (Subject, Recipient, Reference, Closing, Signatory, CompanyHeader)
+                    if (editable.id === 'fSubject' || editable.id === 'fRecipient' || 
+                        editable.id === 'fReference' || editable.id === 'fClosingText' || 
+                        editable.id === 'fSignatoryName' || editable.id === 'fSignatoryPosition' ||
+                        editable.id === 'fCompanyHeader' || editable.closest('#fCompanyHeader')) {
+                        e.preventDefault();
+                        insertLineBreak();
+                        return;
+                    }
+
+                    // Shift+Enter always does clean line break without indent
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        insertLineBreak();
+                        return;
+                    }
+
+                    // Enter in Body text
+                    if (editable.id === 'fBodyText' || editable.closest('#fBodyText')) {
+                        e.preventDefault();
+                        if (enterKeyMode === 'linebreak') {
+                            insertLineBreak();
+                        } else {
+                            insertNewParagraph();
+                        }
+                        return;
+                    }
+                }
+            });
+
+            // Clean multi-line paste handling
+            document.addEventListener('paste', function(e) {
+                const editable = e.target.closest('[contenteditable="true"]');
+                if (!editable) return;
+
+                const text = (e.clipboardData || window.clipboardData)?.getData('text/plain');
+                if (!text) return;
+
+                if (text.includes('\n')) {
+                    e.preventDefault();
+                    const sel = window.getSelection();
+                    if (!sel || sel.rangeCount === 0) return;
+
+                    const range = sel.getRangeAt(0);
+                    range.deleteContents();
+
+                    const frag = document.createDocumentFragment();
+                    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+
+                    const isBody = editable.id === 'fBodyText' || editable.closest('#fBodyText');
+
+                    if (isBody) {
+                        // Group paragraphs by empty lines
+                        let currentParagraph = [];
+                        lines.forEach((line) => {
+                            if (line.trim() === '') {
+                                if (currentParagraph.length > 0) {
+                                    const p = document.createElement('div');
+                                    p.className = 'doc-para-indented';
+                                    p.innerHTML = currentParagraph.join('<br>');
+                                    frag.appendChild(p);
+                                    currentParagraph = [];
+                                }
+                            } else {
+                                currentParagraph.push(escapeHtml(line));
+                            }
+                        });
+                        if (currentParagraph.length > 0) {
+                            const p = document.createElement('div');
+                            p.className = 'doc-para-indented';
+                            p.innerHTML = currentParagraph.join('<br>');
+                            frag.appendChild(p);
+                        }
+                    } else {
+                        lines.forEach((line, idx) => {
+                            if (idx > 0) frag.appendChild(document.createElement('br'));
+                            if (line.length > 0) frag.appendChild(document.createTextNode(line));
+                        });
+                    }
+
+                    const last = frag.lastChild;
+                    range.insertNode(frag);
+                    if (last) {
+                        range.setStartAfter(last);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                }
+            });
+        }
+
+        // ==============================================================================
+        // TEXT & LINE BREAK EDITOR MODAL
+        // ==============================================================================
+        function openTextBreakModal() {
+            const overlay = document.getElementById('textBreakModalOverlay');
+            if (!overlay) return;
+
+            // Populate current values
+            const bodyEl = document.getElementById('fBodyText');
+            const txtBody = document.getElementById('txtModalBody');
+            if (bodyEl && txtBody) {
+                let html = bodyEl.innerHTML;
+                txtBody.value = convertHtmlToEditableText(html);
+            }
+
+            const subj = document.getElementById('fSubject');
+            const recp = document.getElementById('fRecipient');
+            const ref = document.getElementById('fReference');
+            const close = document.getElementById('fClosingText');
+            const comp = document.getElementById('fCompanyHeader');
+
+            if (subj) document.getElementById('txtModalSubject').value = convertHtmlToEditableText(subj.innerHTML);
+            if (recp) document.getElementById('txtModalRecipient').value = convertHtmlToEditableText(recp.innerHTML);
+            if (ref) document.getElementById('txtModalReference').value = convertHtmlToEditableText(ref.innerHTML);
+            if (close) document.getElementById('txtModalClosing').value = convertHtmlToEditableText(close.innerHTML);
+            if (comp) document.getElementById('txtModalCompany').value = convertHtmlToEditableText(comp.innerHTML);
+
+            switchModalTab('body');
+            updateModalPreview();
+            overlay.style.display = 'flex';
+        }
+
+        function closeTextBreakModal() {
+            const overlay = document.getElementById('textBreakModalOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function handleModalOverlayClick(e) {
+            if (e.target.id === 'textBreakModalOverlay') {
+                closeTextBreakModal();
+            }
+        }
+
+        function switchModalTab(tabName) {
+            ['body', 'meta', 'company'].forEach(t => {
+                const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                const content = document.getElementById(`modalTabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if (btn) btn.classList.toggle('active', t === tabName);
+                if (content) content.style.display = (t === tabName) ? 'block' : 'none';
+            });
+        }
+
+        function modalInsertText(textToInsert) {
+            const textarea = document.getElementById('txtModalBody');
+            if (!textarea) return;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const val = textarea.value;
+            textarea.value = val.substring(0, start) + textToInsert + val.substring(end);
+            textarea.selectionStart = textarea.selectionEnd = start + textToInsert.length;
+            textarea.focus();
+            updateModalPreview();
+        }
+
+        function convertHtmlToEditableText(html) {
+            if (!html) return '';
+            let temp = document.createElement('div');
+            temp.innerHTML = html;
+
+            temp.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+            temp.querySelectorAll('div, p').forEach(p => {
+                p.prepend(document.createTextNode('\n'));
+            });
+
+            return temp.textContent.trim().replace(/\n{3,}/g, '\n\n');
+        }
+
+        function buildHtmlFromBodyText(rawText, indentMode, alignMode) {
+            if (!rawText || rawText.trim() === '') return '';
+            const normalized = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+
+            if (indentMode === 'none') {
+                return normalized.split('\n').map(line => {
+                    const l = escapeHtml(line);
+                    return l ? `<div class="doc-para-plain" style="text-align:${alignMode};">${l}</div>` : '<div class="doc-para-plain"><br></div>';
+                }).join('');
+            } else if (indentMode === 'all-indented') {
+                return normalized.split('\n').map(line => {
+                    const l = escapeHtml(line);
+                    return l ? `<div class="doc-para-indented" style="text-align:${alignMode};">${l}</div>` : '<div class="doc-para-indented"><br></div>';
+                }).join('');
+            } else {
+                // smart mode
+                const paragraphs = normalized.split(/\n{2,}/);
+                return paragraphs.map(para => {
+                    const lines = para.split('\n').map(l => escapeHtml(l)).join('<br>');
+                    return `<div class="doc-para-indented" style="text-align:${alignMode};">${lines}</div>`;
+                }).join('');
+            }
+        }
+
+        function updateModalPreview() {
+            const raw = document.getElementById('txtModalBody')?.value || '';
+            const indentMode = document.getElementById('modalIndentMode')?.value || 'smart';
+            const alignMode = document.getElementById('modalAlignMode')?.value || 'justify';
+            const previewEl = document.getElementById('modalBodyPreview');
+            if (previewEl) {
+                previewEl.innerHTML = buildHtmlFromBodyText(raw, indentMode, alignMode);
+            }
+        }
+
+        function applyModalChangesToDoc() {
+            const rawBody = document.getElementById('txtModalBody')?.value || '';
+            const indentMode = document.getElementById('modalIndentMode')?.value || 'smart';
+            const alignMode = document.getElementById('modalAlignMode')?.value || 'justify';
+
+            const bodyHtml = buildHtmlFromBodyText(rawBody, indentMode, alignMode);
+            const bodyEl = document.getElementById('fBodyText');
+            if (bodyEl) {
+                bodyEl.innerHTML = bodyHtml;
+                bodyEl.style.textAlign = alignMode;
+            }
+
+            // Meta fields
+            const txtSubj = document.getElementById('txtModalSubject')?.value;
+            const txtRecp = document.getElementById('txtModalRecipient')?.value;
+            const txtRef = document.getElementById('txtModalReference')?.value;
+            const txtClose = document.getElementById('txtModalClosing')?.value;
+            const txtComp = document.getElementById('txtModalCompany')?.value;
+
+            if (txtSubj !== undefined) {
+                document.getElementById('fSubject').innerHTML = escapeHtml(txtSubj).replace(/\n/g, '<br>');
+            }
+            if (txtRecp !== undefined) {
+                document.getElementById('fRecipient').innerHTML = escapeHtml(txtRecp).replace(/\n/g, '<br>');
+            }
+            if (txtRef !== undefined) {
+                document.getElementById('fReference').innerHTML = escapeHtml(txtRef).replace(/\n/g, '<br>');
+            }
+            if (txtClose !== undefined) {
+                document.getElementById('fClosingText').innerHTML = escapeHtml(txtClose).replace(/\n/g, '<br>');
+            }
+            if (txtComp !== undefined) {
+                const compLines = txtComp.split('\n').map(l => `<div>${escapeHtml(l)}</div>`).join('');
+                document.getElementById('fCompanyHeader').innerHTML = compLines;
+            }
+
+            closeTextBreakModal();
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'อัปเดตเนื้อหาและการขึ้นบรรทัดใหม่ลงหนังสือแล้ว',
+                showConfirmButton: false,
+                timer: 1600
+            });
+        }
+
+        // ==============================================================================
+        // HISTORY MANAGEMENT (Preserving HTML & Line breaks)
+        // ==============================================================================
+        function stripTags(html) {
+            if (!html) return '';
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+        }
+
         function saveToHistory(showAlert = true) {
             const docNo = document.getElementById('fDocNo').textContent.trim();
             const date = document.getElementById('fDocDate').textContent.trim();
-            const subject = document.getElementById('fSubject').textContent.trim();
-            const recipient = document.getElementById('fRecipient').textContent.trim();
-            const reference = document.getElementById('fReference').textContent.trim();
-            const body = document.getElementById('fBodyText').textContent.trim();
-            const closing = document.getElementById('fClosingText').textContent.trim();
-            const signName = document.getElementById('fSignatoryName').textContent.trim();
-            const signPos = document.getElementById('fSignatoryPosition').textContent.trim();
+            const subject = document.getElementById('fSubject').innerHTML.trim();
+            const recipient = document.getElementById('fRecipient').innerHTML.trim();
+            const reference = document.getElementById('fReference').innerHTML.trim();
+            const body = document.getElementById('fBodyText').innerHTML.trim();
+            const closing = document.getElementById('fClosingText').innerHTML.trim();
+            const signName = document.getElementById('fSignatoryName').innerHTML.trim();
+            const signPos = document.getElementById('fSignatoryPosition').innerHTML.trim();
+            const companyHeader = document.getElementById('fCompanyHeader').innerHTML.trim();
 
             const item = {
                 id: 'del_' + Date.now(),
@@ -2742,6 +3257,7 @@
                 closing,
                 signName,
                 signPos,
+                companyHeader,
                 createdAt: new Date().toISOString()
             };
 
@@ -2788,9 +3304,9 @@
                 <tr>
                     <td><span style="font-size:0.82rem; color:#64748b;">${escapeHtml(item.date || '-')}</span></td>
                     <td><strong style="color:var(--primary); font-family:monospace; font-size:0.95rem;">${escapeHtml(item.docNo || '-')}</strong></td>
-                    <td>${escapeHtml(item.subject || '-')}</td>
-                    <td>${escapeHtml(item.recipient || '-')}</td>
-                    <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(item.reference)}">${escapeHtml(item.reference || '-')}</td>
+                    <td>${escapeHtml(stripTags(item.subject || '-'))}</td>
+                    <td>${escapeHtml(stripTags(item.recipient || '-'))}</td>
+                    <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(stripTags(item.reference))}">${escapeHtml(stripTags(item.reference || '-'))}</td>
                     <td style="text-align:center;">
                         <button type="button" class="btn-action" style="padding:4px 10px; font-size:0.78rem;" onclick="loadHistoryItem('${item.id}')" title="ดึงข้อมูลมาแสดงบนกระดาษ">
                             <i class='bx bx-edit'></i> ดึงข้อมูล
@@ -2806,13 +3322,14 @@
             if (found) {
                 document.getElementById('fDocNo').textContent = found.docNo || '';
                 document.getElementById('fDocDate').textContent = found.date || '';
-                document.getElementById('fSubject').textContent = found.subject || '';
-                document.getElementById('fRecipient').textContent = found.recipient || '';
-                document.getElementById('fReference').textContent = found.reference || '';
-                document.getElementById('fBodyText').textContent = found.body || '';
-                if (found.closing) document.getElementById('fClosingText').textContent = found.closing;
-                document.getElementById('fSignatoryName').textContent = found.signName || '';
-                document.getElementById('fSignatoryPosition').textContent = found.signPos || '';
+                document.getElementById('fSubject').innerHTML = found.subject || '';
+                document.getElementById('fRecipient').innerHTML = found.recipient || '';
+                document.getElementById('fReference').innerHTML = found.reference || '';
+                document.getElementById('fBodyText').innerHTML = found.body || '';
+                if (found.closing) document.getElementById('fClosingText').innerHTML = found.closing;
+                document.getElementById('fSignatoryName').innerHTML = found.signName || '';
+                document.getElementById('fSignatoryPosition').innerHTML = found.signPos || '';
+                if (found.companyHeader) document.getElementById('fCompanyHeader').innerHTML = found.companyHeader;
 
                 window.scrollTo({ top: 120, behavior: 'smooth' });
 
@@ -2854,6 +3371,136 @@
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
     </script>
+
+    <!-- TEXT & LINE BREAK EDITOR MODAL -->
+    <div class="text-break-modal-overlay" id="textBreakModalOverlay" onclick="handleModalOverlayClick(event)">
+        <div class="text-break-modal" onclick="event.stopPropagation()">
+            <div class="text-break-modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class='bx bx-edit' style="color: var(--primary); font-size: 1.3rem;"></i>
+                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 600; color: #0f172a;">พิมพ์เนื้อหา & กำหนดการขึ้นบรรทัดใหม่</h3>
+                </div>
+                <button type="button" class="margin-close-btn" onclick="closeTextBreakModal()"><i class='bx bx-x' style="font-size: 1.4rem;"></i></button>
+            </div>
+
+            <div class="text-break-modal-body">
+                <!-- Navigation Tabs inside modal -->
+                <div style="display: flex; gap: 6px; border-bottom: 1px solid #e2e8f0; margin-bottom: 14px; padding-bottom: 6px;">
+                    <button type="button" class="btn-tool-sm active" id="tabBtnBody" onclick="switchModalTab('body')">
+                        <i class='bx bx-file-blank'></i> เนื้อหาจดหมาย (Body)
+                    </button>
+                    <button type="button" class="btn-tool-sm" id="tabBtnMeta" onclick="switchModalTab('meta')">
+                        <i class='bx bx-detail'></i> เรื่อง / ผู้รับ / อ้างถึง
+                    </button>
+                    <button type="button" class="btn-tool-sm" id="tabBtnCompany" onclick="switchModalTab('company')">
+                        <i class='bx bx-building'></i> หัวกระดาษบริษัท
+                    </button>
+                </div>
+
+                <!-- Tab 1: Body Text -->
+                <div id="modalTabContentBody">
+                    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px; font-size: 0.82rem; color: #1e40af; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            💡 <strong>วิธีการกำหนดการขึ้นบรรทัดใหม่:</strong>
+                            <ul style="margin: 4px 0 0 16px; padding: 0;">
+                                <li>กด <strong>Enter 1 ครั้ง</strong> = ขึ้นบรรทัดใหม่ธรรมดา (ชิดซ้าย ไม่เยื้อง)</li>
+                                <li>กด <strong>Enter 2 ครั้ง</strong> (เว้นบรรทัดว่าง) = เริ่มย่อหน้าใหม่ (เยื้อง 2.5 ซม. อัตโนมัติ)</li>
+                            </ul>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="btn-tool-sm" onclick="modalInsertText('\n')"><i class='bx bx-subdirectory-left'></i> + ขึ้นบรรทัดใหม่</button>
+                            <button type="button" class="btn-tool-sm" onclick="modalInsertText('\n\n')"><i class='bx bx-paragraph'></i> + ขึ้นย่อหน้าใหม่</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #334155; margin-bottom: 5px;">ข้อความเนื้อหาจดหมาย:</label>
+                        <textarea id="txtModalBody" rows="7" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-family: 'Sarabun', sans-serif; font-size: 0.95rem; line-height: 1.5; color: #0f172a; resize: vertical; outline: none; box-sizing: border-box;" placeholder="พิมพ์หรือวางเนื้อความของหนังสือที่นี่..." oninput="updateModalPreview()"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 14px; background: #f8fafc; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <div>
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 4px;">การเยื้องย่อหน้า (Indentation):</label>
+                            <select id="modalIndentMode" class="zoom-select" style="width: 100%; font-size: 0.82rem; padding: 5px 8px;" onchange="updateModalPreview()">
+                                <option value="smart" selected>มาตรฐานสารบรรณ (เว้นบรรทัด = ย่อหน้าเยื้อง 2.5cm)</option>
+                                <option value="all-indented">ทุกบรรทัดใหม่ให้เยื้อง 2.5cm</option>
+                                <option value="none">ไม่เยื้องเลย (ชิดซ้ายทั้งหมด)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 4px;">การจัดชิดข้อความ (Alignment):</label>
+                            <select id="modalAlignMode" class="zoom-select" style="width: 100%; font-size: 0.82rem; padding: 5px 8px;" onchange="updateModalPreview()">
+                                <option value="justify" selected>กระจายเต็มบรรทัด (Thai Justify)</option>
+                                <option value="left">ชิดซ้าย (Left Align)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label style="font-size: 0.78rem; font-weight: 600; color: #475569;">ตัวอย่างการแสดงผลบนกระดาษ A4 (Live Preview):</label>
+                            <span style="font-size: 0.72rem; color: #94a3b8;">ฟอนต์ TH Sarabun New</span>
+                        </div>
+                        <div id="modalBodyPreview" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px 18px; min-height: 90px; max-height: 180px; overflow-y: auto; font-family: 'TH Sarabun New', 'Sarabun', sans-serif !important; font-size: 15pt; line-height: 1.4; color: #000; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Meta fields -->
+                <div id="modalTabContentMeta" style="display: none;">
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <label style="font-size: 0.8rem; font-weight: 600; color: #334155;">เรื่อง (Subject):</label>
+                            <span style="font-size: 0.72rem; color: #64748b;">กด Enter ขึ้นบรรทัดใหม่ได้</span>
+                        </div>
+                        <textarea id="txtModalSubject" rows="2" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font-family: 'Sarabun', sans-serif; font-size: 0.9rem; resize: vertical; box-sizing: border-box;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <label style="font-size: 0.8rem; font-weight: 600; color: #334155;">เรียน (Recipient):</label>
+                            <span style="font-size: 0.72rem; color: #64748b;">กด Enter ขึ้นบรรทัดใหม่ได้</span>
+                        </div>
+                        <textarea id="txtModalRecipient" rows="2" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font-family: 'Sarabun', sans-serif; font-size: 0.9rem; resize: vertical; box-sizing: border-box;"></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <label style="font-size: 0.8rem; font-weight: 600; color: #334155;">อ้างถึง (Reference):</label>
+                            <span style="font-size: 0.72rem; color: #64748b;">ขึ้นบรรทัดใหม่ได้หลายรายการ</span>
+                        </div>
+                        <textarea id="txtModalReference" rows="3" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font-family: 'Sarabun', sans-serif; font-size: 0.9rem; resize: vertical; box-sizing: border-box;" placeholder="1. สัญญาเลขที่...&#10;2. ใบสั่งจ้างเลขที่..."></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 8px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #334155; margin-bottom: 4px;">คำลงท้าย (Closing):</label>
+                        <input type="text" id="txtModalClosing" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font-family: 'Sarabun', sans-serif; font-size: 0.9rem; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <!-- Tab 3: Company Header -->
+                <div id="modalTabContentCompany" style="display: none;">
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <label style="font-size: 0.8rem; font-weight: 600; color: #334155;">ข้อมูลหัวกระดาษบริษัท (มุมขวาบน):</label>
+                            <span style="font-size: 0.72rem; color: #64748b;">กด Enter เพื่อขึ้นบรรทัดใหม่แต่ละรายการ</span>
+                        </div>
+                        <textarea id="txtModalCompany" rows="6" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; font-family: 'Sarabun', monospace, sans-serif; font-size: 0.88rem; line-height: 1.45; resize: vertical; box-sizing: border-box;"></textarea>
+                        <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">
+                            💡 แต่ละบรรทัดจะแสดงแยกเป็นบรรทัดตามที่พิมพ์ในกล่องนี้บนมุมขวาบนของเอกสาร A4
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-break-modal-footer">
+                <button type="button" class="btn-action" onclick="closeTextBreakModal()">ยกเลิก</button>
+                <button type="button" class="btn-action btn-primary" onclick="applyModalChangesToDoc()">
+                    <i class='bx bx-check'></i> นำข้อความลงหนังสือส่งมอบงาน
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Firebase Auth & Permissions Guard -->
     <script type="module">
