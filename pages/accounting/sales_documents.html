@@ -1183,90 +1183,98 @@
             }
         });
 
-        // Load documents from Firestore with Realtime Sync across all users
+        // Load documents from Firestore with Realtime Sync, with getDocs fallback
         function loadAllDocuments() {
             if (!currentUser) return;
             const tbody = document.getElementById('docsTableBody');
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;"><i class='bx bx-loader-alt bx-spin' style="font-size: 1.8rem; display: block; margin-bottom: 8px;"></i> กำลังเชื่อมต่อข้อมูลแบบเรียลไทม์...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;"><i class='bx bx-loader-alt bx-spin' style="font-size: 1.8rem; display: block; margin-bottom: 8px;"></i> กำลังโหลดข้อมูลเอกสาร...</td></tr>`;
 
             if (unsubscribeSalesDocs) {
                 unsubscribeSalesDocs();
                 unsubscribeSalesDocs = null;
             }
 
-            // Real-time listener on central shared collection: 'sales_documents'
             const centralRef = collection(db, 'sales_documents');
-            try {
-                unsubscribeSalesDocs = onSnapshot(centralRef, (snapshot) => {
-                    const docMap = new Map();
+            let firstSnapshotReceived = false;
 
-                    // 1. Process documents from root sales_documents
-                    snapshot.forEach(d => {
-                        const data = d.data();
-                        const rawRef = (data.refNo || '').toString().trim();
-                        const key = (rawRef && rawRef !== '-') ? rawRef : d.id;
-                        docMap.set(key, {
-                            id: d.id,
-                            _collection: 'sales_documents',
-                            ...data
-                        });
+            // Fallback: if onSnapshot doesn't fire within 10s, use getDocs instead
+            const fallbackTimer = setTimeout(async () => {
+                if (firstSnapshotReceived) return;
+                console.warn('[sales_documents] onSnapshot timeout — falling back to getDocs');
+                try {
+                    const snap = await getDocs(centralRef);
+                    processSnapshot(snap);
+                } catch (err) {
+                    console.error('[sales_documents] getDocs fallback error:', err);
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #ef4444;"><i class='bx bx-error-circle' style="font-size:2rem; display:block; margin-bottom:8px;"></i>โหลดข้อมูลไม่สำเร็จ กรุณารีเฟรชหน้าใหม่<br><button onclick="loadAllDocuments()" style="margin-top:12px; padding:8px 18px; border-radius:8px; background:#1d4ed8; color:#fff; border:none; cursor:pointer; font-size:0.9rem;">🔄 โหลดใหม่</button></td></tr>`;
+                }
+            }, 10000);
+
+            function processSnapshot(snapshot) {
+                firstSnapshotReceived = true;
+                clearTimeout(fallbackTimer);
+
+                const docMap = new Map();
+                snapshot.forEach(d => {
+                    const data = d.data();
+                    const rawRef = (data.refNo || '').toString().trim();
+                    const key = (rawRef && rawRef !== '-') ? rawRef : d.id;
+                    docMap.set(key, {
+                        id: d.id,
+                        _collection: 'sales_documents',
+                        ...data
                     });
-
-                    // 2. Merge with any cached legacy documents not yet synced to root
-                    legacyDocumentsCache.forEach((legDoc, legKey) => {
-                        if (!docMap.has(legKey)) {
-                            docMap.set(legKey, legDoc);
-                        }
-                    });
-
-                    allDocuments = Array.from(docMap.values());
-
-                    // Sort all documents by createdAt or docDate descending
-                    allDocuments.sort((a, b) => {
-                        const dateA = new Date(a.createdAt || a.docDate || 0).getTime();
-                        const dateB = new Date(b.createdAt || b.docDate || 0).getTime();
-                        return dateB - dateA;
-                    });
-
-                    // Update UI components in real time
-                    populateShopFilter();
-                    updateKPICards();
-                    applyFilters();
-                }, (err) => {
-                    console.error("Realtime sales_documents listener error:", err);
-                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #ef4444;">เกิดข้อผิดพลาดในการเชื่อมต่อข้อมูลเรียลไทม์: ${err.message}</td></tr>`;
                 });
-            } catch (err) {
-                console.error("Error setting up sales_documents listener:", err);
+
+                // Merge cached legacy docs
+                legacyDocumentsCache.forEach((legDoc, legKey) => {
+                    if (!docMap.has(legKey)) docMap.set(legKey, legDoc);
+                });
+
+                allDocuments = Array.from(docMap.values());
+                allDocuments.sort((a, b) => {
+                    const dateA = new Date(a.createdAt || a.docDate || 0).getTime();
+                    const dateB = new Date(b.createdAt || b.docDate || 0).getTime();
+                    return dateB - dateA;
+                });
+
+                populateShopFilter();
+                updateKPICards();
+                applyFilters();
             }
 
-            // Trigger background migration of existing user-scoped legacy docs to shared collection
-            syncLegacyUserDocumentsToShared();
+            try {
+                unsubscribeSalesDocs = onSnapshot(centralRef, processSnapshot, (err) => {
+                    console.error('[sales_documents] onSnapshot error:', err);
+                    if (!firstSnapshotReceived) {
+                        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #ef4444;"><i class='bx bx-error-circle' style="font-size:2rem; display:block; margin-bottom:8px;"></i>เชื่อมต่อ Firestore ไม่ได้: ${err.message}<br><button onclick="loadAllDocuments()" style="margin-top:12px; padding:8px 18px; border-radius:8px; background:#1d4ed8; color:#fff; border:none; cursor:pointer; font-size:0.9rem;">🔄 ลองใหม่</button></td></tr>`;
+                    }
+                });
+            } catch (err) {
+                console.error('[sales_documents] Error setting up listener:', err);
+            }
+
+            // Run background legacy migration only once per browser session
+            const migKey = `mentra_legacy_sync_done_${currentUser.uid}`;
+            if (!sessionStorage.getItem(migKey)) {
+                sessionStorage.setItem(migKey, '1');
+                syncLegacyUserDocumentsToShared();
+            }
         }
 
         // Background migration: bring legacy user-scoped documents into shared 'sales_documents'
+        // This runs at most once per session per user (guarded by sessionStorage in loadAllDocuments)
         async function syncLegacyUserDocumentsToShared() {
             if (!currentUser) return;
             const collectionsToCheck = [
-                { name: 'sales_documents', defaultType: 'quotation', title: 'เอกสารขาย' },
-                { name: 'quotations_history', defaultType: 'quotation', title: 'ใบเสนอราคา' },
-                { name: 'invoices_history', defaultType: 'invoice', title: 'ใบส่งของ/ใบแจ้งหนี้' },
-                { name: 'receipts_history', defaultType: 'receipt', title: 'ใบเสร็จรับเงิน' }
+                { name: 'sales_documents', defaultType: 'quotation' },
+                { name: 'quotations_history', defaultType: 'quotation' },
+                { name: 'invoices_history', defaultType: 'invoice' },
+                { name: 'receipts_history', defaultType: 'receipt' }
             ];
 
+            // Only scan current user — scanning all users was too expensive
             const usersToScan = [currentUser.uid];
-
-            // Attempt to discover other user IDs to migrate all historical records
-            try {
-                const usersSnap = await getDocs(collection(db, 'users'));
-                usersSnap.forEach(u => {
-                    if (u.id && !usersToScan.includes(u.id)) {
-                        usersToScan.push(u.id);
-                    }
-                });
-            } catch(e) {
-                // If permission restricts querying all users, scan currentUser
-            }
 
             for (const uid of usersToScan) {
                 for (const col of collectionsToCheck) {
@@ -1291,10 +1299,8 @@
                                 createdAt: data.createdAt || data.docDate || new Date().toISOString()
                             };
 
-                            // Save into local legacy cache
                             legacyDocumentsCache.set(targetDocId, { id: targetDocId, _collection: 'sales_documents', ...docPayload });
 
-                            // Write to shared sales_documents collection with merge
                             try {
                                 await setDoc(doc(db, 'sales_documents', targetDocId), docPayload, { merge: true });
                             } catch (writeErr) {
@@ -1302,7 +1308,7 @@
                             }
                         }
                     } catch (colErr) {
-                        // User might not have this subcollection
+                        // User might not have this subcollection — skip silently
                     }
                 }
             }
