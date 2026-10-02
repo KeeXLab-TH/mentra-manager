@@ -2844,6 +2844,11 @@
                     this.projects.forEach(p => {
                         if (p.company === oldName) {
                             p.company = newName;
+                            p.address = address;
+                            p.taxId = taxId;
+                            p.contactPerson = contact;
+                            p.tel = phone;
+                            p.email = email;
                             updatedAny = true;
                             if (window.saveProjectToFirestore) {
                                 window.saveProjectToFirestore(p);
@@ -2852,7 +2857,33 @@
                     });
                 } else {
                     this.companyDetails[oldName] = newDetails;
+                    this.projects.forEach(p => {
+                        if (p.company === oldName) {
+                            p.address = address;
+                            p.taxId = taxId;
+                            p.contactPerson = contact;
+                            p.tel = phone;
+                            p.email = email;
+                            if (window.saveProjectToFirestore) {
+                                window.saveProjectToFirestore(p);
+                            }
+                        }
+                    });
                 }
+
+                try {
+                    const lightProjects = this.projects.map(p => {
+                        const pCopy = { ...p };
+                        if (Array.isArray(pCopy.items)) {
+                            pCopy.items = pCopy.items.map(it => {
+                                const { images, ...lightItem } = it;
+                                return lightItem;
+                            });
+                        }
+                        return pCopy;
+                    });
+                    localStorage.setItem('company_material_projects', JSON.stringify(lightProjects));
+                } catch(e) {}
                 
                 if (window.savecompanyDetailsToFirestore) {
                     await window.savecompanyDetailsToFirestore(this.companyDetails);
@@ -4499,6 +4530,18 @@
                             compNameWithBranch += ` (สำนักงานใหญ่)`;
                         }
 
+                        const finalAddress = (compDetails.address !== undefined && compDetails.address !== '') ? compDetails.address : (proj.address || '');
+                        const finalContact = (compDetails.contact !== undefined && compDetails.contact !== '') ? compDetails.contact : (proj.contactPerson || proj.attn || '');
+                        const finalPhone = (compDetails.phone !== undefined && compDetails.phone !== '') ? compDetails.phone : (proj.tel || '');
+                        const finalEmail = (compDetails.email !== undefined && compDetails.email !== '') ? compDetails.email : (proj.email || '');
+                        const finalTaxId = (compDetails.taxId !== undefined && compDetails.taxId !== '') ? compDetails.taxId : (proj.taxId || '');
+
+                        proj.address = finalAddress;
+                        proj.taxId = finalTaxId;
+                        proj.tel = finalPhone;
+                        proj.email = finalEmail;
+                        proj.contactPerson = finalContact;
+
                         const pendingData = {
                             source: 'company',
                             projectId: this.currentProjectId,
@@ -4508,11 +4551,11 @@
                             shop: shopName,
                             name: proj.name || '',
                             code: proj.code || '',
-                            address: proj.address || compDetails.address || '',
-                            attn: proj.contactPerson || proj.attn || compDetails.contact || '',
-                            tel: proj.tel || compDetails.phone || '',
-                            email: proj.email || compDetails.email || '',
-                            taxId: proj.taxId || compDetails.taxId || '',
+                            address: finalAddress,
+                            attn: finalContact,
+                            tel: finalPhone,
+                            email: finalEmail,
+                            taxId: finalTaxId,
                             discountType: proj.discountType || 'percent',
                             discountValue: proj.discountValue || 0,
                             timestamp: Date.now()
@@ -4534,11 +4577,11 @@
                                 docType: 'quotation',
                                 projectId: this.currentProjectId,
                                 toCompany: compNameWithBranch,
-                                toAddress: proj.address || compDetails.address || '',
-                                toAttn: proj.contactPerson || proj.attn || compDetails.contact || '',
-                                toTel: proj.tel || compDetails.phone || '',
-                                toEmail: proj.email || compDetails.email || '',
-                                toTaxId: proj.taxId || compDetails.taxId || '',
+                                toAddress: finalAddress,
+                                toAttn: finalContact,
+                                toTel: finalPhone,
+                                toEmail: finalEmail,
+                                toTaxId: finalTaxId,
                                 items: cleanItems,
                                 shop: shopName,
                                 timestamp: Date.now()
@@ -5249,6 +5292,26 @@
                             compNameWithBranch += ` (สำนักงานใหญ่)`;
                         }
 
+                        const compDetails = (this.companyDetails && proj.company) ? (this.companyDetails[proj.company] || {}) : {};
+                        let compNameWithBranch = proj.company || '';
+                        if (compDetails.branchType === 'branch') {
+                            compNameWithBranch += ` (สาขา: ${compDetails.branchNo || '-'})`;
+                        } else if (compDetails.branchType === 'hq') {
+                            compNameWithBranch += ` (สำนักงานใหญ่)`;
+                        }
+
+                        const finalAddress = (compDetails.address !== undefined && compDetails.address !== '') ? compDetails.address : (proj.address || '');
+                        const finalContact = (compDetails.contact !== undefined && compDetails.contact !== '') ? compDetails.contact : (proj.contactPerson || proj.attn || '');
+                        const finalPhone = (compDetails.phone !== undefined && compDetails.phone !== '') ? compDetails.phone : (proj.tel || '');
+                        const finalEmail = (compDetails.email !== undefined && compDetails.email !== '') ? compDetails.email : (proj.email || '');
+                        const finalTaxId = (compDetails.taxId !== undefined && compDetails.taxId !== '') ? compDetails.taxId : (proj.taxId || '');
+
+                        proj.address = finalAddress;
+                        proj.taxId = finalTaxId;
+                        proj.tel = finalPhone;
+                        proj.email = finalEmail;
+                        proj.contactPerson = finalContact;
+
                         const pendingData = {
                             source: 'company',
                             projectId: this.currentProjectId,
@@ -5259,11 +5322,11 @@
                             name: proj.name || '',
                             code: proj.code || '',
                             parentRefNo: parentRef,
-                            address: proj.address || compDetails.address || '',
-                            attn: proj.contactPerson || proj.attn || compDetails.contact || '',
-                            tel: proj.tel || compDetails.phone || '',
-                            email: proj.email || compDetails.email || '',
-                            taxId: proj.taxId || compDetails.taxId || '',
+                            address: finalAddress,
+                            attn: finalContact,
+                            tel: finalPhone,
+                            email: finalEmail,
+                            taxId: finalTaxId,
                             discountType: proj.discountType || 'percent',
                             discountValue: proj.discountValue || 0,
                             timestamp: Date.now()
@@ -5346,6 +5409,18 @@
                             compNameWithBranch += ` (สำนักงานใหญ่)`;
                         }
 
+                        const finalAddress = (compDetails.address !== undefined && compDetails.address !== '') ? compDetails.address : (proj.address || '');
+                        const finalContact = (compDetails.contact !== undefined && compDetails.contact !== '') ? compDetails.contact : (proj.contactPerson || proj.attn || '');
+                        const finalPhone = (compDetails.phone !== undefined && compDetails.phone !== '') ? compDetails.phone : (proj.tel || '');
+                        const finalEmail = (compDetails.email !== undefined && compDetails.email !== '') ? compDetails.email : (proj.email || '');
+                        const finalTaxId = (compDetails.taxId !== undefined && compDetails.taxId !== '') ? compDetails.taxId : (proj.taxId || '');
+
+                        proj.address = finalAddress;
+                        proj.taxId = finalTaxId;
+                        proj.tel = finalPhone;
+                        proj.email = finalEmail;
+                        proj.contactPerson = finalContact;
+
                         const pendingData = {
                             source: 'company',
                             projectId: this.currentProjectId,
@@ -5356,11 +5431,11 @@
                             name: proj.name || '',
                             code: proj.code || '',
                             parentRefNo: parentRef,
-                            address: proj.address || compDetails.address || '',
-                            attn: proj.contactPerson || proj.attn || compDetails.contact || '',
-                            tel: proj.tel || compDetails.phone || '',
-                            email: proj.email || compDetails.email || '',
-                            taxId: proj.taxId || compDetails.taxId || '',
+                            address: finalAddress,
+                            attn: finalContact,
+                            tel: finalPhone,
+                            email: finalEmail,
+                            taxId: finalTaxId,
                             discountType: proj.discountType || 'percent',
                             discountValue: proj.discountValue || 0,
                             timestamp: Date.now()
