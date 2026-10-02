@@ -5294,25 +5294,49 @@
             const prefix = `${targetDocPrefix}${year}${month}${day}`;
 
             let nextSeq = 1;
-            if (currentUser && db) {
+            if (db) {
                 try {
-                    const collName = config.firestoreCollection || 'quotations_history';
-                    const historyRef = collection(db, 'users', currentUser.uid, collName);
-                    const querySnapshot = await getDocs(historyRef);
                     let maxSeq = 0;
-                    querySnapshot.forEach(docSnap => {
-                        const ref = docSnap.data().refNo;
-                        if (ref && ref.startsWith(prefix)) {
-                            const seqPart = ref.replace(prefix, '');
-                            const seqNum = parseInt(seqPart, 10);
-                            if (!isNaN(seqNum) && seqNum > maxSeq) {
-                                maxSeq = seqNum;
+
+                    // 1. Check shared central sales_documents (shared by all users)
+                    try {
+                        const sharedSnap = await getDocs(collection(db, 'sales_documents'));
+                        sharedSnap.forEach(docSnap => {
+                            const ref = docSnap.data().refNo;
+                            if (ref && ref.startsWith(prefix)) {
+                                const seqPart = ref.replace(prefix, '');
+                                const seqNum = parseInt(seqPart, 10);
+                                if (!isNaN(seqNum) && seqNum > maxSeq) {
+                                    maxSeq = seqNum;
+                                }
                             }
-                        }
-                    });
+                        });
+                    } catch (e) {
+                        console.warn("Could not query shared sales_documents for sequence:", e);
+                    }
+
+                    // 2. Check current user's local history
+                    if (currentUser) {
+                        try {
+                            const collName = config.firestoreCollection || 'quotations_history';
+                            const historyRef = collection(db, 'users', currentUser.uid, collName);
+                            const querySnapshot = await getDocs(historyRef);
+                            querySnapshot.forEach(docSnap => {
+                                const ref = docSnap.data().refNo;
+                                if (ref && ref.startsWith(prefix)) {
+                                    const seqPart = ref.replace(prefix, '');
+                                    const seqNum = parseInt(seqPart, 10);
+                                    if (!isNaN(seqNum) && seqNum > maxSeq) {
+                                        maxSeq = seqNum;
+                                    }
+                                }
+                            });
+                        } catch (e) {}
+                    }
+
                     nextSeq = maxSeq + 1;
                 } catch (err) {
-                    console.warn(`Could not query ${config.firestoreCollection} for sequence, fallback to 1:`, err);
+                    console.warn(`Could not query sequence, fallback to 1:`, err);
                 }
             }
 
@@ -10244,6 +10268,15 @@
                 });
             }
 
+            let issuer = '';
+            const currentIssuerDisplay = document.getElementById('currentIssuerDisplay');
+            if (currentIssuerDisplay && currentIssuerDisplay.innerText) {
+                issuer = currentIssuerDisplay.innerText.replace('ผู้เสนอราคา:', '').replace('ร้านค้า:', '').trim();
+            }
+            if (!issuer && typeof getCurrentIssuerName === 'function') {
+                issuer = getCurrentIssuerName();
+            }
+
             const docData = {
                 docType: currentDocType,
                 docTypeTitle: config.titleTH,
@@ -10260,15 +10293,30 @@
                 termPayment: document.getElementById('termPayment')?.value || '',
                 remark: document.getElementById('remark')?.value || '',
                 grandTotal,
+                subTotal: document.getElementById('subTotalDisplay')?.innerText || '',
+                vat: document.getElementById('vatAmountDisplay')?.innerText || '',
                 items,
+                issuer: issuer || '',
+                status: isWorkflowLocked ? 'confirmed' : 'issued',
+                createdBy: currentUser.uid,
+                createdByName: currentUser.displayName || currentUser.email || 'Admin',
                 createdAt: new Date().toISOString()
             };
 
             try {
+                // 1. Save to central shared 'sales_documents' collection so all users see it immediately
+                const cleanRef = (refNo && refNo.trim() !== '-' && refNo.trim() !== '') ? refNo.trim() : null;
+                if (cleanRef) {
+                    await setDoc(doc(db, 'sales_documents', cleanRef), docData, { merge: true });
+                } else {
+                    await addDoc(collection(db, 'sales_documents'), docData);
+                }
+
+                // 2. Also save to user subcollection for local history backup
                 const collName = config.firestoreCollection || 'quotations_history';
                 const historyRef = collection(db, 'users', currentUser.uid, collName);
                 await addDoc(historyRef, docData);
-                console.log(`Document saved to ${collName}`);
+                console.log(`Document saved to shared sales_documents and ${collName}`);
             } catch (err) {
                 console.error(`Error saving document to history:`, err);
             }
@@ -10321,30 +10369,64 @@
             const config = DOC_TYPE_CONFIG[docType] || DOC_TYPE_CONFIG.quotation;
             const collName = config.firestoreCollection || 'quotations_history';
             const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px;">กำลังโหลดข้อมูล...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px;"><i class="bx bx-loader-alt bx-spin" style="font-size: 1.5rem; display: block; margin-bottom: 6px;"></i>กำลังโหลดข้อมูล...</td></tr>';
             
             try {
-                const historyRef = collection(db, 'users', currentUser.uid, collName);
-                const q = query(historyRef, orderBy('createdAt', 'desc'));
-                const querySnapshot = await getDocs(q);
-                
                 loadedHistory = [];
+                const historyMap = new Map();
+
+                // 1. Load from shared root sales_documents (all users)
+                try {
+                    const sharedSnap = await getDocs(collection(db, 'sales_documents'));
+                    sharedSnap.forEach(d => {
+                        const data = d.data();
+                        const rawRef = (data.refNo || '').toString().trim();
+                        const docDType = data.docType || (rawRef.startsWith('MTI') ? 'invoice' : (rawRef.startsWith('MTR') ? 'receipt' : 'quotation'));
+                        if (docDType === docType) {
+                            const key = (rawRef && rawRef !== '-') ? rawRef : d.id;
+                            historyMap.set(key, { id: d.id, ...data, docType });
+                        }
+                    });
+                } catch(e) {
+                    console.warn("Could not query root sales_documents in history modal:", e);
+                }
+
+                // 2. Also merge from user subcollection
+                try {
+                    const historyRef = collection(db, 'users', currentUser.uid, collName);
+                    const q = query(historyRef, orderBy('createdAt', 'desc'));
+                    const querySnapshot = await getDocs(q);
+                    querySnapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        const rawRef = (data.refNo || '').toString().trim();
+                        const key = (rawRef && rawRef !== '-') ? rawRef : docSnap.id;
+                        if (!historyMap.has(key)) {
+                            historyMap.set(key, { id: docSnap.id, ...data, docType });
+                        }
+                    });
+                } catch(e) {
+                    console.warn("Could not query user history in history modal:", e);
+                }
+
+                loadedHistory = Array.from(historyMap.values());
+                loadedHistory.sort((a, b) => {
+                    const dateA = new Date(a.createdAt || a.docDate || 0).getTime();
+                    const dateB = new Date(b.createdAt || b.docDate || 0).getTime();
+                    return dateB - dateA;
+                });
+                
                 tbody.innerHTML = '';
                 
-                if (querySnapshot.empty) {
+                if (loadedHistory.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 24px;">ยังไม่มีประวัติการออก${config.titleTH}</td></tr>`;
                     return;
                 }
 
-                querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const id = docSnap.id;
-                    loadedHistory.push({ id, ...data, docType: docType });
-                    
+                loadedHistory.forEach((data, index) => {
+                    const id = data.id;
                     const dateObj = new Date(data.docDate || data.createdAt);
                     const formattedDate = isNaN(dateObj.getTime()) ? '-' : `${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}/${dateObj.getFullYear()}`;
-                    
-                    const index = loadedHistory.length - 1;
+                    const refNoSafe = (data.refNo || '-').replace(/'/g, "\\'");
 
                     const tr = document.createElement('tr');
                     tr.style.borderBottom = '1px solid var(--border-color)';
@@ -10353,6 +10435,7 @@
                         <td style="padding: 12px 24px; font-weight: 500;">
                             ${data.refNo || '-'}
                             ${data.parentRefNo ? `<div style="font-size: 0.72rem; color: #94a3b8;">อ้างอิง: ${data.parentRefNo}</div>` : ''}
+                            ${data.createdByName ? `<div style="font-size: 0.72rem; color: #3b82f6;"><i class='bx bx-user'></i> ${data.createdByName}</div>` : ''}
                         </td>
                         <td style="padding: 12px 24px;">${data.toCompany || '-'}</td>
                         <td style="padding: 12px 24px; text-align: right; color: var(--primary-color); font-weight: 600;">${data.grandTotal || '0.00'}</td>
@@ -10360,7 +10443,7 @@
                             <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.8rem; margin-right: 4px;" onclick="loadQuotationToForm(${index})">
                                 <i class='bx bx-import'></i> โหลด
                             </button>
-                            <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.8rem;" onclick="deleteDocumentHistory('${id}', '${collName}')">
+                            <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.8rem;" onclick="deleteDocumentHistory('${id}', '${collName}', '${refNoSafe}')">
                                 <i class='bx bx-trash'></i>
                             </button>
                         </td>
@@ -10374,12 +10457,12 @@
         }
         const loadQuotationHistory = () => loadDocumentHistory(currentHistoryFilter);
 
-        async function deleteDocumentHistory(id, collName = null) {
+        async function deleteDocumentHistory(id, collName = null, refNo = null) {
             const targetColl = collName || DOC_TYPE_CONFIG[currentHistoryFilter]?.firestoreCollection || 'quotations_history';
             if (typeof Swal !== 'undefined') {
                 const res = await Swal.fire({
                     title: 'ยืนยันการลบประวัติเอกสาร?',
-                    text: 'ข้อมูลเอกสารนี้จะถูกลบออกจากประวัติอย่างถาวรและไม่สามารถกู้คืนได้',
+                    text: 'ข้อมูลเอกสารนี้จะถูกลบออกจากระบบส่วนกลางและประวัติอย่างถาวร',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
@@ -10395,7 +10478,34 @@
             }
 
             try {
-                await deleteDoc(doc(db, 'users', currentUser.uid, targetColl, id));
+                const delTasks = [];
+                // 1. Delete from shared root collection: sales_documents
+                if (id) {
+                    delTasks.push(deleteDoc(doc(db, 'sales_documents', id)).catch(e => {}));
+                }
+                const cleanRef = (refNo && refNo.trim() !== '-' && refNo.trim() !== '') ? refNo.trim() : null;
+                if (cleanRef) {
+                    delTasks.push(deleteDoc(doc(db, 'sales_documents', cleanRef)).catch(e => {}));
+                    try {
+                        const sq = query(collection(db, 'sales_documents'), where('refNo', '==', cleanRef));
+                        const sqSnap = await getDocs(sq);
+                        sqSnap.forEach(s => delTasks.push(deleteDoc(s.ref).catch(e => {})));
+                    } catch(e) {}
+                }
+
+                // 2. Delete from user subcollection
+                if (currentUser && id) {
+                    delTasks.push(deleteDoc(doc(db, 'users', currentUser.uid, targetColl, id)).catch(e => {}));
+                }
+                if (currentUser && cleanRef) {
+                    try {
+                        const uq = query(collection(db, 'users', currentUser.uid, targetColl), where('refNo', '==', cleanRef));
+                        const uSnap = await getDocs(uq);
+                        uSnap.forEach(s => delTasks.push(deleteDoc(s.ref).catch(e => {})));
+                    } catch(e) {}
+                }
+
+                await Promise.all(delTasks);
                 loadDocumentHistory(currentHistoryFilter);
                 if (typeof Swal !== 'undefined') {
                     Swal.fire({
@@ -10411,10 +10521,10 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'เกิดข้อผิดพลาด',
-                        text: 'เกิดข้อผิดพลาดในการลบข้อมูล'
+                        text: 'เกิดข้อผิดพลาดในการลบข้อมูล: ' + err.message
                     });
                 } else {
-                    alert('เกิดข้อผิดพลาดในการลบข้อมูล');
+                    alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + err.message);
                 }
             }
         }

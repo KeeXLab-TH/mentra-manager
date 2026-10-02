@@ -1126,7 +1126,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
-            initializeFirestore, doc, getDoc, collection, getDocs, query, orderBy, where, deleteDoc,
+            initializeFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs, query, orderBy, where, deleteDoc, onSnapshot,
             persistentLocalCache, persistentMultipleTabManager
         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -1151,6 +1151,8 @@
         let allDocuments = [];
         let filteredDocuments = [];
         let currentFilterType = 'all';
+        let unsubscribeSalesDocs = null;
+        const legacyDocumentsCache = new Map();
 
         // Auth Guard
         onAuthStateChanged(auth, async (user) => {
@@ -1171,86 +1173,138 @@
                     overlay.style.opacity = '0';
                     overlay.style.pointerEvents = 'none';
                 }
-                await loadAllDocuments();
+                loadAllDocuments();
             } else {
+                if (unsubscribeSalesDocs) {
+                    unsubscribeSalesDocs();
+                    unsubscribeSalesDocs = null;
+                }
                 window.location.href = '../../index.html';
             }
         });
 
-        // Load documents from Firestore
-        async function loadAllDocuments() {
+        // Load documents from Firestore with Realtime Sync across all users
+        function loadAllDocuments() {
             if (!currentUser) return;
             const tbody = document.getElementById('docsTableBody');
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;"><i class='bx bx-loader-alt bx-spin' style="font-size: 1.8rem; display: block; margin-bottom: 8px;"></i> กำลังโหลดข้อมูลเอกสาร...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;"><i class='bx bx-loader-alt bx-spin' style="font-size: 1.8rem; display: block; margin-bottom: 8px;"></i> กำลังเชื่อมต่อข้อมูลแบบเรียลไทม์...</td></tr>`;
 
-            allDocuments = [];
+            if (unsubscribeSalesDocs) {
+                unsubscribeSalesDocs();
+                unsubscribeSalesDocs = null;
+            }
 
+            // Real-time listener on central shared collection: 'sales_documents'
+            const centralRef = collection(db, 'sales_documents');
             try {
-                // 1. Fetch from central sales_documents collection
-                const centralRef = collection(db, 'users', currentUser.uid, 'sales_documents');
-                const centralQuery = query(centralRef, orderBy('createdAt', 'desc'));
-                const centralSnap = await getDocs(centralQuery);
+                unsubscribeSalesDocs = onSnapshot(centralRef, (snapshot) => {
+                    const docMap = new Map();
 
-                centralSnap.forEach(d => {
-                    allDocuments.push({ id: d.id, _collection: 'sales_documents', ...d.data() });
+                    // 1. Process documents from root sales_documents
+                    snapshot.forEach(d => {
+                        const data = d.data();
+                        const rawRef = (data.refNo || '').toString().trim();
+                        const key = (rawRef && rawRef !== '-') ? rawRef : d.id;
+                        docMap.set(key, {
+                            id: d.id,
+                            _collection: 'sales_documents',
+                            ...data
+                        });
+                    });
+
+                    // 2. Merge with any cached legacy documents not yet synced to root
+                    legacyDocumentsCache.forEach((legDoc, legKey) => {
+                        if (!docMap.has(legKey)) {
+                            docMap.set(legKey, legDoc);
+                        }
+                    });
+
+                    allDocuments = Array.from(docMap.values());
+
+                    // Sort all documents by createdAt or docDate descending
+                    allDocuments.sort((a, b) => {
+                        const dateA = new Date(a.createdAt || a.docDate || 0).getTime();
+                        const dateB = new Date(b.createdAt || b.docDate || 0).getTime();
+                        return dateB - dateA;
+                    });
+
+                    // Update UI components in real time
+                    populateShopFilter();
+                    updateKPICards();
+                    applyFilters();
+                }, (err) => {
+                    console.error("Realtime sales_documents listener error:", err);
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #ef4444;">เกิดข้อผิดพลาดในการเชื่อมต่อข้อมูลเรียลไทม์: ${err.message}</td></tr>`;
                 });
+            } catch (err) {
+                console.error("Error setting up sales_documents listener:", err);
+            }
 
-                // 2. Also check type-specific collections if central has few items or missing legacy items
-                const collectionsToCheck = [
-                    { name: 'quotations_history', defaultType: 'quotation', title: 'ใบเสนอราคา' },
-                    { name: 'invoices_history', defaultType: 'invoice', title: 'ใบส่งของ/ใบแจ้งหนี้' },
-                    { name: 'receipts_history', defaultType: 'receipt', title: 'ใบเสร็จรับเงิน' }
-                ];
+            // Trigger background migration of existing user-scoped legacy docs to shared collection
+            syncLegacyUserDocumentsToShared();
+        }
 
+        // Background migration: bring legacy user-scoped documents into shared 'sales_documents'
+        async function syncLegacyUserDocumentsToShared() {
+            if (!currentUser) return;
+            const collectionsToCheck = [
+                { name: 'sales_documents', defaultType: 'quotation', title: 'เอกสารขาย' },
+                { name: 'quotations_history', defaultType: 'quotation', title: 'ใบเสนอราคา' },
+                { name: 'invoices_history', defaultType: 'invoice', title: 'ใบส่งของ/ใบแจ้งหนี้' },
+                { name: 'receipts_history', defaultType: 'receipt', title: 'ใบเสร็จรับเงิน' }
+            ];
+
+            const usersToScan = [currentUser.uid];
+
+            // Attempt to discover other user IDs to migrate all historical records
+            try {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                usersSnap.forEach(u => {
+                    if (u.id && !usersToScan.includes(u.id)) {
+                        usersToScan.push(u.id);
+                    }
+                });
+            } catch(e) {
+                // If permission restricts querying all users, scan currentUser
+            }
+
+            for (const uid of usersToScan) {
                 for (const col of collectionsToCheck) {
                     try {
-                        const colRef = collection(db, 'users', currentUser.uid, col.name);
-                        const q = query(colRef, orderBy('createdAt', 'desc'));
-                        const snap = await getDocs(q);
-                        snap.forEach(d => {
-                            const data = d.data();
-                            // If this document is not already in allDocuments, add it
-                            const exists = allDocuments.some(docItem => {
-                                if (docItem.id && d.id && docItem.id === d.id) return true;
-                                if (data.refNo && data.refNo.trim() !== '-' && docItem.refNo && docItem.refNo.trim() !== '-') {
-                                    return docItem.refNo.trim() === data.refNo.trim();
-                                }
-                                return false;
-                            });
-                            if (!exists) {
-                                allDocuments.push({
-                                    id: d.id,
-                                    _collection: col.name,
-                                    docType: data.docType || col.defaultType,
-                                    docTypeTitle: data.docTypeTitle || col.title,
-                                    ...data
-                                });
+                        const colRef = collection(db, 'users', uid, col.name);
+                        const snap = await getDocs(colRef);
+                        for (const docSnap of snap.docs) {
+                            const data = docSnap.data();
+                            const rawRef = (data.refNo || '').toString().trim();
+                            const cleanRef = (rawRef && rawRef !== '-') ? rawRef : null;
+                            const targetDocId = cleanRef || docSnap.id;
+
+                            const docType = data.docType || (cleanRef?.startsWith('MTI') ? 'invoice' : (cleanRef?.startsWith('MTR') ? 'receipt' : col.defaultType));
+                            const docPayload = {
+                                ...data,
+                                docType: docType,
+                                docTypeTitle: data.docTypeTitle || (docType === 'invoice' ? 'ใบส่งของ/ใบแจ้งหนี้' : (docType === 'receipt' ? 'ใบเสร็จรับเงิน' : 'ใบเสนอราคา')),
+                                parentRefNo: data.parentRefNo || '',
+                                refNo: data.refNo || '-',
+                                issuer: data.issuer || '',
+                                grandTotal: data.grandTotal || '0.00',
+                                createdAt: data.createdAt || data.docDate || new Date().toISOString()
+                            };
+
+                            // Save into local legacy cache
+                            legacyDocumentsCache.set(targetDocId, { id: targetDocId, _collection: 'sales_documents', ...docPayload });
+
+                            // Write to shared sales_documents collection with merge
+                            try {
+                                await setDoc(doc(db, 'sales_documents', targetDocId), docPayload, { merge: true });
+                            } catch (writeErr) {
+                                // Silent skip on individual write failure
                             }
-                        });
+                        }
                     } catch (colErr) {
-                        console.warn(`Could not query ${col.name}:`, colErr);
+                        // User might not have this subcollection
                     }
                 }
-
-                // Sort all documents by createdAt or docDate descending
-                allDocuments.sort((a, b) => {
-                    const dateA = new Date(a.createdAt || a.docDate || 0).getTime();
-                    const dateB = new Date(b.createdAt || b.docDate || 0).getTime();
-                    return dateB - dateA;
-                });
-
-                // Populate Issuer / Shop dropdown
-                populateShopFilter();
-
-                // Compute KPI numbers
-                updateKPICards();
-
-                // Apply initial filters
-                applyFilters();
-
-            } catch (err) {
-                console.error("Error loading sales documents:", err);
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #ef4444;">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${err.message}</td></tr>`;
             }
         }
 
@@ -1756,24 +1810,39 @@
 
                 const collectionsToClean = ['sales_documents', 'quotations_history', 'invoices_history', 'receipts_history'];
                 const delJobs = [];
+                const cleanRef = (d.refNo && d.refNo.trim() !== '-' && d.refNo.trim() !== '') ? d.refNo.trim() : null;
 
-                // 1. Delete by direct ID across all user document collections
+                // 1. Delete from shared central collection: 'sales_documents'
+                if (d.id) {
+                    delJobs.push(deleteDoc(doc(db, 'sales_documents', d.id)).catch(e => console.warn(`Delete root doc by ID error:`, e)));
+                }
+                if (cleanRef) {
+                    delJobs.push(deleteDoc(doc(db, 'sales_documents', cleanRef)).catch(e => {}));
+                    try {
+                        const sharedRefQ = query(collection(db, 'sales_documents'), where('refNo', '==', cleanRef));
+                        const snapShared = await getDocs(sharedRefQ);
+                        snapShared.forEach(docItem => {
+                            delJobs.push(deleteDoc(docItem.ref).catch(e => console.warn(e)));
+                        });
+                    } catch(e) {
+                        console.warn('Query cleanRef in shared sales_documents error:', e);
+                    }
+                }
+
+                // 2. Delete across all user document collections
                 if (d.id) {
                     for (const colName of collectionsToClean) {
                         delJobs.push(
                             deleteDoc(doc(db, 'users', currentUser.uid, colName, d.id))
                                 .catch(e => console.warn(`Could not delete doc ${d.id} from ${colName}:`, e))
                         );
-                        // Also try root collection for legacy structures
                         delJobs.push(
-                            deleteDoc(doc(db, colName, d.id))
-                                .catch(e => {})
+                            deleteDoc(doc(db, colName, d.id)).catch(e => {})
                         );
                     }
                 }
 
-                // 2. If refNo exists and is not '-' or empty, delete all documents matching that refNo
-                const cleanRef = (d.refNo && d.refNo.trim() !== '-' && d.refNo.trim() !== '') ? d.refNo.trim() : null;
+                // 3. If refNo exists, clean matching from user collections
                 if (cleanRef) {
                     for (const colName of collectionsToClean) {
                         try {
