@@ -3345,9 +3345,9 @@
             const rawLocalTemplates = localStorage.getItem('quotationTemplates');
             if (rawLocalTemplates) {
                 const parsed = JSON.parse(rawLocalTemplates) || {};
-                // Immediately sanitize: purge any contaminated email values from sellerName
+                // Immediately sanitize: purge any contaminated email values or old developer name from sellerName
                 Object.keys(parsed).forEach(k => {
-                    if (parsed[k] && parsed[k].sellerName && isEmail(parsed[k].sellerName)) {
+                    if (parsed[k] && parsed[k].sellerName && (isEmail(parsed[k].sellerName) || parsed[k].sellerName.includes('ธนภูมิ'))) {
                         delete parsed[k].sellerName;
                     }
                 });
@@ -3361,6 +3361,15 @@
             // Keep MENTRA_DEFAULT_TEMPLATES if local parse fails
         }
 
+        // Global sanitizer for in-memory templates
+        if (window.quotationTemplates) {
+            Object.keys(window.quotationTemplates).forEach(k => {
+                if (window.quotationTemplates[k] && window.quotationTemplates[k].sellerName && (isEmail(window.quotationTemplates[k].sellerName) || window.quotationTemplates[k].sellerName.includes('ธนภูมิ'))) {
+                    delete window.quotationTemplates[k].sellerName;
+                }
+            });
+        }
+
         window.savedSignaturesByCompany = {};
         try {
             const rawCompanySigs = localStorage.getItem('saved_signatures_by_company');
@@ -3370,6 +3379,38 @@
         } catch(e) {
             window.savedSignaturesByCompany = {};
         }
+
+        // ── Shared Cloud Settings Sync (Admin & Users share the EXACT same templates & signatures) ──
+        async function syncQuotationSettingsToCloud(extraData = {}) {
+            if (!currentUser) return;
+            try {
+                const payload = {
+                    quotationTemplates: window.quotationTemplates || {},
+                    savedSignaturesByCompany: window.savedSignaturesByCompany || {},
+                    quotation_global_typography: JSON.parse(localStorage.getItem('quotation_global_typography') || '{}'),
+                    quotation_preferred_font: localStorage.getItem('quotation_preferred_font') || 'Sarabun',
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: currentUser.email || currentUser.uid,
+                    ...extraData
+                };
+                // 1. Shared Global Settings Document in Firestore (accessible by ALL users: admin & normal users)
+                await setDoc(doc(db, 'material_settings', 'quotation_templates'), payload, { merge: true });
+                // 2. Personal backup
+                await setDoc(doc(db, 'users', currentUser.uid), {
+                    quotationTemplates: window.quotationTemplates || {},
+                    savedSignaturesByCompany: window.savedSignaturesByCompany || {}
+                }, { merge: true }).catch(() => {});
+            } catch (err) {
+                console.warn('syncQuotationSettingsToCloud failed, falling back to user doc:', err);
+                try {
+                    await setDoc(doc(db, 'users', currentUser.uid), {
+                        quotationTemplates: window.quotationTemplates || {},
+                        savedSignaturesByCompany: window.savedSignaturesByCompany || {}
+                    }, { merge: true });
+                } catch(e) {}
+            }
+        }
+        window.syncQuotationSettingsToCloud = syncQuotationSettingsToCloud;
         let loadedHistory = [];
         let materialProjectsCache = [];
         let uniqueInstitutions = [];
@@ -4896,15 +4937,15 @@
                         const authorizedRole = getAuthorizedSignerRoleForCompany(currentIssuer);
 
                         const sellerInput = document.getElementById('sellerName');
-                        if (sellerInput && (!sellerInput.value || sellerInput.value.trim() === '' || isEmail(sellerInput.value))) {
+                        if (sellerInput && (!sellerInput.value || sellerInput.value.trim() === '' || isEmail(sellerInput.value) || sellerInput.value.includes('ธนภูมิ'))) {
                             sellerInput.value = authorizedSigner;
                         }
                         const settingSeller = document.getElementById('settingSellerName');
-                        if (settingSeller && (!settingSeller.value || settingSeller.value.trim() === '' || isEmail(settingSeller.value))) {
+                        if (settingSeller && (!settingSeller.value || settingSeller.value.trim() === '' || isEmail(settingSeller.value) || settingSeller.value.includes('ธนภูมิ'))) {
                             settingSeller.value = formatSignerDisplay(authorizedSigner);
                         }
                         const pSeller = document.getElementById('pSellerName');
-                        if (pSeller && (!pSeller.innerText || pSeller.innerText.includes('...') || pSeller.innerText === '-' || isEmail(pSeller.innerText))) {
+                        if (pSeller && (!pSeller.innerText || pSeller.innerText.includes('...') || pSeller.innerText === '-' || isEmail(pSeller.innerText) || pSeller.innerText.includes('ธนภูมิ'))) {
                             pSeller.innerText = formatSignerDisplay(authorizedSigner);
                         }
                         const sellerRoleInput = document.getElementById('sellerRole');
@@ -4954,19 +4995,52 @@
                             loadSavedRecipientsDropdown();
                         }
                         
+                        // ── Fetch Shared Global Quotation Templates & Signatures from Cloud Firestore ──
+                        let globalSettings = null;
+                        try {
+                            const globalSnap = await getDoc(doc(db, 'material_settings', 'quotation_templates'));
+                            if (globalSnap.exists() && globalSnap.data()) {
+                                globalSettings = globalSnap.data();
+                            }
+                        } catch (err) {
+                            console.warn("Could not load shared quotation_templates from Firestore:", err);
+                        }
+
                         window.quotationTemplates = {};
                         let localTemplates = {};
                         try {
                             const rawLocalTpl = localStorage.getItem('quotationTemplates');
                             if (rawLocalTpl) localTemplates = JSON.parse(rawLocalTpl);
                         } catch(e) {}
-                        const cloudTemplates = (userData && userData.quotationTemplates) || {};
-                        window.quotationTemplates = Object.assign({}, window.MENTRA_DEFAULT_TEMPLATES || {}, cloudTemplates, localTemplates);
+
+                        // Clean out any stale/contaminated developer name or email from localTemplates
+                        Object.keys(localTemplates).forEach(k => {
+                            if (localTemplates[k] && (isEmail(localTemplates[k].sellerName) || (typeof localTemplates[k].sellerName === 'string' && localTemplates[k].sellerName.includes('ธนภูมิ')))) {
+                                delete localTemplates[k].sellerName;
+                            }
+                        });
+
+                        const cloudTemplates = (globalSettings && globalSettings.quotationTemplates) || 
+                                               (userData && userData.quotationTemplates) || {};
+
+                        // Clean out any stale/contaminated developer name from cloudTemplates
+                        Object.keys(cloudTemplates).forEach(k => {
+                            if (cloudTemplates[k] && (isEmail(cloudTemplates[k].sellerName) || (typeof cloudTemplates[k].sellerName === 'string' && cloudTemplates[k].sellerName.includes('ธนภูมิ')))) {
+                                delete cloudTemplates[k].sellerName;
+                            }
+                        });
+
+                        // Merging order: default templates < local templates < shared cloud templates (cloud takes highest precedence)
+                        window.quotationTemplates = Object.assign({}, window.MENTRA_DEFAULT_TEMPLATES || {}, localTemplates, cloudTemplates);
                         localStorage.setItem('quotationTemplates', JSON.stringify(window.quotationTemplates));
 
+                        // Load shared signatures
                         window.savedSignaturesByCompany = {};
-                        if (userData && userData.savedSignaturesByCompany) {
-                            window.savedSignaturesByCompany = userData.savedSignaturesByCompany;
+                        const cloudSignatures = (globalSettings && globalSettings.savedSignaturesByCompany) || 
+                                                (userData && userData.savedSignaturesByCompany);
+
+                        if (cloudSignatures && typeof cloudSignatures === 'object' && Object.keys(cloudSignatures).length > 0) {
+                            window.savedSignaturesByCompany = cloudSignatures;
                             localStorage.setItem('saved_signatures_by_company', JSON.stringify(window.savedSignaturesByCompany));
                         } else {
                             const localCompanySigs = localStorage.getItem('saved_signatures_by_company');
@@ -4984,6 +5058,24 @@
                                 }
                             }
                         }
+
+                        // Also load typography if in globalSettings
+                        if (globalSettings && globalSettings.quotation_global_typography) {
+                            try {
+                                localStorage.setItem('quotation_global_typography', JSON.stringify(globalSettings.quotation_global_typography));
+                            } catch(e) {}
+                        }
+                        if (globalSettings && globalSettings.quotation_preferred_font) {
+                            try {
+                                localStorage.setItem('quotation_preferred_font', globalSettings.quotation_preferred_font);
+                            } catch(e) {}
+                        }
+
+                        // If globalSettings did not exist in Firestore yet, write it now to migrate existing settings so all other users get it
+                        if (!globalSettings && (Object.keys(cloudTemplates).length > 0 || Object.keys(window.savedSignaturesByCompany).length > 0)) {
+                            syncQuotationSettingsToCloud().catch(() => {});
+                        }
+
                         renderSavedSignaturesGallery();
 
                         // Migration from old single template
@@ -5031,10 +5123,10 @@
                             console.error("Error loading registered shops:", err);
                         }
 
-                        // Purge any contaminated emails in quotationTemplates
+                        // Purge any contaminated emails or old developer name in quotationTemplates
                         if (window.quotationTemplates) {
                             Object.keys(window.quotationTemplates).forEach(k => {
-                                if (window.quotationTemplates[k] && isEmail(window.quotationTemplates[k].sellerName)) {
+                                if (window.quotationTemplates[k] && (isEmail(window.quotationTemplates[k].sellerName) || (typeof window.quotationTemplates[k].sellerName === 'string' && window.quotationTemplates[k].sellerName.includes('ธนภูมิ')))) {
                                     delete window.quotationTemplates[k].sellerName;
                                 }
                             });
@@ -6146,8 +6238,8 @@
                     pSellerName.style.display = 'none';
                 } else {
                     let sVal = sellerNameInput.value.trim();
-                    // Ensure email address is NEVER displayed as signer name
-                    if (!sVal || isEmail(sVal)) {
+                    // Ensure email address or invalid developer name is NEVER displayed as signer name
+                    if (!sVal || isEmail(sVal) || sVal.includes('ธนภูมิ')) {
                         const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
                         sVal = getAuthorizedSignerForCompany(currentIssuer);
                         sellerNameInput.value = sVal;
@@ -7177,7 +7269,7 @@
                 tableMarginTop: document.getElementById('settingTableMarginTop')?.value || '0',
                 sellerName: (() => {
                     let s = document.getElementById('settingSellerName')?.value || '';
-                    if (!s || isEmail(s)) {
+                    if (!s || isEmail(s) || s.includes('ธนภูมิ')) {
                         s = formatSignerDisplay(getAuthorizedSignerForCompany(currentIssuerDisplay));
                         const el = document.getElementById('settingSellerName');
                         if (el) el.value = s;
@@ -7264,15 +7356,12 @@
                 autoPageBreak: templateSettings.autoPageBreak
             }));
 
-            // Debounced cloud sync
+            // Debounced cloud sync (Sync to shared global Firestore so all users & admin share identical templates)
             if (autoSaveTemplateTimeout) clearTimeout(autoSaveTemplateTimeout);
             autoSaveTemplateTimeout = setTimeout(async () => {
                 if (currentUser) {
                     try {
-                        await setDoc(doc(db, 'users', currentUser.uid), {
-                            quotationTemplates: window.quotationTemplates,
-                            savedSignaturesByCompany: window.savedSignaturesByCompany
-                        }, { merge: true });
+                        await syncQuotationSettingsToCloud();
                     } catch (err) {
                         console.error("Auto cloud sync quotation template error:", err);
                     }
@@ -7448,9 +7537,7 @@
 
             if (currentUser) {
                 try {
-                    await setDoc(doc(db, 'users', currentUser.uid), {
-                        savedSignaturesByCompany: window.savedSignaturesByCompany
-                    }, { merge: true });
+                    await syncQuotationSettingsToCloud();
                 } catch(e) {
                     console.error("Error updating saved signatures in cloud:", e);
                 }
@@ -7510,9 +7597,7 @@
 
                 if (currentUser) {
                     try {
-                        await setDoc(doc(db, 'users', currentUser.uid), {
-                            savedSignaturesByCompany: window.savedSignaturesByCompany
-                        }, { merge: true });
+                        await syncQuotationSettingsToCloud();
                     } catch(err) {
                         console.error("Error saving signature to cloud:", err);
                     }
@@ -8250,7 +8335,7 @@
             const tableMarginTop = document.getElementById('settingTableMarginTop')?.value || '0';
             const sellerNameInput = document.getElementById('settingSellerName');
             let sellerName = sellerNameInput ? sellerNameInput.value.trim() : '';
-            if (!sellerName || isEmail(sellerName)) {
+            if (!sellerName || isEmail(sellerName) || sellerName.includes('ธนภูมิ')) {
                 const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
                 sellerName = formatSignerDisplay(getAuthorizedSignerForCompany(currentIssuer));
                 if (sellerNameInput) sellerNameInput.value = sellerName;
@@ -8722,7 +8807,7 @@
                     tableMarginTop: document.getElementById('settingTableMarginTop')?.value || '0',
                     sellerName: (() => {
                         let s = document.getElementById('settingSellerName')?.value || '';
-                        if (!s || isEmail(s)) {
+                        if (!s || isEmail(s) || s.includes('ธนภูมิ')) {
                             s = formatSignerDisplay(getAuthorizedSignerForCompany(currentIssuerDisplay));
                             const el = document.getElementById('settingSellerName');
                             if (el) el.value = s;
@@ -8825,10 +8910,7 @@
 
                 if (currentUser) {
                     try {
-                        await setDoc(doc(db, 'users', currentUser.uid), {
-                            quotationTemplates: window.quotationTemplates,
-                            savedSignaturesByCompany: window.savedSignaturesByCompany
-                        }, { merge: true });
+                        await syncQuotationSettingsToCloud();
                         if (showAlert) {
                             if (typeof Swal !== 'undefined') {
                                 Swal.fire({
@@ -9322,7 +9404,7 @@
             const companyAuthorizedSigner = getAuthorizedSignerForCompany(currentIssuer);
             const companyAuthorizedRole = getAuthorizedSignerRoleForCompany(currentIssuer);
 
-            if (settings.sellerName && !isEmail(settings.sellerName)) {
+            if (settings.sellerName && !isEmail(settings.sellerName) && !settings.sellerName.includes('ธนภูมิ')) {
                 document.getElementById('settingSellerName').value = settings.sellerName;
                 const formSellerName = document.getElementById('sellerName');
                 if (formSellerName) formSellerName.value = settings.sellerName.replace(/^\(|\)$/g, '').trim();
@@ -11058,13 +11140,17 @@
                     localStorage.setItem('quotation_preferred_font', data.quotation_preferred_font);
                 }
 
-                // Cloud backup if currentUser available
+                // Cloud backup if currentUser available (Sync to shared global Firestore)
                 if (typeof currentUser !== 'undefined' && currentUser) {
                     try {
-                        setDoc(doc(db, 'users', currentUser.uid), {
-                            quotationTemplates: window.quotationTemplates,
-                            savedSignaturesByCompany: window.savedSignaturesByCompany
-                        }, { merge: true }).catch(err => console.error("Cloud sync on import error:", err));
+                        if (typeof syncQuotationSettingsToCloud === 'function') {
+                            syncQuotationSettingsToCloud();
+                        } else {
+                            setDoc(doc(db, 'users', currentUser.uid), {
+                                quotationTemplates: window.quotationTemplates,
+                                savedSignaturesByCompany: window.savedSignaturesByCompany
+                            }, { merge: true }).catch(err => console.error("Cloud sync on import error:", err));
+                        }
                     } catch(e) {}
                 }
 

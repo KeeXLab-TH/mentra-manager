@@ -1242,6 +1242,9 @@
                             <button onclick="appData.openExportModal()" class="bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="ส่งออกข้อมูลเป็นไฟล์ Excel">
                                 <i class="fa-solid fa-file-export"></i> ส่งออก Excel
                             </button>
+                            <button id="btn-auto-reorder" onclick="appData.autoReorderItemNumbers()" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="รันเลขข้อหลัก (1, 2, 3...) ให้อัตโนมัติทุกแถว">
+                                <i class="fa-solid fa-list-ol"></i> รันเลขอัตโนมัติ
+                            </button>
                             <button onclick="appData.addHeaderRow()" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm">
                                 <i class="fa-solid fa-heading"></i> เพิ่มหัวข้อ
                             </button>
@@ -1255,8 +1258,8 @@
                         <table class="excel-table w-full text-xs sm:text-sm" id="excel-table">
                             <thead>
                                 <tr class="text-[11px] sm:text-xs">
-                                    <th class="w-8 relative group" data-col="no">ลำดับ<div class="col-resizer"></div></th>
-                                    <th class="w-12 relative group" data-col="customNo">ข้อ<div class="col-resizer"></div></th>
+                                    <th class="w-12 relative group" data-col="no" title="เลขข้อหลัก (แก้ไขเลขได้ หรือเว้นว่างได้)">ลำดับ<div class="col-resizer"></div></th>
+                                    <th class="w-14 relative group" data-col="customNo" title="เลขข้อย่อย เช่น 1.1 (แก้ไขเลขได้ หรือเว้นว่างได้)">ข้อ<div class="col-resizer"></div></th>
                                     <th class="w-auto relative group" data-col="name">รายการวัสดุ / ครุภัณฑ์<div class="col-resizer"></div></th>
                                     <th class="w-12 relative group" data-col="qty">จำนวน<div class="col-resizer"></div></th>
                                     <th class="w-12 relative group" data-col="unit">หน่วย<div class="col-resizer"></div></th>
@@ -3327,15 +3330,17 @@
                         `;
                     }
 
-                    const itemNoDisplay = item.customNo ? item.customNo : (index + 1);
+                    const itemNoDisplay = (item.customNo || item.mainNo || '').trim();
 
                     itemsHtml += `
                         <div class="gallery-pdf-item" style="border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 14px; padding: 12px 14px; background-color: #ffffff; page-break-inside: avoid; break-inside: avoid; box-sizing: border-box;">
                             <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
                                 <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
-                                    <span style="background-color: #1A6FBF; color: #ffffff; font-weight: 700; font-size: 12px; padding: 2px 10px; border-radius: 6px; white-space: nowrap;">
-                                        ข้อ ${itemNoDisplay}
-                                    </span>
+                                    ${itemNoDisplay ? `
+                                        <span style="background-color: #1A6FBF; color: #ffffff; font-weight: 700; font-size: 12px; padding: 2px 10px; border-radius: 6px; white-space: nowrap;">
+                                            ข้อ ${itemNoDisplay}
+                                        </span>
+                                    ` : ''}
                                     <span style="font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.3;">
                                         ${item.name || 'ไม่มีชื่อรายการ'}
                                     </span>
@@ -4475,6 +4480,7 @@
                         const cleanItems = rawItems.map(it => ({
                             id: it.id,
                             isHeader: !!it.isHeader,
+                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
                             customNo: it.customNo || '',
                             name: it.name || it.desc || '',
                             desc: it.desc || it.name || '',
@@ -5219,6 +5225,7 @@
                         const cleanItems = rawItems.map(it => ({
                             id: it.id,
                             isHeader: !!it.isHeader,
+                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
                             customNo: it.customNo || '',
                             name: it.name || it.desc || '',
                             desc: it.desc || it.name || '',
@@ -5320,6 +5327,7 @@
                         const cleanItems = rawItems.map(it => ({
                             id: it.id,
                             isHeader: !!it.isHeader,
+                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
                             customNo: it.customNo || '',
                             name: it.name || it.desc || '',
                             desc: it.desc || it.name || '',
@@ -5928,22 +5936,25 @@
 
                     const tr = document.createElement('tr');
                     
-                    let displayNoStr = '';
-                    let seqCellContent = '';
-                    
-                    if (item.customNo && item.customNo.trim() !== '') {
-                        displayNoStr = item.customNo.trim();
-                        seqCellContent = '';
+                    let mainNoDisplay = '';
+                    if (item.mainNo !== undefined) {
+                        mainNoDisplay = item.mainNo;
+                    } else if (item.isHeader) {
+                        mainNoDisplay = '';
+                    } else if (item.customNo && item.customNo.trim() !== '') {
+                        mainNoDisplay = '';
                     } else {
-                        displayNoStr = currentNo.toString();
-                        seqCellContent = currentNo++;
+                        mainNoDisplay = (currentNo++).toString();
                     }
-                    
-                    let nameIndentClass = displayNoStr.includes('.') ? 'pl-8' : '';
+
+                    const displayNoStr = (item.customNo || mainNoDisplay || '').trim();
+                    let nameIndentClass = (item.customNo?.trim() !== '' || (item.mainNo && item.mainNo.includes('.'))) ? 'pl-8' : '';
 
                     if (item.isHeader) {
                         tr.innerHTML = `
-                            <td class="text-center text-slate-500 font-medium">${seqCellContent}</td>
+                            <td class="text-center p-0">
+                                <input type="text" class="excel-input text-center text-slate-500 font-bold" data-id="${item.id}" data-field="mainNo" value="${this.escapeAttr(mainNoDisplay)}" onchange="appData.updateItem('${item.id}', 'mainNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="-" title="เลขข้อหลัก (สามารถเว้นว่างหรือแก้ไขได้อิสระ)">
+                            </td>
                             <td>
                                 <input type="text" class="excel-input text-center text-slate-500 font-medium" data-id="${item.id}" data-field="customNo" value="${this.escapeAttr(item.customNo || '')}" onchange="appData.updateItem('${item.id}', 'customNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="เช่น 1.">
                             </td>
@@ -5964,7 +5975,9 @@
                     } else {
                         const displayFoundTotal = item.foundTotalPrice !== undefined && item.foundTotalPrice !== null && item.foundTotalPrice !== '' ? item.foundTotalPrice : (item.foundPrice ? Math.round((item.qty || 0) * item.foundPrice * 100) / 100 : '');
                         tr.innerHTML = `
-                            <td class="text-center text-slate-500 font-medium">${seqCellContent}</td>
+                            <td class="text-center p-0">
+                                <input type="text" class="excel-input text-center text-slate-700 font-bold" data-id="${item.id}" data-field="mainNo" value="${this.escapeAttr(mainNoDisplay)}" onchange="appData.updateItem('${item.id}', 'mainNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="-" title="เลขข้อหลัก (สามารถเว้นว่างหรือแก้ไขได้อิสระ)">
+                            </td>
                             <td>
                                 <input type="text" class="excel-input text-center text-slate-500" data-id="${item.id}" data-field="customNo" value="${this.escapeAttr(item.customNo || '')}" onchange="appData.updateItem('${item.id}', 'customNo', this.value)" onkeydown="appData.handleExcelKeydown(event)" placeholder="เช่น 1.1">
                             </td>
@@ -6199,10 +6212,25 @@
             addEmptyItemRow() {
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
+
+                let maxMainNo = 0;
+                if (Array.isArray(proj.items)) {
+                    proj.items.forEach(it => {
+                        if (it.mainNo) {
+                            const parsed = parseInt(it.mainNo, 10);
+                            if (!isNaN(parsed) && parsed > maxMainNo) maxMainNo = parsed;
+                        }
+                    });
+                    if (maxMainNo === 0) {
+                        maxMainNo = proj.items.filter(it => !it.isHeader && !it.customNo).length;
+                    }
+                }
+                const nextNo = (maxMainNo + 1).toString();
                 
                 proj.items.push({
                     id: 'item_' + Date.now(),
                     isHeader: false,
+                    mainNo: nextNo,
                     customNo: '',
                     name: '',
                     qty: 1,
@@ -6226,6 +6254,7 @@
                 proj.items.push({
                     id: 'item_' + Date.now(),
                     isHeader: true,
+                    mainNo: '',
                     customNo: '',
                     name: '',
                     qty: 0,
@@ -6240,6 +6269,27 @@
                 
                 this.syncCurrentProject();
                 this.renderExcelTable();
+            },
+
+            autoReorderItemNumbers() {
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj || !Array.isArray(proj.items)) return;
+
+                let currentSeq = 1;
+                proj.items.forEach(it => {
+                    const custom = (it.customNo || '').trim();
+                    if (it.isHeader) {
+                        it.mainNo = '';
+                    } else if (custom !== '') {
+                        it.mainNo = '';
+                    } else {
+                        it.mainNo = (currentSeq++).toString();
+                    }
+                });
+
+                this.syncCurrentProject();
+                this.renderExcelTable();
+                this.showToast('รันเลขลำดับ 1, 2, 3... ให้อัตโนมัติเรียบร้อย', 'success');
             },
 
             updateItem(itemId, field, value) {
