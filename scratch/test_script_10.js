@@ -1,2063 +1,35 @@
-<!DOCTYPE html>
-<html lang="th" style="background-color:#f8fafc">
-<head>
-    <!-- Security Headers (meta fallback) -->
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    <!-- Anti-Flash Instant Background -->
-    <style>html,body{background:#f8fafc!important;}</style>
-    <script>
-    (function(){
-        var d=document,o=d.createElement('div');
-        o.id='mentra-page-transition-overlay';
-        o.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(248,250,252,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:1;transition:opacity .22s ease-out;pointer-events:none;';
-        d.documentElement.appendChild(o);
-        function fadeOut(){if(o){o.style.opacity='0';setTimeout(function(){o.style.pointerEvents='none';},280);}}
-        if(d.readyState==='loading'){d.addEventListener('DOMContentLoaded',fadeOut);}else{fadeOut();}
-        window.addEventListener('pageshow',function(){if(o){o.style.opacity='0';o.style.pointerEvents='none';}});
-    })();
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ระบบจัดการวัสดุอุปกรณ์และการจัดซื้อ — Mentra Manager</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- SheetJS for Excel Import -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
-    
-    <!-- SweetAlert2 for Popups -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- Premium UI Overlay -->
-    <link rel="stylesheet" href="../../assets/css/app-theme.css?v=1780690277137">
-
-    <!-- Premium UI Layer -->
-    <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Kanit', 'Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#e8f1fb',
-                            100: '#cce1f5',
-                            500: '#1A6FBF',
-                            600: '#145999',
-                            700: '#0e4a85',
-                            900: '#0b3d6e',
-                        },
-                        accent: {
-                            50: '#fdf0e6',
-                            500: '#E07B2F',
-                            600: '#c4681f',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        /* ===== EXCEL TABLE STYLES ===== */
-        .excel-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-        
-        .excel-table th, .excel-table td {
-            border: 1px solid #d1d5db; /* gray-300 */
-            padding: 0;
-            vertical-align: middle;
-        }
-
-        .excel-table th {
-            background-color: #f3f4f6; /* gray-100 */
-            color: #374151; /* gray-700 */
-            font-weight: 600;
-            padding: 10px 8px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .excel-input {
-            width: 100%;
-            height: 100%;
-            min-height: 40px;
-            border: none;
-            padding: 8px 4px; /* Reduced side padding to prevent text overflow */
-            background-color: transparent;
-            outline: none;
-            transition: background-color 0.2s;
-            min-width: 0;
-        }
-
-        .excel-input:focus {
-            background-color: #eff6ff; /* blue-50 */
-            box-shadow: inset 0 0 0 2px #3b82f6; /* blue-500 */
-        }
-
-        .excel-input.text-right {
-            text-align: right;
-        }
-
-        /* Highlighted Total Column */
-        .col-total {
-            background-color: #fef08a; /* yellow-200 */
-            font-weight: 600;
-            text-align: right;
-        }
-        
-        .excel-table tr:hover td:not(.col-total) {
-            background-color: #f8fafc; /* slate-50 */
-        }
-
-        /* Column Resizer */
-        .col-resizer {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 5px;
-            cursor: col-resize;
-            user-select: none;
-            height: 100%;
-            background-color: transparent;
-            z-index: 10;
-        }
-
-        .col-resizer:hover, .col-resizer.resizing {
-            background-color: #3b82f6; /* blue-500 */
-        }
-
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 9999px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Base resets for Mentra Sidebar integration */
-        body {
-            background-color: #f0f4f9;
-        }
-        
-        /* Hide scrollbar for clean look */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
-
-        /* ===== GALLERY PDF PRINT STYLES ===== */
-        @media print {
-            body > *:not(#galleryPrintOnlyWrapper):not(#__printOnlyWrapper) {
-                display: none !important;
-            }
-            #galleryPrintOnlyWrapper {
-                display: block !important;
-                position: static !important;
-                width: 100% !important;
-                height: auto !important;
-                background: white !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                overflow: visible !important;
-            }
-            #galleryPrintOnlyWrapper #galleryPrintArea {
-                display: block !important;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-                background: white !important;
-            }
-            #galleryPrintArea * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
-            }
-            .gallery-pdf-page-container {
-                width: 100% !important;
-                max-width: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
-            .gallery-pdf-item {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-            }
-            @page {
-                size: A4 portrait;
-                margin: 10mm 10mm 10mm 10mm;
-            }
-        }
-    
-/* ================================================
-           SIDEBAR & MAIN LAYOUT (From dashboard.html)
-           ================================================ */
-        :root {
-            --sidebar-w: 328px;
-            --sidebar-w-collapsed: 72px;
-            --sidebar-bg: linear-gradient(180deg, #0b3d6e 0%, #0d4a7a 30%, #1A6FBF 70%, #1565a8 100%);
-            --header-h: 68px;
-            --primary: #1A6FBF;
-            --primary-light: #e8f1fb;
-            --secondary: #E07B2F;
-            --radius-md: 12px;
-            --radius-sm: 8px;
-            --t-fast: 0.15s ease;
-            --t-normal: 0.25s ease;
-            --t-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        body {
-            
-            min-height: 100vh;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow: hidden;
-            font-family: 'Kanit', 'Sarabun', sans-serif !important;
-        }
-
-        .sidebar {
-            width: var(--sidebar-w);
-            background: var(--sidebar-bg);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 100;
-            transition: width var(--t-slow), transform var(--t-slow);
-            overflow: hidden;
-            will-change: width, transform;
-        }
-
-        .sidebar.collapsed {
-            width: var(--sidebar-w-collapsed);
-        }
-
-        .sidebar.collapsed .sidebar-logo-text,
-        .sidebar.collapsed .nav-label,
-        .sidebar.collapsed .nav-section-title,
-        .sidebar.collapsed .user-info,
-        .sidebar.collapsed .btn-logout-text {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-            white-space: nowrap;
-            display: none;
-        }
-
-        .sidebar.collapsed .sidebar-logo {
-            justify-content: center;
-            padding-right: 0;
-        }
-
-        .sidebar.collapsed .nav-item {
-            justify-content: center;
-        }
-
-        .sidebar-logo {
-            padding: 20px 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-height: var(--header-h);
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .sidebar-logo img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            background: white;
-            border-radius: 10px;
-            padding: 4px;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .sidebar-logo-text {
-            transition: opacity var(--t-normal), width var(--t-normal);
-            overflow: hidden;
-        }
-
-        .sidebar-logo-text .app-name {
-            font-size: 15px;
-            font-weight: 800;
-            color: white;
-            line-height: 1.1;
-            white-space: nowrap;
-        }
-
-        .sidebar-logo-text .app-sub {
-            font-size: 10.5px;
-            color: rgba(255, 255, 255, 0.50);
-            font-weight: 400;
-            margin-top: 2px;
-            white-space: nowrap;
-        }
-
-        .collapse-btn {
-            position: absolute;
-            right: -12px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 24px;
-            height: 24px;
-            background: white;
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--primary);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            z-index: 10;
-            transition: background var(--t-fast), transform var(--t-normal);
-        }
-
-        .collapse-btn:hover {
-            background: var(--primary-light);
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            padding: 12px 10px;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .nav-section-title {
-            font-size: 9.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: rgba(255, 255, 255, 0.38);
-            padding: 8px 12px 4px;
-            margin-top: 10px;
-            white-space: nowrap;
-            transition: opacity var(--t-normal);
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 11px 13px;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            color: rgba(255, 255, 255, 0.70);
-            font-size: 13.5px;
-            font-weight: 500;
-            transition: background var(--t-fast), color var(--t-fast);
-            margin-bottom: 2px;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            font-family: 'Kanit', sans-serif;
-            position: relative;
-            white-space: nowrap;
-            text-decoration: none;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.10);
-            color: white;
-        }
-
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.16);
-            color: white;
-            font-weight: 600;
-        }
-
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 20%;
-            bottom: 20%;
-            width: 3px;
-            background: var(--secondary);
-            border-radius: 0 3px 3px 0;
-        }
-
-        .nav-item.active .nav-icon {
-            background: var(--secondary);
-            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.4);
-        }
-
-        .nav-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-sm);
-            background: rgba(255, 255, 255, 0.10);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            flex-shrink: 0;
-            transition: background var(--t-fast), box-shadow var(--t-fast);
-        }
-
-        .nav-label {
-            transition: opacity var(--t-normal);
-            overflow: hidden;
-        }
-
-        .sidebar-user {
-            padding: 14px;
-            border-top: 1px solid rgba(255, 255, 255, 0.10);
-            flex-shrink: 0;
-        }
-
-        .user-card {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: var(--radius-md);
-            background: rgba(255, 255, 255, 0.07);
-            margin-bottom: 10px;
-            overflow: hidden;
-            transition: justify-content var(--t-normal);
-        }
-
-        .user-avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            font-weight: 700;
-            color: white;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(224, 123, 47, 0.35);
-        }
-
-        .user-info {
-            min-width: 0;
-        }
-
-        .user-info .user-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: white;
-            line-height: 1.2;
-            white-space: nowrap;
-        }
-
-        .user-info .user-role {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.50);
-            margin-top: 2px;
-        }
-
-        .role-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .role-badge.admin {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .role-badge.user {
-            background: rgba(255, 255, 255, 0.18);
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .btn-logout {
-            width: 100%;
-            padding: 9px 12px;
-            background: rgba(239, 68, 68, 0.13);
-            border: 1px solid rgba(239, 68, 68, 0.28);
-            border-radius: var(--radius-sm);
-            color: #fca5a5;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background var(--t-fast), color var(--t-fast);
-            font-family: 'Kanit', sans-serif;
-            overflow: hidden;
-        }
-
-        .btn-logout:hover {
-            background: rgba(239, 68, 68, 0.28);
-            color: white;
-        }
-
-        .btn-logout-text {
-            white-space: nowrap;
-            transition: opacity var(--t-normal);
-        }
-
-        .main-wrapper {
-            flex: 1;
-            margin-left: var(--sidebar-w);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            min-width: 0;
-            transition: margin-left var(--t-slow);
-        }
-
-        .topbar {
-            height: var(--header-h);
-            background: #ffffff;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            justify-content: space-between;
-            flex-shrink: 0;
-            z-index: 90;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-        }
-
-        .topbar-breadcrumb {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .breadcrumb-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .breadcrumb-sub {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            background-color: var(--bg-color);
-        }
-
-        .container {
-            max-width: 100% !important;
-            margin: 0 !important;
-            background: none !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-        }
-
-        .form-content {
-            background: white !important;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border-color);
-            padding: 24px !important;
-        }
-
-        /* Mobile Responsive Overrides */
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none !important;
-            }
-            .main-wrapper {
-                margin-left: 0 !important;
-                padding-bottom: 70px !important; /* Space for bottom nav */
-            }
-            .topbar {
-                padding: 0 16px;
-            }
-            .content-area {
-                padding: 16px;
-            }
-            /* Make tables swipeable */
-            .overflow-x-auto {
-                -webkit-overflow-scrolling: touch;
-            }
-            .table-wrap {
-                margin: 0 -16px;
-                padding: 0 16px;
-                width: calc(100% + 32px);
-            }
-        }
-
-        /* ================================================
-           WORKFLOW STEPPER
-           ================================================ */
-        .workflow-stepper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-            padding: 20px 16px;
-            background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%);
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            position: relative;
-        }
-        .workflow-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            flex: 0 0 auto;
-            min-width: 140px;
-            position: relative;
-            z-index: 2;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .workflow-step:hover { transform: translateY(-2px); }
-        .workflow-step.disabled { opacity: 0.5; cursor: not-allowed; }
-        .workflow-step.disabled:hover { transform: none; }
-        .step-circle {
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
-            font-weight: 700;
-            border: 3px solid #cbd5e1;
-            background: white;
-            color: #94a3b8;
-            transition: all 0.3s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-        .workflow-step.active .step-circle {
-            border-color: #3b82f6;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            box-shadow: 0 4px 16px rgba(59,130,246,0.35);
-            animation: pulse-step 2s ease-in-out infinite;
-        }
-        .workflow-step.completed .step-circle {
-            border-color: #10b981;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
-        }
-        @keyframes pulse-step {
-            0%, 100% { box-shadow: 0 4px 16px rgba(59,130,246,0.35); }
-            50% { box-shadow: 0 4px 24px rgba(59,130,246,0.55); }
-        }
-        .step-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #94a3b8;
-            text-align: center;
-            line-height: 1.3;
-            max-width: 130px;
-        }
-        .workflow-step.active .step-label { color: #2563eb; }
-        .workflow-step.completed .step-label { color: #059669; }
-        .step-status {
-            font-size: 10px;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 99px;
-            background: #f1f5f9;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .workflow-step.active .step-status { background: #dbeafe; color: #2563eb; }
-        .workflow-step.completed .step-status { background: #d1fae5; color: #059669; }
-        .step-connector {
-            flex: 1;
-            height: 3px;
-            background: #e2e8f0;
-            min-width: 40px;
-            max-width: 120px;
-            border-radius: 2px;
-            position: relative;
-            z-index: 1;
-            margin: 0 -8px;
-            align-self: flex-start;
-            margin-top: 23px;
-        }
-        .step-connector.completed {
-            background: linear-gradient(90deg, #10b981, #34d399);
-        }
-        @media (max-width: 640px) {
-            .workflow-stepper { padding: 12px 8px; gap: 0; }
-            .workflow-step { min-width: 80px; }
-            .step-circle { width: 36px; height: 36px; font-size: 14px; }
-            .step-label { font-size: 10px; max-width: 80px; }
-            .step-status { font-size: 8px; padding: 1px 6px; }
-            .step-connector { min-width: 20px; margin-top: 17px; }
-        }
-
-        /* Activity Log */
-        .activity-log-item {
-            display: flex;
-            gap: 12px;
-            padding: 12px 16px;
-            border-left: 3px solid #e2e8f0;
-            margin-left: 8px;
-            transition: all 0.2s;
-        }
-        .activity-log-item:hover {
-            background: #f8fafc;
-            border-left-color: #3b82f6;
-        }
-        .activity-log-item .log-icon {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            font-size: 14px;
-        }
-        .activity-log-item .log-content {
-            flex: 1;
-            min-width: 0;
-        }
-        .activity-log-item .log-action {
-            font-weight: 600;
-            font-size: 13px;
-            color: #334155;
-        }
-        .activity-log-item .log-time {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-        .activity-log-item .log-user {
-            font-size: 11px;
-            color: #64748b;
-            margin-top: 1px;
-        }
-
-</style>
-    <!-- SortableJS -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <!-- Dual-Rail Sidebar & Multi-Shop Styles -->
-    <link rel="stylesheet" href="../../assets/css/dashboard-dual-sidebar.css?v=2.5">
-    <!-- Dual-Rail Sidebar & Multi-Shop Controller -->
-    <script src="../../assets/js/session-guard.js"></script>
-<script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5"></script>
-</head>
-
-<body class="text-slate-800 antialiased min-h-screen flex">
-
-    <!-- 
-      Note: The Sidebar and Topbar are fully styled with Tailwind to match the Mentra Manager layout. 
-      In your real application, you can replace this with your existing shared Sidebar CSS/HTML. 
-    -->
-
-    <!-- ===== SIDEBAR (Tailwind Mockup matching Mentra) ===== -->
-    <!-- SIDEBAR OVERLAY (mobile) -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-    <!-- TOAST CONTAINER (new stackable system) -->
-    <div id="toastContainer"></div>
-
-    <!-- SIDEBAR OVERLAY (mobile) -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-    <!-- TOAST CONTAINER (new stackable system) -->
-    <div id="toastContainer"></div>
-
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar" id="sidebar">
-        <!-- 1. PRIMARY SLIM DARK RAIL (LEFT) -->
-        <div class="rail-primary">
-            <!-- Brand Logo Mark -->
-            <div class="rail-logo-wrap" onclick="typeof navigateTo === 'function' ? navigateTo('dashboard') : window.location.href='../admin/dashboard.html'" title="Mentra Manager">
-                <img src="../../assets/img/logo.png" alt="Mentra" class="rail-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <i class='bx bxs-compass rail-logo-icon' style="display: none;"></i>
-            </div>
-
-            <!-- Icon Nav Stack -->
-            <div class="rail-nav-group">
-                <!-- Search -->
-                <button type="button" class="rail-icon-btn" onclick="focusQuickSearch()" id="railBtnSearch">
-                    <i class='bx bx-search'></i>
-                    <span class="rail-tooltip">ค้นหาด่วน (⌘F)</span>
-                </button>
-
-                <!-- Dashboard -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('dashboard', this)" id="railBtnDashboard">
-                    <i class='bx bx-grid-alt'></i>
-                    <span class="rail-tooltip">Dashboard / ภาพรวม</span>
-                </button>
-
-                <!-- Projects -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('projects', this)" id="railBtnProjects">
-                    <i class='bx bx-briefcase'></i>
-                    <span class="rail-tooltip">งานประมูล (Bidding)</span>
-                </button>
-
-                <!-- Purchasing -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('purchasing', this)" id="railBtnPurchasing">
-                    <i class='bx bx-cart'></i>
-                    <span class="rail-tooltip">ฝ่ายจัดซื้อ & สินค้า</span>
-                </button>
-
-                <!-- Accounting -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('accounting', this)" id="railBtnAccounting">
-                    <i class='bx bx-receipt'></i>
-                    <span class="rail-tooltip">บัญชี & การเงิน</span>
-                </button>
-
-                <!-- Schedule -->
-                <button type="button" class="rail-icon-btn" onclick="handleRailTab('schedule', this)" id="railBtnSchedule">
-                    <i class='bx bx-calendar'></i>
-                    <span class="rail-tooltip">ตารางงาน & อบรม</span>
-                </button>
-            </div>
-
-            <!-- Rail Bottom: Collapse toggle & Admin Settings -->
-            <div class="rail-bottom">
-                <button type="button" class="rail-collapse-toggle" onclick="toggleSidebarCollapse()" id="railCollapseBtn" title="ย่อ/ขยายแถบเมนู">
-                    <i class='bx bx-chevron-left'></i>
-                </button>
-                <button type="button" class="rail-icon-btn" onclick="window.location.href='../admin/console_admin.html'" title="ตั้งค่าระบบ">
-                    <i class='bx bx-cog'></i>
-                    <span class="rail-tooltip">Admin Console</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- 2. SECONDARY FLYOUT PANEL (WHITE) -->
-        <div class="rail-secondary" id="railSecondaryPanel">
-            <!-- Org Switcher Header -->
-            <div class="org-switcher-header">
-                <div class="org-switcher-btn" id="orgSwitcherBtn" onclick="toggleOrgPopover(event)">
-                    <div class="org-avatar">
-                        <img id="sidebarOrgLogo" src="../../assets/img/logo.png" alt="Mentra" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        <span id="sidebarOrgInitials" style="display:none;">M</span>
-                    </div>
-                    <div class="org-meta">
-                        <div class="org-title" id="sidebarOrgName">Mentra Solution</div>
-                        <div class="org-subtitle" id="sidebarUserEmail">accounts@mentrasolution.com</div>
-                    </div>
-                    <i class='bx bx-chevron-up-down org-caret'></i>
-                </div>
-
-                <!-- Floating Popover (Multi-Shop Management) -->
-                <div class="org-switcher-popover" id="orgSwitcherPopover">
-                    <div class="popover-section-label">เลือกร้านค้าที่จัดการ</div>
-                    <div class="popover-list" id="orgSwitcherPopoverList">
-                        <!-- Rendered dynamically by dashboard-dual-sidebar.js -->
-                    </div>
-                    <div class="popover-divider"></div>
-                    <button type="button" class="popover-btn-action create-new" onclick="openShopModal()">
-                        <i class='bx bx-plus'></i> <span>เพิ่มร้านค้า</span>
-                    </button>
-                    <button type="button" class="popover-btn-action" onclick="window.location.href='../admin/company_settings.html'" style="color: #1A6FBF; font-weight: 600;">
-                        <i class='bx bx-buildings'></i> <span>จัดการข้อมูลบริษัท & ร้านค้า</span>
-                    </button>
-                    <button type="button" class="popover-btn-action logout" onclick="handleLogout()">
-                        <i class='bx bx-log-out'></i> <span>ออกจากระบบ (Logout)</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Quick Search Input -->
-            <div class="secondary-search-wrap">
-                <div class="secondary-search-box">
-                    <i class='bx bx-search'></i>
-                    <input type="text" id="sidebarQuickSearch" placeholder="Search...." oninput="filterSidebarNav(this.value)">
-                    <span class="search-kbd">⌘ F</span>
-                </div>
-            </div>
-
-            <!-- Secondary Navigation Items -->
-            <div class="secondary-nav-body" id="secondaryNavBody">
-                <!-- Flat Primary Links -->
-                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('dashboard') : window.location.href='../admin/dashboard.html'" id="nav-dashboard">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-grid-alt'></i>
-                        <span>Dashboard</span>
-                    </div>
-                </button>
-
-                <button type="button" class="sec-nav-item" onclick="typeof navigateTo === 'function' ? navigateTo('projects') : window.location.href='../admin/dashboard.html?view=projects'" id="nav-projects">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-briefcase'></i>
-                        <span>งานประมูล (Bidding)</span>
-                    </div>
-                </button>
-
-                <!-- Module Section: Administration -->
-                <div class="sec-nav-divider">ฝ่ายบริหาร</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/company_settings.html'" id="nav-company-settings">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-buildings'></i>
-                        <span>ข้อมูลบริษัท & ร้านค้า</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../admin/business_card.html'" id="nav-business-card">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-id-card'></i>
-                        <span>นามบัตรดิจิทัล</span>
-                    </div>
-                </button>
-
-                <!-- Module Section: Purchasing -->
-                <div class="sec-nav-divider">จัดซื้อ & สินค้า</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing.html'" id="nav-purchasing-school">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-buildings'></i>
-                        <span>จัดซื้อ (สถานศึกษา)</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/materials_purchasing_company.html'" id="nav-purchasing-company">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-briefcase-alt'></i>
-                        <span>จัดซื้อ (บริษัทเอกชน)</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../purchasing/products.html'" id="nav-products">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-package'></i>
-                        <span>รายการสินค้า</span>
-                    </div>
-                </button>
-
-                <!-- Module Section: Accounting -->
-                <div class="sec-nav-divider">งานบัญชี & การเงิน</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/quotation.html'" id="nav-quotation">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-file-blank'></i>
-                        <span>ออกเอกสารงานขาย</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/company_letters.html'" id="nav-company-letters">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-file'></i>
-                        <span>หนังสือส่งมอบงาน</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../accounting/sales_documents.html'" id="nav-sales-documents">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-folder-open'></i>
-                        <span>ประวัติเอกสารที่ออก</span>
-                    </div>
-                </button>
-
-                <!-- Module Section: Schedule -->
-                <div class="sec-nav-divider">ตารางงาน & การอบรม</div>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/tasks.html'" id="nav-tasks">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-check-square'></i>
-                        <span>งานที่ได้รับมอบหมาย</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/calendar.html'" id="nav-calendar">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-calendar-event'></i>
-                        <span>ปฏิทินตารางงาน</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/external_training.html'" id="nav-training">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-award'></i>
-                        <span>ระบบตารางจัดอบรม</span>
-                    </div>
-                </button>
-                <button type="button" class="sec-nav-item" onclick="window.location.href='../schedule/internship_journal.html'" id="nav-internship">
-                    <div class="sec-nav-item-left">
-                        <i class='bx bx-book-bookmark'></i>
-                        <span>บันทึกการฝึกงาน</span>
-                    </div>
-                </button>
-            </div>
-        </div>
-    </aside>
-
-    <!-- ===== MAIN WRAPPER ===== -->
-    <div class="main-wrapper flex-1 flex flex-col min-h-screen overflow-x-hidden">
-        
-        <!-- TOPBAR -->
-        <header class="topbar">
-            <div class="topbar-breadcrumb">
-                <span class="breadcrumb-title" id="pageTitle">ระบบจัดการวัสดุอุปกรณ์และการจัดซื้อ</span>
-                <span class="breadcrumb-sub" id="pageSubtitle">ระบบจัดการและติดตามสถานะการสั่งซื้อวัสดุอุปกรณ์ในโครงการ</span>
-            </div>
-            <div class="topbar-actions" id="topbarActions"></div>
-            <div class="topbar-right-menu">
-                <div id="adminMenu" style="display:none;">
-                    <a href="../admin/console_admin.html" class="nav-item" style="text-decoration: none;">
-                        <div class="nav-icon">🛠️</div>
-                        <span class="nav-label">Admin Console (สิทธิ์ด่วน)</span>
-                    </a>
-                </div>
-                <div class="sidebar-user">
-                    <div class="user-card">
-                        <div class="user-avatar" id="userAvatar">M</div>
-                        <div class="user-info">
-                            <div class="user-name" id="userName">กำลังโหลด...</div>
-                            <div class="user-role">
-                                <span class="role-badge" id="userRoleBadge">-</span>
-                            </div>
-                        </div>
-                    </div>
-                    <button class="btn-logout" onclick="handleLogout()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <polyline points="21 12 9 12"></polyline>
-                        </svg>
-                        <span class="btn-logout-text">ออกจากระบบ</span>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- WORKSPACE -->
-        <main class="flex-1 p-8 max-w-[1600px] w-full mx-auto" id="app">
-            
-            <!-- VIEW 1: companies LIST -->
-            <div id="view-companies" class="space-y-6">
-                <!-- Header Actions -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
-                            <i class="fa-solid fa-company-flag text-brand-500"></i> เลือกบริษัทเอกชน
-                        </h2>
-                    </div>
-                    <div class="flex gap-3">
-                        <button onclick="appData.openManageShopsModal()" class="bg-white text-brand-600 border border-brand-200 px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:bg-brand-50 transition-all flex items-center justify-center gap-2" title="จัดการร้านค้า/บริษัท">
-                            <i class="fa-solid fa-shop"></i> จัดการร้านค้า
-                        </button>
-                        <button onclick="appData.addcompany()" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-[0_4px_12px_rgba(26,111,191,0.25)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(26,111,191,0.35)] transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-plus"></i> เพิ่มบริษัทเอกชน
-                        </button>
-                    </div>
-                </div>
-
-                <!-- companies List -->
-                <div class="flex flex-col gap-4" id="companies-grid">
-                    <!-- Cards will be injected by JS -->
-                </div>
-            </div>
-
-            <!-- VIEW 2: PROJECTS LIST -->
-            <div id="view-projects" class="hidden space-y-6">
-                <!-- Header Actions -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div class="flex items-center gap-4">
-                        <button onclick="appData.showcompaniesView()" class="w-10 h-10 shrink-0 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-brand-500 transition-colors mt-1">
-                            <i class="fa-solid fa-arrow-left"></i>
-                        </button>
-                        <div>
-                            <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3" id="projects-view-title">
-                                <i class="fa-solid fa-layer-group text-brand-500"></i> โครงการจัดซื้อ
-                            </h2>
-                            <div class="text-sm text-slate-500 mt-1" id="projects-view-subtitle">---</div>
-                        </div>
-                    </div>
-                    <button onclick="appData.openAddProjectModal()" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-[0_4px_12px_rgba(26,111,191,0.25)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(26,111,191,0.35)] transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-plus"></i> เพิ่มโครงการจัดซื้อ
-                    </button>
-                </div>
-
-                <!-- Projects List -->
-                <div class="flex flex-col gap-4" id="projects-grid">
-                    <!-- Cards will be injected by JS -->
-                </div>
-            </div>
-
-            <!-- VIEW 2: EXCEL-STYLE TABLE (PROJECT DETAILS) -->
-            <div id="view-project-details" class="hidden space-y-6">
-                <!-- Back & Header -->
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                    <div class="flex items-start gap-4">
-                        <button onclick="appData.showProjectsView()" class="w-10 h-10 shrink-0 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-brand-500 transition-colors mt-1">
-                            <i class="fa-solid fa-arrow-left"></i>
-                        </button>
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-800" id="detail-project-name">ชื่อโครงการ</h2>
-                            <div class="flex flex-wrap items-center gap-3 mt-2 text-sm text-slate-600">
-                                <span class="bg-slate-100 px-2.5 py-1 rounded-md font-mono text-slate-700 font-semibold text-xs border border-slate-200" id="detail-project-code">รหัสงาน: ---</span>
-                                <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar text-slate-400"></i> <span id="detail-project-date">---</span></span>
-                                <span class="hidden flex items-center gap-1.5"><i class="fa-solid fa-building text-slate-400"></i> <span id="detail-project-dept">---</span></span>
-                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-company text-slate-400"></i> <span id="detail-project-inst">---</span></span>
-                                <span class="flex items-center gap-1.5" id="detail-project-company-container" style="display: none;"><i class="fa-solid fa-shop text-slate-400"></i> <span id="detail-project-company">---</span></span>
-                                <span class="hidden flex items-center gap-1.5"><i class="fa-solid fa-user-tie text-slate-400"></i> <span id="detail-project-teacher">---</span></span>
-                            </div>
-                            <div class="mt-3 text-sm text-slate-600 bg-amber-50/80 px-3 py-2 rounded-lg border border-amber-100 hidden" id="detail-project-remarks-container">
-                                <i class="fa-solid fa-circle-info text-amber-500 mr-1.5"></i> <span id="detail-project-remarks"></span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-                        <button onclick="appData.openShareModal()" class="h-10 px-3.5 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="แชร์ลิงก์โครงการ">
-                            <i class="fa-solid fa-share-nodes"></i>
-                            <span>แชร์ลิงก์</span>
-                        </button>
-                        <!-- Primary Workflow Action (Dynamic: ออกใบเสนอราคา / ออกใบส่งของ / ออกใบเสร็จรับเงิน) -->
-                        <button id="btn-main-workflow-doc" onclick="appData.handleMainWorkflowAction()" class="h-10 px-4 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-500 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="เปิดเอกสารขั้นตอนปัจจุบัน">
-                            <i class="fa-solid fa-file-invoice-dollar" id="btn-main-workflow-icon"></i>
-                            <span class="hidden sm:inline" id="btn-main-workflow-text">ออกใบเสนอราคา</span>
-                        </button>
-                        <!-- Confirm Step Action (Dynamic: ยืนยันใบเสนอราคา / ยืนยันใบส่งของ / ยืนยันเสร็จสมบูรณ์) -->
-                        <button id="btn-confirm-workflow-step" onclick="appData.handleWorkflowStepConfirm()" class="h-10 px-4 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap" title="ยืนยันขั้นตอนปัจจุบันเพื่อไปขั้นตอนถัดไป">
-                            <i class="fa-solid fa-circle-check"></i>
-                            <span class="hidden sm:inline" id="btn-confirm-workflow-text">ยืนยันใบเสนอราคา</span>
-                        </button>
-                        <!-- View Previous Confirmed Step (Read-Only) -->
-                        <button id="btn-view-previous-step" onclick="appData.openPreviousConfirmedDoc()" class="h-10 px-3.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="เปิดดูเอกสารที่ยืนยันแล้วก่อนหน้า">
-                            <i class="fa-solid fa-eye text-slate-500"></i>
-                            <span class="hidden sm:inline" id="btn-view-previous-text">ดูเอกสารก่อนหน้า</span>
-                        </button>
-                        <button id="btn-cancel-quotation" onclick="appData.cancelStepConfirmation()" class="h-10 px-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center shadow-sm font-semibold text-sm gap-2 whitespace-nowrap hidden" title="ย้อนกลับขั้นตอนก่อนหน้า (ต้องยืนยัน)">
-                            <i class="fa-solid fa-rotate-left"></i>
-                            <span class="hidden sm:inline" id="btn-cancel-quotation-text">ย้อนกลับ</span>
-                        </button>
-                        <button id="btn-edit-project" onclick="appData.openEditProjectModal()" class="w-10 h-10 rounded-lg border border-brand-200 bg-brand-50 text-brand-600 hover:bg-brand-100 hover:text-brand-700 transition-colors flex items-center justify-center shadow-sm" title="แก้ไขรายละเอียดโครงการ">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <button id="btn-delete-project" onclick="appData.deleteProject()" class="w-10 h-10 rounded-lg border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors flex items-center justify-center shadow-sm" title="ลบโครงการ">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                        <!-- Status Dropdown -->
-                        <div class="flex items-center gap-2" id="project-status-container">
-                            <span class="text-sm font-semibold text-slate-600">สถานะ:</span>
-                            <select id="detail-project-status" onchange="appData.updateProjectStatus(this.value)" class="border-2 border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold outline-none focus:border-brand-500 transition-colors cursor-pointer bg-white">
-                                <option value="Processing">กำลังดำเนินงาน</option>
-                                <option value="Quoting">สืบราคา</option>
-                                <option value="Ordering">กำลังสั่งของ</option>
-                                <option value="Delivered">ส่งของแล้ว</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- WORKFLOW STEPPER BAR -->
-                <div id="workflow-stepper-container" class="workflow-stepper">
-                    <div class="workflow-step active" id="wf-step-1" onclick="appData.onWorkflowStepClick(1)">
-                        <div class="step-circle"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-                        <div class="step-label">ใบเสนอราคา</div>
-                        <div class="step-status" id="wf-status-1">กำลังดำเนินการ</div>
-                    </div>
-                    <div class="step-connector" id="wf-connector-1"></div>
-                    <div class="workflow-step disabled" id="wf-step-2" onclick="appData.onWorkflowStepClick(2)">
-                        <div class="step-circle"><i class="fa-solid fa-file-invoice"></i></div>
-                        <div class="step-label">ใบกำกับภาษี /<br>ใบแจ้งหนี้ / ใบส่งของ</div>
-                        <div class="step-status" id="wf-status-2">รอดำเนินการ</div>
-                    </div>
-                    <div class="step-connector" id="wf-connector-2"></div>
-                    <div class="workflow-step disabled" id="wf-step-3" onclick="appData.onWorkflowStepClick(3)">
-                        <div class="step-circle"><i class="fa-solid fa-receipt"></i></div>
-                        <div class="step-label">ใบเสร็จรับเงิน</div>
-                        <div class="step-status" id="wf-status-3">รอดำเนินการ</div>
-                    </div>
-                </div>
-
-                <!-- Tabs -->
-                <div class="flex items-center gap-1 border-b border-slate-200 mb-5 overflow-x-auto">
-                    <button id="tab-btn-table" onclick="appData.switchDetailTab('table')" class="px-5 py-3 border-b-2 font-bold transition-colors border-brand-500 text-brand-600 bg-brand-50/50 rounded-t-lg whitespace-nowrap">
-                        <i class="fa-solid fa-table-list mr-1.5"></i> รายการวัสดุ
-                    </button>
-                    <button id="tab-btn-gallery" onclick="appData.switchDetailTab('gallery')" class="px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg whitespace-nowrap">
-                        <i class="fa-regular fa-images mr-1.5"></i> แกลลอรี่รูปภาพ
-                    </button>
-                    <button id="tab-btn-documents" onclick="appData.switchDetailTab('documents')" class="px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg whitespace-nowrap">
-                        <i class="fa-solid fa-folder-open mr-1.5 text-amber-500"></i> ไฟล์เอกสาร
-                        <span id="doc-count-badge" class="ml-1.5 px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600 font-semibold">0</span>
-                    </button>
-                    <button id="tab-btn-activity" onclick="appData.switchDetailTab('activity')" class="px-5 py-3 border-b-2 font-medium transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-t-lg whitespace-nowrap">
-                        <i class="fa-solid fa-clock-rotate-left mr-1.5 text-indigo-500"></i> บันทึกกิจกรรม
-                        <span id="activity-count-badge" class="ml-1.5 px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600 font-semibold">0</span>
-                    </button>
-                </div>
-
-                <!-- Excel Table Card -->
-                <div id="detail-view-table" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
-                        <h3 class="font-bold text-slate-700 flex items-center gap-2">
-                            <i class="fa-solid fa-table-list text-brand-500"></i> รายการวัสดุและจัดซื้อ
-                        </h3>
-                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                            <button id="btn-toggle-markup" onclick="appData.toggleAutoMarkup()" class="bg-amber-50 border-2 border-amber-300 text-amber-800 hover:bg-amber-100 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="เปิด/ปิดการคำนวณราคาขายอัตโนมัติ (+35% จากทุน)">
-                                <i class="fa-solid fa-calculator text-amber-500"></i>
-                                <span>+35% อัตโนมัติ: <strong id="status-auto-markup" class="text-emerald-600">เปิด</strong></span>
-                            </button>
-                            <button onclick="appData.resetColumnWidths()" class="bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="คืนค่าความกว้างคอลัมน์">
-                                <i class="fa-solid fa-arrows-left-right-to-line"></i> รีเซ็ตความกว้าง
-                            </button>
-                            <button onclick="appData.confirmClearTable()" class="bg-white border-2 border-red-100 text-red-600 hover:bg-red-50 hover:border-red-200 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="ล้างข้อมูลทั้งหมด">
-                                <i class="fa-solid fa-trash-can"></i> ล้างตาราง
-                            </button>
-                            <input type="file" id="excel-upload-input" accept=".xlsx, .xls, .csv" class="hidden" onchange="appData.importExcel(event)">
-                            <button onclick="document.getElementById('excel-upload-input').click()" class="bg-emerald-50 border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="นำเข้าข้อมูลจากไฟล์ Excel">
-                                <i class="fa-solid fa-file-import"></i> นำเข้า Excel
-                            </button>
-                            <button onclick="appData.openExportModal()" class="bg-blue-50 border-2 border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="ส่งออกข้อมูลเป็นไฟล์ Excel">
-                                <i class="fa-solid fa-file-export"></i> ส่งออก Excel
-                            </button>
-                            <button id="btn-auto-reorder" onclick="appData.autoReorderItemNumbers()" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm" title="รันเลขข้อหลัก (1, 2, 3...) ให้อัตโนมัติทุกแถว">
-                                <i class="fa-solid fa-list-ol"></i> รันเลขอัตโนมัติ
-                            </button>
-                            <button onclick="appData.addHeaderRow()" class="bg-white border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm">
-                                <i class="fa-solid fa-heading"></i> เพิ่มหัวข้อ
-                            </button>
-                            <button onclick="appData.addEmptyItemRow()" class="bg-brand-500 border-2 border-brand-500 text-white hover:bg-brand-600 hover:border-brand-600 px-4 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-2 text-sm">
-                                <i class="fa-solid fa-plus"></i> เพิ่มรายการสินค้า
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="excel-table w-full text-xs sm:text-sm" id="excel-table">
-                            <thead>
-                                <tr class="text-[11px] sm:text-xs">
-                                    <th class="w-12 relative group" data-col="no" title="เลขข้อหลัก (แก้ไขเลขได้ หรือเว้นว่างได้)">ลำดับ<div class="col-resizer"></div></th>
-                                    <th class="w-14 relative group" data-col="customNo" title="เลขข้อย่อย เช่น 1.1 (แก้ไขเลขได้ หรือเว้นว่างได้)">ข้อ<div class="col-resizer"></div></th>
-                                    <th class="w-auto relative group" data-col="name">รายการวัสดุ / ครุภัณฑ์<div class="col-resizer"></div></th>
-                                    <th class="w-12 relative group" data-col="qty">จำนวน<div class="col-resizer"></div></th>
-                                    <th class="w-12 relative group" data-col="unit">หน่วย<div class="col-resizer"></div></th>
-                                    <th class="w-20 relative group" data-col="unitPrice">ราคา/หน่วย<div class="col-resizer"></div></th>
-                                    <th class="w-24 bg-yellow-100 text-yellow-800 relative group" data-col="totalSell">รวมเงิน<div class="col-resizer"></div></th>
-                                    <th class="w-20 relative group" data-col="targetPrice">ควรซื้อ<div class="col-resizer"></div></th>
-                                    <th class="w-20 relative group" data-col="foundPrice">ราคาทุน/ชิ้น<div class="col-resizer"></div></th>
-                                    <th class="w-24 relative group" data-col="foundTotalPrice">ราคาทุนรวม<div class="col-resizer"></div></th>
-                                    <th class="w-16 text-blue-700 relative group" data-col="profitPct">กำไร(%)<div class="col-resizer"></div></th>
-                                    <th class="w-20 relative group" data-col="storeInfo">ข้อมูลร้าน<div class="col-resizer"></div></th>
-                                    <th class="w-20 relative group" data-col="link">ลิงก์ร้านค้า<div class="col-resizer"></div></th>
-                                    <th class="w-12 relative group" data-col="action">จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="excel-tbody">
-                                <!-- Rows injected via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Floating Summary Bar (Decoupled from table columns) -->
-                    <div class="bg-slate-50 border-t border-slate-200 px-4 py-3 flex flex-wrap items-center justify-end gap-x-5 gap-y-3 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] relative z-10">
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">ควรซื้อรวม</span>
-                            <span class="text-sm font-bold text-slate-700" id="total-target-sum">0.00</span>
-                        </div>
-                        <div class="hidden sm:block w-px h-5 bg-slate-200"></div>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">ราคาทุนรวม</span>
-                            <span class="text-sm font-bold text-slate-700" id="total-found-sum">0.00</span>
-                        </div>
-                        <div class="hidden sm:block w-px h-5 bg-slate-200"></div>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">กำไรเฉลี่ย</span>
-                            <span class="text-sm font-bold text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded" id="total-profit-sum">0.00%</span>
-                        </div>
-                        <div class="hidden sm:block w-px h-5 bg-slate-200"></div>
-                        <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-                            <span class="text-xs font-bold text-slate-600">ส่วนลด:</span>
-                            <div class="inline-flex border border-slate-300 rounded-lg overflow-hidden bg-slate-100 p-0.5">
-                                <button type="button" id="discount-type-btn-percent" onclick="appData.updateProjectDiscountType('percent')" class="px-2 py-0.5 text-xs font-bold rounded transition-all bg-brand-500 text-white shadow-sm">%</button>
-                                <button type="button" id="discount-type-btn-amount" onclick="appData.updateProjectDiscountType('amount')" class="px-2 py-0.5 text-xs font-bold rounded transition-all text-slate-600 hover:bg-slate-200">บาท</button>
-                            </div>
-                            <input type="number" id="project-discount-val" oninput="appData.updateProjectDiscountValue(this.value)" class="w-20 px-2 py-1 text-xs text-right border border-slate-300 rounded-lg outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 font-bold text-slate-800" placeholder="0" min="0" step="any">
-                            <span class="text-xs font-extrabold text-red-500 min-w-[55px] text-right" id="total-discount-sum">-0.00</span>
-                        </div>
-                        <div class="hidden sm:block w-px h-8 bg-slate-300 mx-1"></div>
-                        <div class="flex items-center gap-3 bg-amber-50/60 px-4 py-2 rounded-xl border border-amber-100/50">
-                            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">ราคาขายรวมสุทธิ</span>
-                            <span class="text-xl font-black text-brand-600" id="total-amount-sum">0.00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gallery View Card -->
-                <div id="detail-view-gallery" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
-                        <div class="flex items-center gap-3">
-                            <h3 class="font-bold text-slate-700 flex items-center gap-2">
-                                <i class="fa-regular fa-images text-brand-500"></i> รูปภาพและรายละเอียดสินค้า
-                            </h3>
-                            <span id="gallery-count-badge" class="px-2.5 py-0.5 text-xs rounded-full bg-brand-50 text-brand-700 font-semibold border border-brand-200">0 รายการ</span>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                            <button onclick="appData.exportGalleryPDF()" class="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-4 py-2 rounded-xl font-bold shadow-sm hover:shadow-md transition-all flex items-center gap-2 text-sm" title="ส่งออก / พิมพ์แคตตาล็อกรูปภาพและรายการเป็น PDF">
-                                <i class="fa-solid fa-file-pdf"></i>
-                                <span>ดาวน์โหลด PDF แคตตาล็อก</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="p-6 bg-slate-50 min-h-[400px]">
-                        <div id="gallery-grid" class="flex flex-col gap-4">
-                            <!-- Cards injected via JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Documents View Card -->
-                <div id="detail-view-documents" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                    <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-base sm:text-lg flex items-center gap-2">
-                                <i class="fa-solid fa-folder-open text-amber-500"></i> ไฟล์เอกสารประจำโครงการ
-                            </h3>
-                            <p class="text-xs text-slate-500 mt-0.5">อัปโหลดและจัดเก็บไฟล์เอกสาร เช่น สัญญา, ใบสั่งซื้อ, ใบเสนอราคา หรือไฟล์แนบอ้างอิง</p>
-                        </div>
-                        <div class="flex items-center gap-2 w-full sm:w-auto" id="doc-upload-actions">
-                            <input type="file" id="doc-file-input" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.zip,.rar,.txt,.csv" onchange="appData.handleDocUpload(event)">
-                            <button onclick="document.getElementById('doc-file-input').click()" class="w-full sm:w-auto bg-gradient-to-r from-brand-500 to-brand-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 text-sm">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> อัปโหลดเอกสาร
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="p-6 bg-slate-50/60 min-h-[400px]">
-                        <!-- Upload Drop Zone -->
-                        <div id="doc-drop-zone" onclick="document.getElementById('doc-file-input').click()" ondragover="appData.handleDocDragOver(event)" ondragleave="appData.handleDocDragLeave(event)" ondrop="appData.handleDocDrop(event)" class="mb-6 p-6 border-2 border-dashed border-slate-300 hover:border-brand-400 bg-white hover:bg-brand-50/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all text-center group shadow-sm">
-                            <div class="w-14 h-14 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                <i class="fa-solid fa-file-circle-plus text-2xl"></i>
-                            </div>
-                            <h4 class="font-bold text-slate-700 text-base">คลิก หรือ ลากไฟล์มาวางที่นี่เพื่ออัปโหลด</h4>
-                            <p class="text-xs text-slate-400 mt-1">รองรับ PDF, Word, Excel, รูปภาพ, ZIP และไฟล์เอกสารอื่นๆ (สามารถเลือกได้หลายไฟล์)</p>
-                        </div>
-
-                        <!-- Documents Grid -->
-                        <div id="documents-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            <!-- Injected by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ACTIVITY LOG VIEW -->
-                <div id="detail-view-activity" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hidden">
-                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50/50">
-                        <h3 class="font-bold text-slate-700 flex items-center gap-2">
-                            <i class="fa-solid fa-clock-rotate-left text-indigo-500"></i> บันทึกกิจกรรม (Activity Log)
-                        </h3>
-                        <div class="text-xs text-slate-500 font-medium">
-                            บันทึกทุกการเปลี่ยนแปลงพร้อมวันที่เวลาอัตโนมัติ
-                        </div>
-                    </div>
-                    <div id="activity-log-list" class="divide-y divide-slate-100 max-h-[600px] overflow-y-auto">
-                        <!-- Injected by JS -->
-                    </div>
-                    <div id="activity-log-empty" class="py-12 text-center text-slate-500 hidden">
-                        <i class="fa-regular fa-clock fa-2x mb-3 text-slate-300"></i>
-                        <p class="font-medium text-slate-600">ยังไม่มีกิจกรรมใดๆ ในโครงการนี้</p>
-                        <p class="text-sm mt-1">กิจกรรมทั้งหมดจะถูกบันทึกอัตโนมัติ</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- IMAGE URL MODAL -->
-            <div id="image-url-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300" id="image-url-modal-content">
-                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-link text-brand-500"></i> แนบลิงก์รูปภาพ
-                        </h3>
-                        <button onclick="appData.closeImageModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
-                            <i class="fa-solid fa-xmark text-lg"></i>
-                        </button>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        <div>
-                            <div class="text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-200 text-sm font-semibold line-clamp-1" id="image-modal-item-name"></div>
-                        </div>
-                        
-                        <!-- Paste Area -->
-                        <div id="image-paste-area" tabindex="0" onpaste="appData.handleImagePaste(event)" class="group relative w-full h-48 border-2 border-dashed border-brand-300 bg-brand-50/30 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-brand-50/60 hover:border-brand-400 transition-all focus:outline-none focus:ring-4 focus:ring-brand-500/20">
-                            <div class="absolute inset-0 z-0 flex items-center justify-center opacity-10 pointer-events-none">
-                                <i class="fa-regular fa-image text-8xl"></i>
-                            </div>
-                            
-                            <img id="image-preview" src="" class="absolute inset-0 w-full h-full object-contain p-2 hidden z-10 bg-white/90 backdrop-blur-sm rounded-2xl">
-                            
-                            <div id="image-placeholder-content" class="text-center z-10 relative pointer-events-none">
-                                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mx-auto mb-3 text-brand-500 group-hover:scale-110 transition-transform">
-                                    <i class="fa-solid fa-paste text-2xl"></i>
-                                </div>
-                                <h4 class="font-bold text-slate-700 text-lg">กด <kbd class="px-2 py-1 bg-slate-100 border border-slate-300 rounded text-sm mx-1 shadow-sm font-sans">Ctrl</kbd> + <kbd class="px-2 py-1 bg-slate-100 border border-slate-300 rounded text-sm mx-1 shadow-sm font-sans">V</kbd></h4>
-                                <p class="text-sm text-slate-500 mt-1 font-medium">เพื่อวางรูปภาพจากการจับหน้าจอ (Win+Shift+S)</p>
-                            </div>
-                            
-                            <!-- Remove Image Button -->
-                            <button id="remove-image-btn" onclick="appData.clearImagePreview(event)" class="absolute top-3 right-3 z-20 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 hover:scale-110 transition-transform shadow-md hidden" title="ลบรูปภาพ">
-                                <i class="fa-solid fa-trash-can text-sm"></i>
-                            </button>
-                        </div>
-
-                        <div class="relative flex items-center py-2">
-                            <div class="flex-grow border-t border-slate-200"></div>
-                            <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-semibold uppercase tracking-wider">หรือ</span>
-                            <div class="flex-grow border-t border-slate-200"></div>
-                        </div>
-
-                        <div>
-                            <input type="url" id="image-modal-url" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm bg-slate-50 hover:bg-white" placeholder="วางลิงก์รูปภาพ (Image URL) ที่นี่..." oninput="appData.previewImageUrl()">
-                        </div>
-                    </div>
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
-                        <button onclick="appData.closeImageModal()" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 bg-slate-100 transition-colors">ยกเลิก</button>
-                        <button onclick="appData.saveImageUrl()" class="bg-gradient-to-r from-brand-500 to-brand-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:shadow-md transition-all flex items-center gap-2">
-                            <i class="fa-solid fa-save"></i> บันทึก
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ADD PROJECT MODAL -->
-            <div id="add-project-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden transform scale-95 transition-transform duration-300" id="add-project-modal-content">
-                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2" id="modal-project-title">
-                            <i class="fa-solid fa-folder-plus text-brand-500"></i> เพิ่มโครงการจัดซื้อใหม่
-                        </h3>
-                        <button onclick="appData.closeAddProjectModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
-                            <i class="fa-solid fa-xmark text-lg"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="p-6 space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Project Name -->
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อโครงการ <span class="text-red-500">*</span></label>
-                                <input type="text" id="modal-proj-name" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ระบุชื่อโครงการ">
-                            </div>
-                            
-                            <!-- Project Number with Gen Button -->
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">เลขที่โครงการ <span class="text-red-500">*</span></label>
-                                <div class="flex gap-2">
-                                    <input type="text" id="modal-proj-code" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm font-mono text-brand-700" placeholder="เช่น PRJ-2026-001">
-                                    <button onclick="appData.generateProjectCode()" class="bg-slate-100 hover:bg-brand-50 text-brand-600 border border-slate-200 hover:border-brand-200 px-3 py-2 rounded-xl text-sm font-semibold transition-colors whitespace-nowrap flex items-center gap-1">
-                                        <i class="fa-solid fa-wand-magic-sparkles"></i> Gen
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Date -->
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">วันที่ <span class="text-red-500">*</span></label>
-                                <input type="date" id="modal-proj-date" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm text-slate-700">
-                            </div>
-                            
-                            <!-- Department --><div class="hidden">
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อแผนกวิชา</label>
-                                <input type="text" id="modal-proj-dept" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ระบุชื่อแผนกวิชา">
-                            </div>
-                            
-                            <!-- company -->
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อบริษัทเอกชน</label>
-                                <input type="text" id="modal-proj-inst" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ระบุชื่อบริษัทเอกชน">
-                            </div>
-                            
-                            <!-- Company/Shop -->
-                            <div class="relative">
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">ในนามร้าน / บริษัท</label>
-                                <div class="flex gap-2">
-                                    <div class="relative w-full" id="shop-dropdown-container">
-                                        <div id="modal-proj-company-display" class="w-full border border-slate-300 rounded-xl px-4 py-2 min-h-[46px] outline-none focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all text-sm flex flex-wrap gap-1.5 items-center cursor-pointer bg-white" onclick="appData.toggleShopDropdownUI()">
-                                            <span class="text-slate-400">เลือกร้านค้า...</span>
-                                        </div>
-                                        <div id="shop-custom-dropdown" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto hidden flex-col py-1">
-                                        </div>
-                                    </div>
-                                    <button onclick="appData.openAddShopModal()" class="bg-slate-100 hover:bg-brand-50 text-brand-600 border border-slate-200 hover:border-brand-200 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center shrink-0 shadow-sm" title="เพิ่มร้านค้าใหม่">
-                                        <i class="fa-solid fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Teacher Name --><div class="hidden">
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อครูผู้สอน</label>
-                                <input type="text" id="modal-proj-teacher" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ระบุชื่อครูผู้สอน">
-                            </div>
-                            
-                            <!-- Status -->
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">สถานะของงาน</label>
-                                <select id="modal-proj-status" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm text-slate-700 bg-white">
-                                    <option value="Processing">กำลังดำเนินงาน</option>
-                                    <option value="Quoting">สืบราคา</option>
-                                    <option value="Ordering">กำลังสั่งของ</option>
-                                    <option value="Delivered">ส่งของแล้ว</option>
-                                </select>
-                            </div>
-                            
-                            <!-- Remarks -->
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">หมายเหตุ</label>
-                                <textarea id="modal-proj-remarks" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm resize-none" placeholder="ระบุหมายเหตุ (ถ้ามี)"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                        <button onclick="appData.closeAddProjectModal()" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 hover:text-slate-800 transition-colors">
-                            ยกเลิก
-                        </button>
-                        <button onclick="appData.saveProject()" class="px-5 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-brand-500 to-brand-600 shadow-[0_4px_10px_rgba(26,111,191,0.25)] hover:shadow-[0_6px_14px_rgba(26,111,191,0.35)] hover:-translate-y-0.5 transition-all flex items-center gap-2">
-                            <i class="fa-solid fa-save"></i> บันทึกโครงการ
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- UPLOAD LOGO MODAL -->
-            <div id="upload-logo-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="upload-logo-modal-content">
-                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-image text-brand-500"></i> อัปโหลดโลโก้บริษัทเอกชน
-                        </h3>
-                        <button onclick="appData.closeUploadLogoModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
-                            <i class="fa-solid fa-xmark text-lg"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="p-6 space-y-4 text-center">
-                        <h4 class="text-lg font-bold text-slate-700" id="upload-logo-inst-name"></h4>
-                        
-                        <div class="mt-4">
-                            <label for="logo-upload-input" class="cursor-pointer flex flex-col items-center justify-center w-full h-56 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 hover:bg-slate-100 hover:border-brand-400 transition-all group relative overflow-hidden">
-                                <div id="logo-preview-container" class="absolute inset-0 flex items-center justify-center hidden bg-white">
-                                    <img id="logo-preview-img" class="max-h-full max-w-full object-contain p-4" src="" alt="Preview">
-                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                        <span class="text-white font-medium flex items-center gap-2"><i class="fa-solid fa-camera"></i> เปลี่ยนรูป</span>
-                                    </div>
-                                </div>
-                                <div id="logo-upload-placeholder" class="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <div class="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-500"></i>
-                                    </div>
-                                    <p class="mb-2 text-sm text-slate-500"><span class="font-semibold text-brand-600">คลิกเพื่ออัปโหลด</span></p>
-                                    <p class="text-xs text-slate-400">รองรับ PNG, JPG, GIF</p>
-                                </div>
-                                <input id="logo-upload-input" type="file" class="hidden" accept="image/*" onchange="appData.handleLogoFileSelect(event)" />
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                        <button onclick="appData.closeUploadLogoModal()" class="px-4 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors">
-                            ยกเลิก
-                        </button>
-                        <button onclick="appData.saveUploadedLogo()" id="btn-save-logo" class="bg-brand-500 text-white px-6 py-2 rounded-xl font-semibold shadow-sm hover:bg-brand-600 transition-colors flex items-center gap-2 opacity-50 cursor-not-allowed" disabled>
-                            <i class="fa-solid fa-cloud-arrow-up"></i> อัปโหลดและบันทึก
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ADD company MODAL -->
-            <div id="add-inst-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="add-inst-modal-content">
-                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-company-flag text-brand-500"></i> เพิ่มบริษัทเอกชนใหม่
-                        </h3>
-                        <button onclick="appData.closeAddcompanyModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
-                            <i class="fa-solid fa-xmark text-lg"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="p-6">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">ชื่อบริษัทเอกชน <span class="text-red-500">*</span></label>
-                        <input type="text" id="modal-inst-name" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-base" placeholder="เช่น บริษัทเทคนิค..." onkeydown="if(event.key === 'Enter') appData.saveNewcompany()">
-                    </div>
-                    
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                        <button onclick="appData.closeAddcompanyModal()" class="px-4 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors">
-                            ยกเลิก
-                        </button>
-                        <button onclick="appData.saveNewcompany()" class="bg-brand-500 text-white px-6 py-2 rounded-xl font-semibold shadow-sm hover:bg-brand-600 transition-colors flex items-center gap-2">
-                            <i class="fa-solid fa-check"></i> บันทึก
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- EDIT company DETAILS MODAL -->
-            <div id="inst-details-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0 overflow-y-auto py-10">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 mx-4 my-auto" id="inst-details-modal-content">
-                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-company text-brand-500"></i> แก้ไขรายละเอียดบริษัทเอกชน
-                        </h3>
-                        <button onclick="appData.closeInstDetailsModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
-                            <i class="fa-solid fa-xmark text-lg"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="p-6">
-                        <input type="hidden" id="modal-inst-details-old-name">
-                        <div class="mb-4">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อบริษัทเอกชน <span class="text-red-500">*</span></label>
-                            <input type="text" id="modal-inst-details-name" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น บริษัทเทคนิค...">
-                            <p class="text-xs text-orange-500 mt-1"><i class="fa-solid fa-triangle-exclamation"></i> หากเปลี่ยนชื่อ โครงการทั้งหมดในบริษัทเอกชนนี้จะถูกเปลี่ยนชื่อตามไปด้วย</p>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">ที่อยู่</label>
-                            <textarea id="modal-inst-details-address" rows="3" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ที่อยู่บริษัทเอกชน"></textarea>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">เลขที่ผู้เสียภาษี</label>
-                            <input type="text" id="modal-inst-details-taxid" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น 0105563123456" maxlength="13">
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">สถานะสาขา</label>
-                            <div class="flex items-center gap-6 mt-1.5">
-                                <label class="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-700">
-                                    <input type="radio" name="modal-inst-branch-type" value="hq" checked onchange="document.getElementById('branch-no-container').classList.add('hidden')" class="w-4 h-4 text-brand-600 focus:ring-brand-500">
-                                    <span>สำนักงานใหญ่</span>
-                                </label>
-                                <label class="inline-flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-700">
-                                    <input type="radio" name="modal-inst-branch-type" value="branch" onchange="document.getElementById('branch-no-container').classList.remove('hidden')" class="w-4 h-4 text-brand-600 focus:ring-brand-500">
-                                    <span>สาขา</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div id="branch-no-container" class="mb-4 hidden">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">เลขที่สาขา / ชื่อสาขา</label>
-                            <input type="text" id="modal-inst-details-branchno" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น 00001 หรือ สาขาพระราม 9">
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">ผู้ติดต่อ</label>
-                            <input type="text" id="modal-inst-details-contact" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ชื่อผู้ติดต่อ">
-                        </div>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์</label>
-                                <input type="text" id="modal-inst-details-phone" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เบอร์โทรศัพท์">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">อีเมล</label>
-                                <input type="email" id="modal-inst-details-email" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="อีเมล">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                        <button onclick="appData.closeInstDetailsModal()" class="px-4 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors">
-                            ยกเลิก
-                        </button>
-                        <button onclick="appData.saveInstDetails()" class="bg-brand-500 text-white px-6 py-2 rounded-xl font-semibold shadow-sm hover:bg-brand-600 transition-colors flex items-center gap-2">
-                            <i class="fa-solid fa-check"></i> บันทึก
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ADD SHOP MODAL (DETAILED) -->
-            <div id="add-shop-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0 overflow-y-auto py-10">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 mx-4 my-auto" id="add-shop-modal-content">
-                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 sticky top-0 z-10">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-shop text-brand-500"></i> เพิ่มข้อมูลร้านค้า/บริษัท
-                        </h3>
-                        <button onclick="appData.closeAddShopModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
-                            <i class="fa-solid fa-xmark text-lg"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อร้านค้า / บริษัท <span class="text-red-500">*</span></label>
-                            <input type="text" id="modal-shop-name" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น บริษัท เอบีซี จำกัด">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">ที่อยู่</label>
-                            <textarea id="modal-shop-address" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm resize-none" placeholder="ระบุที่อยู่ของร้านค้า"></textarea>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">เลขประจำตัวผู้เสียภาษี</label>
-                                <input type="text" id="modal-shop-taxid" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เลข 13 หลัก">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">เบอร์โทรศัพท์</label>
-                                <input type="text" id="modal-shop-phone" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น 02-xxx-xxxx">
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อผู้ลงนาม (Signer Name)</label>
-                            <input type="text" id="modal-shop-signer" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น (นายสมชาย ใจดี) ผู้จัดการ">
-                        </div>
-                        <div class="mt-4 mb-4">
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">สีธีมบริษัท (Theme Color)</label>
-                            <div class="flex items-center gap-3">
-                                <input type="color" id="modal-shop-theme" value="#1A6FBF" class="w-10 h-10 rounded-lg cursor-pointer border border-slate-300 p-0.5 bg-white">
-                                <span class="text-sm text-slate-500">เลือกสีหลักที่จะนำไปใช้ในใบเสนอราคา</span>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">โลโก้ร้านค้า</label>
-                            <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:bg-slate-50 transition-colors cursor-pointer group" onclick="document.getElementById('modal-shop-logo-upload').click()">
-                                <div id="modal-shop-logo-preview" class="hidden mb-3 mx-auto h-24 min-w-[6rem] max-w-full w-fit rounded-lg flex items-center justify-center bg-white border border-slate-200 overflow-hidden px-2"></div>
-                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 group-hover:text-brand-500 mb-2 transition-colors"></i>
-                                <p class="text-sm font-medium text-slate-600">คลิกเพื่ออัปโหลดโลโก้</p>
-                                <p class="text-xs text-slate-400 mt-1">ไฟล์รูปภาพ PNG, JPG</p>
-                            </div>
-                            <input type="file" id="modal-shop-logo-upload" class="hidden" accept="image/*" onchange="appData.previewShopLogo(event)">
-                        </div>
-                    </div>
-                    
-                    <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl sticky bottom-0 z-10">
-                        <button onclick="appData.closeAddShopModal()" class="px-4 py-2 rounded-xl font-semibold text-slate-600 hover:bg-slate-200 transition-colors">
-                            ยกเลิก
-                        </button>
-                        <button onclick="appData.saveNewShop()" class="bg-brand-500 text-white px-6 py-2 rounded-xl font-semibold shadow-sm hover:bg-brand-600 transition-colors flex items-center gap-2">
-                            <i class="fa-solid fa-check"></i> บันทึก
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MANAGE SHOPS MODAL -->
-            <div id="manage-shops-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0 overflow-y-auto py-10">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden transform scale-95 transition-transform duration-300 mx-4 my-auto flex flex-col max-h-[85vh]" id="manage-shops-modal-content">
-                    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 shrink-0">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-shop text-brand-500"></i> จัดการข้อมูลร้านค้า/บริษัท <span id="manage-shops-count" class="text-sm font-normal text-slate-500 ml-2"></span>
-                        </h3>
-                        <div class="flex items-center gap-3">
-                            <button onclick="appData.openAddShopModal()" class="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2 shadow-sm">
-                                <i class="fa-solid fa-plus"></i> เพิ่มร้านค้า
-                            </button>
-                            <button onclick="appData.closeManageShopsModal()" class="text-slate-400 hover:text-red-500 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50">
-                                <i class="fa-solid fa-xmark text-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="p-0 overflow-y-auto flex-1 bg-slate-50/30">
-                        <div id="manage-shops-list" class="divide-y divide-slate-100">
-                            <!-- Shop items injected here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- LIGHTBOX PREVIEW MODAL -->
-            <div id="lightbox-modal" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/90 backdrop-blur-md transition-opacity opacity-0">
-                <button onclick="appData.closeLightbox()" class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 z-50">
-                    <i class="fa-solid fa-xmark text-2xl"></i>
-                </button>
-                
-                <button onclick="appData.prevLightboxImage()" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 z-50">
-                    <i class="fa-solid fa-chevron-left text-xl"></i>
-                </button>
-                
-                <button onclick="appData.nextLightboxImage()" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 z-50">
-                    <i class="fa-solid fa-chevron-right text-xl"></i>
-                </button>
-
-                <div class="relative max-w-5xl w-full mx-4 flex flex-col items-center justify-center h-full max-h-screen py-12" id="lightbox-content">
-                    <img id="lightbox-image" src="" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl transition-transform duration-300 scale-95">
-                    
-                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-slate-900/80 px-6 py-3 rounded-2xl backdrop-blur-md shadow-xl border border-white/10">
-                        <span id="lightbox-counter" class="text-white font-medium text-sm">1 / 1</span>
-                        <div class="w-px h-4 bg-white/20"></div>
-                        <button onclick="appData.deleteCurrentLightboxImage()" class="text-red-400 hover:text-red-300 transition-colors flex items-center gap-2 text-sm font-semibold" title="ลบรูปภาพนี้">
-                            <i class="fa-solid fa-trash-can"></i> ลบรูป
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- GLOBAL LOADER OVERLAY -->
-            <div id="global-loading-overlay" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0">
-                <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 flex flex-col items-center justify-center transform scale-95 transition-transform duration-300 w-full max-w-sm mx-4" id="global-loading-content">
-                    <div class="relative w-16 h-16 mb-4">
-                        <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
-                        <div class="absolute inset-0 rounded-full border-4 border-brand-500 border-t-transparent animate-spin"></div>
-                        <i id="global-loading-icon" class="fa-solid fa-spinner absolute inset-0 flex items-center justify-center text-brand-500 text-xl animate-pulse"></i>
-                    </div>
-                    <h3 id="global-loading-title" class="text-lg font-bold text-slate-800 mb-1 text-center">กำลังประมวลผล...</h3>
-                    <p id="global-loading-subtitle" class="text-sm text-slate-500 font-medium text-center">กรุณารอสักครู่</p>
-
-                    <!-- Realtime Upload Progress Bar & Detail -->
-                    <div id="global-loading-progress-wrap" class="w-full mt-4 pt-3 border-t border-slate-100 hidden">
-                        <div class="flex justify-between items-center text-xs font-semibold text-slate-700 mb-1.5">
-                            <span id="global-loading-filename" class="truncate max-w-[210px] text-slate-700" title="">กำลังเตรียมข้อมูล...</span>
-                            <span id="global-loading-percent" class="text-brand-600 font-bold ml-2">0%</span>
-                        </div>
-                        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden shadow-inner p-0.5 border border-slate-200/60">
-                            <div id="global-loading-bar" class="bg-gradient-to-r from-brand-500 via-blue-500 to-indigo-600 h-1.5 rounded-full transition-all duration-150" style="width: 0%"></div>
-                        </div>
-                        <div class="flex justify-between items-center text-[11px] text-slate-400 mt-2 font-medium">
-                            <span id="global-loading-bytes">0 KB / 0 KB</span>
-                            <span id="global-loading-step">กำลังส่งข้อมูล...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CONFIRM MODAL -->
-            <div id="confirm-modal" class="fixed inset-0 z-[90] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300" id="confirm-modal-content">
-                    <div class="p-6 text-center">
-                        <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4 text-red-500 text-2xl">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2" id="confirm-modal-title">ยืนยันการลบข้อมูล</h3>
-                        <p class="text-slate-600 text-sm mb-6" id="confirm-modal-message">คุณแน่ใจหรือไม่ว่าต้องการดำเนินการนี้?</p>
-                        
-                        <div class="flex gap-3 justify-center">
-                            <button onclick="appData.closeConfirmModal()" class="flex-1 px-4 py-2.5 rounded-xl font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
-                                ยกเลิก
-                            </button>
-                            <button id="confirm-modal-btn" class="flex-1 bg-red-500 text-white px-4 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-red-600 transition-colors">
-                                ลบข้อมูล
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- EXCEL LOADING OVERLAY -->
-            <div id="excel-loading-overlay" class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity opacity-0">
-                <div class="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center justify-center transform scale-95 transition-transform duration-300" id="excel-loading-content">
-                    <div class="relative w-16 h-16 mb-4">
-                        <div class="absolute inset-0 rounded-full border-4 border-slate-100"></div>
-                        <div class="absolute inset-0 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
-                        <i class="fa-solid fa-file-excel absolute inset-0 flex items-center justify-center text-emerald-500 text-xl animate-pulse"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-1">กำลังนำเข้าข้อมูล</h3>
-                    <p class="text-sm text-slate-500 font-medium">กรุณารอสักครู่ ระบบกำลังประมวลผลไฟล์ Excel...</p>
-                </div>
-            </div>
-
-            <!-- EXCEL EXPORT MODAL -->
-            <div id="export-excel-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity opacity-0">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300" id="export-excel-modal-content">
-                    <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-file-export text-blue-500"></i> ส่งออกไฟล์ Excel
-                        </h3>
-                        <button onclick="appData.closeExportModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                    
-                    <div class="p-6">
-                        <p class="text-sm text-slate-500 mb-4">เลือกคอลัมน์ที่คุณต้องการให้แสดงในไฟล์ Excel ที่จะดาวน์โหลด (เอาติ๊กถูกออกเพื่อซ่อนคอลัมน์นั้น)</p>
-                        
-                        <div class="space-y-3 max-h-[40vh] overflow-y-auto pr-2" id="export-columns-list">
-                            <!-- JS will generate checkboxes here -->
-                        </div>
-                    </div>
-                    
-                    <div class="p-5 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
-                        <button onclick="appData.closeExportModal()" class="px-5 py-2.5 rounded-xl font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">
-                            ยกเลิก
-                        </button>
-                        <button onclick="appData.executeExport()" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-blue-700 hover:shadow transition-all flex items-center gap-2">
-                            <i class="fa-solid fa-download"></i> ดาวน์โหลด
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- DOCUMENT PREVIEW MODAL -->
-            <div id="doc-preview-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0 p-4">
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="doc-preview-modal-content">
-                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                        <div class="flex items-center gap-3 min-w-0 pr-4">
-                            <div id="doc-preview-icon" class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200">
-                                <i class="fa-solid fa-file text-lg"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <h3 class="text-base font-bold text-slate-800 truncate" id="doc-preview-title">ชื่อเอกสาร.pdf</h3>
-                                <p class="text-xs text-slate-500 flex items-center gap-2" id="doc-preview-meta"><span>-- MB</span> • <span>--</span></p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <a id="doc-preview-download-btn" href="#" target="_blank" download class="px-4 py-2 bg-brand-50 hover:bg-brand-100 text-brand-600 font-semibold rounded-xl text-sm transition-colors flex items-center gap-1.5 border border-brand-100">
-                                <i class="fa-solid fa-download"></i> ดาวน์โหลด
-                            </a>
-                            <button onclick="appData.closeDocPreviewModal()" class="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
-                                <i class="fa-solid fa-xmark text-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="flex-1 bg-slate-100 p-2 sm:p-4 overflow-hidden flex items-center justify-center min-h-[400px]" id="doc-preview-body">
-                        <!-- Iframe, Image, or Fallback injected via JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- GALLERY PDF EXPORT / PRINT MODAL -->
-            <div id="gallery-pdf-modal" class="fixed inset-0 z-[80] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0 p-3 sm:p-6">
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="gallery-pdf-modal-content">
-                    <!-- Modal Header -->
-                    <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/80">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 border border-rose-200">
-                                <i class="fa-solid fa-file-pdf text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-base sm:text-lg font-bold text-slate-800">ส่งออกแคตตาล็อกรูปภาพและรายการวัสดุ (PDF)</h3>
-                                <p class="text-xs text-slate-500">พิมพ์หรือบันทึกเป็น PDF (ฟอนต์คมชัด เวกเตอร์ 100% พร้อมรูปภาพและจำนวน)</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="appData.executePrintGalleryPDF()" class="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white px-4 py-2 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 text-sm">
-                                <i class="fa-solid fa-print"></i> พิมพ์ / บันทึกเป็น PDF
-                            </button>
-                            <button onclick="appData.closeGalleryPDFModal()" class="w-9 h-9 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors">
-                                <i class="fa-solid fa-xmark text-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Options Toolbar -->
-                    <div class="px-6 py-3 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-                        <div class="flex flex-wrap items-center gap-4">
-                            <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer select-none">
-                                <input type="checkbox" id="pdf-opt-show-price" onchange="appData.refreshGalleryPDFPreview()" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
-                                <span>แสดงราคา / มูลค่า</span>
-                            </label>
-                            <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer select-none">
-                                <input type="checkbox" id="pdf-opt-show-store" checked onchange="appData.refreshGalleryPDFPreview()" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
-                                <span>แสดงข้อมูลร้านค้า</span>
-                            </label>
-                            <div class="flex items-center gap-2 font-medium text-slate-700">
-                                <span>รูปภาพต่อแถว:</span>
-                                <select id="pdf-opt-cols" onchange="appData.refreshGalleryPDFPreview()" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs outline-none focus:border-brand-500">
-                                    <option value="3" selected>3 รูป / แถว</option>
-                                    <option value="2">2 รูป / แถว (รูปใหญ่)</option>
-                                    <option value="4">4 รูป / แถว (รูปกะทัดรัด)</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="text-slate-500 text-[11px] flex items-center gap-1.5">
-                            <i class="fa-solid fa-circle-info text-brand-500"></i>
-                            <span>เลือก "Save as PDF / บันทึกเป็น PDF" ในหน้าต่างการพิมพ์</span>
-                        </div>
-                    </div>
-
-                    <!-- Preview Body -->
-                    <div class="flex-1 bg-slate-200/70 p-4 sm:p-6 overflow-y-auto" id="gallery-pdf-preview-scroll">
-                        <div id="gallery-pdf-preview-container" class="max-w-[210mm] mx-auto bg-white shadow-xl rounded-sm p-6 sm:p-8">
-                            <!-- Injected Preview HTML -->
-                        </div>
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="px-6 py-3 border-t border-slate-200 bg-white flex justify-between items-center text-xs text-slate-500">
-                        <span id="gallery-pdf-status-text" class="flex items-center gap-1.5 font-medium">
-                            <i class="fa-solid fa-check text-emerald-500"></i> พร้อมส่งออกเอกสาร
-                        </span>
-                        <div class="flex items-center gap-3">
-                            <button onclick="appData.closeGalleryPDFModal()" class="px-4 py-2 rounded-xl font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
-                                ปิด
-                            </button>
-                            <button onclick="appData.executePrintGalleryPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl font-bold shadow-sm transition-all flex items-center gap-2 text-sm">
-                                <i class="fa-solid fa-download"></i> บันทึกเป็น PDF / พิมพ์
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dedicated Gallery Print Container -->
-            <div id="galleryPrintOnlyWrapper" style="display:none;">
-                <div id="galleryPrintArea"></div>
-            </div>
-
-        </main>
-        <footer class="page-footer">
-            <div>ระบบจัดการธุรกิจ Mentra Manager &copy; 2026 Mentra Solution Co., Ltd.</div>
-            <div>ผู้จัดทำ <a href="https://keexlab-th.github.io/" target="_blank" rel="noopener noreferrer">นายธนภูมิ แดงประดับ</a></div>
-        </footer>
-    </div>
-
-    <!-- ===== JAVASCRIPT LOGIC ===== -->
-    <script>
         // Pre-load safe display caches (logos/details/shops don't affect auth filtering)
-        let _cachedCompanyLogos = {};
-        let _cachedCompanyDetails = {};
+        let _cachedLogos = {};
+        let _cachedDetails = {};
         let _cachedShops = [];
         try {
-            const cl = localStorage.getItem('company_material_logos');
-            if (cl) _cachedCompanyLogos = JSON.parse(cl) || {};
-            const cd = localStorage.getItem('company_material_details');
-            if (cd) _cachedCompanyDetails = JSON.parse(cd) || {};
+            const cl = localStorage.getItem('material_institution_logos');
+            if (cl) _cachedLogos = JSON.parse(cl) || {};
+            const cd = localStorage.getItem('material_institution_details');
+            if (cd) _cachedDetails = JSON.parse(cd) || {};
             const cs = localStorage.getItem('material_registered_shops');
             if (cs) _cachedShops = JSON.parse(cs) || [];
         } catch(e) {}
 
         // Data Store — currentUserId/Role are set by Firebase auth (never from stale cache)
+        // to avoid filtering private institutions with a null/wrong UID before auth confirms
         window.appData = {
             projects: [],
-            companyLogos: _cachedCompanyLogos,
-            companyDetails: _cachedCompanyDetails,
+            institutionLogos: _cachedLogos,
+            institutionDetails: _cachedDetails,
             registeredShops: _cachedShops,
             currentUserId: null,
             currentUserRole: 'user',
             isLoadingProjects: true,
             selectedShopsForForm: [],
             currentProjectId: null,
-            currentcompany: null,
+            currentInstitution: null,
             uploadingLogoFor: null,
             selectedLogoBase64: null,
+            sharePermission: 'view',
+            isReadOnly: false,
+            hasAutoOpenedSharedProject: false,
             autoMarkup35: localStorage.getItem('materials_auto_markup_35') !== 'false',
 
             toggleAutoMarkup() {
@@ -2078,6 +50,81 @@
                 } else {
                     btn.className = "bg-slate-100 border-2 border-slate-300 text-slate-500 hover:bg-slate-200 px-3 py-2 rounded-lg font-semibold shadow-sm transition-all flex items-center gap-1.5 text-sm opacity-75";
                     status.innerHTML = '<span class="bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded text-xs font-bold"><i class="fa-solid fa-circle-xmark"></i> ปิด</span>';
+                }
+            },
+
+            // Share Modal Logic
+            openShareModal() {
+                if (!this.currentProjectId) return;
+                const modal = document.getElementById('share-modal');
+                const content = document.getElementById('share-modal-content');
+                if (!modal || !content) return;
+                
+                this.updateSharePermission(this.sharePermission || 'view');
+                
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                    content.classList.add('scale-100');
+                }, 10);
+            },
+
+            closeShareModal() {
+                const modal = document.getElementById('share-modal');
+                const content = document.getElementById('share-modal-content');
+                if (!modal || !content) return;
+                
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }, 300);
+            },
+
+            updateSharePermission(perm) {
+                this.sharePermission = perm;
+                
+                const viewCard = document.getElementById('share-perm-view-card');
+                const editCard = document.getElementById('share-perm-edit-card');
+                const viewRadio = viewCard ? viewCard.querySelector('input') : null;
+                const editRadio = editCard ? editCard.querySelector('input') : null;
+                
+                if (perm === 'view') {
+                    if (viewRadio) viewRadio.checked = true;
+                    if (viewCard) viewCard.className = "flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-purple-500 bg-purple-50/50";
+                    if (editCard) editCard.className = "flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-slate-200 hover:border-slate-300";
+                } else {
+                    if (editRadio) editRadio.checked = true;
+                    if (editCard) editCard.className = "flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-purple-500 bg-purple-50/50";
+                    if (viewCard) viewCard.className = "flex items-start gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all border-slate-200 hover:border-slate-300";
+                }
+                
+                const baseUrl = window.location.origin + window.location.pathname;
+                const shareUrl = `${baseUrl}?projectId=${encodeURIComponent(this.currentProjectId)}&mode=${perm}`;
+                const input = document.getElementById('share-url-input');
+                if (input) input.value = shareUrl;
+            },
+
+            copyShareUrl() {
+                const input = document.getElementById('share-url-input');
+                if (!input || !input.value) return;
+                
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(input.value).then(() => {
+                        this.showToast('คัดลอกลิงก์แชร์เรียบร้อยแล้ว!', 'success');
+                    }).catch(() => {
+                        input.select();
+                        document.execCommand('copy');
+                        this.showToast('คัดลอกลิงก์แชร์เรียบร้อยแล้ว!', 'success');
+                    });
+                } else {
+                    input.select();
+                    document.execCommand('copy');
+                    this.showToast('คัดลอกลิงก์แชร์เรียบร้อยแล้ว!', 'success');
                 }
             },
 
@@ -2279,8 +326,6 @@
                         progressWrap.classList.add('hidden');
                         const bar = document.getElementById('global-loading-bar');
                         if (bar) bar.style.width = '0%';
-                        const pctText = document.getElementById('global-loading-percent');
-                        if (pctText) pctText.innerText = '0%';
                     }
                 }, 300);
             },
@@ -2297,8 +342,24 @@
 
             // View Management
             init() {
-                // Initial render in case Firebase takes a moment
-                this.showcompaniesView();
+                // If URL has projectId, open it directly if cached projects already available
+                const urlParams = new URLSearchParams(window.location.search);
+                const paramProjId = urlParams.get('projectId');
+                const paramMode = urlParams.get('mode');
+                if (paramMode === 'view') this.isReadOnly = true;
+                else if (paramMode === 'edit') this.isReadOnly = false;
+
+                if (paramProjId && this.projects.length > 0) {
+                    const sharedProj = this.projects.find(p => p.id === paramProjId);
+                    if (sharedProj) {
+                        this.hasAutoOpenedSharedProject = true;
+                        this.showProjectDetails(paramProjId);
+                    } else {
+                        this.showInstitutionsView();
+                    }
+                } else {
+                    this.showInstitutionsView();
+                }
                 
                 // Bind paste event for copying from Excel
                 document.addEventListener('paste', this.handleGlobalPaste.bind(this));
@@ -2417,26 +478,30 @@
             syncCurrentProject() {
                 if (!this.currentProjectId) return;
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
+                try {
+                    localStorage.setItem('material_projects', JSON.stringify(this.projects));
+                } catch(e) {}
                 if (proj && window.saveProjectToFirestore) {
                     window.saveProjectToFirestore(proj).catch(e => console.error('Error syncing:', e));
                 }
             },
 
-            showcompaniesView() {
+            showInstitutionsView() {
                 this.currentProjectId = null;
-                this.currentcompany = null;
+                this.currentInstitution = null;
                 
-                document.getElementById('view-companies').classList.remove('hidden');
+                document.getElementById('view-institutions').classList.remove('hidden');
                 document.getElementById('view-projects').classList.add('hidden');
                 document.getElementById('view-project-details').classList.add('hidden');
                 
-                this.rendercompanies();
+                this.renderInstitutions();
             },
 
-            addcompany() {
+            addInstitution() {
                 const modal = document.getElementById('add-inst-modal');
                 const content = document.getElementById('add-inst-modal-content');
                 document.getElementById('modal-inst-name').value = '';
+                if (document.getElementById('modal-inst-taxid')) document.getElementById('modal-inst-taxid').value = '';
                 
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
@@ -2447,7 +512,7 @@
                 }, 10);
             },
 
-            closeAddcompanyModal() {
+            closeAddInstitutionModal() {
                 const modal = document.getElementById('add-inst-modal');
                 const content = document.getElementById('add-inst-modal-content');
                 modal.classList.add('opacity-0');
@@ -2458,7 +523,7 @@
                 }, 300);
             },
 
-            saveNewcompany() {
+            saveNewInstitution() {
                 const nameInput = document.getElementById('modal-inst-name');
                 const name = nameInput.value.trim();
                 if (!name) {
@@ -2466,31 +531,50 @@
                     return;
                 }
                 
-                if (this.companyLogos[name] === undefined) {
-                    this.companyLogos[name] = '';
-                    this.rendercompanies();
-                    if (window.savecompanyLogoToFirestore) {
-                        window.savecompanyLogoToFirestore(name, '');
+                const taxId = document.getElementById('modal-inst-taxid')?.value.trim() || '';
+                const isVisible = document.getElementById('modal-add-inst-visible')?.value !== 'false';
+                const adminOnlyVal = document.getElementById('modal-add-inst-adminonly')?.value || 'false';
+
+                if (!this.institutionDetails) this.institutionDetails = {};
+                if (!this.institutionDetails[name]) {
+                    this.institutionDetails[name] = {};
+                }
+                this.institutionDetails[name].taxId = taxId;
+                this.institutionDetails[name].visible = isVisible;
+                this.institutionDetails[name].adminOnly = adminOnlyVal === 'private' ? 'private' : (adminOnlyVal === 'true');
+                if (this.currentUserId) {
+                    this.institutionDetails[name].createdBy = this.currentUserId;
+                }
+
+                if (window.saveInstitutionDetailsToFirestore) {
+                    window.saveInstitutionDetailsToFirestore(this.institutionDetails);
+                }
+
+                if (this.institutionLogos[name] === undefined) {
+                    this.institutionLogos[name] = '';
+                    if (window.saveInstitutionLogoToFirestore) {
+                        window.saveInstitutionLogoToFirestore(name, '');
                     }
                 }
-                
-                this.closeAddcompanyModal();
+
+                this.renderInstitutions();
+                this.closeAddInstitutionModal();
             },
 
-            deletecompany(name) {
-                this.openConfirmModal('ยืนยันการลบบริษัท', `คุณแน่ใจหรือไม่ว่าต้องการลบบริษัท "${name}"? โครงการทั้งหมดภายใต้บริษัทนี้จะถูกลบไปด้วย`, async () => {
-                    delete this.companyLogos[name];
-                    const projectsToDelete = this.projects.filter(p => p.company === name);
+            deleteInstitution(name) {
+                this.openConfirmModal('ยืนยันการลบสถานศึกษา', `คุณแน่ใจหรือไม่ว่าต้องการลบสถานศึกษา "${name}"? โครงการทั้งหมดภายใต้สถานศึกษานี้จะถูกลบไปด้วย`, async () => {
+                    delete this.institutionLogos[name];
+                    const projectsToDelete = this.projects.filter(p => p.institution === name);
                     if (window.deleteProjectFromFirestore) {
                         for(let p of projectsToDelete) {
                             await window.deleteProjectFromFirestore(p.id);
                         }
                     }
-                    if (window.deletecompanyFromFirestore) {
-                        await window.deletecompanyFromFirestore(name);
+                    if (window.deleteInstitutionFromFirestore) {
+                        await window.deleteInstitutionFromFirestore(name);
                     }
-                    this.projects = this.projects.filter(p => p.company !== name);
-                    this.rendercompanies();
+                    this.projects = this.projects.filter(p => p.institution !== name);
+                    this.renderInstitutions();
                 });
             },
 
@@ -2773,30 +857,32 @@
 
             openInstDetailsModal(e, instName) {
                 e.stopPropagation();
-                if (instName === 'ไม่ระบุบริษัทเอกชน') return;
+                if (instName === 'ไม่ระบุสถานศึกษา') return;
                 
-                const details = this.companyDetails && this.companyDetails[instName] ? this.companyDetails[instName] : {};
+                const details = this.institutionDetails && this.institutionDetails[instName] ? this.institutionDetails[instName] : {};
                 
                 document.getElementById('modal-inst-details-old-name').value = instName;
                 document.getElementById('modal-inst-details-name').value = instName;
-                document.getElementById('modal-inst-details-address').value = details.address || '';
-                document.getElementById('modal-inst-details-taxid').value = details.taxId || '';
-                
-                const bType = details.branchType || 'hq';
-                const bNoContainer = document.getElementById('branch-no-container');
-                const radios = document.getElementsByName('modal-inst-branch-type');
-                radios.forEach(r => { r.checked = (r.value === bType); });
-                if (bType === 'branch') {
-                    bNoContainer.classList.remove('hidden');
-                    document.getElementById('modal-inst-details-branchno').value = details.branchNo || '';
-                } else {
-                    bNoContainer.classList.add('hidden');
-                    document.getElementById('modal-inst-details-branchno').value = '';
+                if (document.getElementById('modal-inst-details-taxid')) {
+                    document.getElementById('modal-inst-details-taxid').value = details.taxId || '';
                 }
-
+                document.getElementById('modal-inst-details-address').value = details.address || '';
                 document.getElementById('modal-inst-details-contact').value = details.contact || '';
                 document.getElementById('modal-inst-details-phone').value = details.phone || '';
                 document.getElementById('modal-inst-details-email').value = details.email || '';
+                
+                if (document.getElementById('modal-inst-details-visible')) {
+                    document.getElementById('modal-inst-details-visible').value = details.visible !== false ? 'true' : 'false';
+                }
+                if (document.getElementById('modal-inst-details-adminonly')) {
+                    if (details.adminOnly === 'private') {
+                        document.getElementById('modal-inst-details-adminonly').value = 'private';
+                    } else if (details.adminOnly === true) {
+                        document.getElementById('modal-inst-details-adminonly').value = 'true';
+                    } else {
+                        document.getElementById('modal-inst-details-adminonly').value = 'false';
+                    }
+                }
                 
                 const modal = document.getElementById('inst-details-modal');
                 const content = document.getElementById('inst-details-modal-content');
@@ -2822,73 +908,85 @@
             async saveInstDetails() {
                 const oldName = document.getElementById('modal-inst-details-old-name').value;
                 const newName = document.getElementById('modal-inst-details-name').value.trim();
+                const taxId = document.getElementById('modal-inst-details-taxid')?.value.trim() || '';
                 const address = document.getElementById('modal-inst-details-address').value.trim();
-                const taxId = document.getElementById('modal-inst-details-taxid').value.trim();
                 const contact = document.getElementById('modal-inst-details-contact').value.trim();
                 const phone = document.getElementById('modal-inst-details-phone').value.trim();
                 const email = document.getElementById('modal-inst-details-email').value.trim();
-                
-                const radios = document.getElementsByName('modal-inst-branch-type');
-                let branchType = 'hq';
-                radios.forEach(r => { if(r.checked) branchType = r.value; });
-                const branchNo = branchType === 'branch' ? document.getElementById('modal-inst-details-branchno').value.trim() : '';
+                const isVisible = document.getElementById('modal-inst-details-visible')?.value !== 'false';
+                const adminOnlyVal = document.getElementById('modal-inst-details-adminonly')?.value || 'false';
+                const adminOnly = adminOnlyVal === 'private' ? 'private' : (adminOnlyVal === 'true');
 
                 if (!newName) {
-                    Swal.fire({ icon: 'error', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกชื่อบริษัทเอกชน', timer: 2000 });
+                    Swal.fire({ icon: 'error', title: 'ข้อมูลไม่ครบ', text: 'กรุณากรอกชื่อสถานศึกษา', timer: 2000 });
                     return;
                 }
                 
-                if (!this.companyDetails) this.companyDetails = {};
+                if (!this.institutionDetails) this.institutionDetails = {};
+                const oldDetails = this.institutionDetails[oldName] || {};
+                const createdBy = oldDetails.createdBy || this.currentUserId || null;
                 
-                const newDetails = { address, taxId, branchType, branchNo, contact, phone, email };
+                const newDetails = { address, contact, phone, email, taxId, visible: isVisible, adminOnly: adminOnly, createdBy: createdBy };
                 
                 if (oldName !== newName) {
                     // Rename logic
-                    this.companyDetails[newName] = newDetails;
-                    delete this.companyDetails[oldName];
+                    this.institutionDetails[newName] = newDetails;
+                    delete this.institutionDetails[oldName];
                     
-                    if (this.companyLogos[oldName]) {
-                        this.companyLogos[newName] = this.companyLogos[oldName];
-                        delete this.companyLogos[oldName];
-                        if (window.savecompanyLogoToFirestore) {
-                            window.savecompanyLogoToFirestore(newName, this.companyLogos[newName]);
-                            window.savecompanyLogoToFirestore(oldName, null); // remove old
+                    if (this.institutionLogos[oldName]) {
+                        this.institutionLogos[newName] = this.institutionLogos[oldName];
+                        delete this.institutionLogos[oldName];
+                        if (window.saveInstitutionLogoToFirestore) {
+                            window.saveInstitutionLogoToFirestore(newName, this.institutionLogos[newName]);
+                            window.saveInstitutionLogoToFirestore(oldName, null); // remove old
                         }
                     }
                     
                     // Update all projects
-                    let updatedAny = false;
                     this.projects.forEach(p => {
-                        if (p.company === oldName) {
-                            p.company = newName;
-                            updatedAny = true;
+                        if (p.institution === oldName) {
+                            p.institution = newName;
+                            p.taxId = taxId;
                             if (window.saveProjectToFirestore) {
                                 window.saveProjectToFirestore(p);
                             }
                         }
                     });
                 } else {
-                    this.companyDetails[oldName] = newDetails;
+                    this.institutionDetails[oldName] = newDetails;
+                    // Also propagate taxId to projects under this institution
+                    this.projects.forEach(p => {
+                        if (p.institution === oldName) {
+                            p.taxId = taxId;
+                            if (window.saveProjectToFirestore) {
+                                window.saveProjectToFirestore(p);
+                            }
+                        }
+                    });
                 }
                 
-                if (window.savecompanyDetailsToFirestore) {
-                    await window.savecompanyDetailsToFirestore(this.companyDetails);
+                if (window.saveInstitutionDetailsToFirestore) {
+                    await window.saveInstitutionDetailsToFirestore(this.institutionDetails);
                 }
                 
                 this.closeInstDetailsModal();
-                this.rendercompanies();
+                this.renderInstitutions();
+                if (this.currentProjectId) {
+                    const curP = this.projects.find(p => p.id === this.currentProjectId);
+                    if (curP) this.updateProjectDetailsUI(curP);
+                }
                 Swal.fire({
                     icon: 'success',
                     title: 'บันทึกสำเร็จ',
-                    text: 'บันทึกข้อมูลบริษัทเอกชนเรียบร้อยแล้ว',
+                    text: 'บันทึกข้อมูลสถานศึกษาเรียบร้อยแล้ว',
                     timer: 1500,
                     showConfirmButton: false
                 });
             },
 
-            editcompanyLogo(e, instName) {
+            editInstitutionLogo(e, instName) {
                 e.stopPropagation();
-                if (instName === 'ไม่ระบุบริษัทเอกชน') return;
+                if (instName === 'ไม่ระบุสถานศึกษา') return;
                 
                 this.uploadingLogoFor = instName;
                 this.selectedLogoBase64 = null;
@@ -2982,10 +1080,10 @@
                 btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังอัปโหลด...';
                 
                 try {
-                    this.companyLogos[this.uploadingLogoFor] = this.selectedLogoBase64;
-                    this.rendercompanies();
-                    if (window.savecompanyLogoToFirestore) {
-                        await window.savecompanyLogoToFirestore(this.uploadingLogoFor, this.selectedLogoBase64);
+                    this.institutionLogos[this.uploadingLogoFor] = this.selectedLogoBase64;
+                    this.renderInstitutions();
+                    if (window.saveInstitutionLogoToFirestore) {
+                        await window.saveInstitutionLogoToFirestore(this.uploadingLogoFor, this.selectedLogoBase64);
                     }
                     this.closeUploadLogoModal();
                 } catch (e) {
@@ -2997,29 +1095,71 @@
             },
 
             showProjectsView(instName) {
-                if (instName) {
-                    this.currentcompany = instName;
+                if (instName !== undefined && instName !== null && instName !== '') {
+                    this.currentInstitution = instName;
+                }
+                if (!this.currentInstitution) {
+                    this.currentInstitution = 'ไม่ระบุสถานศึกษา';
                 }
                 
                 this.currentProjectId = null;
-                document.getElementById('view-companies').classList.add('hidden');
+                document.getElementById('view-institutions').classList.add('hidden');
                 document.getElementById('view-projects').classList.remove('hidden');
                 document.getElementById('view-project-details').classList.add('hidden');
                 
-                // Update subtitle to show selected company
-                document.getElementById('projects-view-subtitle').innerText = this.currentcompany || 'ไม่ระบุบริษัทเอกชน';
+                // Update subtitle to show selected institution
+                document.getElementById('projects-view-subtitle').innerText = this.currentInstitution;
                 
                 this.renderProjects();
             },
 
             showProjectDetails(projectId) {
                 this.currentProjectId = projectId;
-                document.getElementById('view-companies').classList.add('hidden');
+                const proj = this.projects.find(p => p.id === projectId);
+                if (proj) {
+                    this.currentInstitution = (proj.institution && proj.institution.trim()) ? proj.institution.trim() : 'ไม่ระบุสถานศึกษา';
+                }
+
+                document.getElementById('view-institutions').classList.add('hidden');
                 document.getElementById('view-projects').classList.add('hidden');
                 document.getElementById('view-project-details').classList.remove('hidden');
 
-                const proj = this.projects.find(p => p.id === projectId);
                 if (!proj) return;
+
+                // Handle Read-Only UI controls
+                const sidebar = document.getElementById('sidebar');
+                const banner = document.getElementById('read-only-banner');
+                const btnEdit = document.getElementById('btn-edit-project');
+                const btnDelete = document.getElementById('btn-delete-project');
+                const statusContainer = document.getElementById('project-status-container');
+                const btnClear = document.getElementById('btn-clear-table');
+                const btnImport = document.getElementById('btn-import-excel');
+                const btnAddHeader = document.getElementById('btn-add-header');
+                const btnAddItem = document.getElementById('btn-add-item');
+
+                if (this.isReadOnly) {
+                    document.body.classList.add('no-sidebar');
+                    if (sidebar) sidebar.style.display = 'none';
+                    if (banner) banner.classList.remove('hidden');
+                    if (btnEdit) btnEdit.classList.add('hidden');
+                    if (btnDelete) btnDelete.classList.add('hidden');
+                    if (statusContainer) statusContainer.classList.add('hidden');
+                    if (btnClear) btnClear.classList.add('hidden');
+                    if (btnImport) btnImport.classList.add('hidden');
+                    if (btnAddHeader) btnAddHeader.classList.add('hidden');
+                    if (btnAddItem) btnAddItem.classList.add('hidden');
+                } else {
+                    document.body.classList.remove('no-sidebar');
+                    if (sidebar) sidebar.style.display = '';
+                    if (banner) banner.classList.add('hidden');
+                    if (btnEdit) btnEdit.classList.remove('hidden');
+                    if (btnDelete) btnDelete.classList.remove('hidden');
+                    if (statusContainer) statusContainer.classList.remove('hidden');
+                    if (btnClear) btnClear.classList.remove('hidden');
+                    if (btnImport) btnImport.classList.remove('hidden');
+                    if (btnAddHeader) btnAddHeader.classList.remove('hidden');
+                    if (btnAddItem) btnAddItem.classList.remove('hidden');
+                }
 
                 this.updateProjectDetailsUI(proj);
                 this.renderExcelTable();
@@ -3044,11 +1184,22 @@
                 
                 document.getElementById('detail-project-date').innerText = displayDate;
                 document.getElementById('detail-project-dept').innerText = proj.department || 'ไม่ระบุแผนก';
-                document.getElementById('detail-project-inst').innerText = proj.company || 'ไม่ระบุบริษัทเอกชน';
+                document.getElementById('detail-project-inst').innerText = proj.institution || 'ไม่ระบุสถานศึกษา';
+                
+                const taxIdContainer = document.getElementById('detail-project-taxid-container');
+                if (taxIdContainer) {
+                    const instTax = (proj.taxId || (this.institutionDetails && proj.institution && this.institutionDetails[proj.institution]?.taxId) || '').trim();
+                    if (instTax) {
+                        document.getElementById('detail-project-taxid').innerText = `TAX: ${instTax}`;
+                        taxIdContainer.style.display = 'flex';
+                    } else {
+                        taxIdContainer.style.display = 'none';
+                    }
+                }
                 
                 const companyContainer = document.getElementById('detail-project-company-container');
                 if (companyContainer) {
-                    const dispCompany = this.getCompanyDisplayString(proj.shop);
+                    const dispCompany = this.getCompanyDisplayString(proj.company, proj.institution);
                     if (dispCompany) {
                         document.getElementById('detail-project-company').innerText = dispCompany;
                         companyContainer.style.display = 'flex';
@@ -3283,8 +1434,8 @@
                     }
                 }
 
-                const dispCompany = this.getCompanyDisplayString ? this.getCompanyDisplayString(proj.company) : (proj.company || '-');
-                const instLogo = (this.companyLogos && proj.company && this.companyLogos[typeof proj.company === 'string' ? proj.company : proj.company.name]) ? this.companyLogos[typeof proj.company === 'string' ? proj.company : proj.company.name] : '';
+                const dispCompany = this.getCompanyDisplayString ? this.getCompanyDisplayString(proj.company, proj.institution) : ((proj.company && proj.company !== proj.institution) ? proj.company : '-');
+                const instLogo = (this.institutionLogos && proj.institution && this.institutionLogos[proj.institution]) ? this.institutionLogos[proj.institution] : '';
                 const totalQty = itemsList.reduce((sum, item) => sum + (parseFloat(item.qty) || 0), 0);
                 const printTimestamp = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
@@ -3623,7 +1774,7 @@
                     let sysFolderId = null;
                     if (window.driveIntegration && window.GAS_URL) {
                         try {
-                            const instName = proj.company && proj.company.trim() !== '' ? proj.company.trim() : 'ไม่ระบุบริษัทเอกชน';
+                            const instName = proj.institution && proj.institution.trim() !== '' ? proj.institution.trim() : 'ไม่ระบุสถานศึกษา';
                             const instFolderId = await window.driveIntegration.getOrCreateFolder(instName, window.DRIVE_ROOT_FOLDER_ID);
                             sysFolderId = await window.driveIntegration.getOrCreateFolder('เอกสารโครงการ', instFolderId);
                         } catch (fErr) {
@@ -3706,7 +1857,7 @@
                         });
                     }
 
-                    this.updateGlobalLoaderProgress(100, 'เสร็จสมบูรณ์', '', 'กำลังบันทึกข้อมูล...');
+                    this.updateGlobalLoaderProgress(100, 'เสร็จสมบูรณ์!', 'บันทึกข้อมูลเรียบร้อย', 'กำลังบันทึกลงระบบ...');
                     this.syncCurrentProject();
                     this.renderDocuments();
                     setTimeout(() => {
@@ -3723,9 +1874,9 @@
             _fileToBase64(file, onProgress) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
-                    if (onProgress && reader.addEventListener) {
-                        reader.onprogress = (e) => {
-                            if (e.lengthComputable && e.total > 0) {
+                    if (typeof onProgress === 'function') {
+                        reader.onprogress = e => {
+                            if (e.lengthComputable) {
                                 const pct = Math.round((e.loaded / e.total) * 100);
                                 onProgress(pct, e.loaded, e.total);
                             }
@@ -3954,7 +2105,7 @@
                                                 this.showToast('กำลังอัปโหลดรูปภาพในเบื้องหลัง...', 'info');
                                                 
                                                 // 1. Get/Create Folders
-                                                const instName = proj.company && proj.company.trim() !== '' ? proj.company.trim() : 'ไม่ระบุบริษัทเอกชน';
+                                                const instName = proj.institution && proj.institution.trim() !== '' ? proj.institution.trim() : 'ไม่ระบุสถานศึกษา';
                                                 const instFolderId = await window.driveIntegration.getOrCreateFolder(instName, window.DRIVE_ROOT_FOLDER_ID);
                                                 const sysFolderId = await window.driveIntegration.getOrCreateFolder('ระบบจัดซื้อวัสดุอุปกรณ์', instFolderId);
                                                 
@@ -4073,7 +2224,7 @@
                         const fetchResponse = await fetch(url);
                         const blob = await fetchResponse.blob();
                         
-                        const instName = proj.company && proj.company.trim() !== '' ? proj.company.trim() : 'ไม่ระบุบริษัทเอกชน';
+                        const instName = proj.institution && proj.institution.trim() !== '' ? proj.institution.trim() : 'ไม่ระบุสถานศึกษา';
                         const instFolderId = await window.driveIntegration.getOrCreateFolder(instName, window.DRIVE_ROOT_FOLDER_ID);
                         const sysFolderId = await window.driveIntegration.getOrCreateFolder('ระบบจัดซื้อวัสดุอุปกรณ์', instFolderId);
                         
@@ -4306,7 +2457,12 @@
                 document.getElementById('modal-proj-code').value = '';
                 document.getElementById('modal-proj-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('modal-proj-dept').value = '';
-                document.getElementById('modal-proj-inst').value = this.currentcompany || '';
+                const curInst = this.currentInstitution || '';
+                document.getElementById('modal-proj-inst').value = curInst;
+                const curInstTax = (this.institutionDetails && curInst && this.institutionDetails[curInst]?.taxId) || '';
+                if (document.getElementById('modal-proj-taxid')) {
+                    document.getElementById('modal-proj-taxid').value = curInstTax;
+                }
                 this.selectedShopsForForm = [];
                 this.updateShopDisplay();
                 this.populateShopDropdown();
@@ -4341,8 +2497,17 @@
                 document.getElementById('modal-proj-code').value = proj.code || '';
                 document.getElementById('modal-proj-date').value = proj.date || new Date().toISOString().split('T')[0];
                 document.getElementById('modal-proj-dept').value = proj.department || '';
-                document.getElementById('modal-proj-inst').value = proj.company || '';
-                this.selectedShopsForForm = Array.isArray(proj.shop) ? [...proj.shop] : (proj.shop ? [proj.shop] : []);
+                const projInst = proj.institution || '';
+                document.getElementById('modal-proj-inst').value = projInst;
+                const projInstTax = proj.taxId || (this.institutionDetails && projInst && this.institutionDetails[projInst]?.taxId) || '';
+                if (document.getElementById('modal-proj-taxid')) {
+                    document.getElementById('modal-proj-taxid').value = projInstTax;
+                }
+                let validCompany = (proj.company && proj.company !== proj.institution) ? proj.company : '';
+                if (!validCompany && proj.shop && proj.shop !== proj.institution) {
+                    validCompany = proj.shop;
+                }
+                this.selectedShopsForForm = Array.isArray(validCompany) ? [...validCompany] : (validCompany ? [validCompany] : []);
                 this.updateShopDisplay();
                 this.populateShopDropdown();
                 document.getElementById('modal-proj-teacher').value = proj.teacher || '';
@@ -4359,6 +2524,16 @@
                     content.classList.remove('scale-95');
                     content.classList.add('scale-100');
                 }, 10);
+            },
+            
+            onProjectInstitutionChange() {
+                const instName = document.getElementById('modal-proj-inst')?.value.trim();
+                if (instName && this.institutionDetails && this.institutionDetails[instName]?.taxId) {
+                    const taxInput = document.getElementById('modal-proj-taxid');
+                    if (taxInput && !taxInput.value) {
+                        taxInput.value = this.institutionDetails[instName].taxId;
+                    }
+                }
             },
             
             closeAddProjectModal() {
@@ -4388,6 +2563,7 @@
                 const date = document.getElementById('modal-proj-date').value;
                 const dept = document.getElementById('modal-proj-dept').value.trim();
                 const inst = document.getElementById('modal-proj-inst').value.trim();
+                const taxId = document.getElementById('modal-proj-taxid')?.value.trim() || '';
                 const company = this.selectedShopsForForm.length > 0 ? this.selectedShopsForForm[0] : '';
                 const teacher = document.getElementById('modal-proj-teacher').value.trim();
                 const status = document.getElementById('modal-proj-status').value;
@@ -4398,6 +2574,17 @@
                     return;
                 }
                 
+                // If taxId is entered and institution exists, keep institutionDetails in sync
+                if (inst && taxId && this.institutionDetails) {
+                    if (!this.institutionDetails[inst]) this.institutionDetails[inst] = {};
+                    if (!this.institutionDetails[inst].taxId || this.institutionDetails[inst].taxId !== taxId) {
+                        this.institutionDetails[inst].taxId = taxId;
+                        if (window.saveInstitutionDetailsToFirestore) {
+                            window.saveInstitutionDetailsToFirestore(this.institutionDetails);
+                        }
+                    }
+                }
+                
                 if (this.isEditMode) {
                     const proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
                     if (proj) {
@@ -4405,8 +2592,10 @@
                         proj.code = code;
                         proj.date = date;
                         proj.department = dept;
-                        proj.company = inst;
-                        proj.shop = company;
+                        proj.institution = inst;
+                        proj.taxId = taxId;
+                        proj.company = company;
+                        proj.shop = company; // Synchronize shop with selected company issuer
                         proj.teacher = teacher;
                         proj.status = status;
                         proj.remarks = remarks;
@@ -4435,7 +2624,7 @@
                                 }
                                 return pCopy;
                             });
-                            localStorage.setItem('company_material_projects', JSON.stringify(lightProjects));
+                            localStorage.setItem('material_projects', JSON.stringify(lightProjects));
                         } catch(e) {}
                         
                         // Sync to firebase
@@ -4450,7 +2639,9 @@
                         code: code,
                         date: date,
                         department: dept,
-                        company: inst,
+                        institution: inst,
+                        taxId: taxId,
+                        company: company,
                         shop: company,
                         teacher: teacher,
                         status: status,
@@ -4473,12 +2664,46 @@
                 this.closeAddProjectModal();
             },
             
+            getProjectShopName(proj) {
+                if (!proj) return '';
+                let shop = '';
+                const instStr = (proj.institution || '').trim();
+                // 1. Prioritize proj.company (selected by user in the project form)
+                if (proj.company) {
+                    const c = Array.isArray(proj.company) ? proj.company[0] : proj.company;
+                    if (c && String(c).trim() && String(c).trim() !== instStr) {
+                        shop = String(c).trim();
+                    }
+                }
+                // 2. Try proj.shop
+                if (!shop && proj.shop) {
+                    const s = Array.isArray(proj.shop) ? proj.shop[0] : proj.shop;
+                    if (s && String(s).trim() && String(s).trim() !== instStr) {
+                        shop = String(s).trim();
+                    }
+                }
+                // 3. Fallback to active workspace or saved issuer company
+                if (!shop) {
+                    try {
+                        const saved = localStorage.getItem('selected_issuer_company') || localStorage.getItem('mentra_active_workspace') || '';
+                        if (saved && !saved.includes('กรุณาเลือกบริษัท') && saved.trim() !== instStr) {
+                            shop = saved.trim();
+                        }
+                    } catch(e) {}
+                }
+                // 4. Final fallback
+                if (!shop) {
+                    shop = 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                }
+                return String(shop).trim();
+            },
+            
             async openQuotationForProject() {
                 if (this.currentProjectId) {
                     let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
                     if (!proj) {
                         try {
-                            const cached = localStorage.getItem('company_material_projects');
+                            const cached = localStorage.getItem('material_projects');
                             if (cached) {
                                 const list = JSON.parse(cached);
                                 if (Array.isArray(list)) proj = list.find(p => String(p.id) === String(this.currentProjectId));
@@ -4486,50 +2711,49 @@
                         } catch(e) {}
                     }
 
-                    let shopParam = '';
                     if (proj) {
-                        const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : '';
-                        if (shopName) {
-                            shopParam = `&shop=${encodeURIComponent(shopName)}`;
-                        }
-
                         const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
-                        const cleanItems = rawItems.map(it => ({
-                            id: it.id,
-                            isHeader: !!it.isHeader,
-                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
-                            customNo: it.customNo || '',
-                            name: it.name || it.desc || '',
-                            desc: it.desc || it.name || '',
-                            qty: Number(it.qty) || 1,
-                            unit: it.unit || 'ชุด',
-                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            storeInfo: it.storeInfo || ''
-                        }));
+                        const cleanItems = rawItems.map(it => {
+                            const rawPrice = it.unitPrice !== undefined && it.unitPrice !== null && it.unitPrice !== '' ? Number(it.unitPrice)
+                                           : it.targetPrice !== undefined && it.targetPrice !== null && it.targetPrice !== '' ? Number(it.targetPrice)
+                                           : it.foundPrice !== undefined && it.foundPrice !== null && it.foundPrice !== '' ? Number(it.foundPrice)
+                                           : '';
+                            const hasPrice = rawPrice !== '' && !isNaN(rawPrice) && rawPrice > 0;
+                            const price = rawPrice !== '' && !isNaN(rawPrice) ? rawPrice : '';
 
-                        const compDetails = (this.companyDetails && proj.company) ? (this.companyDetails[proj.company] || {}) : {};
-                        let compNameWithBranch = proj.company || '';
-                        if (compDetails.branchType === 'branch') {
-                            compNameWithBranch += ` (สาขา: ${compDetails.branchNo || '-'})`;
-                        } else if (compDetails.branchType === 'hq') {
-                            compNameWithBranch += ` (สำนักงานใหญ่)`;
-                        }
+                            const rawQty = it.qty !== undefined && it.qty !== null && it.qty !== '' ? Number(it.qty) : '';
+                            const qty = rawQty !== '' ? rawQty : (hasPrice ? 1 : '');
 
+                            return {
+                                id: it.id,
+                                isHeader: !!it.isHeader,
+                                mainNo: it.mainNo !== undefined ? it.mainNo : '',
+                                customNo: it.customNo || '',
+                                name: it.name || it.desc || '',
+                                desc: it.desc || it.name || '',
+                                qty: qty,
+                                unit: it.unit || '',
+                                unitPrice: price,
+                                price: price,
+                                storeInfo: it.storeInfo || ''
+                            };
+                        });
+
+                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const pendingData = {
-                            source: 'company',
+                            source: 'school',
                             projectId: this.currentProjectId,
-                            institution: compNameWithBranch,
+                            institution: proj.institution || '',
                             items: cleanItems,
-                            company: compNameWithBranch,
-                            shop: shopName,
+                            company: '',
+                            shop: '',
                             name: proj.name || '',
                             code: proj.code || '',
-                            address: proj.address || compDetails.address || '',
-                            attn: proj.contactPerson || proj.attn || compDetails.contact || '',
-                            tel: proj.tel || compDetails.phone || '',
-                            email: proj.email || compDetails.email || '',
-                            taxId: proj.taxId || compDetails.taxId || '',
+                            address: proj.address || instDetails.address || '',
+                            attn: proj.teacher || proj.attn || instDetails.contact || '',
+                            tel: proj.tel || instDetails.phone || '',
+                            email: proj.email || instDetails.email || '',
+                            taxId: proj.taxId || instDetails.taxId || '',
                             discountType: proj.discountType || 'percent',
                             discountValue: proj.discountValue || 0,
                             timestamp: Date.now()
@@ -4542,7 +2766,7 @@
                         try {
                             localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
                         } catch(e) {
-                            console.warn("Could not save pending_quotation_project:", e);
+                            console.warn("Could not save pending_quotation_project to localStorage:", e);
                         }
 
                         // Also set pending_load_quotation as a guaranteed cross-page fallback
@@ -4550,19 +2774,20 @@
                             const loadQuotationFallback = {
                                 docType: 'quotation',
                                 projectId: this.currentProjectId,
-                                toCompany: compNameWithBranch,
-                                toAddress: proj.address || compDetails.address || '',
-                                toAttn: proj.contactPerson || proj.attn || compDetails.contact || '',
-                                toTel: proj.tel || compDetails.phone || '',
-                                toEmail: proj.email || compDetails.email || '',
-                                toTaxId: proj.taxId || compDetails.taxId || '',
+                                toCompany: proj.institution || '',
+                                toAddress: proj.address || instDetails.address || '',
+                                toAttn: proj.teacher || proj.attn || instDetails.contact || '',
+                                toTel: proj.tel || instDetails.phone || '',
+                                toEmail: proj.email || instDetails.email || '',
+                                toTaxId: proj.taxId || instDetails.taxId || '',
                                 items: cleanItems,
-                                shop: shopName,
+                                shop: '',
                                 timestamp: Date.now()
                             };
                             localStorage.setItem('pending_load_quotation', JSON.stringify(loadQuotationFallback));
                         } catch(e) {}
 
+                        // Also cache full projects list without heavy images
                         try {
                             const lightProjects = this.projects.map(p => {
                                 const pCopy = { ...p };
@@ -4574,7 +2799,7 @@
                                 }
                                 return pCopy;
                             });
-                            localStorage.setItem('company_material_projects', JSON.stringify(lightProjects));
+                            localStorage.setItem('material_projects', JSON.stringify(lightProjects));
                         } catch(e) {}
 
                         // Ensure latest data is synced to Firestore (await with short timeout so navigation does not cancel the request)
@@ -4589,7 +2814,12 @@
                             }
                         }
                     }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company${shopParam}`;
+                    let taxParam = '';
+                    const instTax = (proj?.taxId || instDetails?.taxId || '').trim();
+                    if (instTax) {
+                        taxParam = `&taxId=${encodeURIComponent(instTax)}`;
+                    }
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${taxParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${taxParam}`;
                 }
             },
 
@@ -4630,6 +2860,7 @@
                     timestamp: new Date().toISOString(),
                     user: userName
                 });
+                // Keep max 200 entries
                 if (proj.activityLog.length > 200) proj.activityLog = proj.activityLog.slice(0, 200);
             },
 
@@ -4850,10 +3081,10 @@
                 const step = proj.docWorkflow.currentStep || 1;
                 const dt = step === 2 ? 'quotation' : 'invoice';
                 let shopParam = '';
-                const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                const shopName = this.getProjectShopName(proj);
                 if (shopName) shopParam = `&shop=${encodeURIComponent(shopName)}`;
 
-                window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=${dt}&viewOnly=true${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=${dt}&viewOnly=true${shopParam}`;
+                window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=${dt}&viewOnly=true${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=${dt}&viewOnly=true${shopParam}`;
             },
 
             async verifyWorkflowSecurityPin(actionDesc = 'ย้อนกลับขั้นตอนเอกสาร') {
@@ -4945,14 +3176,14 @@
                         </div>
                         <div style="text-align:left; margin-bottom:16px; display:flex; flex-direction:column; gap:8px;">
                             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px;">
-                                <input type="radio" name="wf_action_comp" value="rollback_one" checked style="margin-top:3px;">
+                                <input type="radio" name="wf_action_school" value="rollback_one" checked style="margin-top:3px;">
                                 <div>
                                     <b style="color:#1e293b;">ย้อนกลับ 1 ขั้นตอน</b><br>
                                     <span style="font-size:0.82rem; color:#64748b;">ย้อนกลับไปแก้ไข ${prevStepName}</span>
                                 </div>
                             </label>
                             <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; background:#fff1f2; border:1px solid #fecdd3; border-radius:8px; padding:10px;">
-                                <input type="radio" name="wf_action_comp" value="reset_all" style="margin-top:3px;">
+                                <input type="radio" name="wf_action_school" value="reset_all" style="margin-top:3px;">
                                 <div>
                                     <b style="color:#b91c1c;">รีเซ็ตกระบวนการทั้งหมด (เริ่มใหม่)</b><br>
                                     <span style="font-size:0.82rem; color:#64748b;">รีเซ็ตทุกขั้นตอนกลับไปเริ่มต้นที่ใบเสนอราคา (ขั้นที่ 1)</span>
@@ -4962,7 +3193,7 @@
                         <div style="text-align:left; font-size:0.88rem; font-weight:600; color:#334155; margin-bottom:6px;">
                             ใส่รหัสความปลอดภัย (Security PIN 4 หลัก):
                         </div>
-                        <input id="swal_wf_comp_pin" type="password" maxlength="4" placeholder="••••"
+                        <input id="swal_wf_school_pin" type="password" maxlength="4" placeholder="••••"
                             style="width:100%; text-align:center; font-size:1.6rem; letter-spacing:0.5em; padding:8px; border:2px solid #cbd5e1; border-radius:8px; outline:none; font-family:monospace;"
                             onfocus="this.style.borderColor='#2563eb'" onblur="this.style.borderColor='#cbd5e1'">
                     `,
@@ -4975,8 +3206,8 @@
                     customClass: { popup: 'mentra-swal-popup' },
                     focusConfirm: false,
                     preConfirm: () => {
-                        const selectedAction = document.querySelector('input[name="wf_action_comp"]:checked')?.value || 'rollback_one';
-                        const pinInput = document.getElementById('swal_wf_comp_pin')?.value;
+                        const selectedAction = document.querySelector('input[name="wf_action_school"]:checked')?.value || 'rollback_one';
+                        const pinInput = document.getElementById('swal_wf_school_pin')?.value;
                         if (!pinInput) {
                             Swal.showValidationMessage('กรุณากรอกรหัสความปลอดภัย 4 หลัก');
                             return false;
@@ -5077,6 +3308,22 @@
 
                         this.syncCurrentProject();
                         this.updateWorkflowUI(proj);
+                        
+                        if (window.TelegramService) {
+                            try {
+                                const totalAmt = (proj.items || []).reduce((sum, it) => sum + ((Number(it.qty) || 1) * (Number(it.unitPrice) || Number(it.targetPrice) || 0)), 0);
+                                window.TelegramService.sendQuotationAlert({
+                                    refNo: proj.docWorkflow.quotation.docNumber,
+                                    toCompany: proj.institution || proj.name || 'โครงการ',
+                                    issuer: this.getProjectShopName(proj),
+                                    grandTotal: totalAmt.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+                                    itemsCount: (proj.items || []).length,
+                                    signer: userEl ? userEl.innerText : 'ระบบ'
+                                });
+                            } catch (e) {
+                                console.warn('[Telegram] Could not send quotation alert:', e);
+                            }
+                        }
                         
                         Swal.fire({
                             title: 'ยืนยันใบเสนอราคาเรียบร้อย!',
@@ -5217,201 +3464,6 @@
                 });
             },
 
-            async goToInvoice() {
-                if (this.currentProjectId) {
-                    let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
-                    if (!proj) {
-                        try {
-                            const cached = localStorage.getItem('company_material_projects');
-                            if (cached) {
-                                const list = JSON.parse(cached);
-                                if (Array.isArray(list)) proj = list.find(p => String(p.id) === String(this.currentProjectId));
-                            }
-                        } catch(e) {}
-                    }
-
-                    let shopParam = '';
-                    let parentRefParam = '';
-                    if (proj) {
-                        const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : '';
-                        if (shopName) {
-                            shopParam = `&shop=${encodeURIComponent(shopName)}`;
-                        }
-
-                        const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
-                        const cleanItems = rawItems.map(it => ({
-                            id: it.id,
-                            isHeader: !!it.isHeader,
-                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
-                            customNo: it.customNo || '',
-                            name: it.name || it.desc || '',
-                            desc: it.desc || it.name || '',
-                            qty: Number(it.qty) || 1,
-                            unit: it.unit || 'ชุด',
-                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            storeInfo: it.storeInfo || ''
-                        }));
-
-                        const parentRef = proj.docWorkflow?.invoice?.parentRef || proj.docWorkflow?.quotation?.docNumber || '';
-                        if (parentRef) {
-                            parentRefParam = `&parentRef=${encodeURIComponent(parentRef)}`;
-                        }
-
-                        const compDetails = (this.companyDetails && proj.company) ? (this.companyDetails[proj.company] || {}) : {};
-                        let compNameWithBranch = proj.company || '';
-                        if (compDetails.branchType === 'branch') {
-                            compNameWithBranch += ` (สาขา: ${compDetails.branchNo || '-'})`;
-                        } else if (compDetails.branchType === 'hq') {
-                            compNameWithBranch += ` (สำนักงานใหญ่)`;
-                        }
-
-                        const pendingData = {
-                            source: 'company',
-                            projectId: this.currentProjectId,
-                            institution: compNameWithBranch,
-                            items: cleanItems,
-                            company: compNameWithBranch,
-                            shop: shopName,
-                            name: proj.name || '',
-                            code: proj.code || '',
-                            parentRefNo: parentRef,
-                            address: proj.address || compDetails.address || '',
-                            attn: proj.contactPerson || proj.attn || compDetails.contact || '',
-                            tel: proj.tel || compDetails.phone || '',
-                            email: proj.email || compDetails.email || '',
-                            taxId: proj.taxId || compDetails.taxId || '',
-                            discountType: proj.discountType || 'percent',
-                            discountValue: proj.discountValue || 0,
-                            timestamp: Date.now()
-                        };
-
-                        try {
-                            sessionStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
-                        } catch(e) {}
-                        try {
-                            localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
-                        } catch(e) {}
-
-                        try {
-                            const lightProjects = this.projects.map(p => {
-                                const pCopy = { ...p };
-                                if (Array.isArray(pCopy.items)) {
-                                    pCopy.items = pCopy.items.map(it => {
-                                        const { images, ...lightItem } = it;
-                                        return lightItem;
-                                    });
-                                }
-                                return pCopy;
-                            });
-                            localStorage.setItem('company_material_projects', JSON.stringify(lightProjects));
-                        } catch(e) {}
-
-                        if (window.saveProjectToFirestore) {
-                            await window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToInvoice error:', e));
-                        }
-                    }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=invoice${shopParam}${parentRefParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=invoice${shopParam}${parentRefParam}`;
-                }
-            },
-
-            async goToReceipt() {
-                if (this.currentProjectId) {
-                    let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
-                    if (!proj) {
-                        try {
-                            const cached = localStorage.getItem('company_material_projects');
-                            if (cached) {
-                                const list = JSON.parse(cached);
-                                if (Array.isArray(list)) proj = list.find(p => String(p.id) === String(this.currentProjectId));
-                            }
-                        } catch(e) {}
-                    }
-
-                    let shopParam = '';
-                    let parentRefParam = '';
-                    if (proj) {
-                        const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : '';
-                        if (shopName) {
-                            shopParam = `&shop=${encodeURIComponent(shopName)}`;
-                        }
-                        const parentRef = proj.docWorkflow?.receipt?.parentRef || proj.docWorkflow?.invoice?.docNumber || '';
-                        if (parentRef) {
-                            parentRefParam = `&parentRef=${encodeURIComponent(parentRef)}`;
-                        }
-
-                        const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
-                        const cleanItems = rawItems.map(it => ({
-                            id: it.id,
-                            isHeader: !!it.isHeader,
-                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
-                            customNo: it.customNo || '',
-                            name: it.name || it.desc || '',
-                            desc: it.desc || it.name || '',
-                            qty: Number(it.qty) || 1,
-                            unit: it.unit || 'ชุด',
-                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            storeInfo: it.storeInfo || ''
-                        }));
-
-                        const compDetails = (this.companyDetails && proj.company) ? (this.companyDetails[proj.company] || {}) : {};
-                        let compNameWithBranch = proj.company || '';
-                        if (compDetails.branchType === 'branch') {
-                            compNameWithBranch += ` (สาขา: ${compDetails.branchNo || '-'})`;
-                        } else if (compDetails.branchType === 'hq') {
-                            compNameWithBranch += ` (สำนักงานใหญ่)`;
-                        }
-
-                        const pendingData = {
-                            source: 'company',
-                            projectId: this.currentProjectId,
-                            institution: compNameWithBranch,
-                            items: cleanItems,
-                            company: compNameWithBranch,
-                            shop: shopName,
-                            name: proj.name || '',
-                            code: proj.code || '',
-                            parentRefNo: parentRef,
-                            address: proj.address || compDetails.address || '',
-                            attn: proj.contactPerson || proj.attn || compDetails.contact || '',
-                            tel: proj.tel || compDetails.phone || '',
-                            email: proj.email || compDetails.email || '',
-                            taxId: proj.taxId || compDetails.taxId || '',
-                            discountType: proj.discountType || 'percent',
-                            discountValue: proj.discountValue || 0,
-                            timestamp: Date.now()
-                        };
-
-                        try {
-                            sessionStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
-                        } catch(e) {}
-                        try {
-                            localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
-                        } catch(e) {}
-
-                        try {
-                            const lightProjects = this.projects.map(p => {
-                                const pCopy = { ...p };
-                                if (Array.isArray(pCopy.items)) {
-                                    pCopy.items = pCopy.items.map(it => {
-                                        const { images, ...lightItem } = it;
-                                        return lightItem;
-                                    });
-                                }
-                                return pCopy;
-                            });
-                            localStorage.setItem('company_material_projects', JSON.stringify(lightProjects));
-                        } catch(e) {}
-
-                        if (window.saveProjectToFirestore) {
-                            await window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToReceipt error:', e));
-                        }
-                    }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=receipt${shopParam}${parentRefParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=receipt${shopParam}${parentRefParam}`;
-                }
-            },
-
             onWorkflowStepClick(stepNum) {
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
@@ -5458,9 +3510,9 @@
                     }).then(async (result) => {
                         if (result.isConfirmed) {
                             let shopParam = '';
-                            const shopName = proj.shop ? (Array.isArray(proj.shop) ? proj.shop[0] : proj.shop) : (proj.company ? (Array.isArray(proj.company) ? proj.company[0] : proj.company) : '');
+                            const shopName = this.getProjectShopName(proj);
                             if (shopName) shopParam = `&shop=${encodeURIComponent(shopName)}`;
-                            window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=${dtNames[stepNum]}&viewOnly=true${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=company&docType=${dtNames[stepNum]}&viewOnly=true${shopParam}`;
+                            window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=${dtNames[stepNum]}&viewOnly=true${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=${dtNames[stepNum]}&viewOnly=true${shopParam}`;
                         } else if (result.isDenied) {
                             const pinOk = await this.verifyWorkflowSecurityPin(`ย้อนกลับกระบวนการไปยัง ${stepTitles[stepNum]}`);
                             if (!pinOk) return;
@@ -5494,6 +3546,211 @@
                     this.goToInvoice();
                 } else if (stepNum === 3) {
                     this.goToReceipt();
+                }
+            },
+
+            async goToInvoice() {
+                if (this.currentProjectId) {
+                    let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
+                    if (!proj) {
+                        try {
+                            const cached = localStorage.getItem('material_projects');
+                            if (cached) {
+                                const list = JSON.parse(cached);
+                                if (Array.isArray(list)) proj = list.find(p => String(p.id) === String(this.currentProjectId));
+                            }
+                        } catch(e) {}
+                    }
+
+                    let shopParam = '';
+                    let parentRefParam = '';
+                    if (proj) {
+                        const shopName = this.getProjectShopName(proj);
+                        if (shopName) {
+                            shopParam = `&shop=${encodeURIComponent(shopName)}`;
+                        }
+                        const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
+                        const cleanItems = rawItems.map(it => ({
+                            id: it.id,
+                            isHeader: !!it.isHeader,
+                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
+                            customNo: it.customNo || '',
+                            name: it.name || it.desc || '',
+                            desc: it.desc || it.name || '',
+                            qty: Number(it.qty) || 1,
+                            unit: it.unit || 'ชุด',
+                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            storeInfo: it.storeInfo || ''
+                        }));
+
+                        const parentRef = proj.docWorkflow?.invoice?.parentRef || proj.docWorkflow?.quotation?.docNumber || '';
+                        if (parentRef) {
+                            parentRefParam = `&parentRef=${encodeURIComponent(parentRef)}`;
+                        }
+
+                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
+                        const pendingData = {
+                            source: 'school',
+                            projectId: this.currentProjectId,
+                            institution: proj.institution || '',
+                            items: cleanItems,
+                            company: (proj.company && proj.company !== proj.institution) ? proj.company : (shopName || ''),
+                            shop: shopName,
+                            name: proj.name || '',
+                            code: proj.code || '',
+                            parentRefNo: parentRef,
+                            address: proj.address || instDetails.address || '',
+                            attn: proj.teacher || proj.attn || instDetails.contact || '',
+                            tel: proj.tel || instDetails.phone || '',
+                            email: proj.email || instDetails.email || '',
+                            taxId: proj.taxId || instDetails.taxId || '',
+                            discountType: proj.discountType || 'percent',
+                            discountValue: proj.discountValue || 0,
+                            timestamp: Date.now()
+                        };
+
+                        try {
+                            sessionStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+                        try {
+                            localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+
+                        // Also set pending_load_quotation as a guaranteed cross-page fallback
+                        try {
+                            const loadInvoiceFallback = {
+                                docType: 'invoice',
+                                projectId: this.currentProjectId,
+                                toCompany: proj.institution || '',
+                                toAddress: proj.address || instDetails.address || '',
+                                toAttn: proj.teacher || proj.attn || instDetails.contact || '',
+                                toTel: proj.tel || instDetails.phone || '',
+                                toEmail: proj.email || instDetails.email || '',
+                                toTaxId: proj.taxId || instDetails.taxId || '',
+                                parentRefNo: parentRef,
+                                items: cleanItems,
+                                shop: shopName,
+                                timestamp: Date.now()
+                            };
+                            localStorage.setItem('pending_load_quotation', JSON.stringify(loadInvoiceFallback));
+                        } catch(e) {}
+
+                        // Also cache full projects list without heavy images
+                        try {
+                            const lightProjects = this.projects.map(p => {
+                                const pCopy = { ...p };
+                                if (Array.isArray(pCopy.items)) {
+                                    pCopy.items = pCopy.items.map(it => {
+                                        const { images, ...lightItem } = it;
+                                        return lightItem;
+                                    });
+                                }
+                                return pCopy;
+                            });
+                            localStorage.setItem('material_projects', JSON.stringify(lightProjects));
+                        } catch(e) {}
+
+                        if (window.saveProjectToFirestore) {
+                            window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToInvoice error:', e));
+                        }
+                    }
+                    const taxParam = (proj?.taxId || instDetails?.taxId) ? `&taxId=${encodeURIComponent((proj.taxId || instDetails.taxId).trim())}` : '';
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=invoice${shopParam}${parentRefParam}${taxParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=invoice${shopParam}${parentRefParam}${taxParam}`;
+                }
+            },
+
+            async goToReceipt() {
+                if (this.currentProjectId) {
+                    let proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
+                    if (!proj) {
+                        try {
+                            const cached = localStorage.getItem('material_projects');
+                            if (cached) {
+                                const list = JSON.parse(cached);
+                                if (Array.isArray(list)) proj = list.find(p => String(p.id) === String(this.currentProjectId));
+                            }
+                        } catch(e) {}
+                    }
+
+                    let shopParam = '';
+                    let parentRefParam = '';
+                    if (proj) {
+                        const shopName = this.getProjectShopName(proj);
+                        if (shopName) {
+                            shopParam = `&shop=${encodeURIComponent(shopName)}`;
+                        }
+                        const parentRef = proj.docWorkflow?.receipt?.parentRef || proj.docWorkflow?.invoice?.docNumber || '';
+                        if (parentRef) {
+                            parentRefParam = `&parentRef=${encodeURIComponent(parentRef)}`;
+                        }
+                        const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
+                        const cleanItems = rawItems.map(it => ({
+                            id: it.id,
+                            isHeader: !!it.isHeader,
+                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
+                            customNo: it.customNo || '',
+                            name: it.name || it.desc || '',
+                            desc: it.desc || it.name || '',
+                            qty: Number(it.qty) || 1,
+                            unit: it.unit || 'ชุด',
+                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
+                            storeInfo: it.storeInfo || ''
+                        }));
+
+                        const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
+                        const pendingData = {
+                            source: 'school',
+                            projectId: this.currentProjectId,
+                            institution: proj.institution || '',
+                            items: cleanItems,
+                            company: (proj.company && proj.company !== proj.institution) ? proj.company : (shopName || ''),
+                            shop: shopName,
+                            name: proj.name || '',
+                            code: proj.code || '',
+                            parentRefNo: parentRef,
+                            address: proj.address || instDetails.address || '',
+                            attn: proj.teacher || proj.attn || instDetails.contact || '',
+                            tel: proj.tel || instDetails.phone || '',
+                            email: proj.email || instDetails.email || '',
+                            taxId: proj.taxId || instDetails.taxId || '',
+                            discountType: proj.discountType || 'percent',
+                            discountValue: proj.discountValue || 0,
+                            timestamp: Date.now()
+                        };
+
+                        try {
+                            sessionStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+                        try {
+                            localStorage.setItem('pending_quotation_project', JSON.stringify(pendingData));
+                        } catch(e) {}
+
+                        // Also set pending_load_quotation as a guaranteed cross-page fallback
+                        try {
+                            const loadReceiptFallback = {
+                                docType: 'receipt',
+                                projectId: this.currentProjectId,
+                                toCompany: proj.institution || '',
+                                toAddress: proj.address || instDetails.address || '',
+                                toAttn: proj.teacher || proj.attn || instDetails.contact || '',
+                                toTel: proj.tel || instDetails.phone || '',
+                                toEmail: proj.email || instDetails.email || '',
+                                toTaxId: proj.taxId || instDetails.taxId || '',
+                                parentRefNo: parentRef,
+                                items: cleanItems,
+                                shop: shopName,
+                                timestamp: Date.now()
+                            };
+                            localStorage.setItem('pending_load_quotation', JSON.stringify(loadReceiptFallback));
+                        } catch(e) {}
+                        if (window.saveProjectToFirestore) {
+                            window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToReceipt error:', e));
+                        }
+                    }
+                    const taxParam = (proj?.taxId || instDetails?.taxId) ? `&taxId=${encodeURIComponent((proj.taxId || instDetails.taxId).trim())}` : '';
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=receipt${shopParam}${parentRefParam}${taxParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=receipt${shopParam}${parentRefParam}${taxParam}`;
                 }
             },
 
@@ -5566,28 +3823,29 @@
                 }
             },
 
-            rendercompanies() {
-                const grid = document.getElementById('companies-grid');
+            renderInstitutions() {
+                const grid = document.getElementById('institutions-grid');
                 if (!grid) return;
                 grid.innerHTML = '';
                 
-                // Auth not confirmed yet — show spinner to prevent incorrect filtering
+                // Auth not confirmed yet — always show spinner to avoid
+                // filtering institutions incorrectly before userId/Role are set
                 if (!this.currentUserId) {
                     grid.innerHTML = `
                         <div class="col-span-full py-16 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-white/60 backdrop-blur">
                             <div class="inline-block animate-spin w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full mb-3"></div>
-                            <p class="font-medium text-slate-700 text-base">กำลังโหลดข้อมูลบริษัทเอกชนและโครงการ...</p>
+                            <p class="font-medium text-slate-700 text-base">กำลังโหลดข้อมูลสถานศึกษาและโครงการ...</p>
                             <p class="text-xs text-slate-400 mt-1">กำลังเชื่อมต่อฐานข้อมูล กรุณารอสักครู่</p>
                         </div>
                     `;
                     return;
                 }
                 
-                // Group projects by company
+                // Group projects by institution
                 const instMap = new Map();
                 
                 this.projects.forEach(p => {
-                    const instName = p.company ? p.company.trim() : 'ไม่ระบุบริษัทเอกชน';
+                    const instName = p.institution ? p.institution.trim() : 'ไม่ระบุสถานศึกษา';
                     if (!instMap.has(instName)) {
                         instMap.set(instName, { count: 0, itemsCount: 0 });
                     }
@@ -5596,9 +3854,9 @@
                     stats.itemsCount += (p.items ? p.items.length : 0);
                 });
                 
-                // Add explicitly created companies that might not have projects yet
-                Object.keys(this.companyLogos).forEach(instName => {
-                    if (!instMap.has(instName) && instName !== 'ไม่ระบุบริษัทเอกชน') {
+                // Add explicitly created institutions that might not have projects yet
+                Object.keys(this.institutionLogos).forEach(instName => {
+                    if (!instMap.has(instName) && instName !== 'ไม่ระบุสถานศึกษา') {
                         instMap.set(instName, { count: 0, itemsCount: 0 });
                     }
                 });
@@ -5608,7 +3866,7 @@
                         grid.innerHTML = `
                             <div class="col-span-full py-16 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-white/60 backdrop-blur">
                                 <div class="inline-block animate-spin w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full mb-3"></div>
-                                <p class="font-medium text-slate-700 text-base">กำลังโหลดข้อมูลบริษัทและโครงการ...</p>
+                                <p class="font-medium text-slate-700 text-base">กำลังโหลดข้อมูลสถานศึกษาและโครงการ...</p>
                                 <p class="text-xs text-slate-400 mt-1">กำลังเชื่อมต่อฐานข้อมูล กรุณารอสักครู่</p>
                             </div>
                         `;
@@ -5616,34 +3874,71 @@
                     }
                     grid.innerHTML = `
                         <div class="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                            <i class="fa-solid fa-company fa-2x mb-3 text-slate-300"></i>
-                            <p class="font-medium text-slate-600">ยังไม่มีข้อมูลบริษัทเอกชน</p>
+                            <i class="fa-solid fa-school fa-2x mb-3 text-slate-300"></i>
+                            <p class="font-medium text-slate-600">ยังไม่มีข้อมูลสถานศึกษา</p>
                             <p class="text-sm mt-1">โปรดเพิ่มโครงการเพื่อเริ่มต้นใช้งาน</p>
                         </div>
                     `;
                     return;
                 }
                 
+                const isAdmin = this.currentUserRole === 'admin';
+                const currentUid = this.currentUserId;
+
                 Array.from(instMap.entries()).forEach(([instName, stats]) => {
+                    const details = (this.institutionDetails && this.institutionDetails[instName]) ? this.institutionDetails[instName] : {};
+                    const isVisible = details.visible !== false;
+                    const adminOnlySetting = details.adminOnly;
+                    const createdBy = details.createdBy;
+
+                    // Filter logic:
+                    // 1. If adminOnlySetting === 'private' or adminOnlySetting === 'true' / boolean:
+                    // - 'private': Only creator (createdBy === currentUid) can see it! Even Admins cannot see other people's private institutions unless they created it.
+                    // - true: All Admins can see
+                    // - false: Everyone can see
+                    if (adminOnlySetting === 'private') {
+                        if (createdBy && createdBy !== currentUid) {
+                            return; // Hide from everyone except the creator
+                        }
+                    } else if (!isAdmin) {
+                        if (!isVisible || adminOnlySetting === true) {
+                            return; // Skip rendering for regular users
+                        }
+                    }
+
                     const el = document.createElement('div');
                     el.className = "bg-white p-6 rounded-2xl border border-slate-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_24px_rgba(26,111,191,0.08)] hover:border-brand-200 transition-all cursor-pointer group";
                     el.onclick = () => this.showProjectsView(instName);
                     
-                    const isUnknown = instName === 'ไม่ระบุบริษัทเอกชน';
+                    const isUnknown = instName === 'ไม่ระบุสถานศึกษา';
                     const iconBg = isUnknown ? 'bg-slate-100 text-slate-500 group-hover:bg-slate-200' : 'bg-brand-50 text-brand-600 group-hover:bg-brand-100';
                     const titleClass = isUnknown ? 'text-slate-600' : 'text-slate-800 group-hover:text-brand-600';
                     
-                    const logoUrl = this.companyLogos[instName];
+                    const logoUrl = this.institutionLogos[instName];
                     const logoHtml = logoUrl 
-                        ? `<img src="${logoUrl}" class="w-full h-full object-contain rounded-2xl" alt="logo" onerror="this.src=''; this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-company text-2xl\\'></i>';"/>`
-                        : `<i class="fa-solid fa-company text-2xl"></i>`;
+                        ? `<img src="${logoUrl}" class="w-full h-full object-contain rounded-2xl" alt="logo" onerror="this.src=''; this.onerror=null; this.parentElement.innerHTML='<i class=\\'fa-solid fa-school text-2xl\\'></i>';"/>`
+                        : `<i class="fa-solid fa-school text-2xl"></i>`;
                         
                     const editLogoBtn = isUnknown ? '' : `
-                        <button onclick="appData.editcompanyLogo(event, '${instName}')" class="absolute -top-2 -right-2 w-7 h-7 bg-white border border-slate-200 rounded-full shadow-sm text-slate-400 hover:text-brand-500 hover:border-brand-300 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10" title="เปลี่ยนโลโก้">
+                        <button onclick="appData.editInstitutionLogo(event, '${instName}')" class="absolute -top-2 -right-2 w-7 h-7 bg-white border border-slate-200 rounded-full shadow-sm text-slate-400 hover:text-brand-500 hover:border-brand-300 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 z-10" title="เปลี่ยนโลโก้">
                             <i class="fa-solid fa-pen text-[11px]"></i>
                         </button>
                     `;
                     
+                    // Admin & Owner status badges
+                    let statusBadgeHtml = '';
+                    if (adminOnlySetting === 'private') {
+                        statusBadgeHtml += `<span class="bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-solid fa-user-lock mr-1"></i>ส่วนตัว (เห็นคนเดียว)</span> `;
+                    }
+                    if (isAdmin) {
+                        if (!isVisible) {
+                            statusBadgeHtml += `<span class="bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-solid fa-eye-slash mr-1"></i>ปิดการมองเห็น</span> `;
+                        }
+                        if (adminOnlySetting === true) {
+                            statusBadgeHtml += `<span class="bg-purple-100 text-purple-700 border border-purple-200 px-2 py-0.5 rounded text-[10px] font-bold"><i class="fa-solid fa-lock mr-1"></i>เฉพาะ Admin ทั้งหมด</span> `;
+                        }
+                    }
+
                     el.className = "bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_24px_rgba(26,111,191,0.08)] hover:border-brand-200 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-4";
                     
                     el.innerHTML = `
@@ -5653,14 +3948,18 @@
                                 ${editLogoBtn}
                             </div>
                             <div>
-                                <h3 class="text-xl font-bold transition-colors line-clamp-1 ${titleClass}">${instName}</h3>
-                                <div class="flex items-center gap-3 mt-1.5 text-sm text-slate-500 font-medium">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-xl font-bold transition-colors line-clamp-1 ${titleClass}">${instName}</h3>
+                                    ${statusBadgeHtml}
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 text-sm text-slate-500 font-medium">
                                     <div class="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded text-[11px] font-bold tracking-wide">
                                         ${stats.count} โครงการ
                                     </div>
                                     <span class="flex items-center gap-1.5">
                                         <i class="fa-solid fa-boxes-stacked text-slate-400"></i> รวม ${stats.itemsCount} รายการพัสดุ
                                     </span>
+                                    ${details.taxId ? `<span class="flex items-center gap-1 text-xs text-slate-500 bg-slate-50 border border-slate-200/80 px-2 py-0.5 rounded-md"><i class="fa-solid fa-id-card text-brand-500"></i> เลขผู้เสียภาษี: <span class="font-mono font-semibold text-slate-700">${details.taxId}</span></span>` : ''}
                                 </div>
                             </div>
                         </div>
@@ -5668,9 +3967,9 @@
                             <span class="text-sm font-bold text-brand-600 bg-brand-50 px-4 py-2.5 rounded-xl group-hover:bg-brand-500 group-hover:text-white transition-colors flex items-center gap-2">
                                 ดูโครงการ <i class="fa-solid fa-arrow-right"></i>
                             </span>
-                            ${isUnknown ? '' : `<button onclick="event.stopPropagation(); appData.deletecompany('${instName}');" class="ml-2 w-10 h-10 rounded-xl border border-red-200 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center shadow-sm z-10" title="ลบบริษัท"><i class="fa-solid fa-trash"></i></button>`}
+                            ${isUnknown ? '' : `<button onclick="event.stopPropagation(); appData.deleteInstitution('${instName}');" class="ml-2 w-10 h-10 rounded-xl border border-red-200 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center shadow-sm z-10" title="ลบสถานศึกษา"><i class="fa-solid fa-trash"></i></button>`}
                             ${isUnknown ? '' : `
-                            <button onclick="appData.openInstDetailsModal(event, '${instName}')" class="ml-3 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-brand-600 transition-colors" title="แก้ไขรายละเอียดบริษัทเอกชน">
+                            <button onclick="appData.openInstDetailsModal(event, '${instName}')" class="ml-3 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-brand-600 transition-colors" title="แก้ไขรายละเอียดสถานศึกษา">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
                             `}
@@ -5678,14 +3977,24 @@
                     `;
                     grid.appendChild(el);
                 });
+
+                if (grid.children.length === 0) {
+                    grid.innerHTML = `
+                        <div class="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                            <i class="fa-solid fa-school fa-2x mb-3 text-slate-300"></i>
+                            <p class="font-medium text-slate-600">ไม่มีสถานศึกษาที่เปิดใช้งาน หรือที่คุณมีสิทธิ์เข้าถึง</p>
+                        </div>
+                    `;
+                }
             },
 
             shopSet: new Set(),
             
-            getCompanyDisplayString(companyField) {
+            getCompanyDisplayString(companyField, institution = '') {
                 if (!companyField) return null;
+                const instStr = (institution || '').trim();
                 const arr = Array.isArray(companyField) ? companyField : [companyField];
-                const filtered = arr.filter(s => s && s.trim() !== '');
+                const filtered = arr.filter(s => s && s.trim() !== '' && s.trim() !== instStr);
                 return filtered.length > 0 ? filtered.join(', ') : null;
             },
             
@@ -5743,10 +4052,11 @@
                 }
                 
                 this.projects.forEach(p => {
-                    if (p.shop) {
-                        const comps = Array.isArray(p.shop) ? p.shop : [p.shop];
+                    if (p.company) {
+                        const comps = Array.isArray(p.company) ? p.company : [p.company];
+                        const instStr = (p.institution || '').trim();
                         comps.forEach(c => {
-                            if (c && c.trim() !== '') this.shopSet.add(c.trim());
+                            if (c && c.trim() !== '' && c.trim() !== instStr) this.shopSet.add(c.trim());
                         });
                     }
                 });
@@ -5813,14 +4123,12 @@
                 if (!grid) return;
                 grid.innerHTML = '';
 
-                // Filter by current company
-                let filteredProjects = this.projects;
-                if (this.currentcompany) {
-                    filteredProjects = this.projects.filter(p => {
-                        const inst = p.company ? p.company.trim() : 'ไม่ระบุบริษัทเอกชน';
-                        return inst === this.currentcompany;
-                    });
-                }
+                // Filter by current institution
+                const targetInst = (this.currentInstitution && this.currentInstitution.trim()) ? this.currentInstitution.trim() : 'ไม่ระบุสถานศึกษา';
+                let filteredProjects = this.projects.filter(p => {
+                    const inst = p.institution ? p.institution.trim() : 'ไม่ระบุสถานศึกษา';
+                    return inst === targetInst;
+                });
                 
                 // Sort descending (latest on top) assuming ID or Date logic. ID includes timestamp (e.g. proj_17... or proj_2026...)
                 // We'll sort by ID as string, which usually puts larger timestamps first
@@ -5834,7 +4142,7 @@
                     grid.innerHTML = `
                         <div class="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
                             <i class="fa-regular fa-folder-open fa-2x mb-3 text-slate-300"></i>
-                            <p class="font-medium text-slate-600">ยังไม่มีโครงการในบริษัทนี้</p>
+                            <p class="font-medium text-slate-600">ยังไม่มีโครงการในวิทยาลัยนี้</p>
                             <p class="text-sm mt-1">คลิกปุ่ม "เพิ่มโครงการจัดซื้อ" เพื่อเริ่มต้น</p>
                         </div>
                     `;
@@ -5895,9 +4203,9 @@
                                     <span class="flex items-center gap-1.5 border-l border-slate-200 pl-3">
                                         <i class="fa-solid fa-user-tie text-slate-400"></i> ${teacherText}
                                     </span>
-                                    ${this.getCompanyDisplayString(proj.shop) ? `
+                                    ${this.getCompanyDisplayString(proj.company, proj.institution) ? `
                                     <span class="flex items-center gap-1.5 border-l border-slate-200 pl-3">
-                                        <i class="fa-solid fa-shop text-slate-400"></i> ${this.getCompanyDisplayString(proj.shop)}
+                                        <i class="fa-solid fa-shop text-slate-400"></i> ${this.getCompanyDisplayString(proj.company, proj.institution)}
                                     </span>
                                     ` : ''}
                                 </div>
@@ -5969,6 +4277,7 @@
                     const hasQty = item.qty !== undefined && item.qty !== null && item.qty !== '' && !isNaN(cleanQty) && cleanQty > 0;
                     const totalAmt = (hasQty && hasSellPrice) ? (cleanQty * cleanUnitPrice) : 0;
                     
+                    // Display for total sell amount: show currency if priced, '-' if blank/unset
                     let displayTotalAmt = '-';
                     if (hasSellPrice && hasQty) {
                         displayTotalAmt = this.formatCurrency(totalAmt);
@@ -5977,6 +4286,8 @@
                     }
                     
                     // Profit (%) calculation based on requirement: diff between unitPrice and foundPrice
+                    // Profit = unitPrice - foundPrice
+                    // Profit % = (Profit / unitPrice) * 100
                     let profitPct = 0;
                     if (hasSellPrice && item.foundPrice && Number(item.foundPrice) > 0) {
                         profitPct = ((Number(item.unitPrice) - Number(item.foundPrice)) / Number(item.foundPrice)) * 100;
@@ -5984,6 +4295,7 @@
                     
                     let profitClass = profitPct > 0 ? 'text-emerald-600' : (profitPct < 0 ? 'text-red-500' : 'text-slate-500');
 
+                    // Sum all valid non-header items
                     if (!item.isHeader) {
                         if (hasSellPrice && hasQty) {
                             sumTotal += totalAmt;
@@ -5996,7 +4308,11 @@
                         sumFound += actualFoundTotal;
                     }
 
+                    const activeColor = this.getItemRowColor(item);
                     const tr = document.createElement('tr');
+                    if (activeColor) {
+                        tr.className = `row-highlight-${activeColor}`;
+                    }
                     
                     let mainNoDisplay = '';
                     if (item.mainNo !== undefined) {
@@ -6011,6 +4327,31 @@
 
                     const displayNoStr = (item.customNo || mainNoDisplay || '').trim();
                     let nameIndentClass = (item.customNo?.trim() !== '' || (item.mainNo && item.mainNo.includes('.'))) ? 'pl-8' : '';
+
+                    const isManual = Boolean(item.isManualColor);
+
+                    const colorMenuBtn = `
+                        <div class="relative inline-block text-left" id="color-menu-${item.id}">
+                            <button onclick="appData.toggleColorMenu(event, '${item.id}')" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center relative" title="${isManual ? 'กำหนดสีเอง' : 'ไฮไลท์สีอัตโนมัติตามการกรอก'}">
+                                <i class="fa-solid fa-highlighter text-xs ${activeColor === 'green' ? 'text-emerald-600 font-bold' : activeColor === 'yellow' ? 'text-amber-500 font-bold' : activeColor === 'red' ? 'text-red-500 font-bold' : ''}"></i>
+                                ${isManual ? '<span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-500 ring-1 ring-white" title="ปรับแต่งเอง"></span>' : ''}
+                            </button>
+                            <div id="color-popup-${item.id}" class="hidden absolute right-0 bottom-full mb-1 z-30 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 flex items-center gap-1.5">
+                                <button onclick="appData.setRowColor(event, '${item.id}', 'green')" class="w-6 h-6 rounded-full bg-emerald-400 hover:bg-emerald-500 border border-emerald-500 flex items-center justify-center text-white text-[10px] shadow-sm transition-transform hover:scale-110" title="สีเขียว (กำหนดเอง)">
+                                    ${activeColor === 'green' && isManual ? '<i class="fa-solid fa-check"></i>' : ''}
+                                </button>
+                                <button onclick="appData.setRowColor(event, '${item.id}', 'yellow')" class="w-6 h-6 rounded-full bg-amber-300 hover:bg-amber-400 border border-amber-400 flex items-center justify-center text-amber-900 text-[10px] shadow-sm transition-transform hover:scale-110" title="สีเหลือง (กำหนดเอง)">
+                                    ${activeColor === 'yellow' && isManual ? '<i class="fa-solid fa-check"></i>' : ''}
+                                </button>
+                                <button onclick="appData.setRowColor(event, '${item.id}', 'red')" class="w-6 h-6 rounded-full bg-rose-400 hover:bg-rose-500 border border-rose-500 flex items-center justify-center text-white text-[10px] shadow-sm transition-transform hover:scale-110" title="สีแดง (กำหนดเอง)">
+                                    ${activeColor === 'red' && isManual ? '<i class="fa-solid fa-check"></i>' : ''}
+                                </button>
+                                <button onclick="appData.setRowColor(event, '${item.id}', 'auto')" class="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-600 text-[10px] shadow-sm transition-transform hover:scale-110" title="อัตโนมัติ (ตามการกรอกข้อมูล)">
+                                    <i class="fa-solid fa-rotate-left"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
 
                     if (item.isHeader) {
                         tr.innerHTML = `
@@ -6028,6 +4369,7 @@
                                     <button class="w-7 h-7 rounded bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing" title="ลากเพื่อจัดเรียง">
                                         <i class="fa-solid fa-grip-vertical text-xs"></i>
                                     </button>
+                                    ${colorMenuBtn}
                                     <button onclick="appData.deleteItem('${item.id}')" class="w-7 h-7 rounded bg-red-50 hover:bg-red-100 text-red-500 transition-colors flex items-center justify-center" title="ลบรายการ">
                                         <i class="fa-solid fa-trash-can text-xs"></i>
                                     </button>
@@ -6038,7 +4380,7 @@
                         const displayFoundTotal = item.foundTotalPrice !== undefined && item.foundTotalPrice !== null && item.foundTotalPrice !== '' ? item.foundTotalPrice : (item.foundPrice ? Math.round((item.qty || 0) * item.foundPrice * 100) / 100 : '');
                         const qtyDisplayVal = (item.qty !== undefined && item.qty !== null && item.qty !== '') ? item.qty : '';
                         const unitPriceDisplayVal = (item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '') ? item.unitPrice : '';
-                        const targetPriceDisplayVal = (item.targetPrice !== undefined && item.targetPrice !== null && item.targetPrice !== '' && Number(String(item.targetPrice).replace(/[฿,\s]/g, '')) > 0) ? item.targetPrice : '';
+                        const targetPriceDisplayVal = (item.targetPrice !== undefined && item.targetPrice !== null && item.targetPrice !== '') ? item.targetPrice : '';
                         
                         tr.innerHTML = `
                             <td class="text-center p-0">
@@ -6088,6 +4430,7 @@
                                     <button class="w-7 h-7 rounded bg-slate-100 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors flex items-center justify-center drag-handle cursor-grab active:cursor-grabbing" title="ลากเพื่อจัดเรียง">
                                         <i class="fa-solid fa-grip-vertical text-xs"></i>
                                     </button>
+                                    ${colorMenuBtn}
                                     <button onclick="appData.duplicateItemRow('${item.id}')" class="w-7 h-7 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center" title="คัดลอกรายการ">
                                         <i class="fa-regular fa-copy text-xs"></i>
                                     </button>
@@ -6101,51 +4444,24 @@
                     tbody.appendChild(tr);
                 });
 
+                if (this.isReadOnly) {
+                    tbody.querySelectorAll('input').forEach(inp => {
+                        inp.disabled = true;
+                        inp.classList.add('cursor-not-allowed');
+                    });
+                    tbody.querySelectorAll('.drag-handle, [id^="color-menu-"], button[onclick*="deleteItem"], button[onclick*="duplicateItemRow"]').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+
                 if(proj.items.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="14" class="text-center p-8 text-slate-500 font-medium">ยังไม่มีรายการสิ่งของ กด "เพิ่มรายการสินค้า" หรือ "เพิ่มหัวข้อ" เพื่อเริ่มต้น</td></tr>`;
                 }
 
-                // Calculate Discount
-                const discountType = proj.discountType || 'percent'; // 'percent' or 'amount'
-                const discountVal = parseFloat(proj.discountValue) || 0;
-                let discountAmount = 0;
-
-                if (discountType === 'percent') {
-                    discountAmount = (sumTotal * discountVal) / 100;
-                } else {
-                    discountAmount = discountVal;
-                }
-                if (discountAmount < 0) discountAmount = 0;
-
-                const netTotal = Math.max(0, sumTotal - discountAmount);
-
-                // Update UI Controls for Discount
-                const discountValInput = document.getElementById('project-discount-val');
-                if (discountValInput && document.activeElement !== discountValInput) {
-                    discountValInput.value = proj.discountValue !== undefined ? proj.discountValue : '';
-                }
-
-                const btnPercent = document.getElementById('discount-type-btn-percent');
-                const btnAmount = document.getElementById('discount-type-btn-amount');
-                if (btnPercent && btnAmount) {
-                    if (discountType === 'percent') {
-                        btnPercent.className = 'px-2 py-0.5 text-xs font-bold transition-colors bg-brand-500 text-white';
-                        btnAmount.className = 'px-2 py-0.5 text-xs font-bold transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200';
-                    } else {
-                        btnAmount.className = 'px-2 py-0.5 text-xs font-bold transition-colors bg-brand-500 text-white';
-                        btnPercent.className = 'px-2 py-0.5 text-xs font-bold transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200';
-                    }
-                }
-
-                const discountSumEl = document.getElementById('total-discount-sum');
-                if (discountSumEl) {
-                    discountSumEl.innerText = discountAmount > 0 ? `-${this.formatCurrency(discountAmount)}` : '-0.00';
-                }
-
                 // Update Footers
                 const totalAmtEl = document.getElementById('total-amount-sum');
-                totalAmtEl.innerText = this.formatCurrency(netTotal);
-                totalAmtEl.title = this.formatCurrency(netTotal);
+                totalAmtEl.innerText = this.formatCurrency(sumTotal);
+                totalAmtEl.title = this.formatCurrency(sumTotal);
                 
                 const totalTargetEl = document.getElementById('total-target-sum');
                 totalTargetEl.innerText = this.formatCurrency(sumTarget);
@@ -6158,12 +4474,49 @@
                 // Format profit percentage to exactly 2 decimal places
                 let profitDisplay = '-';
                 if (sumFound > 0) {
-                    const totalProfitPct = ((netTotal - sumFound) / sumFound) * 100;
+                    const totalProfitPct = ((sumTotal - sumFound) / sumFound) * 100;
                     profitDisplay = totalProfitPct.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
                 }
                 const profitSumEl = document.getElementById('total-profit-sum');
                 profitSumEl.innerText = profitDisplay;
                 profitSumEl.title = profitDisplay;
+
+                // --- Calculate Tax Breakdown for Institutions (ภาษีซื้อ 7%, ภาษีขาย 7%, หัก ณ ที่จ่าย 1%) ---
+                const inputVat = Math.round(sumFound * 0.07 * 100) / 100;
+                const outputVat = Math.round(sumTotal * 0.07 * 100) / 100;
+                const wht1Pct = Math.round(sumTotal * 0.01 * 100) / 100;
+                const netAfterAllTaxes = Math.round((sumTotal - inputVat - outputVat - wht1Pct) * 100) / 100;
+                const netProfitAfterAll = Math.round((sumTotal - sumFound - inputVat - outputVat - wht1Pct) * 100) / 100;
+
+                const taxInputVatEl = document.getElementById('tax-input-vat');
+                if (taxInputVatEl) {
+                    taxInputVatEl.innerText = '-' + this.formatCurrency(inputVat);
+                    taxInputVatEl.title = `ภาษีซื้อ 7% (คิดจากราคาทุนรวม ${this.formatCurrency(sumFound)})`;
+                }
+
+                const taxOutputVatEl = document.getElementById('tax-output-vat');
+                if (taxOutputVatEl) {
+                    taxOutputVatEl.innerText = '-' + this.formatCurrency(outputVat);
+                    taxOutputVatEl.title = `ภาษีขาย 7% (คิดจากราคาขายรวม ${this.formatCurrency(sumTotal)})`;
+                }
+
+                const taxWhtEl = document.getElementById('tax-wht-1pct');
+                if (taxWhtEl) {
+                    taxWhtEl.innerText = '-' + this.formatCurrency(wht1Pct);
+                    taxWhtEl.title = `หัก ณ ที่จ่าย 1% (คิดจากราคาขายรวม ${this.formatCurrency(sumTotal)})`;
+                }
+
+                const taxNetReceiveEl = document.getElementById('tax-net-receive');
+                if (taxNetReceiveEl) {
+                    taxNetReceiveEl.innerText = this.formatCurrency(netAfterAllTaxes);
+                    taxNetReceiveEl.title = `ยอดราคาขายหลังหัก ภาษีซื้อ 7% (${this.formatCurrency(inputVat)}) - ภาษีขาย 7% (${this.formatCurrency(outputVat)}) - หัก ณ ที่จ่าย 1% (${this.formatCurrency(wht1Pct)}) = ${this.formatCurrency(netAfterAllTaxes)}`;
+                }
+
+                const taxNetProfitEl = document.getElementById('tax-net-profit');
+                if (taxNetProfitEl) {
+                    taxNetProfitEl.innerText = this.formatCurrency(netProfitAfterAll);
+                    taxNetProfitEl.title = `กำไรสุทธิคงเหลือเข้ากระเป๋าจริง (ราคาขาย ${this.formatCurrency(sumTotal)} - ทุน ${this.formatCurrency(sumFound)} - ภาษีซื้อ ${this.formatCurrency(inputVat)} - ภาษีขาย ${this.formatCurrency(outputVat)} - หัก ณ ที่จ่าย 1% ${this.formatCurrency(wht1Pct)}) = ${this.formatCurrency(netProfitAfterAll)}`;
+                }
 
                 // --- RESTORE FOCUS STATE ---
                 if (activeId && activeField) {
@@ -6180,22 +4533,6 @@
                         }
                     }, 0);
                 }
-            },
-
-            updateProjectDiscountType(type) {
-                const proj = this.projects.find(p => p.id === this.currentProjectId);
-                if (!proj) return;
-                proj.discountType = type;
-                this.syncCurrentProject();
-                this.renderExcelTable();
-            },
-
-            updateProjectDiscountValue(val) {
-                const proj = this.projects.find(p => p.id === this.currentProjectId);
-                if (!proj) return;
-                proj.discountValue = val;
-                this.syncCurrentProject();
-                this.renderExcelTable();
             },
 
             // Item Logic
@@ -6276,6 +4613,10 @@
             },
 
             addEmptyItemRow() {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
 
@@ -6314,6 +4655,10 @@
             },
 
             addHeaderRow() {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
                 
@@ -6338,6 +4683,10 @@
             },
 
             autoReorderItemNumbers() {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj || !Array.isArray(proj.items)) return;
 
@@ -6359,6 +4708,10 @@
             },
 
             updateItem(itemId, field, value) {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
                 
@@ -6394,10 +4747,9 @@
                             item.foundPrice = numVal;
                             item.foundTotalPrice = Math.round(numVal * (item.qty || 0) * 100) / 100;
                             
-                            // Auto-calculate unitPrice if foundPrice is changed
-                            if (item.foundPrice > 0) {
+                            // Auto-calculate unitPrice if autoMarkup35 is enabled and foundPrice is changed
+                            if (this.autoMarkup35 && item.foundPrice > 0) {
                                 const calculatedPrice = item.foundPrice * 1.35;
-                                // Round up to nearest 5 (e.g. 4 -> 5, 6 -> 10)
                                 item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
                                 item.targetPrice = Math.round(item.unitPrice / 1.35);
                             }
@@ -6406,8 +4758,8 @@
                             const qty = item.qty && item.qty > 0 ? item.qty : 1;
                             item.foundPrice = Math.round((numVal / qty) * 100) / 100;
                             
-                            // Auto-calculate unitPrice if foundPrice is changed
-                            if (item.foundPrice > 0) {
+                            // Auto-calculate unitPrice if autoMarkup35 is enabled and foundPrice is changed
+                            if (this.autoMarkup35 && item.foundPrice > 0) {
                                 const calculatedPrice = item.foundPrice * 1.35;
                                 item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
                                 item.targetPrice = Math.round(item.unitPrice / 1.35);
@@ -6432,6 +4784,10 @@
             },
 
             deleteItem(itemId) {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 this.openConfirmModal('ยืนยันการลบ', 'ยืนยันการลบสินค้ารายการนี้ออกจากตารางหรือไม่?', () => {
                     const proj = this.projects.find(p => p.id === this.currentProjectId);
                     if (!proj) return;
@@ -6444,6 +4800,10 @@
             },
 
             duplicateItemRow(itemId) {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 const proj = this.projects.find(p => p.id === this.currentProjectId);
                 if (!proj) return;
                 
@@ -6461,6 +4821,10 @@
             },
 
             confirmClearTable() {
+                if (this.isReadOnly) {
+                    this.showToast('โหมดดูได้อย่างเดียว ไม่สามารถแก้ไขข้อมูลได้', 'error');
+                    return;
+                }
                 this.openConfirmModal('ยืนยันล้างตาราง', 'ข้อมูลรายการสินค้าทั้งหมดจะถูกลบและไม่สามารถกู้คืนได้ คุณต้องการดำเนินการต่อหรือไม่?', () => {
                     this.clearAllItems();
                 });
@@ -6476,6 +4840,55 @@
                 this.showToast('ล้างข้อมูลตารางแล้ว', 'success');
             },
 
+            getItemRowColor(item) {
+                if (item.manualColor !== undefined && item.manualColor !== null) {
+                    return item.manualColor === 'none' ? '' : item.manualColor;
+                }
+                if (item.rowColor && item.isManualColor) {
+                    return item.rowColor;
+                }
+
+                // Auto-detect based on fields completion
+                if (item.isHeader) {
+                    return (item.name && item.name.trim() !== '') ? 'green' : '';
+                }
+
+                const name = (item.name || '').trim();
+                const qtyVal = (item.qty !== '' && item.qty !== undefined && item.qty !== null) ? Number(item.qty) : null;
+                const unit = (item.unit || '').trim();
+                const unitPriceVal = (item.unitPrice !== '' && item.unitPrice !== undefined && item.unitPrice !== null) ? Number(item.unitPrice) : null;
+                const targetPriceVal = (item.targetPrice !== '' && item.targetPrice !== undefined && item.targetPrice !== null) ? Number(item.targetPrice) : null;
+                const foundPriceVal = (item.foundPrice !== '' && item.foundPrice !== undefined && item.foundPrice !== null) ? Number(item.foundPrice) : null;
+                const link = (item.link || '').trim();
+                const storeInfo = (item.storeInfo || '').trim();
+
+                // Check if row has any data at all
+                const hasAnyData = Boolean(name || (qtyVal !== null && qtyVal > 0) || unit || (unitPriceVal !== null && unitPriceVal > 0) || (targetPriceVal !== null && targetPriceVal > 0) || (foundPriceVal !== null && foundPriceVal > 0) || link || storeInfo);
+                if (!hasAnyData) {
+                    return ''; // Completely empty / untouched row
+                }
+
+                const hasLinkOrStore = Boolean(link !== '' || storeInfo !== '');
+
+                // 🟢 GREEN Criteria: Complete item (name, qty > 0, unit, and price > 0)
+                if (name !== '' && qtyVal !== null && qtyVal > 0 && unit !== '' && unitPriceVal !== null && unitPriceVal > 0) {
+                    return 'green';
+                }
+
+                // ⚪ Clean / Title / Note Row: Has a name/title but no unit and no prices (e.g. "แฟลช 2 อัน คือ" / header / note)
+                if (name !== '' && unit === '' && (unitPriceVal === null || unitPriceVal === 0) && (foundPriceVal === null || foundPriceVal === 0) && (targetPriceVal === null || targetPriceVal === 0) && !hasLinkOrStore) {
+                    return ''; // Clean neutral white row, not red or yellow
+                }
+
+                // 🔴 RED Criteria: Item specified with unit (intended to buy unit item) BUT no price AND no store link
+                if (name !== '' && unit !== '' && (unitPriceVal === null || unitPriceVal === 0) && !hasLinkOrStore) {
+                    return 'red';
+                }
+
+                // 🟡 YELLOW Criteria: Work-in-progress (e.g. Has store link/info but missing price, or partial fields)
+                return 'yellow';
+            },
+
             escapeAttr(str) {
                 if (str === null || str === undefined) return '';
                 return String(str)
@@ -6484,6 +4897,39 @@
                     .replace(/'/g, '&#39;')
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;');
+            },
+
+            setRowColor(event, itemId, color) {
+                if (event) event.stopPropagation();
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
+                const item = proj.items.find(i => i.id === itemId);
+                if (!item) return;
+
+                if (color === 'auto') {
+                    delete item.manualColor;
+                    delete item.rowColor;
+                    item.isManualColor = false;
+                } else {
+                    item.manualColor = color;
+                    item.rowColor = color;
+                    item.isManualColor = true;
+                }
+                this.syncCurrentProject();
+                this.renderExcelTable();
+            },
+
+            toggleColorMenu(event, itemId) {
+                if (event) event.stopPropagation();
+                const popup = document.getElementById(`color-popup-${itemId}`);
+                const isHidden = popup ? popup.classList.contains('hidden') : true;
+                
+                // Hide all color popups
+                document.querySelectorAll('[id^="color-popup-"]').forEach(el => el.classList.add('hidden'));
+                
+                if (isHidden && popup) {
+                    popup.classList.remove('hidden');
+                }
             },
 
             importExcel(event) {
@@ -6936,652 +5382,10 @@
                 if (container && !container.contains(e.target) && window.appData) {
                     appData.hideShopDropdown();
                 }
+                if (!e.target.closest('[id^="color-menu-"]')) {
+                    document.querySelectorAll('[id^="color-popup-"]').forEach(el => el.classList.add('hidden'));
+                }
             });
         });
 
-    </script>
-
-    <!-- toggleSidebarCollapse handled by dashboard-dual-sidebar.js -->
-
-    <!-- Firebase Auth & Firestore Sync -->
-    <script type="module">
-        import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot, deleteField } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
-        let FIREBASE_CONFIG;
-        window.GAS_URL = null;
-        window.DRIVE_ROOT_FOLDER_ID = null;
-        try {
-            const cfg = await import('../../assets/js/firebase-config.js');
-            FIREBASE_CONFIG = cfg.FIREBASE_CONFIG || cfg.default?.FIREBASE_CONFIG;
-            window.GAS_URL = cfg.GAS_URL || null;
-            window.DRIVE_ROOT_FOLDER_ID = cfg.DRIVE_ROOT_FOLDER_ID || null;
-        } catch (e) {
-        }
-        if (!FIREBASE_CONFIG || !window.GAS_URL) {
-            throw new Error('ไม่พบไฟล์ firebase-config.js กรุณาติดต่อผู้ดูแลระบบ');
-        }
-
-        const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Instant user display from local cache to prevent seeing "กำลังโหลด..."
-        try {
-            const cachedStr = localStorage.getItem('mentra_cached_user_profile') || localStorage.getItem('mentra_user_permissions');
-            if (cachedStr) {
-                const cached = JSON.parse(cachedStr);
-                const name = cached.displayName || (cached.firstName ? `${cached.firstName} ${cached.lastName || ''}`.trim() : '') || cached.name || cached.username || cached.email;
-                if (name) {
-                    const uName = document.getElementById('userName');
-                    const uAvatar = document.getElementById('userAvatar');
-                    const uBadge = document.getElementById('userRoleBadge');
-                    if (uName) uName.textContent = name;
-                    if (uAvatar) uAvatar.textContent = name.charAt(0).toUpperCase();
-                    if (uBadge && cached.role) {
-                        uBadge.textContent = cached.role === 'admin' ? 'Administrator' : (cached.role.charAt(0).toUpperCase() + cached.role.slice(1));
-                        uBadge.className = `role-badge ${cached.role}`;
-                    }
-                }
-            }
-        } catch(e) {}
-
-        let firestoreSyncInitialized = false;
-
-        function setupFirestoreSync() {
-            if (firestoreSyncInitialized) return;
-            firestoreSyncInitialized = true;
-
-            const projectsRef = collection(db, 'company_material_projects');
-            let initialSnapshotDone = false;
-
-            function processProjectsSnapshot(querySnapshot) {
-                initialSnapshotDone = true;
-                if (fallbackTimer) clearTimeout(fallbackTimer);
-                appData.isLoadingProjects = false;
-
-                const docs = [];
-                querySnapshot.forEach(docSnap => {
-                    docs.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                
-                // Sort by date or created descending
-                docs.sort((a, b) => b.id.localeCompare(a.id));
-                
-                appData.projects = docs;
-                
-                // Cache lightweight projects list in localStorage for instant access across tabs
-                try {
-                    const lightProjects = docs.map(p => {
-                        const pCopy = { ...p };
-                        if (Array.isArray(pCopy.items)) {
-                            pCopy.items = pCopy.items.map(it => {
-                                const { images, ...lightItem } = it;
-                                return lightItem;
-                            });
-                        }
-                        return pCopy;
-                    });
-                    localStorage.setItem('company_material_projects', JSON.stringify(lightProjects));
-                } catch(e) {}
-                
-                // Trigger view updates based on what is active
-                if (!document.getElementById('view-companies').classList.contains('hidden')) {
-                    appData.rendercompanies();
-                } else if (!document.getElementById('view-projects').classList.contains('hidden')) {
-                    appData.renderProjects();
-                } else if (!document.getElementById('view-project-details').classList.contains('hidden')) {
-                    const currentProj = docs.find(p => p.id === appData.currentProjectId);
-                    if (currentProj) {
-                        appData.updateProjectDetailsUI(currentProj);
-                        appData.renderExcelTable();
-                    } else {
-                        // Project was deleted
-                        appData.showcompaniesView();
-                    }
-                }
-            }
-
-            // Fallback: If real-time snapshot doesn't fire within 5 seconds, use direct getDocs
-            const fallbackTimer = setTimeout(async () => {
-                if (initialSnapshotDone) return;
-                console.warn('[materials_purchasing_company] onSnapshot delayed — fetching via getDocs fallback');
-                try {
-                    const snap = await getDocs(projectsRef);
-                    if (!initialSnapshotDone) {
-                        processProjectsSnapshot(snap);
-                    }
-                } catch (err) {
-                    console.error('[materials_purchasing_company] getDocs fallback error:', err);
-                    appData.isLoadingProjects = false;
-                    if (!document.getElementById('view-companies').classList.contains('hidden')) {
-                        appData.rendercompanies();
-                    }
-                }
-            }, 5000);
-
-            // Real-time Firestore sync
-            try {
-                onSnapshot(projectsRef, processProjectsSnapshot, (err) => {
-                    console.error('[materials_purchasing_company] onSnapshot error:', err);
-                    if (!initialSnapshotDone) {
-                        getDocs(projectsRef).then(snap => processProjectsSnapshot(snap)).catch(e => {
-                            console.error('[materials_purchasing_company] fallback getDocs failed:', e);
-                            appData.isLoadingProjects = false;
-                            if (!document.getElementById('view-companies').classList.contains('hidden')) {
-                                appData.rendercompanies();
-                            }
-                        });
-                    }
-                });
-            } catch (err) {
-                console.error('[materials_purchasing_company] onSnapshot setup error:', err);
-            }
-
-            // Listen for company logos
-            onSnapshot(doc(db, 'company_material_settings', 'company_logos'), (docSnap) => {
-                if (docSnap.exists()) {
-                    appData.companyLogos = docSnap.data() || {};
-                    try { localStorage.setItem('company_material_logos', JSON.stringify(appData.companyLogos)); } catch(e){}
-                    if (!document.getElementById('view-companies').classList.contains('hidden')) {
-                        appData.rendercompanies();
-                    }
-                }
-            }, (e) => console.warn('company_logos sync issue:', e));
-            
-            // Listen for company details
-            onSnapshot(doc(db, 'company_material_settings', 'company_details'), (docSnap) => {
-                if (docSnap.exists()) {
-                    appData.companyDetails = docSnap.data() || {};
-                    try { localStorage.setItem('company_material_details', JSON.stringify(appData.companyDetails)); } catch(e){}
-                }
-            }, (e) => console.warn('company_details sync issue:', e));
-            
-            // Listen for registered shops
-            onSnapshot(doc(db, 'material_settings', 'registered_shops'), (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data && data.shops && Array.isArray(data.shops)) {
-                        appData.registeredShops = data.shops;
-                        try { localStorage.setItem('material_registered_shops', JSON.stringify(appData.registeredShops)); } catch(e){}
-                    }
-                }
-            }, (e) => console.warn('registered_shops sync issue:', e));
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = '../../index.html';
-                return;
-            }
-
-            // Immediately set current user info before async calls so renders work
-            appData.currentUserId = user.uid;
-            try {
-                const cachedStr = localStorage.getItem('mentra_cached_user_profile') || localStorage.getItem('mentra_user_permissions');
-                if (cachedStr) {
-                    const cached = JSON.parse(cachedStr);
-                    if (cached.role) appData.currentUserRole = cached.role;
-                }
-            } catch(e) {}
-
-            // Immediately start Firestore sync in parallel with profile load
-            setupFirestoreSync();
-
-            // Show body right away if cached profile exists
-            document.body.style.setProperty('display', 'flex', 'important');
-
-            // Load user profile
-            try {
-                const snap = await getDoc(doc(db, 'users', user.uid));
-                if (!snap.exists()) {
-                    await signOut(auth);
-                    window.location.href = '../../index.html?msg=deleted';
-                    return;
-                }
-                const userData = snap.data();
-                if (userData.status === 'pending') {
-                    await signOut(auth);
-                    window.location.href = '../../index.html?msg=pending';
-                    return;
-                } else if (userData.status === 'rejected') {
-                    await signOut(auth);
-                    window.location.href = '../../index.html?msg=rejected';
-                    return;
-                }
-
-                if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
-
-                appData.currentUserId = user.uid;
-                appData.currentUserRole = userData.role || 'user';
-
-                // Update Topbar User UI
-                const resolvedName = userData.displayName 
-                    || (userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : '') 
-                    || userData.name 
-                    || userData.username 
-                    || user.displayName 
-                    || user.email 
-                    || 'ผู้ใช้งาน';
-                const userNameEl = document.getElementById('userName');
-                const userAvatarEl = document.getElementById('userAvatar');
-                const userRoleBadge = document.getElementById('userRoleBadge');
-                if (userNameEl) userNameEl.textContent = resolvedName;
-                if (userAvatarEl) userAvatarEl.textContent = resolvedName.charAt(0).toUpperCase();
-                if (userRoleBadge) {
-                    const r = userData.role || 'user';
-                    userRoleBadge.textContent = r === 'admin' ? 'Administrator' : (r.charAt(0).toUpperCase() + r.slice(1));
-                    userRoleBadge.className = `role-badge ${r}`;
-                }
-
-                // Cache profile for fast subsequent page loads
-                try {
-                    localStorage.setItem('mentra_cached_user_profile', JSON.stringify({
-                        ...userData,
-                        displayName: resolvedName
-                    }));
-                } catch(e) {}
-
-                const compView = document.getElementById('view-companies');
-                if (compView && !compView.classList.contains('hidden')) {
-                    appData.rendercompanies();
-                }
-            } catch (e) {
-                console.warn('User load issue:', e);
-            }
-        });
-
-            window.recompressImage = function(base64Str, maxWidth = 800, quality = 0.5) {
-                return new Promise((resolve) => {
-                    if (!base64Str || !base64Str.startsWith('data:image')) {
-                        resolve(base64Str);
-                        return;
-                    }
-                    const img = new Image();
-                    img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > height) {
-                            if (width > maxWidth) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
-                            }
-                        } else {
-                            if (height > maxWidth) {
-                                width = Math.round((width * maxWidth) / height);
-                                height = maxWidth;
-                            }
-                        }
-
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        
-                        // Fill white background to prevent transparent areas turning black in JPEG
-                        ctx.fillStyle = '#FFFFFF';
-                        ctx.fillRect(0, 0, width, height);
-                        
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
-                    };
-                    img.onerror = () => resolve(base64Str);
-                    img.src = base64Str;
-                });
-            };
-
-            window.driveIntegration = {
-                _folderCache: {},
-                async getOrCreateFolder(folderName, parentFolderId) {
-                    if (!window.GAS_URL) throw new Error("GAS_URL not configured");
-                    const cacheKey = `${folderName}_${parentFolderId || 'root'}`;
-                    if (this._folderCache[cacheKey]) {
-                        return this._folderCache[cacheKey];
-                    }
-                    const res = await fetch(window.GAS_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({ action: 'createFolder', folderName, parentFolderId })
-                    });
-                    const data = await res.json();
-                    if (data.status === 'error') throw new Error(data.message);
-                    this._folderCache[cacheKey] = data.folderId;
-                    return data.folderId;
-                },
-                async uploadImage(base64, filename, folderId) {
-                    if (!window.GAS_URL) throw new Error("GAS_URL not configured");
-                    const base64Data = base64.split(',')[1] || base64;
-                    const res = await fetch(window.GAS_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({ action: 'legacyUpload', base64: base64Data, filename, folderId, mimeType: 'image/jpeg' })
-                    });
-                    const data = await res.json();
-                    if (data.status === 'error') throw new Error(data.message);
-                    return `https://drive.google.com/uc?id=${data.fileId}`;
-                },
-                async uploadFileDirect(fileOrBlob, filename, folderId, onProgress) {
-                    if (!window.GAS_URL) throw new Error("GAS_URL not configured");
-                    
-                    // 1. Convert to base64
-                    const base64Data = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = e => {
-                            const res = e.target.result;
-                            const pureBase64 = res.includes(',') ? res.split(',')[1] : res;
-                            resolve(pureBase64);
-                        };
-                        reader.onerror = err => reject(err);
-                        reader.readAsDataURL(fileOrBlob);
-                    });
-
-                    if (typeof onProgress === 'function') {
-                        onProgress(15, Math.round(fileOrBlob.size * 0.15), fileOrBlob.size, 'กำลังส่งข้อมูลไปยัง Google Drive...');
-                    }
-
-                    // 2. Upload via XHR to GAS URL with real-time stream progress
-                    return new Promise((resolve, reject) => {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('POST', window.GAS_URL, true);
-                        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-                        xhr.timeout = 75000; // 75s timeout
-
-                        let smoothTimer = null;
-                        let currentPct = 15;
-
-                        xhr.upload.onprogress = (e) => {
-                            if (e.lengthComputable && e.total > 0) {
-                                const streamPct = Math.round((e.loaded / e.total) * 100);
-                                currentPct = Math.min(85, Math.round(15 + (streamPct * 0.70)));
-                                const sentBytes = Math.min(fileOrBlob.size, Math.round((e.loaded / e.total) * fileOrBlob.size));
-                                if (typeof onProgress === 'function') {
-                                    onProgress(currentPct, sentBytes, fileOrBlob.size, `กำลังส่งข้อมูล... ${currentPct}%`);
-                                }
-                            }
-                        };
-
-                        xhr.onload = () => {
-                            if (smoothTimer) clearInterval(smoothTimer);
-                            if (xhr.status >= 200 && xhr.status < 300) {
-                                try {
-                                    const data = JSON.parse(xhr.responseText);
-                                    if (data.status === 'error') {
-                                        reject(new Error(data.message || 'Google Drive error'));
-                                        return;
-                                    }
-                                    if (typeof onProgress === 'function') {
-                                        onProgress(100, fileOrBlob.size, fileOrBlob.size, 'บันทึกสำเร็จ!');
-                                    }
-                                    resolve(data.fileUrl || `https://drive.google.com/uc?id=${data.fileId}`);
-                                } catch (parseErr) {
-                                    reject(new Error('Invalid response from Google Drive: ' + xhr.responseText.slice(0, 100)));
-                                }
-                            } else {
-                                reject(new Error('Upload failed with status: ' + xhr.status));
-                            }
-                        };
-
-                        xhr.onerror = () => {
-                            if (smoothTimer) clearInterval(smoothTimer);
-                            reject(new Error('เกิดข้อผิดพลาดในการเชื่อมต่อ Google Drive'));
-                        };
-
-                        xhr.ontimeout = () => {
-                            if (smoothTimer) clearInterval(smoothTimer);
-                            reject(new Error('การเชื่อมต่อ Google Drive หมดเวลา (Timeout)'));
-                        };
-
-                        // When stream finishes, tick 85% -> 96% so UI is lively while Drive writes
-                        xhr.upload.onload = () => {
-                            currentPct = 85;
-                            if (typeof onProgress === 'function') {
-                                onProgress(85, fileOrBlob.size, fileOrBlob.size, 'Google Drive กำลังประมวลผล...');
-                            }
-                            smoothTimer = setInterval(() => {
-                                if (currentPct < 96) {
-                                    currentPct++;
-                                    if (typeof onProgress === 'function') {
-                                        onProgress(currentPct, fileOrBlob.size, fileOrBlob.size, 'กำลังบันทึกไฟล์...');
-                                    }
-                                }
-                            }, 400);
-                        };
-
-                        const payload = JSON.stringify({
-                            action: 'legacyUpload',
-                            base64: base64Data,
-                            filename: filename,
-                            folderId: folderId,
-                            mimeType: fileOrBlob.type || 'application/octet-stream'
-                        });
-
-                        xhr.send(payload);
-                    });
-                },
-                async uploadImageResumable(blob, filename, targetFolderId, onProgress) {
-                    // Forward directly to high-speed uploadFileDirect
-                    return this.uploadFileDirect(blob, filename, targetFolderId, onProgress);
-                },
-                async deleteFile(fileId) {
-                    if (!window.GAS_URL) return;
-                    await fetch(window.GAS_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'deleteFile', fileId })
-                    });
-                }
-            };
-
-            // Make global Firebase save methods available to appData
-            window.saveProjectToFirestore = async function(projData) {
-                try {
-                    let cleanedData = JSON.parse(JSON.stringify(projData)); // Ensure no undefined or proxies
-
-                    // Clean any temporary/optimistic blob: or data: URLs before saving to Firebase
-                    if (cleanedData.items) {
-                        const isArr = Array.isArray(cleanedData.items);
-                        const itemList = isArr ? cleanedData.items : Object.values(cleanedData.items);
-                        for (let item of itemList) {
-                            if (item.images && Array.isArray(item.images)) {
-                                item.images = item.images.filter(img => typeof img === 'string' && !img.startsWith('blob:'));
-                            }
-                            if (item.imageUrl && typeof item.imageUrl === 'string' && item.imageUrl.startsWith('blob:')) {
-                                item.imageUrl = '';
-                            }
-                        }
-                    }
-
-                    let sizeBytes = new Blob([JSON.stringify(cleanedData)]).size;
-                    
-                    // Emergency compression if document approaches 1MB Firebase limit
-                    if (sizeBytes > 900000) {
-                        for (let item of cleanedData.items) {
-                            if (item.images && item.images.length > 0) {
-                                for (let i = 0; i < item.images.length; i++) {
-                                    if (item.images[i] && item.images[i].length > 50000) {
-                                        item.images[i] = await window.recompressImage(item.images[i], 800, 0.5);
-                                    }
-                                }
-                            }
-                            if (item.imageUrl && item.imageUrl.length > 50000) {
-                                item.imageUrl = await window.recompressImage(item.imageUrl, 800, 0.5);
-                            }
-                        }
-                    }
-                    
-                    await setDoc(doc(db, 'company_material_projects', cleanedData.id), cleanedData);
-                } catch (e) {
-                    console.error("Firebase Save Error:", e);
-                    alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่\nสาเหตุ: ' + e.message);
-                }
-            };
-
-            window.deleteProjectFromFirestore = async function(projectId) {
-                try {
-                    await deleteDoc(doc(db, 'company_material_projects', projectId));
-                } catch (e) {
-                    console.error("Firebase Delete Error:", e);
-                    alert('เกิดข้อผิดพลาดในการลบข้อมูล กรุณาลองใหม่');
-                }
-            };
-
-            window.deletecompanyFromFirestore = async function(instName) {
-                try {
-                    await setDoc(doc(db, 'company_material_settings', 'company_logos'), {
-                        [instName]: deleteField()
-                    }, { merge: true });
-                } catch (e) {
-                    console.error("Firebase Delete company Error:", e);
-                }
-            };
-            
-            window.savecompanyLogoToFirestore = async function(instName, logoUrl) {
-                try {
-                    await setDoc(doc(db, 'company_material_settings', 'company_logos'), {
-                        [instName]: logoUrl
-                    }, { merge: true });
-                } catch (e) {
-                    console.error("Firebase Save Logo Error:", e);
-                }
-            };
-            
-            window.savecompanyDetailsToFirestore = async function(detailsObj) {
-                try {
-                    await setDoc(doc(db, 'company_material_settings', 'company_details'), detailsObj);
-                } catch (e) {
-                    console.error("Firebase Save Inst Details Error:", e);
-                }
-            };
-            
-            window.saveShopToFirestore = async function(shopsArray) {
-                try {
-                    await setDoc(doc(db, 'material_settings', 'registered_shops'), {
-                        shops: shopsArray
-                    }, { merge: true });
-                } catch (e) {
-                    console.error("Firebase Save Shop Error:", e);
-                }
-            };
-    </script>
-    <!-- MOBILE BOTTOM NAV -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around items-center h-16 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe">
-        <button onclick="window.location.href='../admin/dashboard.html'" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-brand-600 transition-colors">
-            <i class="fa-solid fa-house text-xl mb-1"></i>
-            <span class="text-[10px] font-medium">หน้าแรก</span>
-        </button>
-        <button onclick="window.location.href='products.html'" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-brand-600 transition-colors">
-            <i class="fa-solid fa-box text-xl mb-1"></i>
-            <span class="text-[10px] font-medium">สินค้า</span>
-        </button>
-        <button onclick="window.location.href='materials_purchasing.html'" class="flex flex-col items-center justify-center w-full h-full text-brand-600 transition-colors relative">
-            <div class="absolute -top-3 bg-brand-50 w-12 h-12 rounded-full border-4 border-white flex flex-col items-center justify-center shadow-sm">
-                <i class="fa-solid fa-cart-shopping text-xl"></i>
-            </div>
-            <span class="text-[10px] font-medium mt-6">จัดซื้อ</span>
-        </button>
-        <button onclick="window.location.href='../admin/dashboard.html?view=users'" class="flex flex-col items-center justify-center w-full h-full text-slate-400 hover:text-brand-600 transition-colors">
-            <i class="fa-solid fa-users text-xl mb-1"></i>
-            <span class="text-[10px] font-medium">ผู้ใช้</span>
-        </button>
-    </nav>
-
-    <!-- ===== MODAL: จัดการข้อมูลร้านค้า & อัปโหลดโลโก้ ===== -->
-    <div class="modal-overlay" id="shopManageModal" style="display:none;">
-        <div class="modal" style="max-width: 580px; border-radius: 18px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(7, 37, 66, 0.25);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #072542 0%, #0d4b85 100%); color: #ffffff; padding: 18px 24px;">
-                <div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 20px;">🏪</span>
-                        <h3 id="shopModalTitle" style="color: #ffffff; font-size: 18px; font-weight: 700; margin: 0; font-family: var(--sidebar-font);">เพิ่มร้านค้าใหม่</h3>
-                    </div>
-                    <div style="font-size: 12px; color: rgba(255, 255, 255, 0.82); margin-top: 3px; font-family: var(--sidebar-font);">กรอกข้อมูลร้านค้าและอัปโหลดโลโก้ เพื่อแยกพื้นที่จัดเก็บข้อมูลอิสระ</div>
-                </div>
-                <button class="modal-close" style="color: rgba(255, 255, 255, 0.85); font-size: 18px;" onclick="closeShopModal()">✕</button>
-            </div>
-            <div class="modal-body" style="padding: 22px; max-height: 72vh; overflow-y: auto;">
-                <!-- Logo Upload Section -->
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 14px; margin-bottom: 18px; transition: all 0.2s;" id="shopLogoDropzone">
-                    <div style="position: relative; margin-bottom: 10px;">
-                        <div id="shopLogoPreviewContainer" style="width: 84px; height: 84px; border-radius: 18px; background: #ffffff; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
-                            <img id="shopLogoPreview" src="" style="width: 100%; height: 100%; object-fit: contain; display: none;" alt="Logo Preview">
-                            <div id="shopLogoPlaceholder" style="text-align: center; color: #94a3b8;">
-                                <i class='bx bx-image-add' style="font-size: 32px; display: block; line-height: 1;"></i>
-                                <span style="font-size: 11px; font-weight: 600; margin-top: 4px; display: block;">โลโก้ร้าน</span>
-                            </div>
-                        </div>
-                        <button type="button" id="shopRemoveLogoBtn" onclick="removeShopLogoPreview()" style="display: none; position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; background: #ef4444; color: #fff; border: 2px solid #fff; font-size: 11px; cursor: pointer; align-items: center; justify-content: center;" title="ลบโลโก้">✕</button>
-                    </div>
-                    <div style="text-align: center;">
-                        <label for="shopLogoFileInput" class="btn btn-outline btn-sm" style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; font-weight: 600; font-size: 12.5px; padding: 6px 14px; background: #ffffff;">
-                            <i class='bx bx-cloud-upload'></i> <span>เลือกรูปโลโก้ร้านค้า</span>
-                        </label>
-                        <input type="file" id="shopLogoFileInput" accept="image/*" style="display: none;" onchange="handleShopLogoSelect(this)">
-                        <div style="font-size: 11px; color: #94a3b8; margin-top: 5px;">รองรับไฟล์ PNG, JPG, WebP หรือ SVG (ขนาดไม่เกิน 2MB)</div>
-                    </div>
-                </div>
-
-                <!-- Form Fields -->
-                <input type="hidden" id="editingShopId" value="">
-                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div class="field-group" style="grid-column: 1 / -1;">
-                        <label for="shopNameInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">ชื่อร้านค้า / บริษัท <span style="color: #ef4444;">*</span></label>
-                        <input type="text" id="shopNameInput" placeholder="เช่น Point Studio, โรงพิมพ์มิตรภาพ, บริษัท ทีพี มีเดีย จำกัด" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); outline: none; transition: border-color 0.2s;" required>
-                    </div>
-
-                    <div class="field-group">
-                        <label for="shopShortCodeInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">รหัสย่อร้าน (Short Code)</label>
-                        <input type="text" id="shopShortCodeInput" placeholder="เช่น PS, TP, MTR" maxlength="6" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); text-transform: uppercase;">
-                    </div>
-
-                    <div class="field-group">
-                        <label for="shopCategoryInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">หมวดหมู่ / ประเภทธุรกิจ</label>
-                        <select id="shopCategoryInput" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); background: #ffffff;">
-                            <option value="สตูดิโอ & มีเดีย">สตูดิโอ & มีเดีย</option>
-                            <option value="สิ่งพิมพ์ & โฆษณา">สิ่งพิมพ์ & โฆษณา</option>
-                            <option value="ไอที & ซอฟต์แวร์">ไอที & ซอฟต์แวร์</option>
-                            <option value="ค้าปลีก & จัดจำหน่าย">ค้าปลีก & จัดจำหน่าย</option>
-                            <option value="บริการ & ก่อสร้าง">บริการ & ก่อสร้าง</option>
-                            <option value="ร้านค้าทั่วไป">ร้านค้าทั่วไป</option>
-                        </select>
-                    </div>
-
-                    <div class="field-group">
-                        <label for="shopPhoneInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">เบอร์โทรศัพท์ติดต่อ</label>
-                        <input type="tel" id="shopPhoneInput" placeholder="เช่น 02-123-4567, 081-xxx-xxxx" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font);">
-                    </div>
-
-                    <div class="field-group">
-                        <label for="shopEmailInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">อีเมลร้านค้า</label>
-                        <input type="email" id="shopEmailInput" placeholder="shop@example.com" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font);">
-                    </div>
-
-                    <div class="field-group" style="grid-column: 1 / -1;">
-                        <label for="shopTaxIdInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">เลขประจำตัวผู้เสียภาษี (Tax ID)</label>
-                        <input type="text" id="shopTaxIdInput" placeholder="เลขประจำตัว 13 หลัก (ใช้สำหรับเปิดบิล/ออกเอกสาร)" maxlength="20" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font);">
-                    </div>
-
-                    <div class="field-group" style="grid-column: 1 / -1;">
-                        <label for="shopAddressInput" style="font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 5px; display: block;">ที่อยู่ / ที่ตั้งร้าน</label>
-                        <textarea id="shopAddressInput" rows="2" placeholder="ระบุเลขที่ตั้ง อาคาร ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด" style="width: 100%; padding: 9px 12px; border: 1.5px solid #cbd5e1; border-radius: 9px; font-size: 13.5px; font-family: var(--sidebar-font); resize: vertical;"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer" style="padding: 14px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" class="btn btn-outline" onclick="closeShopModal()" style="padding: 8px 16px; border-radius: 9px; font-weight: 600; font-size: 13px;">ยกเลิก</button>
-                <button type="button" class="btn btn-primary" onclick="saveShopModalData()" style="padding: 8px 20px; border-radius: 9px; font-weight: 600; font-size: 13px; background: linear-gradient(135deg, #072542 0%, #0d4b85 100%); border: none; color: #ffffff; display: flex; align-items: center; gap: 6px;">
-                    <i class='bx bx-check-circle'></i> <span>บันทึกและสลับไปใช้งาน</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-</body>
-</html>
-
-
-
-
-
-
-
-
+    

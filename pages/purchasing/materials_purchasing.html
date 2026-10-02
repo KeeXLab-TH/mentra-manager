@@ -34,7 +34,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- SheetJS for Excel Import -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
     
     <!-- SweetAlert2 for Popups -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -2196,11 +2196,29 @@
 
     <!-- ===== JAVASCRIPT LOGIC ===== -->
     <script>
-        // Data Store
+        // Pre-load safe display caches (logos/details/shops don't affect auth filtering)
+        let _cachedLogos = {};
+        let _cachedDetails = {};
+        let _cachedShops = [];
+        try {
+            const cl = localStorage.getItem('material_institution_logos');
+            if (cl) _cachedLogos = JSON.parse(cl) || {};
+            const cd = localStorage.getItem('material_institution_details');
+            if (cd) _cachedDetails = JSON.parse(cd) || {};
+            const cs = localStorage.getItem('material_registered_shops');
+            if (cs) _cachedShops = JSON.parse(cs) || [];
+        } catch(e) {}
+
+        // Data Store — currentUserId/Role are set by Firebase auth (never from stale cache)
+        // to avoid filtering private institutions with a null/wrong UID before auth confirms
         window.appData = {
             projects: [],
-            institutionLogos: {},
-            registeredShops: [],
+            institutionLogos: _cachedLogos,
+            institutionDetails: _cachedDetails,
+            registeredShops: _cachedShops,
+            currentUserId: null,
+            currentUserRole: 'user',
+            isLoadingProjects: true,
             selectedShopsForForm: [],
             currentProjectId: null,
             currentInstitution: null,
@@ -2521,8 +2539,24 @@
 
             // View Management
             init() {
-                // Initial render in case Firebase takes a moment
-                this.showInstitutionsView();
+                // If URL has projectId, open it directly if cached projects already available
+                const urlParams = new URLSearchParams(window.location.search);
+                const paramProjId = urlParams.get('projectId');
+                const paramMode = urlParams.get('mode');
+                if (paramMode === 'view') this.isReadOnly = true;
+                else if (paramMode === 'edit') this.isReadOnly = false;
+
+                if (paramProjId && this.projects.length > 0) {
+                    const sharedProj = this.projects.find(p => p.id === paramProjId);
+                    if (sharedProj) {
+                        this.hasAutoOpenedSharedProject = true;
+                        this.showProjectDetails(paramProjId);
+                    } else {
+                        this.showInstitutionsView();
+                    }
+                } else {
+                    this.showInstitutionsView();
+                }
                 
                 // Bind paste event for copying from Excel
                 document.addEventListener('paste', this.handleGlobalPaste.bind(this));
@@ -5991,6 +6025,19 @@
                 if (!grid) return;
                 grid.innerHTML = '';
                 
+                // Auth not confirmed yet — always show spinner to avoid
+                // filtering institutions incorrectly before userId/Role are set
+                if (!this.currentUserId) {
+                    grid.innerHTML = `
+                        <div class="col-span-full py-16 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-white/60 backdrop-blur">
+                            <div class="inline-block animate-spin w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full mb-3"></div>
+                            <p class="font-medium text-slate-700 text-base">กำลังโหลดข้อมูลสถานศึกษาและโครงการ...</p>
+                            <p class="text-xs text-slate-400 mt-1">กำลังเชื่อมต่อฐานข้อมูล กรุณารอสักครู่</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 // Group projects by institution
                 const instMap = new Map();
                 
@@ -6012,6 +6059,16 @@
                 });
                 
                 if (instMap.size === 0) {
+                    if (this.isLoadingProjects) {
+                        grid.innerHTML = `
+                            <div class="col-span-full py-16 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-white/60 backdrop-blur">
+                                <div class="inline-block animate-spin w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full mb-3"></div>
+                                <p class="font-medium text-slate-700 text-base">กำลังโหลดข้อมูลสถานศึกษาและโครงการ...</p>
+                                <p class="text-xs text-slate-400 mt-1">กำลังเชื่อมต่อฐานข้อมูล กรุณารอสักครู่</p>
+                            </div>
+                        `;
+                        return;
+                    }
                     grid.innerHTML = `
                         <div class="col-span-full py-12 text-center text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
                             <i class="fa-solid fa-school fa-2x mb-3 text-slate-300"></i>
@@ -6404,10 +6461,18 @@
                 let currentNo = 1;
 
                 proj.items.forEach((item, index) => {
+                    // Auto-calculate targetPrice (ควรซื้อ = unitPrice / 1.35) if unitPrice exists and targetPrice is not set
+                    const cleanUnitPrice = Number(String(item.unitPrice || 0).replace(/[฿,\s]/g, '')) || 0;
+                    const cleanTargetPrice = Number(String(item.targetPrice || 0).replace(/[฿,\s]/g, '')) || 0;
+                    if (!item.isHeader && cleanUnitPrice > 0 && cleanTargetPrice <= 0) {
+                        item.targetPrice = Math.round(cleanUnitPrice / 1.35);
+                    }
+
                     // Calculations
-                    const hasSellPrice = item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '' && !isNaN(Number(item.unitPrice)) && Number(item.unitPrice) > 0;
-                    const hasQty = item.qty !== undefined && item.qty !== null && item.qty !== '' && !isNaN(Number(item.qty)) && Number(item.qty) > 0;
-                    const totalAmt = (hasQty && hasSellPrice) ? (Number(item.qty) * Number(item.unitPrice)) : 0;
+                    const hasSellPrice = item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '' && !isNaN(cleanUnitPrice) && cleanUnitPrice > 0;
+                    const cleanQty = Number(String(item.qty !== undefined && item.qty !== null ? item.qty : '').replace(/,/g, ''));
+                    const hasQty = item.qty !== undefined && item.qty !== null && item.qty !== '' && !isNaN(cleanQty) && cleanQty > 0;
+                    const totalAmt = (hasQty && hasSellPrice) ? (cleanQty * cleanUnitPrice) : 0;
                     
                     // Display for total sell amount: show currency if priced, '-' if blank/unset
                     let displayTotalAmt = '-';
@@ -6432,10 +6497,11 @@
                         if (hasSellPrice && hasQty) {
                             sumTotal += totalAmt;
                         }
-                        if (item.targetPrice !== '' && item.targetPrice !== null && item.targetPrice !== undefined && Number(item.targetPrice) > 0) {
-                            sumTarget += (parseFloat(item.qty) || 0) * (parseFloat(item.targetPrice) || 0);
+                        const curTarget = Number(String(item.targetPrice || 0).replace(/[฿,\s]/g, '')) || 0;
+                        if (curTarget > 0) {
+                            sumTarget += (cleanQty > 0 ? cleanQty : 1) * curTarget;
                         }
-                        const actualFoundTotal = item.foundTotalPrice !== undefined && item.foundTotalPrice !== null && item.foundTotalPrice !== '' ? (parseFloat(item.foundTotalPrice) || 0) : ((parseFloat(item.qty) || 0) * (parseFloat(item.foundPrice) || 0));
+                        const actualFoundTotal = item.foundTotalPrice !== undefined && item.foundTotalPrice !== null && item.foundTotalPrice !== '' ? (parseFloat(String(item.foundTotalPrice).replace(/,/g, '')) || 0) : ((parseFloat(String(item.qty).replace(/,/g, '')) || 0) * (parseFloat(String(item.foundPrice).replace(/,/g, '')) || 0));
                         sumFound += actualFoundTotal;
                     }
 
@@ -6859,15 +6925,20 @@
                             item.foundTotalPrice = '';
                         } else if (field === 'foundTotalPrice') {
                             item.foundPrice = '';
+                        } else if (field === 'unitPrice') {
+                            item.targetPrice = '';
                         }
                     } else {
-                        const numVal = Number(rawVal) || 0;
+                        const numVal = Number(rawVal.replace(/[฿,\s]/g, '')) || 0;
                         if (field === 'qty') {
                             item.qty = numVal;
                             if (item.foundPrice > 0) {
                                 item.foundTotalPrice = Math.round(item.foundPrice * item.qty * 100) / 100;
                             } else if (item.foundTotalPrice > 0 && item.qty > 0) {
                                 item.foundPrice = Math.round((item.foundTotalPrice / item.qty) * 100) / 100;
+                            }
+                            if (Number(item.unitPrice) > 0 && (!item.targetPrice || Number(item.targetPrice) <= 0)) {
+                                item.targetPrice = Math.round(Number(item.unitPrice) / 1.35);
                             }
                         } else if (field === 'foundPrice') {
                             item.foundPrice = numVal;
@@ -6894,9 +6965,11 @@
                             item.unitPrice = numVal;
                             if (item.unitPrice > 0) {
                                 item.targetPrice = Math.round(item.unitPrice / 1.35);
+                            } else {
+                                item.targetPrice = '';
                             }
                         } else if (field === 'targetPrice') {
-                            item.targetPrice = numVal;
+                            item.targetPrice = numVal > 0 ? numVal : '';
                         }
                     }
                 } else {
@@ -7173,94 +7246,128 @@
                 const pastedText = clipboardData.getData('text');
                 if (!pastedText) return;
 
+                const activeEl = document.activeElement;
+                const isTableInput = activeEl && activeEl.classList.contains('excel-input');
+                if (!isTableInput) return;
+
+                const startField = activeEl.dataset.field;
+                const startItemId = activeEl.dataset.id;
+
                 // Check if it looks like tabular data (contains tabs or newlines)
                 const isTabularData = pastedText.indexOf('\t') !== -1 || pastedText.indexOf('\n') !== -1;
                 
-                const activeEl = document.activeElement;
-                const isTableInput = activeEl && activeEl.classList.contains('excel-input');
-                
-                // Only intercept if we have tabular data AND the user is focused on a table input cell
-                if (isTableInput && isTabularData) {
-                    event.preventDefault(); // Stop default pasting into the single input
-
-                    let rows = pastedText.split(/\r?\n/);
-                    // Excel adds a trailing newline, so remove only the last empty row if present
-                    if (rows.length > 0 && rows[rows.length - 1] === '') {
-                        rows.pop();
+                // If single-cell paste into a numeric field: clean commas, currency symbols (฿), and spaces
+                if (!isTabularData) {
+                    if (['qty', 'unitPrice', 'targetPrice', 'foundPrice', 'foundTotalPrice'].includes(startField)) {
+                        event.preventDefault();
+                        const cleanVal = pastedText.replace(/[฿,\s]/g, '').trim();
+                        const numVal = cleanVal === '' ? '' : (Number(cleanVal) || 0);
+                        activeEl.value = numVal;
+                        this.updateItem(startItemId, startField, numVal);
                     }
-                    if (rows.length === 0) return;
+                    return;
+                }
+                
+                // Tabular paste
+                event.preventDefault(); // Stop default pasting into the single input
 
-                    const proj = this.projects.find(p => p.id === this.currentProjectId);
-                    if (!proj) return;
+                let rows = pastedText.split(/\r?\n/);
+                // Excel adds a trailing newline, so remove only the last empty row if present
+                if (rows.length > 0 && rows[rows.length - 1] === '') {
+                    rows.pop();
+                }
+                if (rows.length === 0) return;
 
-                    // Table column order that matches the UI
-                    const fields = ['name', 'qty', 'unit', 'unitPrice', 'targetPrice', 'foundPrice', 'foundTotalPrice', 'storeInfo', 'link'];
-                    const startField = activeEl.dataset.field;
-                    const startItemId = activeEl.dataset.id;
-                    
-                    let startColIdx = fields.indexOf(startField);
-                    let startRowIdx = proj.items.findIndex(i => i.id === startItemId);
-                    
-                    if (startColIdx === -1 || startRowIdx === -1) return;
+                const proj = this.projects.find(p => p.id === this.currentProjectId);
+                if (!proj) return;
 
-                    this.showExcelLoader();
+                // Table column order matching UI layout (including virtual totalSell column)
+                const fields = ['mainNo', 'customNo', 'name', 'qty', 'unit', 'unitPrice', 'totalSell', 'targetPrice', 'foundPrice', 'foundTotalPrice', 'storeInfo', 'link'];
+                const startColIdx = fields.indexOf(startField);
+                const startRowIdx = proj.items.findIndex(i => i.id === startItemId);
+                
+                if (startColIdx === -1 || startRowIdx === -1) return;
 
-                    setTimeout(() => {
-                        try {
-                            for (let r = 0; r < rows.length; r++) {
-                                const cols = rows[r].split('\t');
-                                let currentRowIdx = startRowIdx + r;
+                this.showExcelLoader();
+
+                setTimeout(() => {
+                    try {
+                        for (let r = 0; r < rows.length; r++) {
+                            const cols = rows[r].split('\t');
+                            let currentRowIdx = startRowIdx + r;
+                            
+                            // Create new row if we paste beyond existing rows
+                            if (currentRowIdx >= proj.items.length) {
+                                proj.items.push({
+                                    id: 'item_' + Date.now() + '_' + currentRowIdx,
+                                    mainNo: (currentRowIdx + 1).toString(),
+                                    customNo: '',
+                                    name: '', qty: 1, unit: 'ชิ้น', unitPrice: '', targetPrice: '', foundPrice: '', foundTotalPrice: '', storeInfo: '', link: ''
+                                });
+                            }
+                            
+                            const item = proj.items[currentRowIdx];
+                            if (item.isHeader) continue;
+                            
+                            for (let c = 0; c < cols.length; c++) {
+                                let currentColIdx = startColIdx + c;
+                                if (currentColIdx >= fields.length) break; // Ignore extra columns beyond our table
                                 
-                                // Create new row if we paste beyond existing rows
-                                if (currentRowIdx >= proj.items.length) {
-                                    proj.items.push({
-                                        id: 'item_' + Date.now() + '_' + currentRowIdx,
-                                        name: '', qty: 1, unit: 'ชิ้น', unitPrice: 0, targetPrice: 0, foundPrice: 0, foundTotalPrice: 0, storeInfo: '', link: ''
-                                    });
+                                const fieldName = fields[currentColIdx];
+                                let val = cols[c].trim();
+                                
+                                // Skip totalSell column if pasted data has a total column (prevents overwriting targetPrice)
+                                if (fieldName === 'totalSell') {
+                                    continue;
                                 }
-                                
-                                const item = proj.items[currentRowIdx];
-                                
-                                for (let c = 0; c < cols.length; c++) {
-                                    let currentColIdx = startColIdx + c;
-                                    if (currentColIdx >= fields.length) break; // Ignore extra columns beyond our table
+
+                                // Clean up numbers if the field expects numbers
+                                if (['qty', 'unitPrice', 'targetPrice', 'foundPrice', 'foundTotalPrice'].includes(fieldName)) {
+                                    const cleanNum = Number(val.replace(/[฿,\s]/g, '')) || 0;
                                     
-                                    const fieldName = fields[currentColIdx];
-                                    let val = cols[c].trim();
-                                    
-                                    // Clean up numbers if the field expects numbers
-                                    if (['qty', 'unitPrice', 'targetPrice', 'foundPrice', 'foundTotalPrice'].includes(fieldName)) {
-                                        val = Number(val.replace(/,/g, '')) || 0;
-                                        item[fieldName] = val;
-                                        
-                                        // Auto-calculate logic (matching updateItem)
-                                        if (fieldName === 'foundPrice' && val > 0) {
-                                            item.foundTotalPrice = Math.round(val * (item.qty || 0) * 100) / 100;
-                                            const calculatedPrice = val * 1.35;
-                                            item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
-                                            item.targetPrice = Math.round(item.unitPrice / 1.35);
+                                    if (fieldName === 'unitPrice') {
+                                        item.unitPrice = cleanNum > 0 ? cleanNum : (val === '0' ? 0 : '');
+                                        if (cleanNum > 0) {
+                                            item.targetPrice = Math.round(cleanNum / 1.35);
                                         }
-                                        if (fieldName === 'foundTotalPrice' && val > 0) {
-                                            item.foundTotalPrice = val;
-                                            const qty = item.qty && item.qty > 0 ? item.qty : 1;
-                                            item.foundPrice = Math.round((val / qty) * 100) / 100;
-                                            const calculatedPrice = item.foundPrice * 1.35;
-                                            item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
-                                            item.targetPrice = Math.round(item.unitPrice / 1.35);
+                                    } else if (fieldName === 'targetPrice') {
+                                        // Only overwrite targetPrice if value is explicitly provided > 0
+                                        if (cleanNum > 0) {
+                                            item.targetPrice = cleanNum;
+                                        } else if (Number(item.unitPrice) > 0 && (!item.targetPrice || Number(item.targetPrice) <= 0)) {
+                                            item.targetPrice = Math.round(Number(item.unitPrice) / 1.35);
                                         }
-                                        if (fieldName === 'unitPrice' && val > 0) {
-                                            item.targetPrice = Math.round(val / 1.35);
-                                        }
+                                    } else if (fieldName === 'foundPrice' && cleanNum > 0) {
+                                        item.foundPrice = cleanNum;
+                                        item.foundTotalPrice = Math.round(cleanNum * (item.qty || 0) * 100) / 100;
+                                        const calculatedPrice = cleanNum * 1.35;
+                                        item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
+                                        item.targetPrice = Math.round(item.unitPrice / 1.35);
+                                    } else if (fieldName === 'foundTotalPrice' && cleanNum > 0) {
+                                        item.foundTotalPrice = cleanNum;
+                                        const qty = item.qty && item.qty > 0 ? item.qty : 1;
+                                        item.foundPrice = Math.round((cleanNum / qty) * 100) / 100;
+                                        const calculatedPrice = item.foundPrice * 1.35;
+                                        item.unitPrice = Math.ceil(calculatedPrice / 5) * 5;
+                                        item.targetPrice = Math.round(item.unitPrice / 1.35);
                                     } else {
-                                        item[fieldName] = val;
+                                        item[fieldName] = cleanNum > 0 ? cleanNum : (val === '0' ? 0 : '');
                                     }
+                                } else {
+                                    item[fieldName] = val;
                                 }
                             }
 
-                            this.syncCurrentProject();
-                            this.renderExcelTable();
-                            this.hideExcelLoader();
-                            setTimeout(() => this.showToast('วางข้อมูลลงในตารางสำเร็จ', 'success'), 300);
+                            // Ensure targetPrice is always calculated if unitPrice exists
+                            if (Number(item.unitPrice) > 0 && (!item.targetPrice || Number(item.targetPrice) <= 0)) {
+                                item.targetPrice = Math.round(Number(item.unitPrice) / 1.35);
+                            }
+                        }
+
+                        this.syncCurrentProject();
+                        this.renderExcelTable();
+                        this.hideExcelLoader();
+                        setTimeout(() => this.showToast('วางข้อมูลลงในตารางสำเร็จ', 'success'), 300);
 
                         } catch(e) {
                             console.error(e);
@@ -7268,7 +7375,6 @@
                             setTimeout(() => this.showToast('เกิดข้อผิดพลาดในการวางข้อมูล', 'error'), 300);
                         }
                     }, 400); // Slight delay for UI rendering
-                }
                 
                 // If not pasting tabular data into a table cell, let default browser behavior handle it
             },
@@ -7487,7 +7593,7 @@
     <script type="module">
         import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, deleteField } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+        import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot, deleteField } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         let FIREBASE_CONFIG;
         window.GAS_URL = null;
@@ -7527,118 +7633,23 @@
             }
         } catch(e) {}
 
-        onAuthStateChanged(auth, async (user) => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const paramProjId = urlParams.get('projectId');
-            const paramMode = urlParams.get('mode');
-            const isPublicView = Boolean(paramProjId && paramMode === 'view');
+        let firestoreSyncInitialized = false;
 
-            if (!user) {
-                if (isPublicView) {
-                    // Allow unauthenticated guest access for Read-Only shared link
-                    appData.isReadOnly = true;
-                    document.body.style.setProperty('display', 'flex', 'important');
-                    
-                    document.body.classList.add('no-sidebar');
-                    const sidebar = document.getElementById('sidebar');
-                    if (sidebar) sidebar.style.display = 'none';
-                    
-                    // Update Topbar UI for Guest
-                    const userNameEl = document.getElementById('userName');
-                    const userAvatarEl = document.getElementById('userAvatar');
-                    const userRoleBadge = document.getElementById('userRoleBadge');
-                    if (userNameEl) userNameEl.innerText = 'ผู้เข้าชมทั่วไป (Guest)';
-                    if (userAvatarEl) userAvatarEl.innerText = '👁️';
-                    if (userRoleBadge) {
-                        userRoleBadge.innerText = 'View Only';
-                        userRoleBadge.className = 'role-badge bg-amber-100 text-amber-800 border border-amber-200';
-                    }
-                    
-                    // Replace Logout button with Login button
-                    const logoutBtn = document.querySelector('.btn-logout');
-                    if (logoutBtn) {
-                        logoutBtn.onclick = () => window.location.href = '../../index.html';
-                        logoutBtn.innerHTML = `
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                                <polyline points="10 17 15 12 10 7"></polyline>
-                                <line x1="15" y1="12" x2="3" y2="12"></line>
-                            </svg>
-                            <span class="btn-logout-text">เข้าสู่ระบบ</span>
-                        `;
-                    }
-                } else {
-                    window.location.href = '../../index.html';
-                    return;
-                }
-            } else {
-                // Load user profile if logged in
-                try {
-                    const snap = await getDoc(doc(db, 'users', user.uid));
-                    if (!snap.exists()) {
-                        await signOut(auth);
-                        window.location.href = '../../index.html?msg=deleted';
-                        return;
-                    }
-                    const userData = snap.data();
-                    if (userData.status === 'pending') {
-                        await signOut(auth);
-                        window.location.href = '../../index.html?msg=pending';
-                        return;
-                    } else if (userData.status === 'rejected') {
-                        await signOut(auth);
-                        window.location.href = '../../index.html?msg=rejected';
-                        return;
-                    }
+        function setupFirestoreSync() {
+            if (firestoreSyncInitialized) return;
+            firestoreSyncInitialized = true;
 
-                    if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
+            const projectsRef = collection(db, 'material_projects');
+            let initialSnapshotDone = false;
 
-                    appData.currentUserId = user.uid;
-                    appData.currentUserRole = userData.role || 'user';
+            function processProjectsSnapshot(querySnapshot) {
+                initialSnapshotDone = true;
+                if (fallbackTimer) clearTimeout(fallbackTimer);
+                appData.isLoadingProjects = false;
 
-                    // Update Topbar User UI
-                    const resolvedName = userData.displayName 
-                        || (userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : '') 
-                        || userData.name 
-                        || userData.username 
-                        || user.displayName 
-                        || user.email 
-                        || 'ผู้ใช้งาน';
-                    const userNameEl = document.getElementById('userName');
-                    const userAvatarEl = document.getElementById('userAvatar');
-                    const userRoleBadge = document.getElementById('userRoleBadge');
-                    if (userNameEl) userNameEl.textContent = resolvedName;
-                    if (userAvatarEl) userAvatarEl.textContent = resolvedName.charAt(0).toUpperCase();
-                    if (userRoleBadge) {
-                        const r = userData.role || 'user';
-                        userRoleBadge.textContent = r === 'admin' ? 'Administrator' : (r.charAt(0).toUpperCase() + r.slice(1));
-                        userRoleBadge.className = `role-badge ${r}`;
-                    }
-
-                    // Cache profile for fast subsequent page loads
-                    try {
-                        localStorage.setItem('mentra_cached_user_profile', JSON.stringify({
-                            ...userData,
-                            displayName: resolvedName
-                        }));
-                    } catch(e) {}
-
-                    if (!document.getElementById('view-institutions').classList.contains('hidden')) {
-                        appData.renderInstitutions();
-                    }
-
-                    // Show body now that the user is fully verified
-                    document.body.style.setProperty('display', 'flex', 'important');
-                } catch (e) {
-                    console.warn('User load issue:', e);
-                }
-            }
-
-            // Real-time Firestore sync
-            onSnapshot(collection(db, 'material_projects'), (querySnapshot) => {
                 const docs = [];
-                querySnapshot.forEach(doc => {
-                    const data = doc.data() || {};
+                querySnapshot.forEach(docSnap => {
+                    const data = docSnap.data() || {};
                     // Sanitize corrupted project data where school was mistakenly set as company/shop
                     if (data.company && data.institution && data.company === data.institution) {
                         data.company = '';
@@ -7646,7 +7657,7 @@
                     if (data.shop && data.institution && data.shop === data.institution) {
                         data.shop = '';
                     }
-                    docs.push({ id: doc.id, ...data });
+                    docs.push({ id: docSnap.id, ...data });
                 });
                 
                 // Sort by date or created descending
@@ -7704,36 +7715,200 @@
                         appData.showInstitutionsView();
                     }
                 }
-            });
+            }
+
+            // Fallback: If real-time snapshot doesn't fire within 5 seconds, use direct getDocs
+            const fallbackTimer = setTimeout(async () => {
+                if (initialSnapshotDone) return;
+                console.warn('[materials_purchasing] onSnapshot delayed — fetching via getDocs fallback');
+                try {
+                    const snap = await getDocs(projectsRef);
+                    if (!initialSnapshotDone) {
+                        processProjectsSnapshot(snap);
+                    }
+                } catch (err) {
+                    console.error('[materials_purchasing] getDocs fallback error:', err);
+                    appData.isLoadingProjects = false;
+                    if (!document.getElementById('view-institutions').classList.contains('hidden')) {
+                        appData.renderInstitutions();
+                    }
+                }
+            }, 5000);
+
+            // Real-time Firestore sync
+            try {
+                onSnapshot(projectsRef, processProjectsSnapshot, (err) => {
+                    console.error('[materials_purchasing] onSnapshot error:', err);
+                    if (!initialSnapshotDone) {
+                        getDocs(projectsRef).then(snap => processProjectsSnapshot(snap)).catch(e => {
+                            console.error('[materials_purchasing] fallback getDocs failed:', e);
+                            appData.isLoadingProjects = false;
+                            if (!document.getElementById('view-institutions').classList.contains('hidden')) {
+                                appData.renderInstitutions();
+                            }
+                        });
+                    }
+                });
+            } catch (err) {
+                console.error('[materials_purchasing] onSnapshot setup error:', err);
+            }
 
             // Listen for institution logos
             onSnapshot(doc(db, 'material_settings', 'institution_logos'), (docSnap) => {
                 if (docSnap.exists()) {
-                    appData.institutionLogos = docSnap.data();
+                    appData.institutionLogos = docSnap.data() || {};
+                    try { localStorage.setItem('material_institution_logos', JSON.stringify(appData.institutionLogos)); } catch(e){}
                     if (!document.getElementById('view-institutions').classList.contains('hidden')) {
                         appData.renderInstitutions();
                     }
                 }
-            });
+            }, (e) => console.warn('institution_logos sync issue:', e));
             
             // Listen for institution details
             onSnapshot(doc(db, 'material_settings', 'institution_details'), (docSnap) => {
                 if (docSnap.exists()) {
-                    appData.institutionDetails = docSnap.data();
+                    appData.institutionDetails = docSnap.data() || {};
+                    try { localStorage.setItem('material_institution_details', JSON.stringify(appData.institutionDetails)); } catch(e){}
                     if (!document.getElementById('view-institutions').classList.contains('hidden')) {
                         appData.renderInstitutions();
                     }
                 }
-            });
+            }, (e) => console.warn('institution_details sync issue:', e));
             
             // Listen for registered shops
             onSnapshot(doc(db, 'material_settings', 'registered_shops'), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if (data.shops && Array.isArray(data.shops)) {
+                    if (data && data.shops && Array.isArray(data.shops)) {
                         appData.registeredShops = data.shops;
+                        try { localStorage.setItem('material_registered_shops', JSON.stringify(appData.registeredShops)); } catch(e){}
                     }
                 }
+            }, (e) => console.warn('registered_shops sync issue:', e));
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramProjId = urlParams.get('projectId');
+            const paramMode = urlParams.get('mode');
+            const isPublicView = Boolean(paramProjId && paramMode === 'view');
+
+            if (!user) {
+                if (isPublicView) {
+                    // Allow unauthenticated guest access for Read-Only shared link
+                    appData.isReadOnly = true;
+                    document.body.style.setProperty('display', 'flex', 'important');
+                    
+                    document.body.classList.add('no-sidebar');
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar) sidebar.style.display = 'none';
+                    
+                    // Update Topbar UI for Guest
+                    const userNameEl = document.getElementById('userName');
+                    const userAvatarEl = document.getElementById('userAvatar');
+                    const userRoleBadge = document.getElementById('userRoleBadge');
+                    if (userNameEl) userNameEl.innerText = 'ผู้เข้าชมทั่วไป (Guest)';
+                    if (userAvatarEl) userAvatarEl.innerText = '👁️';
+                    if (userRoleBadge) {
+                        userRoleBadge.innerText = 'View Only';
+                        userRoleBadge.className = 'role-badge bg-amber-100 text-amber-800 border border-amber-200';
+                    }
+                    
+                    // Replace Logout button with Login button
+                    const logoutBtn = document.querySelector('.btn-logout');
+                    if (logoutBtn) {
+                        logoutBtn.onclick = () => window.location.href = '../../index.html';
+                        logoutBtn.innerHTML = `
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                            <span class="btn-logout-text">เข้าสู่ระบบ</span>
+                        `;
+                    }
+
+                    // Start Firestore sync for Guest
+                    setupFirestoreSync();
+                } else {
+                    window.location.href = '../../index.html';
+                    return;
+                }
+            } else {
+                // Immediately set current user info before async calls so renders work
+                appData.currentUserId = user.uid;
+                try {
+                    const cachedStr = localStorage.getItem('mentra_cached_user_profile') || localStorage.getItem('mentra_user_permissions');
+                    if (cachedStr) {
+                        const cached = JSON.parse(cachedStr);
+                        if (cached.role) appData.currentUserRole = cached.role;
+                    }
+                } catch(e) {}
+
+                // Immediately start Firestore sync in parallel with profile load
+                setupFirestoreSync();
+
+                // Show body right away if cached profile exists
+                document.body.style.setProperty('display', 'flex', 'important');
+
+                // Load user profile in background
+                try {
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (!snap.exists()) {
+                        await signOut(auth);
+                        window.location.href = '../../index.html?msg=deleted';
+                        return;
+                    }
+                    const userData = snap.data();
+                    if (userData.status === 'pending') {
+                        await signOut(auth);
+                        window.location.href = '../../index.html?msg=pending';
+                        return;
+                    } else if (userData.status === 'rejected') {
+                        await signOut(auth);
+                        window.location.href = '../../index.html?msg=rejected';
+                        return;
+                    }
+
+                    if (window.checkPageAccess && !window.checkPageAccess(userData)) return;
+
+                    appData.currentUserId = user.uid;
+                    appData.currentUserRole = userData.role || 'user';
+
+                    // Update Topbar User UI
+                    const resolvedName = userData.displayName 
+                        || (userData.firstName ? `${userData.firstName} ${userData.lastName || ''}`.trim() : '') 
+                        || userData.name 
+                        || userData.username 
+                        || user.displayName 
+                        || user.email 
+                        || 'ผู้ใช้งาน';
+                    const userNameEl = document.getElementById('userName');
+                    const userAvatarEl = document.getElementById('userAvatar');
+                    const userRoleBadge = document.getElementById('userRoleBadge');
+                    if (userNameEl) userNameEl.textContent = resolvedName;
+                    if (userAvatarEl) userAvatarEl.textContent = resolvedName.charAt(0).toUpperCase();
+                    if (userRoleBadge) {
+                        const r = userData.role || 'user';
+                        userRoleBadge.textContent = r === 'admin' ? 'Administrator' : (r.charAt(0).toUpperCase() + r.slice(1));
+                        userRoleBadge.className = `role-badge ${r}`;
+                    }
+
+                    // Cache profile for fast subsequent page loads
+                    try {
+                        localStorage.setItem('mentra_cached_user_profile', JSON.stringify({
+                            ...userData,
+                            displayName: resolvedName
+                        }));
+                    } catch(e) {}
+
+                    if (!document.getElementById('view-institutions').classList.contains('hidden')) {
+                        appData.renderInstitutions();
+                    }
+                } catch (e) {
+                    console.warn('User load issue:', e);
+                }
+            }
             });
 
             window.recompressImage = function(base64Str, maxWidth = 800, quality = 0.5) {
@@ -8012,7 +8187,6 @@
                     console.error("Firebase Save Shop Error:", e);
                 }
             };
-        });
     </script>
     <!-- MOBILE BOTTOM NAV -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 flex justify-around items-center h-16 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe">
