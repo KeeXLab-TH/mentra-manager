@@ -4883,19 +4883,31 @@
                         
                         // Clean items of heavy base64 images to prevent localStorage quota issues
                         const rawItems = Array.isArray(proj.items) ? proj.items : (proj.items && typeof proj.items === 'object' ? Object.values(proj.items) : []);
-                        const cleanItems = rawItems.map(it => ({
-                            id: it.id,
-                            isHeader: !!it.isHeader,
-                            mainNo: it.mainNo !== undefined ? it.mainNo : '',
-                            customNo: it.customNo || '',
-                            name: it.name || it.desc || '',
-                            desc: it.desc || it.name || '',
-                            qty: Number(it.qty) || 1,
-                            unit: it.unit || 'ชุด',
-                            unitPrice: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            price: Number(it.unitPrice) || Number(it.targetPrice) || Number(it.foundPrice) || 0,
-                            storeInfo: it.storeInfo || ''
-                        }));
+                        const cleanItems = rawItems.map(it => {
+                            const rawPrice = it.unitPrice !== undefined && it.unitPrice !== null && it.unitPrice !== '' ? Number(it.unitPrice)
+                                           : it.targetPrice !== undefined && it.targetPrice !== null && it.targetPrice !== '' ? Number(it.targetPrice)
+                                           : it.foundPrice !== undefined && it.foundPrice !== null && it.foundPrice !== '' ? Number(it.foundPrice)
+                                           : '';
+                            const hasPrice = rawPrice !== '' && !isNaN(rawPrice) && rawPrice > 0;
+                            const price = rawPrice !== '' && !isNaN(rawPrice) ? rawPrice : '';
+
+                            const rawQty = it.qty !== undefined && it.qty !== null && it.qty !== '' ? Number(it.qty) : '';
+                            const qty = rawQty !== '' ? rawQty : (hasPrice ? 1 : '');
+
+                            return {
+                                id: it.id,
+                                isHeader: !!it.isHeader,
+                                mainNo: it.mainNo !== undefined ? it.mainNo : '',
+                                customNo: it.customNo || '',
+                                name: it.name || it.desc || '',
+                                desc: it.desc || it.name || '',
+                                qty: qty,
+                                unit: it.unit || '',
+                                unitPrice: price,
+                                price: price,
+                                storeInfo: it.storeInfo || ''
+                            };
+                        });
 
                         const instDetails = (this.institutionDetails && proj.institution) ? (this.institutionDetails[proj.institution] || {}) : {};
                         const pendingData = {
