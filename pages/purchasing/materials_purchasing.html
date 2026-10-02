@@ -1164,6 +1164,7 @@
                                 <span class="flex items-center gap-1.5"><i class="fa-regular fa-calendar text-slate-400"></i> <span id="detail-project-date">---</span></span>
                                 <span class="flex items-center gap-1.5"><i class="fa-solid fa-building text-slate-400"></i> <span id="detail-project-dept">---</span></span>
                                 <span class="flex items-center gap-1.5"><i class="fa-solid fa-school text-slate-400"></i> <span id="detail-project-inst">---</span></span>
+                                <span class="flex items-center gap-1.5" id="detail-project-taxid-container" style="display: none;"><i class="fa-solid fa-id-card text-slate-400"></i> <span id="detail-project-taxid">---</span></span>
                                 <span class="flex items-center gap-1.5" id="detail-project-company-container" style="display: none;"><i class="fa-solid fa-shop text-slate-400"></i> <span id="detail-project-company">---</span></span>
                                 <span class="flex items-center gap-1.5"><i class="fa-solid fa-user-tie text-slate-400"></i> <span id="detail-project-teacher">---</span></span>
                             </div>
@@ -1561,7 +1562,13 @@
                             <!-- Institution -->
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อสถานศึกษา</label>
-                                <input type="text" id="modal-proj-inst" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ระบุชื่อสถานศึกษา">
+                                <input type="text" id="modal-proj-inst" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="ระบุชื่อสถานศึกษา" oninput="appData.onProjectInstitutionChange()">
+                            </div>
+                            
+                            <!-- Tax ID -->
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">เลขประจำตัวผู้เสียภาษี (สถานศึกษา)</label>
+                                <input type="text" id="modal-proj-taxid" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น 0-9940-00123-45-6 (13 หลัก)">
                             </div>
                             
                             <!-- Company/Shop -->
@@ -1681,6 +1688,11 @@
                             <input type="text" id="modal-inst-name" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-base" placeholder="เช่น วิทยาลัยเทคนิค..." onkeydown="if(event.key === 'Enter') appData.saveNewInstitution()">
                         </div>
 
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">เลขประจำตัวผู้เสียภาษีอากร</label>
+                            <input type="text" id="modal-inst-taxid" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น 0-9940-00123-45-6" onkeydown="if(event.key === 'Enter') appData.saveNewInstitution()">
+                        </div>
+
                         <!-- Admin Visibility Setting for New Institution -->
                         <div id="add-inst-admin-settings" class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                             <label class="block text-xs font-semibold text-slate-700 flex items-center gap-1.5">
@@ -1735,6 +1747,11 @@
                             <label class="block text-sm font-semibold text-slate-700 mb-1">ชื่อสถานศึกษา <span class="text-red-500">*</span></label>
                             <input type="text" id="modal-inst-details-name" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น วิทยาลัยเทคนิค...">
                             <p class="text-xs text-orange-500 mt-1"><i class="fa-solid fa-triangle-exclamation"></i> หากเปลี่ยนชื่อ โครงการทั้งหมดในสถานศึกษานี้จะถูกเปลี่ยนชื่อตามไปด้วย</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">เลขประจำตัวผู้เสียภาษีอากร</label>
+                            <input type="text" id="modal-inst-details-taxid" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm" placeholder="เช่น 0-9940-00123-45-6 (13 หลัก)">
                         </div>
                         
                         <div class="mb-4">
@@ -2647,6 +2664,7 @@
                 const modal = document.getElementById('add-inst-modal');
                 const content = document.getElementById('add-inst-modal-content');
                 document.getElementById('modal-inst-name').value = '';
+                if (document.getElementById('modal-inst-taxid')) document.getElementById('modal-inst-taxid').value = '';
                 
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
@@ -2676,6 +2694,7 @@
                     return;
                 }
                 
+                const taxId = document.getElementById('modal-inst-taxid')?.value.trim() || '';
                 const isVisible = document.getElementById('modal-add-inst-visible')?.value !== 'false';
                 const adminOnlyVal = document.getElementById('modal-add-inst-adminonly')?.value || 'false';
 
@@ -2683,6 +2702,7 @@
                 if (!this.institutionDetails[name]) {
                     this.institutionDetails[name] = {};
                 }
+                this.institutionDetails[name].taxId = taxId;
                 this.institutionDetails[name].visible = isVisible;
                 this.institutionDetails[name].adminOnly = adminOnlyVal === 'private' ? 'private' : (adminOnlyVal === 'true');
                 if (this.currentUserId) {
@@ -3006,6 +3026,9 @@
                 
                 document.getElementById('modal-inst-details-old-name').value = instName;
                 document.getElementById('modal-inst-details-name').value = instName;
+                if (document.getElementById('modal-inst-details-taxid')) {
+                    document.getElementById('modal-inst-details-taxid').value = details.taxId || '';
+                }
                 document.getElementById('modal-inst-details-address').value = details.address || '';
                 document.getElementById('modal-inst-details-contact').value = details.contact || '';
                 document.getElementById('modal-inst-details-phone').value = details.phone || '';
@@ -3048,6 +3071,7 @@
             async saveInstDetails() {
                 const oldName = document.getElementById('modal-inst-details-old-name').value;
                 const newName = document.getElementById('modal-inst-details-name').value.trim();
+                const taxId = document.getElementById('modal-inst-details-taxid')?.value.trim() || '';
                 const address = document.getElementById('modal-inst-details-address').value.trim();
                 const contact = document.getElementById('modal-inst-details-contact').value.trim();
                 const phone = document.getElementById('modal-inst-details-phone').value.trim();
@@ -3065,7 +3089,7 @@
                 const oldDetails = this.institutionDetails[oldName] || {};
                 const createdBy = oldDetails.createdBy || this.currentUserId || null;
                 
-                const newDetails = { address, contact, phone, email, visible: isVisible, adminOnly: adminOnly, createdBy: createdBy };
+                const newDetails = { address, contact, phone, email, taxId, visible: isVisible, adminOnly: adminOnly, createdBy: createdBy };
                 
                 if (oldName !== newName) {
                     // Rename logic
@@ -3082,11 +3106,10 @@
                     }
                     
                     // Update all projects
-                    let updatedAny = false;
                     this.projects.forEach(p => {
                         if (p.institution === oldName) {
                             p.institution = newName;
-                            updatedAny = true;
+                            p.taxId = taxId;
                             if (window.saveProjectToFirestore) {
                                 window.saveProjectToFirestore(p);
                             }
@@ -3094,6 +3117,15 @@
                     });
                 } else {
                     this.institutionDetails[oldName] = newDetails;
+                    // Also propagate taxId to projects under this institution
+                    this.projects.forEach(p => {
+                        if (p.institution === oldName) {
+                            p.taxId = taxId;
+                            if (window.saveProjectToFirestore) {
+                                window.saveProjectToFirestore(p);
+                            }
+                        }
+                    });
                 }
                 
                 if (window.saveInstitutionDetailsToFirestore) {
@@ -3102,6 +3134,10 @@
                 
                 this.closeInstDetailsModal();
                 this.renderInstitutions();
+                if (this.currentProjectId) {
+                    const curP = this.projects.find(p => p.id === this.currentProjectId);
+                    if (curP) this.updateProjectDetailsUI(curP);
+                }
                 Swal.fire({
                     icon: 'success',
                     title: 'บันทึกสำเร็จ',
@@ -3312,6 +3348,17 @@
                 document.getElementById('detail-project-date').innerText = displayDate;
                 document.getElementById('detail-project-dept').innerText = proj.department || 'ไม่ระบุแผนก';
                 document.getElementById('detail-project-inst').innerText = proj.institution || 'ไม่ระบุสถานศึกษา';
+                
+                const taxIdContainer = document.getElementById('detail-project-taxid-container');
+                if (taxIdContainer) {
+                    const instTax = (proj.taxId || (this.institutionDetails && proj.institution && this.institutionDetails[proj.institution]?.taxId) || '').trim();
+                    if (instTax) {
+                        document.getElementById('detail-project-taxid').innerText = `TAX: ${instTax}`;
+                        taxIdContainer.style.display = 'flex';
+                    } else {
+                        taxIdContainer.style.display = 'none';
+                    }
+                }
                 
                 const companyContainer = document.getElementById('detail-project-company-container');
                 if (companyContainer) {
@@ -4573,7 +4620,12 @@
                 document.getElementById('modal-proj-code').value = '';
                 document.getElementById('modal-proj-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('modal-proj-dept').value = '';
-                document.getElementById('modal-proj-inst').value = this.currentInstitution || '';
+                const curInst = this.currentInstitution || '';
+                document.getElementById('modal-proj-inst').value = curInst;
+                const curInstTax = (this.institutionDetails && curInst && this.institutionDetails[curInst]?.taxId) || '';
+                if (document.getElementById('modal-proj-taxid')) {
+                    document.getElementById('modal-proj-taxid').value = curInstTax;
+                }
                 this.selectedShopsForForm = [];
                 this.updateShopDisplay();
                 this.populateShopDropdown();
@@ -4608,7 +4660,12 @@
                 document.getElementById('modal-proj-code').value = proj.code || '';
                 document.getElementById('modal-proj-date').value = proj.date || new Date().toISOString().split('T')[0];
                 document.getElementById('modal-proj-dept').value = proj.department || '';
-                document.getElementById('modal-proj-inst').value = proj.institution || '';
+                const projInst = proj.institution || '';
+                document.getElementById('modal-proj-inst').value = projInst;
+                const projInstTax = proj.taxId || (this.institutionDetails && projInst && this.institutionDetails[projInst]?.taxId) || '';
+                if (document.getElementById('modal-proj-taxid')) {
+                    document.getElementById('modal-proj-taxid').value = projInstTax;
+                }
                 let validCompany = (proj.company && proj.company !== proj.institution) ? proj.company : '';
                 if (!validCompany && proj.shop && proj.shop !== proj.institution) {
                     validCompany = proj.shop;
@@ -4630,6 +4687,16 @@
                     content.classList.remove('scale-95');
                     content.classList.add('scale-100');
                 }, 10);
+            },
+            
+            onProjectInstitutionChange() {
+                const instName = document.getElementById('modal-proj-inst')?.value.trim();
+                if (instName && this.institutionDetails && this.institutionDetails[instName]?.taxId) {
+                    const taxInput = document.getElementById('modal-proj-taxid');
+                    if (taxInput && !taxInput.value) {
+                        taxInput.value = this.institutionDetails[instName].taxId;
+                    }
+                }
             },
             
             closeAddProjectModal() {
@@ -4659,6 +4726,7 @@
                 const date = document.getElementById('modal-proj-date').value;
                 const dept = document.getElementById('modal-proj-dept').value.trim();
                 const inst = document.getElementById('modal-proj-inst').value.trim();
+                const taxId = document.getElementById('modal-proj-taxid')?.value.trim() || '';
                 const company = this.selectedShopsForForm.length > 0 ? this.selectedShopsForForm[0] : '';
                 const teacher = document.getElementById('modal-proj-teacher').value.trim();
                 const status = document.getElementById('modal-proj-status').value;
@@ -4669,6 +4737,17 @@
                     return;
                 }
                 
+                // If taxId is entered and institution exists, keep institutionDetails in sync
+                if (inst && taxId && this.institutionDetails) {
+                    if (!this.institutionDetails[inst]) this.institutionDetails[inst] = {};
+                    if (!this.institutionDetails[inst].taxId || this.institutionDetails[inst].taxId !== taxId) {
+                        this.institutionDetails[inst].taxId = taxId;
+                        if (window.saveInstitutionDetailsToFirestore) {
+                            window.saveInstitutionDetailsToFirestore(this.institutionDetails);
+                        }
+                    }
+                }
+                
                 if (this.isEditMode) {
                     const proj = this.projects.find(p => String(p.id) === String(this.currentProjectId));
                     if (proj) {
@@ -4677,6 +4756,7 @@
                         proj.date = date;
                         proj.department = dept;
                         proj.institution = inst;
+                        proj.taxId = taxId;
                         proj.company = company;
                         proj.shop = company; // Synchronize shop with selected company issuer
                         proj.teacher = teacher;
@@ -4723,6 +4803,7 @@
                         date: date,
                         department: dept,
                         institution: inst,
+                        taxId: taxId,
                         company: company,
                         shop: company,
                         teacher: teacher,
@@ -4891,7 +4972,12 @@
                             }
                         }
                     }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}`;
+                    let taxParam = '';
+                    const instTax = (proj?.taxId || instDetails?.taxId || '').trim();
+                    if (instTax) {
+                        taxParam = `&taxId=${encodeURIComponent(instTax)}`;
+                    }
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}${taxParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school${shopParam}${taxParam}`;
                 }
             },
 
@@ -5727,7 +5813,8 @@
                             window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToInvoice error:', e));
                         }
                     }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=invoice${shopParam}${parentRefParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=invoice${shopParam}${parentRefParam}`;
+                    const taxParam = (proj?.taxId || instDetails?.taxId) ? `&taxId=${encodeURIComponent((proj.taxId || instDetails.taxId).trim())}` : '';
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=invoice${shopParam}${parentRefParam}${taxParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=invoice${shopParam}${parentRefParam}${taxParam}`;
                 }
             },
 
@@ -5820,7 +5907,8 @@
                             window.saveProjectToFirestore(proj).catch(e => console.warn('Sync on goToReceipt error:', e));
                         }
                     }
-                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=receipt${shopParam}${parentRefParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=receipt${shopParam}${parentRefParam}`;
+                    const taxParam = (proj?.taxId || instDetails?.taxId) ? `&taxId=${encodeURIComponent((proj.taxId || instDetails.taxId).trim())}` : '';
+                    window.location.href = typeof getDeptUrl === 'function' ? getDeptUrl(`quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=receipt${shopParam}${parentRefParam}${taxParam}`) : `../accounting/quotation.html?projectId=${encodeURIComponent(this.currentProjectId)}&source=school&docType=receipt${shopParam}${parentRefParam}${taxParam}`;
                 }
             },
 
@@ -5999,13 +6087,14 @@
                                     <h3 class="text-xl font-bold transition-colors line-clamp-1 ${titleClass}">${instName}</h3>
                                     ${statusBadgeHtml}
                                 </div>
-                                <div class="flex items-center gap-3 mt-1.5 text-sm text-slate-500 font-medium">
+                                <div class="flex flex-wrap items-center gap-2 sm:gap-3 mt-1.5 text-sm text-slate-500 font-medium">
                                     <div class="bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded text-[11px] font-bold tracking-wide">
                                         ${stats.count} โครงการ
                                     </div>
                                     <span class="flex items-center gap-1.5">
                                         <i class="fa-solid fa-boxes-stacked text-slate-400"></i> รวม ${stats.itemsCount} รายการพัสดุ
                                     </span>
+                                    ${details.taxId ? `<span class="flex items-center gap-1 text-xs text-slate-500 bg-slate-50 border border-slate-200/80 px-2 py-0.5 rounded-md"><i class="fa-solid fa-id-card text-brand-500"></i> เลขผู้เสียภาษี: <span class="font-mono font-semibold text-slate-700">${details.taxId}</span></span>` : ''}
                                 </div>
                             </div>
                         </div>
