@@ -692,14 +692,52 @@
             color: #000000;
         }
 
-        /* Meta Row */
+        /* Meta Row & Date Layout Variations */
         .doc-meta-row {
+            position: relative;
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             margin-top: 14px;
             margin-bottom: 22px;
             font-size: 15pt;
+            border: 1px dashed transparent;
+            border-radius: 6px;
+            padding: 2px 4px;
+            transition: all 0.15s;
+        }
+
+        .doc-meta-row:hover,
+        .doc-meta-row:focus-within {
+            border-color: #3b82f6;
+            background: rgba(239, 246, 255, 0.45);
+        }
+
+        .meta-controls-pill {
+            position: absolute;
+            top: -28px;
+            right: 10px;
+            background: #1e293b;
+            color: #ffffff;
+            font-size: 11px;
+            font-family: 'Kanit', sans-serif !important;
+            padding: 2px 8px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s, transform 0.15s;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            z-index: 100;
+        }
+
+        .doc-meta-row:hover .meta-controls-pill,
+        .doc-meta-row:focus-within .meta-controls-pill {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .doc-meta-no {
@@ -710,6 +748,64 @@
             width: 50%;
             text-align: right;
             padding-right: 30px;
+        }
+
+        /* Date layout variations */
+        .doc-meta-row.layout-same-line {
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: baseline !important;
+        }
+        .doc-meta-row.layout-same-line .doc-meta-no {
+            width: 50% !important;
+            margin-bottom: 0 !important;
+        }
+        .doc-meta-row.layout-same-line .doc-meta-date {
+            width: 50% !important;
+            text-align: right !important;
+            padding-right: 30px !important;
+        }
+
+        .doc-meta-row.layout-newline-center {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        .doc-meta-row.layout-newline-center .doc-meta-no {
+            width: 100% !important;
+            margin-bottom: 8px !important;
+        }
+        .doc-meta-row.layout-newline-center .doc-meta-date {
+            width: 100% !important;
+            text-align: center !important;
+            padding-right: 0 !important;
+        }
+
+        .doc-meta-row.layout-newline-right {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        .doc-meta-row.layout-newline-right .doc-meta-no {
+            width: 100% !important;
+            margin-bottom: 8px !important;
+        }
+        .doc-meta-row.layout-newline-right .doc-meta-date {
+            width: 100% !important;
+            text-align: right !important;
+            padding-right: 30px !important;
+        }
+
+        .doc-meta-row.layout-newline-left {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+        .doc-meta-row.layout-newline-left .doc-meta-no {
+            width: 100% !important;
+            margin-bottom: 8px !important;
+        }
+        .doc-meta-row.layout-newline-left .doc-meta-date {
+            width: 100% !important;
+            text-align: left !important;
+            padding-right: 0 !important;
         }
 
         /* Subject, To, Reference Lines */
@@ -1094,6 +1190,128 @@
             background: #f8fafc;
         }
 
+        /* Mode Switcher Buttons (โหมดดู / โหมดแก้ไข) */
+        .mode-toggle-pill {
+            display: inline-flex;
+            align-items: center;
+            background: #f1f5f9;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 3px;
+            gap: 3px;
+        }
+
+        .mode-btn {
+            padding: 6px 14px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .mode-btn:hover {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .mode-btn.active {
+            background: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .mode-btn#btnModeView.active {
+            color: #059669;
+        }
+
+        .mode-btn#btnModeEdit.active {
+            color: var(--primary);
+        }
+
+        /* View Mode: Clean, locked, read-only presentation */
+        .a4-sheet.view-mode {
+            user-select: text;
+        }
+
+        .a4-sheet.view-mode [contenteditable] {
+            cursor: default !important;
+            outline: none !important;
+        }
+
+        .a4-sheet.view-mode [contenteditable]:hover,
+        .a4-sheet.view-mode [contenteditable]:focus {
+            background: transparent !important;
+            box-shadow: none !important;
+            border-color: transparent !important;
+        }
+
+        .a4-sheet.view-mode .logo-wrapper,
+        .a4-sheet.view-mode .doc-company-wrapper,
+        .a4-sheet.view-mode .draggable-item,
+        .a4-sheet.view-mode .doc-meta-row {
+            border-color: transparent !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            cursor: default !important;
+        }
+
+        .a4-sheet.view-mode .drag-controls-pill,
+        .a4-sheet.view-mode .logo-controls-pill,
+        .a4-sheet.view-mode .company-controls-pill,
+        .a4-sheet.view-mode .meta-controls-pill {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* Edit Mode visual cue */
+        .a4-sheet:not(.view-mode) [contenteditable="true"] {
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+
+        .a4-sheet:not(.view-mode) [contenteditable="true"]:hover {
+            background: rgba(239, 246, 255, 0.4);
+            border-radius: 3px;
+        }
+
+        .a4-sheet:not(.view-mode) [contenteditable="true"]:focus {
+            background: #ffffff;
+            outline: 2px solid #93c5fd;
+            border-radius: 4px;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        /* Banner states */
+        .help-banner.banner-view-mode {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+
+        .help-banner.banner-edit-mode {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1e40af;
+        }
+
+        /* Toolbar view mode state */
+        .doc-editor-toolbar.toolbar-view-mode {
+            opacity: 0.85;
+            transition: opacity 0.2s;
+        }
+        .doc-editor-toolbar.toolbar-view-mode:hover {
+            opacity: 1;
+        }
+
         /* PRINT STYLES */
         @media print {
             @page {
@@ -1108,7 +1326,7 @@
                 width: 100% !important;
             }
 
-            .sidebar, .topbar, .doc-editor-toolbar, .help-banner, .history-card, #toastContainer, .sidebar-overlay, .drag-badge, .drag-controls-pill, .logo-controls-pill, .company-controls-pill, .text-break-modal-overlay {
+            .sidebar, .topbar, .doc-editor-toolbar, .help-banner, .history-card, #toastContainer, .sidebar-overlay, .drag-badge, .drag-controls-pill, .logo-controls-pill, .company-controls-pill, .meta-controls-pill, .text-break-modal-overlay, .margin-popover, .template-modal-overlay, .swal2-container {
                 display: none !important;
             }
 
@@ -1137,16 +1355,17 @@
                 transform: none !important;
             }
 
-            .draggable-item, .logo-wrapper, .doc-company-wrapper {
+            .draggable-item, .logo-wrapper, .doc-company-wrapper, .doc-meta-row {
                 border: none !important;
                 box-shadow: none !important;
                 background: transparent !important;
                 padding: 0 !important;
             }
 
-            [contenteditable="true"]:hover, [contenteditable="true"]:focus {
+            [contenteditable="true"]:hover, [contenteditable="true"]:focus, [contenteditable="false"] {
                 background: transparent !important;
                 box-shadow: none !important;
+                outline: none !important;
             }
         }
     </style>
@@ -1376,15 +1595,38 @@
                     <p>ปรับขนาดโลโก้ ลายเซ็น ตราประทับ ลากย้ายตำแหน่งได้อิสระ จัดตัวอักษรหนาบางชิดซ้ายขวากลาง</p>
                 </div>
             </div>
-            <div class="topbar-actions">
-                <button type="button" class="btn-action" onclick="scrollToHistory()">
+            <div class="topbar-actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <!-- 2-Mode Segmented Switcher -->
+                <div class="mode-toggle-pill" id="modeTogglePill" title="สลับโหมดการทำงาน">
+                    <button type="button" class="mode-btn active" id="btnModeView" onclick="setDocMode('view')">
+                        <i class='bx bx-show'></i> <span>โหมดดู</span>
+                    </button>
+                    <button type="button" class="mode-btn" id="btnModeEdit" onclick="setDocMode('edit')">
+                        <i class='bx bx-edit-alt'></i> <span>โหมดแก้ไข</span>
+                    </button>
+                </div>
+
+                <div style="width: 1px; height: 26px; background: #cbd5e1; margin: 0 4px;"></div>
+
+                <span id="cloudSyncIndicator" style="display:inline-flex; align-items:center; gap:5px; font-size:0.75rem; color:#1A6FBF; font-weight:600; padding: 4px 10px; background: #eff6ff; border-radius: 6px; border: 1px solid #bfdbfe; transition: all 0.2s;" title="เชื่อมต่อฐานข้อมูลระบบส่วนกลาง Cloud Firestore สำหรับทุกคนในระบบ">
+                    <i class='bx bx-cloud' id="cloudSyncIcon" style="font-size: 1rem;"></i> <span id="cloudSyncText">กำลังเชื่อมต่อ Cloud...</span>
+                </span>
+
+                <span id="autoSaveIndicator" style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; color:#059669; font-weight:600; opacity:0; transition:opacity 0.25s ease; padding: 4px 8px; background: #ecfdf5; border-radius: 6px; border: 1px solid #a7f3d0;" title="ระบบบันทึกข้อมูลล่าสุดอัตโนมัติแล้ว">
+                    <i class='bx bx-check-circle'></i> บันทึกอัตโนมัติแล้ว
+                </span>
+
+                <button type="button" class="btn-action" id="btnSaveDocData" onclick="saveDocData(true)" style="color: #1A6FBF; font-weight: 600; border-color: #bfdbfe; background: #eff6ff;" title="บันทึกข้อมูลแบบฟอร์มและรูปแบบเอกสารทั้งหมดขึ้น Cloud ให้ทุกคนใช้งานร่วมกัน">
+                    <i class='bx bx-save'></i> บันทึกแบบฟอร์ม
+                </button>
+                <button type="button" class="btn-action" onclick="scrollToHistory()" title="ดูรายการหนังสือที่เคยบันทึกไว้">
                     <i class='bx bx-history'></i> ประวัติหนังสือ
                 </button>
-                <button type="button" class="btn-action btn-primary" onclick="window.print()">
-                    <i class='bx bx-printer'></i> พิมพ์ A4 แนวตั้ง
+                <button type="button" class="btn-action btn-primary" onclick="exportToPdfA4()" title="พิมพ์เอกสาร A4 (เปิดหน้าต่าง Print Preview เหมือนหน้าใบเสนอราคา)">
+                    <i class='bx bx-printer'></i> พิมพ์เอกสาร
                 </button>
-                <button type="button" class="btn-action btn-success" onclick="exportToPdfA4()">
-                    <i class='bx bxs-file-pdf'></i> บันทึกเป็น PDF (A4)
+                <button type="button" class="btn-action btn-success" onclick="exportToPdfA4()" style="background:#059669; border-color:#059669; color:#fff; font-weight:600;" title="ออก PDF / พิมพ์ (A4) ผ่านหน้าต่าง Print Preview เหมือนหน้าใบเสนอราคา">
+                    <i class='bx bxs-file-pdf'></i> ออก PDF (A4)
                 </button>
             </div>
         </header>
@@ -1614,6 +1856,35 @@
 
                 <!-- Row 2: Logo, Signature & Stamp Size + Drag -->
                 <div class="toolbar-row secondary-row">
+                    <!-- Date Position & Line Breaks -->
+                    <div class="toolbar-group">
+                        <span class="toolbar-label"><i class='bx bx-calendar'></i> รูปแบบวันที่:</span>
+                        <button type="button" class="btn-tool-sm active" id="btnDateLayoutSame" onclick="setDateLayout('same-line')" title="เลขที่ และ วันที่ อยู่ในบรรทัดเดียวกัน (ซ้าย-ขวา)">
+                            <i class='bx bx-dock-top'></i> บรรทัดเดียวกัน
+                        </button>
+                        <button type="button" class="btn-tool-sm" id="btnDateLayoutCenter" onclick="setDateLayout('newline-center')" title="ย้ายวันที่ขึ้นบรรทัดใหม่ (กึ่งกลางกระดาษ มาตรฐานสารบรรณ)">
+                            <i class='bx bx-menu'></i> บรรทัดใหม่ (กลาง)
+                        </button>
+                        <button type="button" class="btn-tool-sm" id="btnDateLayoutRight" onclick="setDateLayout('newline-right')" title="ย้ายวันที่ขึ้นบรรทัดใหม่ (ชิดขวา)">
+                            <i class='bx bx-align-right'></i> บรรทัดใหม่ (ขวา)
+                        </button>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Meta Spacing (ระยะเว้นบรรทัดใต้วันที่) -->
+                    <div class="toolbar-group">
+                        <span class="toolbar-label"><i class='bx bx-expand-vertical'></i> เว้นบรรทัดใต้วันที่:</span>
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeMetaSpacing(-6)" title="ลดช่องว่างใต้วันที่"><i class='bx bx-minus'></i></button>
+                        <span class="size-badge" id="metaSpacingBadge">22px</span>
+                        <button type="button" class="btn-tool-sm" onmousedown="event.preventDefault()" onclick="changeMetaSpacing(6)" title="เพิ่มช่องว่างใต้วันที่"><i class='bx bx-plus'></i></button>
+                        <button type="button" class="btn-tool-sm" onclick="addMetaLineBreak()" title="เคาะขึ้นบรรทัดใหม่ (เพิ่ม 1 บรรทัดว่าง)">
+                            <i class='bx bx-subdirectory-left'></i> + เว้น 1 บรรทัด
+                        </button>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
                     <!-- Logo Size -->
                     <div class="toolbar-group">
                         <span class="toolbar-label"><i class='bx bx-image'></i> ขนาดโลโก้:</span>
@@ -1664,14 +1935,31 @@
                             <i class='bx bx-refresh'></i> รีเซ็ตข้อความ
                         </button>
                     </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <!-- Template Settings Save & Reset -->
+                    <div class="toolbar-group">
+                        <button type="button" class="btn-tool-sm" onclick="saveDocSettings()" style="background: linear-gradient(135deg, #1A6FBF 0%, #145999 100%); color: #ffffff; border-color: #1A6FBF; font-weight: 600; box-shadow: 0 1px 3px rgba(26,111,191,0.3);" title="บันทึกการตั้งค่าขนาด ระยะขอบ และตำแหน่งลายเซ็น/ตราประทับเป็นค่าเริ่มต้นของร้านค้านี้">
+                            <i class='bx bxs-save'></i> บันทึกการตั้งค่า
+                        </button>
+                        <button type="button" class="btn-tool-sm" onclick="resetDocSettings()" title="คืนค่าการตั้งค่ารูปแบบฟอร์มเป็นค่าเริ่มต้นมาตรฐาน">
+                            <i class='bx bx-reset'></i> คืนค่าการตั้งค่า
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Helpful tip banner -->
-            <div class="help-banner">
+            <!-- Helpful tip / Mode banner -->
+            <div class="help-banner banner-view-mode" id="docModeBanner">
                 <div>
-                    <i class='bx bx-bulb' style="margin-right: 6px;"></i>
-                    <strong>คำแนะนำ:</strong> คลิกพิมพ์แก้ไขข้อความได้โดยตรง | <strong>การขึ้นบรรทัดใหม่:</strong> กด <kbd style="background:#fff; border:1px solid #cbd5e1; border-radius:3px; padding:1px 5px; font-size:0.75rem;">Shift</kbd> + <kbd style="background:#fff; border:1px solid #cbd5e1; border-radius:3px; padding:1px 5px; font-size:0.75rem;">Enter</kbd> เพื่อขึ้นบรรทัดใหม่ธรรมดา (ไม่เยื้อง) หรือกด <kbd style="background:#fff; border:1px solid #cbd5e1; border-radius:3px; padding:1px 5px; font-size:0.75rem;">Enter</kbd> เพื่อขึ้นย่อหน้าใหม่ (เยื้อง 2.5 ซม.) หรือใช้ปุ่มในแถบเครื่องมือ
+                    <span style="background: #10b981; color: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; margin-right: 8px;">
+                        <i class='bx bx-check-shield'></i> โหมดดู (Read-Only)
+                    </span>
+                    <strong>เอกสารถูกล็อค:</strong> ป้องกันการเลื่อนหรือพิมพ์ทับโดยไม่ได้ตั้งใจ พร้อมสำหรับการตรวจสอบและพิมพ์ | 
+                    <button type="button" onclick="setDocMode('edit')" style="background: none; border: none; color: #1e40af; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 0 4px;">
+                        คลิกเพื่อสลับเป็นโหมดแก้ไข
+                    </button>
                 </div>
                 <div style="font-size:0.78rem; opacity:0.85; white-space:nowrap; margin-left:10px;">A4 แนวตั้ง</div>
             </div>
@@ -1709,13 +1997,21 @@
                         </div>
                     </div>
 
-                    <!-- 2. Meta: Letter No (Left) & Date (Right) -->
-                    <div class="doc-meta-row">
+                    <!-- 2. Meta: Letter No (Left) & Date (Right) with Date Layout & Spacing Controls -->
+                    <div class="doc-meta-row layout-same-line" id="docMetaRow">
+                        <div class="meta-controls-pill" id="metaControlsPill">
+                            <span class="pill-drag-label"><i class='bx bx-calendar'></i> วันที่:</span>
+                            <button type="button" class="pill-btn" onclick="setDateLayout('same-line')" title="บรรทัดเดียวกัน" style="width:auto; padding:0 6px;">บรรทัดเดียว</button>
+                            <button type="button" class="pill-btn" onclick="setDateLayout('newline-center')" title="ย้ายวันที่ขึ้นบรรทัดใหม่ (กึ่งกลาง)" style="width:auto; padding:0 6px;">บรรทัดใหม่ (กลาง)</button>
+                            <button type="button" class="pill-btn" onclick="setDateLayout('newline-right')" title="ย้ายวันที่ขึ้นบรรทัดใหม่ (ชิดขวา)" style="width:auto; padding:0 6px;">บรรทัดใหม่ (ขวา)</button>
+                            <span style="opacity:0.4; margin:0 2px;">|</span>
+                            <button type="button" class="pill-btn" onclick="changeMetaSpacing(18)" title="เคาะเว้นบรรทัดใหม่ใต้วันที่ (+1 บรรทัด)" style="width:auto; padding:0 6px;"><i class='bx bx-plus'></i> เว้นบรรทัด</button>
+                        </div>
                         <div class="doc-meta-no">
-                            เลขที่ <span contenteditable="true" id="fDocNo">26/020</span>
+                            <span class="doc-label-prefix" contenteditable="true" id="lblDocNoPrefix">เลขที่ </span><span contenteditable="true" id="fDocNo">26/020</span>
                         </div>
                         <div class="doc-meta-date">
-                            วันที่ <span contenteditable="true" id="fDocDate">1 ตุลาคม 2569</span>
+                            <span class="doc-label-prefix" contenteditable="true" id="lblDocDatePrefix">วันที่ </span><span contenteditable="true" id="fDocDate">1 ตุลาคม 2569</span>
                         </div>
                     </div>
 
@@ -1747,7 +2043,7 @@
 
                     <!-- 6. Signature Block (Aligned Right) with Draggable Signature & Stamp -->
                     <div class="doc-signature-block" id="docSignatureBlock">
-                        <div contenteditable="true" style="margin-bottom:4px;">ขอแสดงความนับถือ</div>
+                        <div contenteditable="true" id="fRespectfully" style="margin-bottom:4px;">ขอแสดงความนับถือ</div>
 
                         <div class="doc-sign-stamp-wrap" id="docSignStampArea">
                             <!-- Draggable Signature Item -->
@@ -1813,6 +2109,18 @@
     <!-- Scripts -->
     <script>
         const STORAGE_KEY = 'mentra_delivery_letters_history';
+        const SETTINGS_STORAGE_KEY = 'mentra_company_letters_settings';
+
+        let currentDocMode = 'view'; // 'view' (Read-Only) or 'edit' (Editable)
+        const EDITABLE_IDS = [
+            'fCompanyHeader', 'lblDocNoPrefix', 'fDocNo', 'lblDocDatePrefix', 'fDocDate',
+            'fSubject', 'fRecipient', 'fReference', 'fBodyText', 'fClosingText',
+            'fRespectfully', 'fSignatoryName', 'fSignatoryPosition'
+        ];
+
+        let currentDateLayout = 'same-line'; // 'same-line', 'newline-center', 'newline-right', 'newline-left'
+        let currentMetaSpacing = 22; // margin-bottom of docMetaRow in px
+
         let currentFontSize = 15;
         let showSignature = true;
         let showStamp = true;
@@ -1823,17 +2131,42 @@
 <div style="margin-top: 2px;">TEL.: 089-924-9871 e-mail: wattanachai966@gmail.com</div>
 <div>เลขที่ประจำตัวผู้เสียภาษี 0115568026644</div>`,
             docNo: '26/020',
+            lblDocNoPrefix: 'เลขที่ ',
             docDate: '1 ตุลาคม 2569',
+            lblDocDatePrefix: 'วันที่ ',
             subject: 'แจ้งส่งมอบครุภัณฑ์',
             recipient: 'เลขาธิการคณะกรรมการการอาชีวศึกษา',
             reference: 'สัญญาเลขที่ ๐๑๘/๒๕๖๙ ลงวันที่ ๑๕ กันยายน ๒๕๖๙',
             bodyText: 'ตามที่ บริษัท เมนทร้า โซลูชั่น ได้ลงนามในสัญญาซื้อขาย ซื้ออุปกรณ์ในการปฏิบัติงานด้านประชาสัมพันธ์ รายการกล้องถ่ายภาพดิจิทัล พร้อมอุปกรณ์ จำนวน ๑ ชุด (กลุ่มประชาสัมพันธ์) สำนักงานคณะกรรมการการอาชีวศึกษา นั้น ทางบริษัทฯ ขอแจ้งกำหนดส่งมอบครุภัณฑ์ฯ ดังกล่าว ณ สำนักงานคณะกรรมการการอาชีวศึกษา ใน วันที่ 6 ตุลาคม 2569 เวลา 14.00 น. – 15.00 น.',
             closingText: 'จึงเรียนมาเพื่อโปรดพิจารณา',
+            respectfully: 'ขอแสดงความนับถือ',
             signatoryName: '(นายวัฒนชัย เตียวแก)',
             signatoryPosition: '(กรรมการผู้จัดการ)'
         };
 
         let lastActiveEditable = null;
+        let autoSaveTimer = null;
+        let isDocReadyForAutoSave = false;
+
+        function triggerAutoSave() {
+            if (!isDocReadyForAutoSave) return;
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                saveDocData(false);
+                showAutoSaveIndicator();
+            }, 800);
+        }
+
+        function showAutoSaveIndicator(text = 'บันทึกอัตโนมัติแล้ว') {
+            const ind = document.getElementById('autoSaveIndicator');
+            if (ind) {
+                ind.innerHTML = `<i class='bx bx-check-circle'></i> ${text}`;
+                ind.style.opacity = '1';
+                setTimeout(() => {
+                    ind.style.opacity = '0';
+                }, 2200);
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             loadActiveWorkspaceLogo();
@@ -1842,10 +2175,637 @@
             restorePositionsFromStorage();
             restoreMarginsFromStorage();
             restoreLineBreakSettings();
+            
+            // Fast first render from local storage cache
+            restoreDocData();
+            
             setupKeyboardLineBreaks();
             trackEditableFocus();
             renderHistoryTable();
+
+            // Set up auto-save listeners on entire A4 sheet
+            const sheet = document.getElementById('a4PrintSheet');
+            if (sheet) {
+                sheet.addEventListener('input', triggerAutoSave);
+                sheet.addEventListener('blur', () => {
+                    if (isDocReadyForAutoSave) saveDocData(false);
+                }, true);
+            }
+
+            // Restore saved mode or default to view mode
+            const savedMode = localStorage.getItem('mentra_company_letter_mode') || 'view';
+            setDocMode(savedMode, false);
+
+            // Allow fallback local autosave after 2.5s if cloud takes longer
+            setTimeout(() => {
+                isDocReadyForAutoSave = true;
+            }, 2500);
         });
+
+        // ==============================================================================
+        // DATE LAYOUT & META SPACING CONTROLLERS (จัดวางตำแหน่งวันที่ & เว้นบรรทัดใหม่)
+        // ==============================================================================
+        function setDateLayout(layout, showNotice = true) {
+            currentDateLayout = layout || 'same-line';
+            const row = document.getElementById('docMetaRow');
+            if (row) {
+                row.classList.remove('layout-same-line', 'layout-newline-center', 'layout-newline-right', 'layout-newline-left');
+                row.classList.add(`layout-${currentDateLayout}`);
+            }
+
+            // Sync Toolbar Buttons
+            const btnSame = document.getElementById('btnDateLayoutSame');
+            const btnCenter = document.getElementById('btnDateLayoutCenter');
+            const btnRight = document.getElementById('btnDateLayoutRight');
+            if (btnSame) btnSame.classList.toggle('active', currentDateLayout === 'same-line');
+            if (btnCenter) btnCenter.classList.toggle('active', currentDateLayout === 'newline-center');
+            if (btnRight) btnRight.classList.toggle('active', currentDateLayout === 'newline-right');
+
+            if (showNotice) {
+                let msg = 'จัดวางวันที่: แนวนอน (บรรทัดเดียวกับเลขที่)';
+                if (currentDateLayout === 'newline-center') msg = 'ย้ายวันที่ขึ้นบรรทัดใหม่: กึ่งกลางหน้ากระดาษ (มาตรฐานสารบรรณ)';
+                else if (currentDateLayout === 'newline-right') msg = 'ย้ายวันที่ขึ้นบรรทัดใหม่: ชิดขวา';
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: msg,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+
+            triggerAutoSave();
+        }
+
+        function setMetaSpacing(px) {
+            currentMetaSpacing = parseInt(px, 10);
+            if (isNaN(currentMetaSpacing)) currentMetaSpacing = 22;
+            const row = document.getElementById('docMetaRow');
+            if (row) {
+                row.style.marginBottom = `${currentMetaSpacing}px`;
+            }
+            const badge = document.getElementById('metaSpacingBadge');
+            if (badge) badge.textContent = `${currentMetaSpacing}px`;
+
+            triggerAutoSave();
+        }
+
+        function changeMetaSpacing(delta) {
+            let next = currentMetaSpacing + delta;
+            if (next < 0) next = 0;
+            if (next > 120) next = 120;
+            setMetaSpacing(next);
+        }
+
+        function addMetaLineBreak() {
+            changeMetaSpacing(18); // 18px ~ 1 full font-size line
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: 'เคาะเว้นบรรทัดใหม่ใต้วันที่เรียบร้อย (+1 บรรทัด)',
+                showConfirmButton: false,
+                timer: 1200
+            });
+        }
+
+        // ==============================================================================
+        // MODE CONTROLLER: VIEW MODE (โหมดดู) vs EDIT MODE (โหมดแก้ไข)
+        // ==============================================================================
+        function setDocMode(mode, showNotification = true) {
+            const previousMode = currentDocMode;
+            currentDocMode = (mode === 'edit') ? 'edit' : 'view';
+            try {
+                localStorage.setItem('mentra_company_letter_mode', currentDocMode);
+            } catch (e) {}
+
+            // If switching from edit to view, save all edits immediately to Cloud
+            if (previousMode === 'edit' && currentDocMode === 'view') {
+                saveDocData(false, true);
+            }
+
+            const btnView = document.getElementById('btnModeView');
+            const btnEdit = document.getElementById('btnModeEdit');
+            if (btnView && btnEdit) {
+                btnView.classList.toggle('active', currentDocMode === 'view');
+                btnEdit.classList.toggle('active', currentDocMode === 'edit');
+            }
+
+            const sheet = document.getElementById('a4PrintSheet');
+            if (sheet) {
+                if (currentDocMode === 'view') {
+                    sheet.classList.add('view-mode');
+                } else {
+                    sheet.classList.remove('view-mode');
+                }
+            }
+
+            const isEditable = (currentDocMode === 'edit');
+            EDITABLE_IDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.setAttribute('contenteditable', isEditable ? 'true' : 'false');
+                }
+            });
+            document.querySelectorAll('#a4PrintSheet [contenteditable]').forEach(el => {
+                el.setAttribute('contenteditable', isEditable ? 'true' : 'false');
+            });
+
+            // Update Doc Mode Banner
+            const banner = document.getElementById('docModeBanner');
+            if (banner) {
+                if (currentDocMode === 'view') {
+                    banner.className = 'help-banner banner-view-mode';
+                    banner.innerHTML = `
+                        <div>
+                            <span style="background: #10b981; color: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; margin-right: 8px;">
+                                <i class='bx bx-check-shield'></i> โหมดดู (Read-Only)
+                            </span>
+                            <strong>เอกสารถูกล็อค:</strong> ป้องกันการเลื่อนหรือพิมพ์ทับโดยไม่ได้ตั้งใจ พร้อมสำหรับการตรวจสอบและพิมพ์ | 
+                            <button type="button" onclick="setDocMode('edit')" style="background: none; border: none; color: #1e40af; font-weight: 600; text-decoration: underline; cursor: pointer; padding: 0 4px;">
+                                คลิกเพื่อสลับเป็นโหมดแก้ไข
+                            </button>
+                        </div>
+                        <div style="font-size:0.78rem; opacity:0.85; white-space:nowrap; margin-left:10px;">A4 แนวตั้ง</div>
+                    `;
+                } else {
+                    banner.className = 'help-banner banner-edit-mode';
+                    banner.innerHTML = `
+                        <div>
+                            <span style="background: #1A6FBF; color: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px; margin-right: 8px;">
+                                <i class='bx bx-edit-alt'></i> โหมดแก้ไข (Editing)
+                            </span>
+                            <strong>กำลังแก้ไข:</strong> คุณสามารถคลิกพิมพ์ข้อความ ลากย้ายลายเซ็น/ตราประทับ และปรับแต่งรูปแบบได้อิสระ เมื่อปรับแต่งเสร็จแล้วอย่าลืมกด <strong>"บันทึกการตั้งค่า"</strong>
+                        </div>
+                        <div style="font-size:0.78rem; opacity:0.85; white-space:nowrap; margin-left:10px;">
+                            <button type="button" onclick="setDocMode('view')" style="background: #ffffff; border: 1px solid #bfdbfe; color: #1e40af; padding: 2px 10px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                                <i class='bx bx-check'></i> เสร็จสิ้นการแก้ไข
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            // Toolbar visual indication
+            const toolbar = document.querySelector('.doc-editor-toolbar');
+            if (toolbar) {
+                if (currentDocMode === 'view') {
+                    toolbar.classList.add('toolbar-view-mode');
+                } else {
+                    toolbar.classList.remove('toolbar-view-mode');
+                }
+            }
+
+            if (showNotification) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: currentDocMode === 'view' ? 'info' : 'success',
+                    title: currentDocMode === 'view' ? 'สลับเข้าสู่โหมดดู (ล็อคเอกสารเรียบร้อย)' : 'สลับเข้าสู่โหมดแก้ไข (เปิดให้พิมพ์และปรับตำแหน่ง)',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+        }
+
+        // ==============================================================================
+        // FORM DATA & SETTINGS PERSISTENCE (บันทึกและคืนค่าข้อมูลและแบบฟอร์มเอกสารทั้งหมด)
+        // ==============================================================================
+        const DRAFT_STORAGE_KEY = 'mentra_delivery_letter_draft';
+
+        function getDraftStorageKey() {
+            try {
+                const activeWs = localStorage.getItem('mentra_active_workspace') || 'Mentra Solution';
+                return `${DRAFT_STORAGE_KEY}_${activeWs.trim().replace(/\s+/g, '_')}`;
+            } catch (e) {
+                return DRAFT_STORAGE_KEY;
+            }
+        }
+
+        function getSettingsStorageKey() {
+            try {
+                const activeWs = localStorage.getItem('mentra_active_workspace') || 'Mentra Solution';
+                return `${SETTINGS_STORAGE_KEY}_${activeWs.trim().replace(/\s+/g, '_')}`;
+            } catch (e) {
+                return SETTINGS_STORAGE_KEY;
+            }
+        }
+
+        let lastSyncedCloudPayload = '';
+        let cloudDebounceTimer = null;
+
+        function saveDocData(showAlert = true, syncToCloud = null) {
+            try {
+                const sliderLogo = document.getElementById('sliderLogoSize');
+                const sliderSig = document.getElementById('sliderSigSize');
+                const sliderStamp = document.getElementById('sliderStampSize');
+                const ch = document.getElementById('fCompanyHeader');
+                const body = document.getElementById('fBodyText');
+
+                let compFs = 11;
+                let compFw = 'normal';
+                let compTa = 'left';
+                if (ch) {
+                    const cStyle = window.getComputedStyle(ch);
+                    const fsPx = parseFloat(cStyle.fontSize);
+                    if (fsPx) compFs = Math.round(fsPx * 0.75);
+                    compFw = cStyle.fontWeight;
+                    compTa = cStyle.textAlign;
+                }
+
+                let bodyFw = 'normal';
+                let bodyTa = 'justify';
+                if (body) {
+                    const bStyle = window.getComputedStyle(body);
+                    bodyFw = bStyle.fontWeight;
+                    bodyTa = bStyle.textAlign;
+                }
+
+                const sig = document.getElementById('dragSignature');
+                const stamp = document.getElementById('dragStamp');
+
+                // Comprehensive form data package
+                const docPackage = {
+                    // Document Content (WYSIWYG HTML)
+                    docNo: document.getElementById('fDocNo')?.innerHTML || '',
+                    lblDocNoPrefix: document.getElementById('lblDocNoPrefix')?.innerHTML || 'เลขที่ ',
+                    docDate: document.getElementById('fDocDate')?.innerHTML || '',
+                    lblDocDatePrefix: document.getElementById('lblDocDatePrefix')?.innerHTML || 'วันที่ ',
+                    subject: document.getElementById('fSubject')?.innerHTML || '',
+                    recipient: document.getElementById('fRecipient')?.innerHTML || '',
+                    reference: document.getElementById('fReference')?.innerHTML || '',
+                    bodyText: document.getElementById('fBodyText')?.innerHTML || '',
+                    closingText: document.getElementById('fClosingText')?.innerHTML || '',
+                    respectfully: document.getElementById('fRespectfully')?.innerHTML || 'ขอแสดงความนับถือ',
+                    signatoryName: document.getElementById('fSignatoryName')?.innerHTML || '',
+                    signatoryPosition: document.getElementById('fSignatoryPosition')?.innerHTML || '',
+                    companyHeader: document.getElementById('fCompanyHeader')?.innerHTML || '',
+
+                    // Layout & Dimensions
+                    margins: currentMargins,
+                    fontSize: currentFontSize,
+                    lineHeight: currentLineHeight,
+                    enterKeyMode: enterKeyMode,
+                    dateLayout: currentDateLayout,
+                    metaSpacing: currentMetaSpacing,
+
+                    // Typography & Styles
+                    companyFontSize: compFs,
+                    companyFontWeight: compFw,
+                    companyTextAlign: compTa,
+                    bodyFontWeight: bodyFw,
+                    bodyTextAlign: bodyTa,
+
+                    // Media & Draggables
+                    logoSize: sliderLogo ? parseInt(sliderLogo.value, 10) : 85,
+                    sigSize: sliderSig ? parseInt(sliderSig.value, 10) : 65,
+                    stampSize: sliderStamp ? parseInt(sliderStamp.value, 10) : 80,
+                    showSignature: showSignature,
+                    showStamp: showStamp,
+                    sigPosition: sig ? { left: sig.style.left, top: sig.style.top, right: sig.style.right, bottom: sig.style.bottom } : null,
+                    stampPosition: stamp ? { left: stamp.style.left, top: stamp.style.top, right: stamp.style.right, bottom: stamp.style.bottom } : null,
+
+                    updatedAt: new Date().toISOString()
+                };
+
+                // Compare payload content to avoid redundant cloud network saves
+                const docPackageCompare = { ...docPackage };
+                delete docPackageCompare.updatedAt;
+                const currentContentHash = JSON.stringify(docPackageCompare);
+
+                // Save to active workspace key and general fallback key in localStorage (Immediate & Offline-first)
+                const draftKey = getDraftStorageKey();
+                const settingsKey = getSettingsStorageKey();
+                const payload = JSON.stringify(docPackage);
+
+                localStorage.setItem(draftKey, payload);
+                localStorage.setItem(DRAFT_STORAGE_KEY, payload);
+                localStorage.setItem(settingsKey, payload);
+                localStorage.setItem(SETTINGS_STORAGE_KEY, payload);
+
+                // Save auxiliary keys
+                saveMarginsToStorage();
+                savePositionsToStorage();
+
+                const shouldSyncCloudImmediately = (syncToCloud === true) || (showAlert === true);
+
+                if (shouldSyncCloudImmediately) {
+                    clearTimeout(cloudDebounceTimer);
+                    lastSyncedCloudPayload = currentContentHash;
+                    if (window.syncCompanyLetterToCloud) {
+                        window.syncCompanyLetterToCloud(docPackage, showAlert);
+                    } else if (showAlert) {
+                        saveToHistory(false);
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'บันทึกแบบฟอร์มเรียบร้อย',
+                            text: 'ข้อความ ขนาด ระยะขอบ และตำแหน่งถูกบันทึกแล้ว',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                    }
+                } else if (syncToCloud !== false) {
+                    // Debounce Cloud Sync when editing: only sync if content actually changed and user paused for 3.5s
+                    if (currentContentHash !== lastSyncedCloudPayload) {
+                        clearTimeout(cloudDebounceTimer);
+                        cloudDebounceTimer = setTimeout(() => {
+                            lastSyncedCloudPayload = currentContentHash;
+                            if (window.syncCompanyLetterToCloud) {
+                                window.syncCompanyLetterToCloud(docPackage, false);
+                            }
+                        }, 3500);
+                    }
+                }
+            } catch (err) {
+                console.error('Save doc data error:', err);
+                if (showAlert) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: 'ไม่สามารถบันทึกข้อมูลได้',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }
+            }
+        }
+
+        function saveDocSettings() {
+            saveDocData(true, true);
+        }
+
+        function restoreDocData(customData = null) {
+            try {
+                let data = customData;
+                if (!data) {
+                    const draftKey = getDraftStorageKey();
+                    const settingsKey = getSettingsStorageKey();
+                    const raw = localStorage.getItem(draftKey) || 
+                                localStorage.getItem(DRAFT_STORAGE_KEY) || 
+                                localStorage.getItem(settingsKey) || 
+                                localStorage.getItem(SETTINGS_STORAGE_KEY);
+                    if (!raw) return false;
+                    data = JSON.parse(raw);
+                }
+                if (!data) return false;
+
+                // 1. Restore Document Content Fields
+                if (data.docNo !== undefined) {
+                    const el = document.getElementById('fDocNo');
+                    if (el) el.innerHTML = data.docNo;
+                }
+                if (data.lblDocNoPrefix !== undefined) {
+                    const el = document.getElementById('lblDocNoPrefix');
+                    if (el) el.innerHTML = data.lblDocNoPrefix;
+                }
+                if (data.docDate !== undefined) {
+                    const el = document.getElementById('fDocDate');
+                    if (el) el.innerHTML = data.docDate;
+                }
+                if (data.lblDocDatePrefix !== undefined) {
+                    const el = document.getElementById('lblDocDatePrefix');
+                    if (el) el.innerHTML = data.lblDocDatePrefix;
+                }
+                if (data.subject !== undefined) {
+                    const el = document.getElementById('fSubject');
+                    if (el) el.innerHTML = data.subject;
+                }
+                if (data.recipient !== undefined) {
+                    const el = document.getElementById('fRecipient');
+                    if (el) el.innerHTML = data.recipient;
+                }
+                if (data.reference !== undefined) {
+                    const el = document.getElementById('fReference');
+                    if (el) el.innerHTML = data.reference;
+                }
+                if (data.bodyText !== undefined) {
+                    const el = document.getElementById('fBodyText');
+                    if (el) el.innerHTML = data.bodyText;
+                }
+                if (data.closingText !== undefined) {
+                    const el = document.getElementById('fClosingText');
+                    if (el) el.innerHTML = data.closingText;
+                }
+                if (data.respectfully !== undefined) {
+                    const el = document.getElementById('fRespectfully');
+                    if (el) el.innerHTML = data.respectfully;
+                }
+                if (data.signatoryName !== undefined) {
+                    const el = document.getElementById('fSignatoryName');
+                    if (el) el.innerHTML = data.signatoryName;
+                }
+                if (data.signatoryPosition !== undefined) {
+                    const el = document.getElementById('fSignatoryPosition');
+                    if (el) el.innerHTML = data.signatoryPosition;
+                }
+                if (data.companyHeader !== undefined) {
+                    const el = document.getElementById('fCompanyHeader');
+                    if (el) el.innerHTML = data.companyHeader;
+                }
+
+                // 2. Restore Layout & Formatting
+                if (data.margins && typeof data.margins.top === 'number') {
+                    currentMargins = data.margins;
+                    applyMarginsToSheet();
+                    syncMarginInputsUI();
+                }
+
+                if (data.dateLayout) {
+                    setDateLayout(data.dateLayout, false);
+                }
+
+                if (typeof data.metaSpacing === 'number') {
+                    setMetaSpacing(data.metaSpacing);
+                }
+
+                if (data.fontSize) {
+                    setFontSize(data.fontSize);
+                }
+
+                if (data.lineHeight) {
+                    setLineHeight(data.lineHeight);
+                }
+
+                if (data.enterKeyMode) {
+                    enterKeyMode = data.enterKeyMode;
+                    const sel = document.getElementById('selectEnterMode');
+                    if (sel) sel.value = data.enterKeyMode;
+                }
+
+                if (data.companyFontSize) {
+                    setCompanyFontSize(data.companyFontSize);
+                }
+
+                const ch = document.getElementById('fCompanyHeader');
+                if (ch && data.companyFontWeight) {
+                    ch.style.fontWeight = data.companyFontWeight;
+                    ch.querySelectorAll('div, span, p').forEach(c => {
+                        c.style.fontWeight = data.companyFontWeight;
+                    });
+                }
+                if (ch && data.companyTextAlign) {
+                    ch.style.textAlign = data.companyTextAlign;
+                    ch.querySelectorAll('div, span, p').forEach(c => {
+                        c.style.textAlign = data.companyTextAlign;
+                    });
+                }
+
+                const body = document.getElementById('fBodyText');
+                if (body && data.bodyFontWeight) {
+                    body.style.fontWeight = data.bodyFontWeight;
+                }
+                if (body && data.bodyTextAlign) {
+                    body.style.textAlign = data.bodyTextAlign;
+                }
+
+                if (data.logoSize) {
+                    setLogoSize(data.logoSize);
+                }
+
+                if (data.sigSize) {
+                    setSigSize(data.sigSize);
+                }
+
+                if (data.stampSize) {
+                    setStampSize(data.stampSize);
+                }
+
+                if (typeof data.showSignature === 'boolean') {
+                    showSignature = data.showSignature;
+                    const el = document.getElementById('dragSignature');
+                    const btn = document.getElementById('btnToggleSign');
+                    if (el) el.style.display = showSignature ? 'inline-flex' : 'none';
+                    if (btn) {
+                        btn.classList.toggle('active', showSignature);
+                        btn.textContent = showSignature ? 'แสดง' : 'ซ่อน';
+                    }
+                }
+
+                if (typeof data.showStamp === 'boolean') {
+                    showStamp = data.showStamp;
+                    const el = document.getElementById('dragStamp');
+                    const btn = document.getElementById('btnToggleStamp');
+                    if (el) el.style.display = showStamp ? 'inline-flex' : 'none';
+                    if (btn) {
+                        btn.classList.toggle('active', showStamp);
+                        btn.textContent = showStamp ? 'แสดง' : 'ซ่อน';
+                    }
+                }
+
+                if (data.sigPosition) {
+                    const sig = document.getElementById('dragSignature');
+                    if (sig) {
+                        if (data.sigPosition.left) sig.style.left = data.sigPosition.left;
+                        if (data.sigPosition.top) sig.style.top = data.sigPosition.top;
+                        if (data.sigPosition.right) sig.style.right = data.sigPosition.right;
+                        if (data.sigPosition.bottom) sig.style.bottom = data.sigPosition.bottom;
+                    }
+                }
+
+                if (data.stampPosition) {
+                    const stamp = document.getElementById('dragStamp');
+                    if (stamp) {
+                        if (data.stampPosition.left) stamp.style.left = data.stampPosition.left;
+                        if (data.stampPosition.top) stamp.style.top = data.stampPosition.top;
+                        if (data.stampPosition.right) stamp.style.right = data.stampPosition.right;
+                        if (data.stampPosition.bottom) stamp.style.bottom = data.stampPosition.bottom;
+                    }
+                }
+
+                // Cache received customData (from cloud) into localStorage
+                if (customData) {
+                    try {
+                        const draftKey = getDraftStorageKey();
+                        const settingsKey = getSettingsStorageKey();
+                        const payload = JSON.stringify(customData);
+                        localStorage.setItem(draftKey, payload);
+                        localStorage.setItem(DRAFT_STORAGE_KEY, payload);
+                        localStorage.setItem(settingsKey, payload);
+                        localStorage.setItem(SETTINGS_STORAGE_KEY, payload);
+                    } catch (e) {}
+                }
+
+                return true;
+            } catch (e) {
+                console.warn('Could not restore doc data:', e);
+                return false;
+            }
+        }
+
+        function restoreDocSettings() {
+            restoreDocData();
+        }
+
+        function resetDocSettings() {
+            Swal.fire({
+                title: 'คืนค่าการตั้งค่าเริ่มต้น?',
+                text: 'การตั้งค่าขนาด ตำแหน่ง ระยะขอบ และข้อความแบบฟอร์มจะถูกรีเซ็ตกลับเป็นค่ามาตรฐาน',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#1A6FBF',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'คืนค่า',
+                cancelButtonText: 'ยกเลิก'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    try {
+                        localStorage.removeItem(getDraftStorageKey());
+                        localStorage.removeItem(DRAFT_STORAGE_KEY);
+                        localStorage.removeItem(getSettingsStorageKey());
+                        localStorage.removeItem(SETTINGS_STORAGE_KEY);
+                        localStorage.removeItem('mentra_doc_margins');
+                        localStorage.removeItem('mentra_doc_sig_pos');
+                        localStorage.removeItem('mentra_doc_stamp_pos');
+                        localStorage.removeItem('mentra_doc_enter_mode');
+                        localStorage.removeItem('mentra_doc_line_height');
+                    } catch (e) {}
+
+                    resetSample();
+                    applyMarginPreset('default');
+                    setFontSize(15);
+                    setCompanyFontSize(11);
+                    setLineHeight('1.45');
+                    changeEnterMode('paragraph');
+                    setLogoSize(85);
+                    setSigSize(65);
+                    setStampSize(80);
+                    resetPositions();
+                    setDateLayout('same-line', false);
+                    setMetaSpacing(22);
+
+                    showSignature = true;
+                    showStamp = true;
+                    const elSig = document.getElementById('dragSignature');
+                    const btnSig = document.getElementById('btnToggleSign');
+                    if (elSig) elSig.style.display = 'inline-flex';
+                    if (btnSig) {
+                        btnSig.classList.add('active');
+                        btnSig.textContent = 'แสดง';
+                    }
+
+                    const elStamp = document.getElementById('dragStamp');
+                    const btnStamp = document.getElementById('btnToggleStamp');
+                    if (elStamp) elStamp.style.display = 'inline-flex';
+                    if (btnStamp) {
+                        btnStamp.classList.add('active');
+                        btnStamp.textContent = 'แสดง';
+                    }
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'คืนค่าเริ่มต้นเรียบร้อย',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            });
+        }
 
         // Load active workspace logo if available
         function loadActiveWorkspaceLogo() {
@@ -1872,7 +2832,12 @@
 
         // Track active editable element to apply alignments & weights properly
         function trackEditableFocus() {
-            const editables = document.querySelectorAll('[contenteditable="true"]');
+            const targets = [
+                '#fCompanyHeader', '#lblDocNoPrefix', '#fDocNo', '#lblDocDatePrefix', '#fDocDate',
+                '#fSubject', '#fRecipient', '#fReference', '#fBodyText', '#fClosingText',
+                '#fRespectfully', '#fSignatoryName', '#fSignatoryPosition'
+            ];
+            const editables = document.querySelectorAll(targets.join(', '));
             editables.forEach(el => {
                 el.addEventListener('focus', () => {
                     lastActiveEditable = el;
@@ -1984,6 +2949,8 @@
             if (weight === 'bold') document.getElementById('btnWeightBold')?.classList.add('active');
             else if (weight === '300') document.getElementById('btnWeightLight')?.classList.add('active');
             else document.getElementById('btnWeightNormal')?.classList.add('active');
+
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         // Apply Alignment (Left, Center, Right, Justify)
@@ -2015,6 +2982,8 @@
             else if (align === 'center') document.getElementById('btnAlignCenter')?.classList.add('active');
             else if (align === 'right') document.getElementById('btnAlignRight')?.classList.add('active');
             else if (align === 'justify') document.getElementById('btnAlignJustify')?.classList.add('active');
+
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         // Font Size Adjustments
@@ -2059,6 +3028,8 @@
                     }
                 });
             }
+
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         function changeFontSize(delta) {
@@ -2093,6 +3064,8 @@
                 document.getElementById('sliderFontSize').value = nextPt;
                 document.getElementById('selectFontSize').value = nextPt;
             }
+
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         function setCompanyFontSize(pt) {
@@ -2104,6 +3077,8 @@
             });
             const pillBadge = document.getElementById('companyFontBadge');
             if (pillBadge) pillBadge.textContent = `${pt}pt`;
+
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         function toggleCompanyBold() {
@@ -2116,6 +3091,8 @@
             ch.querySelectorAll('div, span, p').forEach(c => {
                 c.style.fontWeight = newWeight;
             });
+
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         // ==============================================================================
@@ -2136,6 +3113,8 @@
             const pill = document.getElementById('logoPillSize');
             if (pill) pill.textContent = `${size}px`;
             document.getElementById('sliderLogoSize').value = size;
+
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         function changeLogoSize(delta) {
@@ -2159,6 +3138,8 @@
             const pill = document.getElementById('sigPillSize');
             if (pill) pill.textContent = `${size}px`;
             document.getElementById('sliderSigSize').value = size;
+
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         function changeSigSize(delta) {
@@ -2182,6 +3163,8 @@
             const pill = document.getElementById('stampPillSize');
             if (pill) pill.textContent = `${size}px`;
             document.getElementById('sliderStampSize').value = size;
+
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         function changeStampSize(delta) {
@@ -2517,6 +3500,7 @@
                 btn.classList.toggle('active', showSignature);
                 btn.textContent = showSignature ? 'แสดง' : 'ซ่อน';
             }
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         function toggleStamp() {
@@ -2528,6 +3512,7 @@
                 btn.classList.toggle('active', showStamp);
                 btn.textContent = showStamp ? 'แสดง' : 'ซ่อน';
             }
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         // Quick Placements
@@ -2660,6 +3645,9 @@
                 el.addEventListener('touchstart', dragStart, { passive: false });
 
                 function dragStart(e) {
+                    // Do not drag if in view mode (read-only)
+                    if (currentDocMode !== 'edit') return;
+
                     // Do not drag if user clicked on button inside control pill
                     if (e.target.closest('.pill-btn') || e.target.closest('button')) return;
 
@@ -2720,13 +3708,16 @@
         // Reset to original sample
         function resetSample() {
             document.getElementById('fCompanyHeader').innerHTML = DEFAULT_DATA.companyHeader;
-            document.getElementById('fDocNo').textContent = DEFAULT_DATA.docNo;
-            document.getElementById('fDocDate').textContent = DEFAULT_DATA.docDate;
+            document.getElementById('fDocNo').innerHTML = DEFAULT_DATA.docNo;
+            if (document.getElementById('lblDocNoPrefix')) document.getElementById('lblDocNoPrefix').innerHTML = DEFAULT_DATA.lblDocNoPrefix;
+            document.getElementById('fDocDate').innerHTML = DEFAULT_DATA.docDate;
+            if (document.getElementById('lblDocDatePrefix')) document.getElementById('lblDocDatePrefix').innerHTML = DEFAULT_DATA.lblDocDatePrefix;
             document.getElementById('fSubject').innerHTML = DEFAULT_DATA.subject;
             document.getElementById('fRecipient').innerHTML = DEFAULT_DATA.recipient;
             document.getElementById('fReference').innerHTML = DEFAULT_DATA.reference;
             document.getElementById('fBodyText').innerHTML = DEFAULT_DATA.bodyText;
             document.getElementById('fClosingText').innerHTML = DEFAULT_DATA.closingText;
+            if (document.getElementById('fRespectfully')) document.getElementById('fRespectfully').innerHTML = DEFAULT_DATA.respectfully;
             document.getElementById('fSignatoryName').innerHTML = DEFAULT_DATA.signatoryName;
             document.getElementById('fSignatoryPosition').innerHTML = DEFAULT_DATA.signatoryPosition;
 
@@ -2738,6 +3729,8 @@
             setSigSize(65);
             setStampSize(80);
             resetPositions();
+            setDateLayout('same-line', false);
+            setMetaSpacing(22);
 
             showSignature = true;
             showStamp = true;
@@ -2747,6 +3740,8 @@
             document.getElementById('btnToggleSign').textContent = 'แสดง';
             document.getElementById('btnToggleStamp').classList.add('active');
             document.getElementById('btnToggleStamp').textContent = 'แสดง';
+
+            saveDocData(false);
 
             Swal.fire({
                 toast: true,
@@ -2758,65 +3753,65 @@
             });
         }
 
-        // Export PDF A4 Portrait
+        // Export PDF A4 Portrait (Print preview dialog like quotation.html)
         async function exportToPdfA4() {
             const sheet = document.getElementById('a4PrintSheet');
-            const docNo = (document.getElementById('fDocNo').textContent || '26_020').trim().replace(/[\/\\:]/g, '_');
-            const filename = `หนังสือส่งมอบงาน_${docNo}.pdf`;
+            if (!sheet) {
+                window.print();
+                return;
+            }
+
+            const docNo = (document.getElementById('fDocNo')?.textContent || '26_020').trim().replace(/[\/\\:*?"<>|]/g, '_');
+            const subject = stripTags(document.getElementById('fSubject')?.innerHTML || '').trim().replace(/[\/\\:*?"<>|]/g, '_');
+            const filenameStr = subject ? `หนังสือส่งมอบงาน_${docNo}_${subject}` : `หนังสือส่งมอบงาน_${docNo}`;
 
             // Auto save to history
             saveToHistory(false);
 
-            // Temporarily reset scale to 1 for crisp vector canvas render
-            const prevTransform = sheet.style.transform;
-            sheet.style.transform = 'scale(1)';
+            // Temporarily switch to view mode so all edit borders, resize pills, drag handles & outlines are hidden
+            const prevMode = currentDocMode;
+            if (prevMode !== 'view') {
+                setDocMode('view', false);
+            }
 
-            Swal.fire({
-                title: 'กำลังสร้างไฟล์ PDF (A4 แนวตั้ง)...',
-                html: 'ระบบกำลังจัดทำเอกสาร PDF ขนาด A4 แนวตั้งความละเอียดสูง กรุณารอสักครู่',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            // Sync dynamic print margin styles
+            updatePrintMarginStyle();
 
-            const opt = {
-                margin: [0, 0, 0, 0],
-                filename: filename,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: {
-                    scale: 2.5,
-                    useCORS: true,
-                    logging: false,
-                    letterRendering: true,
-                    backgroundColor: '#ffffff'
-                },
-                jsPDF: {
-                    unit: 'mm',
-                    format: 'a4',
-                    orientation: 'portrait'
-                }
+            // Set document title = filename so Chrome/Edge uses it as default filename when selecting "Save as PDF" / "บันทึกเป็น PDF"
+            const originalTitle = document.title;
+            document.title = filenameStr;
+
+            // Save transform & reset to none for 100% crisp vector print preview
+            const savedTransform = sheet.style.transform;
+            const savedTransformOrigin = sheet.style.transformOrigin;
+            sheet.style.transform = 'none';
+            sheet.style.transformOrigin = 'unset';
+
+            const executePrint = () => {
+                setTimeout(() => {
+                    try {
+                        window.print();
+                    } catch (printErr) {
+                        console.error('Native window.print() failed:', printErr);
+                    }
+
+                    // After print dialog closes, restore document title, transform, and previous edit mode
+                    setTimeout(() => {
+                        document.title = originalTitle;
+                        sheet.style.transform = savedTransform;
+                        sheet.style.transformOrigin = savedTransformOrigin;
+
+                        if (prevMode !== 'view') {
+                            setDocMode(prevMode, false);
+                        }
+                    }, 500);
+                }, 150);
             };
 
-            try {
-                await html2pdf().set(opt).from(sheet).save();
-                sheet.style.transform = prevTransform;
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'บันทึก PDF สำเร็จ!',
-                    text: `ดาวน์โหลดไฟล์ ${filename} เรียบร้อยแล้ว`,
-                    confirmButtonColor: '#1A6FBF'
-                });
-            } catch (err) {
-                sheet.style.transform = prevTransform;
-                console.error('PDF export error:', err);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ไม่สามารถสร้าง PDF ได้',
-                    text: 'กรุณาใช้ปุ่ม "พิมพ์ A4 แนวตั้ง" เพื่อพิมพ์หรือบันทึกเป็น PDF แทน',
-                    confirmButtonColor: '#1A6FBF'
-                });
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(executePrint).catch(() => executePrint());
+            } else {
+                executePrint();
             }
         }
 
@@ -2841,6 +3836,7 @@
             try {
                 localStorage.setItem('mentra_doc_enter_mode', val);
             } catch (e) {}
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
             Swal.fire({
                 toast: true,
                 position: 'top-end',
@@ -2865,6 +3861,7 @@
             try {
                 localStorage.setItem('mentra_doc_line_height', val);
             } catch (e) {}
+            if (typeof triggerAutoSave === 'function') triggerAutoSave();
         }
 
         function restoreLineBreakSettings() {
@@ -2967,16 +3964,37 @@
                 if (!editable) return;
 
                 if (e.key === 'Enter') {
-                    // Single-line meta headers
-                    if (editable.id === 'fDocNo' || editable.id === 'fDocDate') {
+                    // Date & No meta headers
+                    if (editable.id === 'fDocNo' || editable.id === 'lblDocNoPrefix') {
                         e.preventDefault();
+                        if (currentDateLayout === 'same-line') {
+                            setDateLayout('newline-center');
+                        } else {
+                            insertLineBreak();
+                        }
                         return;
                     }
 
-                    // Field lines (Subject, Recipient, Reference, Closing, Signatory, CompanyHeader)
+                    if (editable.id === 'fDocDate' || editable.id === 'lblDocDatePrefix') {
+                        e.preventDefault();
+                        // Pressing Enter at Date adds vertical spacing / empty line down
+                        changeMetaSpacing(18);
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'info',
+                            title: 'เคาะเว้นบรรทัดใหม่ใต้วันที่เรียบร้อย (+1 บรรทัด)',
+                            showConfirmButton: false,
+                            timer: 1200
+                        });
+                        return;
+                    }
+
+                    // Field lines (Subject, Recipient, Reference, Closing, Signatory, CompanyHeader, Respectfully)
                     if (editable.id === 'fSubject' || editable.id === 'fRecipient' || 
                         editable.id === 'fReference' || editable.id === 'fClosingText' || 
                         editable.id === 'fSignatoryName' || editable.id === 'fSignatoryPosition' ||
+                        editable.id === 'fRespectfully' ||
                         editable.id === 'fCompanyHeader' || editable.closest('#fCompanyHeader')) {
                         e.preventDefault();
                         insertLineBreak();
@@ -3214,6 +4232,10 @@
 
             closeTextBreakModal();
 
+            // Auto-save updated modal content immediately
+            saveDocData(false);
+            showAutoSaveIndicator();
+
             Swal.fire({
                 toast: true,
                 position: 'top-end',
@@ -3235,29 +4257,37 @@
         }
 
         function saveToHistory(showAlert = true) {
-            const docNo = document.getElementById('fDocNo').textContent.trim();
-            const date = document.getElementById('fDocDate').textContent.trim();
-            const subject = document.getElementById('fSubject').innerHTML.trim();
-            const recipient = document.getElementById('fRecipient').innerHTML.trim();
-            const reference = document.getElementById('fReference').innerHTML.trim();
-            const body = document.getElementById('fBodyText').innerHTML.trim();
-            const closing = document.getElementById('fClosingText').innerHTML.trim();
-            const signName = document.getElementById('fSignatoryName').innerHTML.trim();
-            const signPos = document.getElementById('fSignatoryPosition').innerHTML.trim();
-            const companyHeader = document.getElementById('fCompanyHeader').innerHTML.trim();
+            const docNo = document.getElementById('fDocNo')?.innerHTML.trim() || '';
+            const lblDocNoPrefix = document.getElementById('lblDocNoPrefix')?.innerHTML.trim() || 'เลขที่ ';
+            const date = document.getElementById('fDocDate')?.innerHTML.trim() || '';
+            const lblDocDatePrefix = document.getElementById('lblDocDatePrefix')?.innerHTML.trim() || 'วันที่ ';
+            const subject = document.getElementById('fSubject')?.innerHTML.trim() || '';
+            const recipient = document.getElementById('fRecipient')?.innerHTML.trim() || '';
+            const reference = document.getElementById('fReference')?.innerHTML.trim() || '';
+            const body = document.getElementById('fBodyText')?.innerHTML.trim() || '';
+            const closing = document.getElementById('fClosingText')?.innerHTML.trim() || '';
+            const respectfully = document.getElementById('fRespectfully')?.innerHTML.trim() || 'ขอแสดงความนับถือ';
+            const signName = document.getElementById('fSignatoryName')?.innerHTML.trim() || '';
+            const signPos = document.getElementById('fSignatoryPosition')?.innerHTML.trim() || '';
+            const companyHeader = document.getElementById('fCompanyHeader')?.innerHTML.trim() || '';
 
             const item = {
                 id: 'del_' + Date.now(),
                 docNo,
+                lblDocNoPrefix,
                 date,
+                lblDocDatePrefix,
                 subject,
                 recipient,
                 reference,
                 body,
                 closing,
+                respectfully,
                 signName,
                 signPos,
                 companyHeader,
+                dateLayout: currentDateLayout,
+                metaSpacing: currentMetaSpacing,
                 createdAt: new Date().toISOString()
             };
 
@@ -3269,9 +4299,14 @@
                 list.unshift(item);
             }
 
-            if (list.length > 30) list.pop();
+            if (list.length > 50) list.pop();
             localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
             renderHistoryTable();
+
+            // Sync history to Cloud Firestore
+            if (window.syncCompanyLetterHistoryToCloud) {
+                window.syncCompanyLetterHistoryToCloud(list);
+            }
 
             if (showAlert) {
                 Swal.fire({
@@ -3285,9 +4320,9 @@
             }
         }
 
-        function renderHistoryTable() {
+        function renderHistoryTable(customList = null) {
             const tbody = document.getElementById('historyTableBody');
-            const list = getHistory();
+            const list = customList || getHistory();
 
             if (!list || list.length === 0) {
                 tbody.innerHTML = `
@@ -3308,28 +4343,72 @@
                     <td>${escapeHtml(stripTags(item.recipient || '-'))}</td>
                     <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(stripTags(item.reference))}">${escapeHtml(stripTags(item.reference || '-'))}</td>
                     <td style="text-align:center;">
-                        <button type="button" class="btn-action" style="padding:4px 10px; font-size:0.78rem;" onclick="loadHistoryItem('${item.id}')" title="ดึงข้อมูลมาแสดงบนกระดาษ">
-                            <i class='bx bx-edit'></i> ดึงข้อมูล
-                        </button>
+                        <div style="display:flex; justify-content:center; gap:4px;">
+                            <button type="button" class="btn-action" style="padding:4px 8px; font-size:0.78rem;" onclick="loadHistoryItem('${item.id}')" title="ดึงข้อมูลมาแสดงบนกระดาษ">
+                                <i class='bx bx-edit'></i> ดึงข้อมูล
+                            </button>
+                            <button type="button" class="btn-action" style="padding:4px 8px; font-size:0.78rem; color:#ef4444; border-color:#fca5a5;" onclick="deleteHistoryItem('${item.id}')" title="ลบรายการนี้">
+                                <i class='bx bx-trash'></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
+        }
+
+        function deleteHistoryItem(id) {
+            Swal.fire({
+                title: 'ลบประวัติหนังสือ?',
+                text: 'ต้องการลบรายการนี้ออกจากประวัติใช่หรือไม่',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    let list = getHistory();
+                    list = list.filter(x => x.id !== id);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+                    renderHistoryTable();
+                    if (window.syncCompanyLetterHistoryToCloud) {
+                        window.syncCompanyLetterHistoryToCloud(list);
+                    }
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'ลบรายการเรียบร้อย',
+                        showConfirmButton: false,
+                        timer: 1200
+                    });
+                }
+            });
         }
 
         function loadHistoryItem(id) {
             const list = getHistory();
             const found = list.find(x => x.id === id);
             if (found) {
-                document.getElementById('fDocNo').textContent = found.docNo || '';
-                document.getElementById('fDocDate').textContent = found.date || '';
-                document.getElementById('fSubject').innerHTML = found.subject || '';
-                document.getElementById('fRecipient').innerHTML = found.recipient || '';
-                document.getElementById('fReference').innerHTML = found.reference || '';
-                document.getElementById('fBodyText').innerHTML = found.body || '';
-                if (found.closing) document.getElementById('fClosingText').innerHTML = found.closing;
-                document.getElementById('fSignatoryName').innerHTML = found.signName || '';
-                document.getElementById('fSignatoryPosition').innerHTML = found.signPos || '';
-                if (found.companyHeader) document.getElementById('fCompanyHeader').innerHTML = found.companyHeader;
+                if (document.getElementById('fDocNo')) document.getElementById('fDocNo').innerHTML = found.docNo || '';
+                if (document.getElementById('lblDocNoPrefix') && found.lblDocNoPrefix) document.getElementById('lblDocNoPrefix').innerHTML = found.lblDocNoPrefix;
+                if (document.getElementById('fDocDate')) document.getElementById('fDocDate').innerHTML = found.date || '';
+                if (document.getElementById('lblDocDatePrefix') && found.lblDocDatePrefix) document.getElementById('lblDocDatePrefix').innerHTML = found.lblDocDatePrefix;
+                if (document.getElementById('fSubject')) document.getElementById('fSubject').innerHTML = found.subject || '';
+                if (document.getElementById('fRecipient')) document.getElementById('fRecipient').innerHTML = found.recipient || '';
+                if (document.getElementById('fReference')) document.getElementById('fReference').innerHTML = found.reference || '';
+                if (document.getElementById('fBodyText')) document.getElementById('fBodyText').innerHTML = found.body || '';
+                if (document.getElementById('fClosingText') && found.closing) document.getElementById('fClosingText').innerHTML = found.closing;
+                if (document.getElementById('fRespectfully') && found.respectfully) document.getElementById('fRespectfully').innerHTML = found.respectfully;
+                if (document.getElementById('fSignatoryName')) document.getElementById('fSignatoryName').innerHTML = found.signName || '';
+                if (document.getElementById('fSignatoryPosition')) document.getElementById('fSignatoryPosition').innerHTML = found.signPos || '';
+                if (document.getElementById('fCompanyHeader') && found.companyHeader) document.getElementById('fCompanyHeader').innerHTML = found.companyHeader;
+                if (found.dateLayout) setDateLayout(found.dateLayout, false);
+                if (typeof found.metaSpacing === 'number') setMetaSpacing(found.metaSpacing);
+
+                // Auto save as active draft
+                saveDocData(false);
 
                 window.scrollTo({ top: 120, behavior: 'smooth' });
 
@@ -3337,7 +4416,7 @@
                     toast: true,
                     position: 'top-end',
                     icon: 'info',
-                    title: `โหลดหนังสือเลขที่ ${found.docNo} ขึ้นกระดาษเรียบร้อย`,
+                    title: `โหลดหนังสือเลขที่ ${stripTags(found.docNo || '')} ขึ้นกระดาษเรียบร้อย`,
                     showConfirmButton: false,
                     timer: 1500
                 });
@@ -3347,7 +4426,7 @@
         function clearHistory() {
             Swal.fire({
                 title: 'ยืนยันการล้างประวัติ?',
-                text: 'ประวัติหนังสือที่บันทึกไว้ในเครื่องจะถูกลบทั้งหมด',
+                text: 'ประวัติหนังสือที่บันทึกไว้จะถูกลบทั้งหมดทั้งในเครื่องและระบบส่วนกลาง',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
@@ -3357,7 +4436,10 @@
             }).then((res) => {
                 if (res.isConfirmed) {
                     localStorage.removeItem(STORAGE_KEY);
-                    renderHistoryTable();
+                    renderHistoryTable([]);
+                    if (window.syncCompanyLetterHistoryToCloud) {
+                        window.syncCompanyLetterHistoryToCloud([]);
+                    }
                 }
             });
         }
@@ -3502,12 +4584,12 @@
         </div>
     </div>
 
-    <!-- Firebase Auth & Permissions Guard -->
+    <!-- Firebase Auth & Cloud Firestore Realtime Sync -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
-            initializeFirestore, doc, getDoc,
+            initializeFirestore, doc, getDoc, setDoc, onSnapshot,
             persistentLocalCache, persistentMultipleTabManager
         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -3539,8 +4621,229 @@
                 localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
             });
 
+            let currentUser = null;
+            let lastLocalSaveTimestamp = 0;
+            let unsubscribeSettings = null;
+            let unsubscribeHistory = null;
+
+            function updateCloudUIStatus(state, msg) {
+                const badge = document.getElementById('cloudSyncIndicator');
+                const text = document.getElementById('cloudSyncText');
+                const icon = document.getElementById('cloudSyncIcon');
+                if (!badge || !text || !icon) return;
+
+                if (state === 'synced') {
+                    badge.style.background = '#ecfdf5';
+                    badge.style.borderColor = '#a7f3d0';
+                    badge.style.color = '#059669';
+                    icon.className = 'bx bx-cloud-check';
+                    text.textContent = msg || 'ซิงก์ระบบส่วนกลางแล้ว';
+                } else if (state === 'saving') {
+                    badge.style.background = '#eff6ff';
+                    badge.style.borderColor = '#bfdbfe';
+                    badge.style.color = '#1A6FBF';
+                    icon.className = 'bx bx-loader-alt bx-spin';
+                    text.textContent = msg || 'กำลังบันทึกลง Cloud...';
+                } else if (state === 'error') {
+                    badge.style.background = '#fef2f2';
+                    badge.style.borderColor = '#fecaca';
+                    badge.style.color = '#dc2626';
+                    icon.className = 'bx bx-cloud-slash';
+                    text.textContent = msg || 'เชื่อมต่อ Cloud ล้มเหลว';
+                }
+            }
+
+            // Expose Cloud sync function to window for saveDocData()
+            window.syncCompanyLetterToCloud = async function(docPackage, showAlert = false) {
+                if (!db || !currentUser) {
+                    if (showAlert) {
+                        saveToHistory(false);
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'บันทึกแบบฟอร์มลงเครื่องเรียบร้อย',
+                            text: 'รอการเชื่อมต่อ Cloud Firestore เพื่อแชร์ให้ทุกคน...',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                    }
+                    return;
+                }
+
+                updateCloudUIStatus('saving');
+                lastLocalSaveTimestamp = Date.now();
+
+                try {
+                    const activeWs = (localStorage.getItem('mentra_active_workspace') || 'Mentra Solution').trim();
+                    const wsKey = activeWs.replace(/\s+/g, '_');
+
+                    const payload = {
+                        defaultTemplate: docPackage,
+                        workspaces: {
+                            [wsKey]: docPackage
+                        },
+                        ...docPackage,
+                        updatedAt: new Date().toISOString(),
+                        updatedBy: currentUser.email || currentUser.uid
+                    };
+
+                    // 1. Shared Global Settings Document in Firestore (accessible by ALL users)
+                    await setDoc(doc(db, 'material_settings', 'company_letters_settings'), payload, { merge: true });
+
+                    // 2. Personal backup
+                    await setDoc(doc(db, 'users', currentUser.uid), {
+                        lastCompanyLetter: docPackage,
+                        companyLettersUpdatedAt: new Date().toISOString()
+                    }, { merge: true }).catch(() => {});
+
+                    updateCloudUIStatus('synced', 'บันทึกลง Cloud แล้ว');
+                    setTimeout(() => {
+                        updateCloudUIStatus('synced', 'ซิงก์ระบบส่วนกลางแล้ว');
+                    }, 2500);
+
+                    // Also auto-save to history on explicit save
+                    saveToHistory(false);
+
+                    if (showAlert) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'บันทึกแบบฟอร์มขึ้นระบบส่วนกลางเรียบร้อย',
+                            text: 'ข้อมูลและการตั้งค่าถูกบันทึกลง Cloud Firestore แล้ว ทุกคนในระบบสามารถเปิดใช้งานข้อมูลชุดนี้ได้ทันที แม้จะปิดเว็บหรือเปิดจากเครื่องอื่น',
+                            confirmButtonColor: '#1A6FBF',
+                            confirmButtonText: 'รับทราบ',
+                            timer: 3500
+                        });
+                    }
+                } catch (err) {
+                    console.error('Failed to sync company letters to Cloud:', err);
+                    updateCloudUIStatus('error', 'บันทึกลง Cloud ไม่สำเร็จ (บันทึกในเครื่องแล้ว)');
+                    if (showAlert) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'บันทึกข้อมูลในเครื่องแล้ว',
+                            text: 'เกิดปัญหาในการเชื่อมต่อ Cloud Firestore: ' + (err.message || 'ไม่สามารถส่งข้อมูลได้'),
+                            confirmButtonColor: '#1A6FBF'
+                        });
+                    }
+                }
+            };
+
+            // Expose History sync to window
+            window.syncCompanyLetterHistoryToCloud = async function(historyList) {
+                if (!db || !currentUser) return;
+                try {
+                    await setDoc(doc(db, 'material_settings', 'company_letters_history'), {
+                        history: historyList || [],
+                        updatedAt: new Date().toISOString(),
+                        updatedBy: currentUser.email || currentUser.uid
+                    }, { merge: true });
+                } catch (err) {
+                    console.warn('Could not sync history to Cloud:', err);
+                }
+            };
+
+            // Main Cloud Initialization function
+            async function initCloudSync() {
+                try {
+                    updateCloudUIStatus('saving', 'กำลังดึงข้อมูลจาก Cloud...');
+
+                    // 1. Load Settings & Template from Firestore
+                    const snap = await getDoc(doc(db, 'material_settings', 'company_letters_settings'));
+                    if (snap.exists() && snap.data()) {
+                        const cloudData = snap.data();
+                        const activeWs = (localStorage.getItem('mentra_active_workspace') || 'Mentra Solution').trim();
+                        const wsKey = activeWs.replace(/\s+/g, '_');
+
+                        let matchedData = null;
+                        if (cloudData.workspaces && cloudData.workspaces[wsKey]) {
+                            matchedData = cloudData.workspaces[wsKey];
+                        } else if (cloudData.defaultTemplate) {
+                            matchedData = cloudData.defaultTemplate;
+                        } else {
+                            matchedData = cloudData;
+                        }
+
+                        if (matchedData && (matchedData.docNo || matchedData.bodyText || matchedData.subject || matchedData.companyHeader)) {
+                            // Restore UI using shared cloud data
+                            window.restoreDocData(matchedData);
+                            console.log('✅ Company letters template loaded from Cloud Firestore');
+                        }
+                    }
+
+                    // 2. Load History from Firestore
+                    try {
+                        const histSnap = await getDoc(doc(db, 'material_settings', 'company_letters_history'));
+                        if (histSnap.exists() && histSnap.data() && Array.isArray(histSnap.data().history)) {
+                            const cloudHistory = histSnap.data().history;
+                            const localHistory = window.getHistory ? window.getHistory() : [];
+
+                            // Merge unique history items (prefer cloud or newer)
+                            const mergedMap = new Map();
+                            cloudHistory.forEach(item => { if (item && item.id) mergedMap.set(item.id, item); });
+                            localHistory.forEach(item => { if (item && item.id && !mergedMap.has(item.id)) mergedMap.set(item.id, item); });
+
+                            const finalHistory = Array.from(mergedMap.values())
+                                .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+                                .slice(0, 50);
+
+                            localStorage.setItem('mentra_delivery_letters_history', JSON.stringify(finalHistory));
+                            if (window.renderHistoryTable) window.renderHistoryTable(finalHistory);
+                        }
+                    } catch (histErr) {
+                        console.warn('Could not load history from cloud:', histErr);
+                    }
+
+                    updateCloudUIStatus('synced', 'ซิงก์ระบบส่วนกลางแล้ว');
+
+                    // Unlock auto-save safely now that initial cloud hydration is complete
+                    window.isDocReadyForAutoSave = true;
+
+                    // 3. Realtime Listener: Listen for changes made by other team members
+                    if (unsubscribeSettings) unsubscribeSettings();
+                    unsubscribeSettings = onSnapshot(doc(db, 'material_settings', 'company_letters_settings'), (docSnap) => {
+                        if (!docSnap.exists()) return;
+                        
+                        // Ignore echo-back from our own save within last 2.5 seconds
+                        if (Date.now() - lastLocalSaveTimestamp < 2500) return;
+
+                        const remote = docSnap.data();
+                        if (!remote) return;
+
+                        // Only apply auto-reload if user is currently in view-mode (not actively typing in edit-mode)
+                        if (window.currentDocMode === 'view') {
+                            const activeWs = (localStorage.getItem('mentra_active_workspace') || 'Mentra Solution').trim();
+                            const wsKey = activeWs.replace(/\s+/g, '_');
+                            const targetData = (remote.workspaces && remote.workspaces[wsKey]) || remote.defaultTemplate || remote;
+
+                            if (targetData && (targetData.docNo || targetData.bodyText)) {
+                                window.restoreDocData(targetData);
+                                showAutoSaveIndicator('ซิงก์อัปเดตจาก Cloud');
+                            }
+                        }
+                    });
+
+                    // 4. Realtime Listener for History Table
+                    if (unsubscribeHistory) unsubscribeHistory();
+                    unsubscribeHistory = onSnapshot(doc(db, 'material_settings', 'company_letters_history'), (hSnap) => {
+                        if (!hSnap.exists()) return;
+                        const data = hSnap.data();
+                        if (data && Array.isArray(data.history)) {
+                            localStorage.setItem('mentra_delivery_letters_history', JSON.stringify(data.history));
+                            if (window.renderHistoryTable) window.renderHistoryTable(data.history);
+                        }
+                    });
+
+                } catch (err) {
+                    console.warn('initCloudSync error, falling back to local storage:', err);
+                    updateCloudUIStatus('synced', 'ใช้งานข้อมูลออฟไลน์ (เชื่อมต่อ Cloud อัตโนมัติ)');
+                    window.isDocReadyForAutoSave = true;
+                }
+            }
+
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
+                    currentUser = user;
                     try {
                         const userSnap = await getDoc(doc(db, 'users', user.uid));
                         if (userSnap.exists()) {
@@ -3550,13 +4853,27 @@
                     } catch (e) {
                         console.warn('Could not check page access:', e);
                     }
+
                     const overlay = document.getElementById('mentra-page-transition-overlay');
                     if (overlay) {
                         overlay.style.opacity = '0';
                         overlay.style.pointerEvents = 'none';
                     }
+
+                    // Start Cloud Sync after user authentication
+                    initCloudSync();
+
                 } else {
                     window.location.href = '../../index.html';
+                }
+            });
+
+            // Listen for Workspace switches from Sidebar
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'mentra_active_workspace') {
+                    if (currentUser && db) {
+                        initCloudSync();
+                    }
                 }
             });
         }

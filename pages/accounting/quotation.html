@@ -2509,7 +2509,7 @@
 
                         <!-- ══ SIGNATURE BLOCK ══ -->
                         <div id="pSignatureSection" style="border-top: 1px solid #cbd5e1; padding-top: 6px; margin-top: auto; page-break-inside: avoid; break-inside: avoid;">
-                            <div
+                            <div id="pSignatureRow"
                                 style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px;">
                                 <!-- Left Signer Box -->
                                 <div id="pBuyerSignatureBlock"
@@ -2665,6 +2665,34 @@
             </div>
             
             <div style="flex: 1; overflow-y: auto; padding: 20px;">
+                <!-- Shop / Company Selector for Form Customization -->
+                <div style="margin-bottom: 18px; padding: 13px 14px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1.5px solid #cbd5e1; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label for="templateSettingShopSelect" style="margin: 0; font-size: 0.85rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                            <i class='bx bx-store-alt' style="font-size: 1.15rem; color: var(--primary-color, #1A6FBF);"></i> เลือกร้านค้า / บริษัท
+                        </label>
+                        <span id="templateCurrentShopBadge" style="font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-family: monospace;">
+                            MT
+                        </span>
+                    </div>
+
+                    <div style="position: relative; margin-bottom: 8px;">
+                        <select id="templateSettingShopSelect" class="form-control" onchange="onTemplateSettingShopChange(this.value)" style="font-size: 0.85rem; font-weight: 600; padding: 8px 10px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #0f172a; width: 100%; cursor: pointer;">
+                            <option value="">กำลังโหลดรายชื่อร้าน...</option>
+                        </select>
+                    </div>
+
+                    <div id="templateShopInfoRow" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.74rem; color: #64748b; padding-top: 6px; border-top: 1px dashed #e2e8f0;">
+                        <div style="display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;">
+                            <span id="templateShopColorDot" style="width: 10px; height: 10px; border-radius: 50%; background: #1A6FBF; display: inline-block; flex-shrink: 0;"></span>
+                            <span id="templateShopStatusText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;">ปรับแต่งฟอร์มของร้านนี้</span>
+                        </div>
+                        <button type="button" onclick="openIssuerSelectionModal()" style="background: none; border: none; font-size: 0.74rem; color: #2563eb; cursor: pointer; text-decoration: underline; flex-shrink: 0; padding: 0 4px; display: inline-flex; align-items: center; gap: 2px;" title="เปิดหน้าต่างเลือกผู้ออกเอกสารแบบการ์ด">
+                            <i class='bx bx-windows'></i> การ์ดร้านค้า
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Sync & Backup Section for Vercel / Cross-Domain -->
                 <div style="margin-bottom: 20px; padding: 12px 14px; background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%); border: 1px solid #bae6fd; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
@@ -2994,56 +3022,264 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>รูปแบบช่องเซ็นผู้สั่งซื้อ (Buyer Signature)</label>
-                    <select id="settingSignatureFormat" class="form-control" onchange="applyLivePreview()">
-                        <option value="full">แสดงครบถ้วน (Full)</option>
-                        <option value="line_only">เฉพาะเส้นลงนาม (Line Only)</option>
-                        <option value="hidden">ซ่อนทั้งหมด (Hidden)</option>
-                    </select>
+                <!-- Signature General Settings -->
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 14px;">
+                    <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <i class='bx bx-pen' style="color: #2563eb;"></i> ตั้งค่าขนาดและวันที่ช่องลงนาม
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.78rem;">ความสูงช่องเซ็นชื่อ</label>
+                            <select id="settingSignatureSize" class="form-control" onchange="applyLivePreview()" style="font-size: 0.82rem; padding: 6px 8px;">
+                                <option value="40">เล็ก (40px)</option>
+                                <option value="55" selected>ปานกลาง (55px)</option>
+                                <option value="75">ใหญ่ (75px)</option>
+                                <option value="95">ใหญ่มาก (95px)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0; display: flex; align-items: center; gap: 8px; padding-top: 18px;">
+                            <input type="checkbox" id="settingShowSignatureDate" onchange="applyLivePreview()" style="cursor: pointer;">
+                            <label for="settingShowSignatureDate" style="margin: 0; cursor: pointer; font-size: 0.82rem; font-weight: 600;">แสดงวันที่ลงนาม</label>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="settingShowSignatureDate" onchange="applyLivePreview()">
-                    <label for="settingShowSignatureDate" style="margin: 0; cursor: pointer; font-size: 0.9rem;">แสดงวันที่ในช่องลงนาม (Signature Date)</label>
+
+                <!-- Signature Tabs per Document Type -->
+                <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 12px; margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 0.88rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                            <i class='bx bx-check-shield' style="color: #2563eb; font-size: 1.05rem;"></i> ตั้งค่าช่องลงนามแยกตามเอกสาร
+                        </span>
+                        <span style="font-size: 0.72rem; color: #64748b; background: #e2e8f0; padding: 2px 8px; border-radius: 12px;">แยกตามร้าน/บริษัท</span>
+                    </div>
+
+                    <!-- Tabs Header -->
+                    <div style="display: flex; gap: 4px; background: #e2e8f0; padding: 4px; border-radius: 9px; margin-bottom: 12px;">
+                        <button type="button" id="sigTabBtn_quotation" onclick="switchSigSettingsTab('quotation')" 
+                            style="flex: 1; padding: 7px 4px; font-size: 0.78rem; font-weight: 700; border: none; border-radius: 7px; background: #2563eb; color: #ffffff; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <i class='bx bx-file'></i> ใบเสนอราคา
+                        </button>
+                        <button type="button" id="sigTabBtn_invoice" onclick="switchSigSettingsTab('invoice')" 
+                            style="flex: 1; padding: 7px 4px; font-size: 0.78rem; font-weight: 700; border: none; border-radius: 7px; background: transparent; color: #475569; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <i class='bx bx-package'></i> ใบส่งของ/แจ้งหนี้
+                        </button>
+                        <button type="button" id="sigTabBtn_receipt" onclick="switchSigSettingsTab('receipt')" 
+                            style="flex: 1; padding: 7px 4px; font-size: 0.78rem; font-weight: 700; border: none; border-radius: 7px; background: transparent; color: #475569; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <i class='bx bx-receipt'></i> ใบเสร็จ/กำกับภาษี
+                        </button>
+                    </div>
+
+                    <!-- Panel 1: ใบเสนอราคา (Quotation) -->
+                    <div id="sigPanel_quotation" class="sig-settings-panel">
+                        <!-- Buyer Slot -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0;">
+                                <label style="margin: 0; font-size: 0.82rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                    <i class='bx bx-user' style="color: #6366f1;"></i> ช่องผู้สั่งซื้อ (ซ้าย)
+                                </label>
+                                <label style="margin: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #2563eb;">
+                                    <input type="checkbox" id="sig_q_buyer_enabled" checked onchange="handleSigConfigChange()"> เปิดใช้งาน
+                                </label>
+                            </div>
+                            <div id="sig_q_buyer_fields" style="display: flex; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">หัวข้อ</label>
+                                    <input type="text" id="sig_q_buyer_title" class="form-control" value="ผู้สั่งซื้อ" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ชื่อผู้ลงนาม (เว้นว่างหากไม่ต้องการแสดงชื่อ)</label>
+                                    <input type="text" id="sig_q_buyer_name" class="form-control" value="" placeholder="(เว้นว่างได้)" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ตำแหน่ง (เว้นว่างหากไม่ต้องการแสดงตำแหน่ง)</label>
+                                    <input type="text" id="sig_q_buyer_role" class="form-control" value="" placeholder="(เว้นว่างได้)" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seller Slot -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0;">
+                                <label style="margin: 0; font-size: 0.82rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                    <i class='bx bx-award' style="color: #059669;"></i> ช่องผู้เสนอราคา (ขวา)
+                                </label>
+                                <label style="margin: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #2563eb;">
+                                    <input type="checkbox" id="sig_q_seller_enabled" checked onchange="handleSigConfigChange()"> เปิดใช้งาน
+                                </label>
+                            </div>
+                            <div id="sig_q_seller_fields" style="display: flex; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">คำลงท้าย/หัวข้อ</label>
+                                    <input type="text" id="sig_q_seller_title" class="form-control" value="ขอแสดงความนับถือ / Sincerely Yours," oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ชื่อผู้ลงนาม</label>
+                                    <input type="text" id="sig_q_seller_name" class="form-control" value="" placeholder="( ระบุชื่อผู้ลงนาม )" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ตำแหน่ง</label>
+                                    <input type="text" id="sig_q_seller_role" class="form-control" value="ผู้เสนอราคา" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: ออกใบส่งของ/ใบแจ้งหนี้ (Invoice) -->
+                    <div id="sigPanel_invoice" class="sig-settings-panel" style="display: none;">
+                        <!-- Recipient Slot -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0;">
+                                <label style="margin: 0; font-size: 0.82rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                    <i class='bx bx-user-check' style="color: #6366f1;"></i> ช่องผู้รับของ (ซ้าย)
+                                </label>
+                                <label style="margin: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #2563eb;">
+                                    <input type="checkbox" id="sig_inv_recipient_enabled" checked onchange="handleSigConfigChange()"> เปิดใช้งาน
+                                </label>
+                            </div>
+                            <div id="sig_inv_recipient_fields" style="display: flex; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">หัวข้อ</label>
+                                    <input type="text" id="sig_inv_recipient_title" class="form-control" value="ผู้รับของ" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ข้อความชื่อผู้ลงนาม</label>
+                                    <input type="text" id="sig_inv_recipient_name" class="form-control" value="( .................................................... )" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deliverer Slot -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0;">
+                                <label style="margin: 0; font-size: 0.82rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                    <i class='bx bx-car' style="color: #f59e0b;"></i> ช่องผู้ส่งของ (กลาง)
+                                </label>
+                                <label style="margin: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #2563eb;">
+                                    <input type="checkbox" id="sig_inv_deliverer_enabled" checked onchange="handleSigConfigChange()"> เปิดใช้งาน
+                                </label>
+                            </div>
+                            <div id="sig_inv_deliverer_fields" style="display: flex; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">หัวข้อ</label>
+                                    <input type="text" id="sig_inv_deliverer_title" class="form-control" value="ผู้ส่งของ" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ข้อความชื่อผู้ลงนาม</label>
+                                    <input type="text" id="sig_inv_deliverer_name" class="form-control" value="( .................................................... )" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Authorized Slot -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0;">
+                                <label style="margin: 0; font-size: 0.82rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                    <i class='bx bx-certification' style="color: #10b981;"></i> ช่องผู้มีอำนาจลงนาม (ขวา)
+                                </label>
+                                <label style="margin: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #2563eb;">
+                                    <input type="checkbox" id="sig_inv_auth_enabled" checked onchange="handleSigConfigChange()"> เปิดใช้งาน
+                                </label>
+                            </div>
+                            <div id="sig_inv_auth_fields" style="display: flex; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">หัวข้อ</label>
+                                    <input type="text" id="sig_inv_auth_title" class="form-control" value="ผู้มีอำนาจลงนาม" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ชื่อผู้มีอำนาจลงนาม</label>
+                                    <input type="text" id="sig_inv_auth_name" class="form-control" value="" placeholder="( ระบุชื่อผู้มีอำนาจลงนาม )" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 3: ออกใบเสร็จรับเงิน/ใบกำกับภาษี (Receipt) -->
+                    <div id="sigPanel_receipt" class="sig-settings-panel" style="display: none;">
+                        <!-- Payer Slot -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0;">
+                                <label style="margin: 0; font-size: 0.82rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                    <i class='bx bx-wallet' style="color: #6366f1;"></i> ช่องผู้จ่ายเงิน (ซ้าย)
+                                </label>
+                                <label style="margin: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #2563eb;">
+                                    <input type="checkbox" id="sig_rec_payer_enabled" checked onchange="handleSigConfigChange()"> เปิดใช้งาน
+                                </label>
+                            </div>
+                            <div id="sig_rec_payer_fields" style="display: flex; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">หัวข้อ</label>
+                                    <input type="text" id="sig_rec_payer_title" class="form-control" value="ผู้จ่ายเงิน" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ข้อความชื่อผู้ลงนาม</label>
+                                    <input type="text" id="sig_rec_payer_name" class="form-control" value="( .................................................... )" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collector Slot -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0;">
+                                <label style="margin: 0; font-size: 0.82rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                    <i class='bx bx-money' style="color: #059669;"></i> ช่องผู้รับเงิน (กลาง)
+                                </label>
+                                <label style="margin: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #2563eb;">
+                                    <input type="checkbox" id="sig_rec_collector_enabled" checked onchange="handleSigConfigChange()"> เปิดใช้งาน
+                                </label>
+                            </div>
+                            <div id="sig_rec_collector_fields" style="display: flex; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">หัวข้อ</label>
+                                    <input type="text" id="sig_rec_collector_title" class="form-control" value="ผู้รับเงิน" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ข้อความชื่อผู้ลงนาม</label>
+                                    <input type="text" id="sig_rec_collector_name" class="form-control" value="( .................................................... )" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Authorized Slot -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0;">
+                                <label style="margin: 0; font-size: 0.82rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                                    <i class='bx bx-certification' style="color: #10b981;"></i> ช่องผู้มีอำนาจลงนาม (ขวา)
+                                </label>
+                                <label style="margin: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: #2563eb;">
+                                    <input type="checkbox" id="sig_rec_auth_enabled" checked onchange="handleSigConfigChange()"> เปิดใช้งาน
+                                </label>
+                            </div>
+                            <div id="sig_rec_auth_fields" style="display: flex; flex-direction: column; gap: 6px;">
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">หัวข้อ</label>
+                                    <input type="text" id="sig_rec_auth_title" class="form-control" value="ผู้มีอำนาจลงนาม" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; color: #64748b;">ชื่อผู้มีอำนาจลงนาม</label>
+                                    <input type="text" id="sig_rec_auth_name" class="form-control" value="" placeholder="( ระบุชื่อผู้มีอำนาจลงนาม )" oninput="handleSigConfigChange()" style="font-size: 0.82rem; padding: 5px 8px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>ขนาดความสูงพื้นที่เซ็นชื่อ (Signature Box Height)</label>
-                    <select id="settingSignatureSize" class="form-control" onchange="applyLivePreview()">
-                        <option value="40">เล็ก (Small - 40px)</option>
-                        <option value="55" selected>ปานกลาง (Medium - 55px)</option>
-                        <option value="75">ใหญ่ (Large - 75px)</option>
-                        <option value="95">ใหญ่มาก (Extra Large - 95px)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>หัวข้อฝ่ายผู้ซื้อ (ซ้าย)</label>
-                    <input type="text" id="settingLeftSignerTitle" class="form-control" value="ผู้สั่งซื้อ" oninput="applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ชื่อผู้ลงนามฝ่ายผู้ซื้อ (ซ้าย)</label>
-                    <input type="text" id="settingBuyerName" class="form-control" value="" placeholder="(เว้นว่างหากไม่ต้องการแสดง)" oninput="applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ตำแหน่งฝ่ายผู้ซื้อ (ซ้าย)</label>
-                    <input type="text" id="settingBuyerRole" class="form-control" value="" placeholder="(เว้นว่างหากไม่ต้องการแสดง)" oninput="applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>คำลงท้ายฝ่ายผู้เสนอราคา (ขวา)</label>
-                    <input type="text" id="settingSincerelyYours" class="form-control" value="ขอแสดงความนับถือ / Sincerely Yours," oninput="applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ชื่อผู้ลงนามฝ่ายผู้เสนอราคา</label>
-                    <input type="text" id="settingSellerName" class="form-control" value="" placeholder="( ระบุชื่อผู้ลงนาม )" oninput="applyLivePreview()">
-                </div>
-                <div class="form-group">
-                    <label>ตำแหน่ง</label>
-                    <input type="text" id="settingSellerRole" class="form-control" value="ผู้เสนอราคา" oninput="applyLivePreview()">
+
+                <!-- Hidden legacy input elements for backward compatibility -->
+                <div style="display: none !important;">
+                    <select id="settingSignatureFormat"><option value="full" selected>full</option></select>
+                    <input type="text" id="settingLeftSignerTitle" value="ผู้สั่งซื้อ">
+                    <input type="text" id="settingBuyerName" value="">
+                    <input type="text" id="settingBuyerRole" value="">
+                    <input type="text" id="settingSincerelyYours" value="ขอแสดงความนับถือ / Sincerely Yours,">
+                    <input type="text" id="settingSellerName" value="">
+                    <input type="text" id="settingSellerRole" value="ผู้เสนอราคา">
                 </div>
             </div>
 
-            <div style="padding: 20px; border-top: 1px solid var(--border-color); background: #f8fafc; display: flex; gap: 10px;">
-                <button class="btn btn-outline" style="flex: 1;" onclick="closeTemplateSettingsModal()">ยกเลิก</button>
-                <button class="btn btn-primary" style="flex: 1;" onclick="saveTemplateSettings()">บันทึก</button>
+            <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); background: #f8fafc; display: flex; gap: 10px;">
+                <button type="button" class="btn btn-outline" style="flex: 1; border-radius: 9px; font-weight: 600;" onclick="closeTemplateSettingsModal()">ปิด</button>
+                <button type="button" class="btn btn-primary" style="flex: 1.3; border-radius: 9px; font-weight: 700; background: linear-gradient(135deg, #1d4ed8, #2563eb); border: none; color: #ffffff; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);" onclick="saveTemplateSettings()">
+                    <i class='bx bx-save'></i> <span>บันทึกการตั้งค่า</span>
+                </button>
             </div>
         </div>
 
@@ -3196,7 +3432,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
         import {
-            initializeFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, orderBy, deleteDoc, deleteField, onSnapshot,
+            initializeFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, orderBy, deleteDoc, deleteField, onSnapshot,
             persistentLocalCache, persistentMultipleTabManager
         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -3563,7 +3799,9 @@
                 return;
             }
 
-            const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+            const currentIssuer = document.getElementById('templateSettingShopSelect')?.value || 
+                                  document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 
+                                  'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
             const shop = findRegisteredShop(currentIssuer);
             const phone = shop ? (shop.phone || shop.tel) : (MENTRA_OFFICIAL.phone);
             const email = shop ? shop.email : (MENTRA_OFFICIAL.email);
@@ -4863,38 +5101,52 @@
                 workflowHistory.parentRefNo = paramParentRef;
             }
 
-            // Resilient check for pending project data in storage (recovers projectId even if stripped by Vercel clean URL redirects)
+            // Handle project import only if projectId is explicitly provided in the URL
             let pendingProjData = null;
-            try {
-                const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
-                if (pRaw) {
-                    const parsed = JSON.parse(pRaw);
-                    const isFresh = parsed && parsed.timestamp && (Date.now() - parsed.timestamp < 600000);
-                    if (parsed && (isFresh || autoImportId)) {
-                        if (!autoImportId || String(parsed.projectId) === String(autoImportId)) {
-                            pendingProjData = parsed;
-                            if (!autoImportId && parsed.projectId) {
-                                autoImportId = String(parsed.projectId);
+            if (autoImportId) {
+                try {
+                    const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
+                    if (pRaw) {
+                        const parsed = JSON.parse(pRaw);
+                        // Strict match: ONLY use pending data if it belongs to the explicitly requested autoImportId
+                        if (parsed && String(parsed.projectId) === String(autoImportId)) {
+                            const isFresh = parsed.timestamp && (Date.now() - parsed.timestamp < 600000);
+                            if (isFresh) {
+                                pendingProjData = parsed;
+                                if (parsed.source) {
+                                    autoImportSource = parsed.source;
+                                }
                             }
-                            if (parsed.source) {
-                                autoImportSource = parsed.source;
-                            }
+                        } else {
+                            // Belongs to an older/different project, clear it immediately
+                            sessionStorage.removeItem('pending_quotation_project');
+                            localStorage.removeItem('pending_quotation_project');
                         }
                     }
-                }
-            } catch(e) {}
+                } catch(e) {}
 
-            // Also check pending_load_quotation fallback if autoImportId is still null
-            if (!autoImportId) {
+                // Check pending_load_quotation fallback only if matching autoImportId
                 try {
                     const loadRaw = localStorage.getItem('pending_load_quotation');
                     if (loadRaw) {
                         const loadParsed = JSON.parse(loadRaw);
-                        if (loadParsed && loadParsed.projectId && (Date.now() - (loadParsed.timestamp || 0) < 600000)) {
-                            autoImportId = String(loadParsed.projectId);
+                        if (loadParsed && String(loadParsed.projectId) === String(autoImportId)) {
+                            // Matches current projectId
+                        } else if (urlParams.get('loadPending') !== 'true') {
+                            localStorage.removeItem('pending_load_quotation');
                         }
                     }
                 } catch(e) {}
+            } else {
+                // No projectId in URL: Purge any old pending project data so it NEVER auto-loads old data
+                if (urlParams.get('loadPending') !== 'true') {
+                    try {
+                        sessionStorage.removeItem('pending_quotation_project');
+                        localStorage.removeItem('pending_quotation_project');
+                        sessionStorage.removeItem('pending_load_quotation');
+                        localStorage.removeItem('pending_load_quotation');
+                    } catch(e) {}
+                }
             }
 
             let pendingProjInstitution = '';
@@ -4913,12 +5165,6 @@
                     const el = document.getElementById('toTaxId');
                     if (el && tid) el.value = tid;
                 }
-            } else if (!autoImportId) {
-                // Only clear if completely stale
-                try {
-                    sessionStorage.removeItem('pending_quotation_project');
-                    localStorage.removeItem('pending_quotation_project');
-                } catch(e) {}
             }
 
             // Guard: urlShop must NEVER be equal to the school / recipient institution
@@ -5131,22 +5377,40 @@
                             if (rawLocalTpl) localTemplates = JSON.parse(rawLocalTpl);
                         } catch(e) {}
 
-                        // Clean out any stale/contaminated developer name or email from localTemplates
-                        Object.keys(localTemplates).forEach(k => {
-                            if (localTemplates[k] && (isEmail(localTemplates[k].sellerName) || (typeof localTemplates[k].sellerName === 'string' && localTemplates[k].sellerName.includes('ธนภูมิ')))) {
-                                delete localTemplates[k].sellerName;
+                        function cleanContaminatedTemplate(k, tpl) {
+                            if (!tpl || typeof tpl !== 'object') return;
+                            if (isEmail(tpl.sellerName) || (typeof tpl.sellerName === 'string' && tpl.sellerName.includes('ธนภูมิ'))) {
+                                delete tpl.sellerName;
                             }
-                        });
+                            const isMentra = String(k || '').includes('เมนทร้า') || String(k || '').toLowerCase().includes('mentra');
+                            if (!isMentra) {
+                                const hasMentraName = (tpl.issuerCustomName && (tpl.issuerCustomName.includes('เมนทร้า') || tpl.issuerCustomName.toLowerCase().includes('mentra'))) ||
+                                                      (tpl.issuerName && (tpl.issuerName.includes('เมนทร้า') || tpl.issuerName.toLowerCase().includes('mentra')));
+                                const hasMentraAddr = tpl.issuerAddress && (tpl.issuerAddress.includes('บางแก้ว') || tpl.issuerAddress.includes('พาทิโอ้') || tpl.issuerAddress.includes('115/123'));
+                                if (hasMentraName || hasMentraAddr) {
+                                    delete tpl.issuerCustomName;
+                                    delete tpl.issuerName;
+                                    delete tpl.issuerAddress;
+                                    delete tpl.issuerContact;
+                                    delete tpl.primaryColor;
+                                    delete tpl.sellerName;
+                                    delete tpl.sellerRole;
+                                    delete tpl.showLogo;
+                                    delete tpl.logoSize;
+                                    delete tpl.signatureImage;
+                                    delete tpl.activeSignatures;
+                                }
+                            }
+                        }
+
+                        // Clean out any stale/contaminated developer name or cross-company contamination from localTemplates
+                        Object.keys(localTemplates).forEach(k => cleanContaminatedTemplate(k, localTemplates[k]));
 
                         const cloudTemplates = (globalSettings && globalSettings.quotationTemplates) || 
                                                (userData && userData.quotationTemplates) || {};
 
-                        // Clean out any stale/contaminated developer name from cloudTemplates
-                        Object.keys(cloudTemplates).forEach(k => {
-                            if (cloudTemplates[k] && (isEmail(cloudTemplates[k].sellerName) || (typeof cloudTemplates[k].sellerName === 'string' && cloudTemplates[k].sellerName.includes('ธนภูมิ')))) {
-                                delete cloudTemplates[k].sellerName;
-                            }
-                        });
+                        // Clean out any stale/contaminated developer name or cross-company contamination from cloudTemplates
+                        Object.keys(cloudTemplates).forEach(k => cleanContaminatedTemplate(k, cloudTemplates[k]));
 
                         // Merging order: default templates < local templates < shared cloud templates (cloud takes highest precedence)
                         window.quotationTemplates = Object.assign({}, window.MENTRA_DEFAULT_TEMPLATES || {}, localTemplates, cloudTemplates);
@@ -5235,7 +5499,9 @@
 
                             if (remoteData.quotationTemplates && typeof remoteData.quotationTemplates === 'object') {
                                 Object.keys(remoteData.quotationTemplates).forEach(k => {
-                                    if (remoteData.quotationTemplates[k] && (isEmail(remoteData.quotationTemplates[k].sellerName) || (typeof remoteData.quotationTemplates[k].sellerName === 'string' && remoteData.quotationTemplates[k].sellerName.includes('ธนภูมิ')))) {
+                                    if (typeof cleanContaminatedTemplate === 'function') {
+                                        cleanContaminatedTemplate(k, remoteData.quotationTemplates[k]);
+                                    } else if (remoteData.quotationTemplates[k] && (isEmail(remoteData.quotationTemplates[k].sellerName) || (typeof remoteData.quotationTemplates[k].sellerName === 'string' && remoteData.quotationTemplates[k].sellerName.includes('ธนภูมิ')))) {
                                         delete remoteData.quotationTemplates[k].sellerName;
                                     }
                                 });
@@ -5337,9 +5603,7 @@
                             const urlParamsCheck = new URLSearchParams(window.location.search);
                             const hasProjectImport = urlParamsCheck.get('projectId') || 
                                                      urlParamsCheck.get('shop') || 
-                                                     sessionStorage.getItem('pending_quotation_project') || 
-                                                     localStorage.getItem('pending_quotation_project') ||
-                                                     localStorage.getItem('pending_load_quotation');
+                                                     (urlParamsCheck.get('loadPending') === 'true');
                             
                             if (!hasAutoImported && !hasProjectImport) {
                                 let currentIssuerDisplay = document.getElementById('currentIssuerDisplay')?.innerText?.trim();
@@ -5521,33 +5785,21 @@
                         let authImportId = urlParams.get('projectId');
                         let authImportSource = urlParams.get('source') || 'school';
 
-                        // Auth-phase import: retry-safe (handles race when initializePage is still awaiting Firestore)
-                        (async () => {
-                            // If initializePage is still in-flight, wait until it releases the lock (up to 4 seconds)
-                            if (isImportingProject) {
-                                for (let i = 0; i < 40 && isImportingProject; i++) {
-                                    await new Promise(r => setTimeout(r, 100));
+                        // Auth-phase import: retry-safe ONLY if projectId is explicitly provided in URL
+                        if (authImportId && !hasAutoImported) {
+                            (async () => {
+                                // If initializePage is still in-flight, wait until it releases the lock (up to 4 seconds)
+                                if (isImportingProject) {
+                                    for (let i = 0; i < 40 && isImportingProject; i++) {
+                                        await new Promise(r => setTimeout(r, 100));
+                                    }
                                 }
-                            }
 
-                            if (!hasAutoImported) {
-                                if (!authImportId) {
-                                    try {
-                                        const pRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
-                                        if (pRaw) {
-                                            const pData = JSON.parse(pRaw);
-                                            if (pData && pData.projectId && (Date.now() - (pData.timestamp || 0) < 600000)) {
-                                                authImportId = String(pData.projectId);
-                                                authImportSource = pData.source || 'school';
-                                            }
-                                        }
-                                    } catch(e) {}
-                                }
-                                if (authImportId) {
+                                if (!hasAutoImported && authImportId) {
                                     autoImportProject(authImportId, authImportSource).catch(e => console.error("Auth auto-import error:", e));
                                 }
-                            }
-                        })();
+                            })();
+                        }
                     } else {
                         // User document deleted!
                         alert('ไม่พบบัญชีผู้ใช้นี้ในระบบ หรือบัญชีของคุณถูกลบแล้ว');
@@ -6470,62 +6722,9 @@
                 }
             }
 
-            // Sync 3-column signature block on invoice and receipt
-            const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
-            const pMiddleBlock = document.getElementById('pMiddleSignatureBlock');
-            const pSellerBlock = document.getElementById('pSellerSignatureBlock');
-            const pMiddleSignerTitle = document.getElementById('pMiddleSignerTitle');
-            const pMiddleSignerName = document.getElementById('pMiddleSignerName');
-            const pMiddleSignatureDate = document.getElementById('pMiddleSignatureDate');
-            const pBuyerNameEl = document.getElementById('pBuyerName');
-
-            if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                if (pBuyerBlock) pBuyerBlock.style.width = '215px';
-                if (pMiddleBlock) {
-                    pMiddleBlock.style.display = 'flex';
-                    pMiddleBlock.style.width = '215px';
-                    const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
-                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = docConfig?.middleSignerTitle || (currentDocType === 'receipt' ? 'ผู้รับเงิน' : 'ผู้ส่งของ');
-                    if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
-                    const showDate = document.getElementById('settingShowSignatureDate')?.checked || false;
-                    if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showDate ? 'flex' : 'none';
-                    const pBuyerSpaceEl = document.getElementById('pBuyerSignatureSpace');
-                    const pMiddleSpaceEl = document.getElementById('pMiddleSignatureSpace');
-                    if (pBuyerSpaceEl && pMiddleSpaceEl && pBuyerSpaceEl.style.height) {
-                        pMiddleSpaceEl.style.height = pBuyerSpaceEl.style.height;
-                    }
-                }
-                if (pSellerBlock) pSellerBlock.style.width = '215px';
-                if (pBuyerNameEl) {
-                    pBuyerNameEl.style.display = 'flex';
-                    pBuyerNameEl.innerText = '( .................................................... )';
-                }
-            } else {
-                if (pBuyerBlock) pBuyerBlock.style.width = '280px';
-                if (pMiddleBlock) pMiddleBlock.style.display = 'none';
-                if (pSellerBlock) pSellerBlock.style.width = '280px';
-            }
-            const sellerRoleInput = document.getElementById('sellerRole');
-            const pSellerRole = document.getElementById('pSellerRole');
-            if (sellerRoleInput && pSellerRole) {
-                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                    pSellerRole.innerText = '';
-                    pSellerRole.style.display = 'none';
-                } else {
-                    let rVal = sellerRoleInput.value.trim();
-                    if (!rVal || rVal === 'ผู้มีอำนาจลงนาม') {
-                        const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                        rVal = getAuthorizedSignerRoleForCompany(currentIssuer) || 'ผู้เสนอราคา';
-                        if (rVal === 'ผู้มีอำนาจลงนาม') rVal = 'ผู้เสนอราคา';
-                        sellerRoleInput.value = rVal;
-                    }
-                    const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
-                    const defaultRole = (docConfig && currentDocType !== 'quotation') ? docConfig.sellerRole : rVal;
-                    pSellerRole.innerText = (defaultRole === 'ผู้มีอำนาจลงนาม' || !defaultRole) ? 'ผู้เสนอราคา' : defaultRole;
-                    if (document.getElementById('settingSignatureFormat')?.value !== 'line_only') {
-                        pSellerRole.style.display = 'flex';
-                    }
-                }
+            // Sync signature blocks using dynamic configuration
+            if (typeof renderDocumentSignatures === 'function') {
+                renderDocumentSignatures();
             }
 
             document.getElementById('pRemark').innerHTML = (document.getElementById('remark').value || '-').replace(/\n/g, '<br>');
@@ -7434,6 +7633,11 @@
         window.activeSignatures = [];
 
         function getCurrentIssuerName() {
+            const modal = document.getElementById('templateSettingsModal');
+            const templateShopSelect = document.getElementById('templateSettingShopSelect');
+            if (modal && modal.style.display === 'flex' && templateShopSelect && templateShopSelect.value) {
+                return templateShopSelect.value.trim();
+            }
             const displayEl = document.getElementById('currentIssuerDisplay');
             const name = displayEl ? displayEl.innerText.trim() : '';
             return (name && !name.includes('กรุณาเลือกบริษัท')) ? name : 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
@@ -7512,6 +7716,7 @@
 
         let autoSaveTemplateTimeout = null;
         function autoSaveCurrentIssuerTemplate() {
+            if (window._isSwitchingTemplateShop) return;
             const currentIssuerDisplay = getCurrentIssuerName();
             if (!currentIssuerDisplay || currentIssuerDisplay.includes('กรุณาเลือกบริษัท')) return;
 
@@ -7600,7 +7805,8 @@
                     validity: document.getElementById('settingLabelValidity')?.value || 'ยืนราคา / Validity:',
                     delivery: document.getElementById('settingLabelDelivery')?.value || 'ส่งมอบ / Delivery:',
                     payment: document.getElementById('settingLabelPayment')?.value || 'ชำระเงิน / Payment:'
-                }
+                },
+                docSignatures: (typeof getCurrentDocSignaturesConfig === 'function') ? getCurrentDocSignaturesConfig() : null
             };
 
             window.quotationTemplates[currentIssuerDisplay] = templateSettings;
@@ -7956,6 +8162,461 @@
             }, 150);
         }
 
+        // --- Document Signatures Per Document Type Controller ---
+        function switchSigSettingsTab(type) {
+            const types = ['quotation', 'invoice', 'receipt'];
+            if (!types.includes(type)) type = 'quotation';
+
+            types.forEach(t => {
+                const btn = document.getElementById(`sigTabBtn_${t}`);
+                const panel = document.getElementById(`sigPanel_${t}`);
+                if (btn) {
+                    if (t === type) {
+                        btn.style.background = '#2563eb';
+                        btn.style.color = '#ffffff';
+                    } else {
+                        btn.style.background = 'transparent';
+                        btn.style.color = '#475569';
+                    }
+                }
+                if (panel) {
+                    panel.style.display = (t === type) ? 'block' : 'none';
+                }
+            });
+
+            // If template settings modal is open and the document type is different, switch doc type to preview it
+            if (document.getElementById('templateSettingsModal')?.style.display === 'flex') {
+                if (currentDocType !== type && typeof switchDocType === 'function') {
+                    switchDocType(type);
+                }
+            }
+        }
+
+        function handleSigConfigChange() {
+            // Synchronize legacy hidden inputs for quotation so nothing breaks
+            const qBuyerTitle = document.getElementById('sig_q_buyer_title')?.value || 'ผู้สั่งซื้อ';
+            const qBuyerName = document.getElementById('sig_q_buyer_name')?.value || '';
+            const qBuyerRole = document.getElementById('sig_q_buyer_role')?.value || '';
+            const qSellerTitle = document.getElementById('sig_q_seller_title')?.value || 'ขอแสดงความนับถือ / Sincerely Yours,';
+            const qSellerName = document.getElementById('sig_q_seller_name')?.value || '';
+            const qSellerRole = document.getElementById('sig_q_seller_role')?.value || 'ผู้เสนอราคา';
+
+            if (document.getElementById('settingLeftSignerTitle')) document.getElementById('settingLeftSignerTitle').value = qBuyerTitle;
+            if (document.getElementById('settingBuyerName')) document.getElementById('settingBuyerName').value = qBuyerName;
+            if (document.getElementById('settingBuyerRole')) document.getElementById('settingBuyerRole').value = qBuyerRole;
+            if (document.getElementById('settingSincerelyYours')) document.getElementById('settingSincerelyYours').value = qSellerTitle;
+            if (document.getElementById('settingSellerName')) document.getElementById('settingSellerName').value = qSellerName;
+            if (document.getElementById('settingSellerRole')) document.getElementById('settingSellerRole').value = qSellerRole;
+
+            renderDocumentSignatures();
+            autoSaveCurrentIssuerTemplate();
+        }
+
+        function getCurrentDocSignaturesConfig() {
+            return {
+                quotation: {
+                    buyer: {
+                        enabled: document.getElementById('sig_q_buyer_enabled') ? document.getElementById('sig_q_buyer_enabled').checked : true,
+                        title: document.getElementById('sig_q_buyer_title')?.value || 'ผู้สั่งซื้อ',
+                        name: document.getElementById('sig_q_buyer_name')?.value || '',
+                        role: document.getElementById('sig_q_buyer_role')?.value || ''
+                    },
+                    seller: {
+                        enabled: document.getElementById('sig_q_seller_enabled') ? document.getElementById('sig_q_seller_enabled').checked : true,
+                        title: document.getElementById('sig_q_seller_title')?.value || 'ขอแสดงความนับถือ / Sincerely Yours,',
+                        name: document.getElementById('sig_q_seller_name')?.value || '',
+                        role: document.getElementById('sig_q_seller_role')?.value || 'ผู้เสนอราคา'
+                    }
+                },
+                invoice: {
+                    recipient: {
+                        enabled: document.getElementById('sig_inv_recipient_enabled') ? document.getElementById('sig_inv_recipient_enabled').checked : true,
+                        title: document.getElementById('sig_inv_recipient_title')?.value || 'ผู้รับของ',
+                        name: document.getElementById('sig_inv_recipient_name')?.value !== undefined ? document.getElementById('sig_inv_recipient_name').value : '( .................................................... )'
+                    },
+                    deliverer: {
+                        enabled: document.getElementById('sig_inv_deliverer_enabled') ? document.getElementById('sig_inv_deliverer_enabled').checked : true,
+                        title: document.getElementById('sig_inv_deliverer_title')?.value || 'ผู้ส่งของ',
+                        name: document.getElementById('sig_inv_deliverer_name')?.value !== undefined ? document.getElementById('sig_inv_deliverer_name').value : '( .................................................... )'
+                    },
+                    authorized: {
+                        enabled: document.getElementById('sig_inv_auth_enabled') ? document.getElementById('sig_inv_auth_enabled').checked : true,
+                        title: document.getElementById('sig_inv_auth_title')?.value || 'ผู้มีอำนาจลงนาม',
+                        name: document.getElementById('sig_inv_auth_name')?.value || ''
+                    }
+                },
+                receipt: {
+                    payer: {
+                        enabled: document.getElementById('sig_rec_payer_enabled') ? document.getElementById('sig_rec_payer_enabled').checked : true,
+                        title: document.getElementById('sig_rec_payer_title')?.value || 'ผู้จ่ายเงิน',
+                        name: document.getElementById('sig_rec_payer_name')?.value !== undefined ? document.getElementById('sig_rec_payer_name').value : '( .................................................... )'
+                    },
+                    collector: {
+                        enabled: document.getElementById('sig_rec_collector_enabled') ? document.getElementById('sig_rec_collector_enabled').checked : true,
+                        title: document.getElementById('sig_rec_collector_title')?.value || 'ผู้รับเงิน',
+                        name: document.getElementById('sig_rec_collector_name')?.value !== undefined ? document.getElementById('sig_rec_collector_name').value : '( .................................................... )'
+                    },
+                    authorized: {
+                        enabled: document.getElementById('sig_rec_auth_enabled') ? document.getElementById('sig_rec_auth_enabled').checked : true,
+                        title: document.getElementById('sig_rec_auth_title')?.value || 'ผู้มีอำนาจลงนาม',
+                        name: document.getElementById('sig_rec_auth_name')?.value || ''
+                    }
+                }
+            };
+        }
+
+        function applyDocSignaturesConfig(cfg, defaultSigner = '') {
+            // Quotation
+            const qBuyerEn = document.getElementById('sig_q_buyer_enabled');
+            if (qBuyerEn) qBuyerEn.checked = cfg?.quotation?.buyer?.enabled !== false;
+            const qBuyerTitle = document.getElementById('sig_q_buyer_title');
+            if (qBuyerTitle) qBuyerTitle.value = cfg?.quotation?.buyer?.title || 'ผู้สั่งซื้อ';
+            const qBuyerName = document.getElementById('sig_q_buyer_name');
+            if (qBuyerName) qBuyerName.value = cfg?.quotation?.buyer?.name || '';
+            const qBuyerRole = document.getElementById('sig_q_buyer_role');
+            if (qBuyerRole) qBuyerRole.value = cfg?.quotation?.buyer?.role || '';
+
+            const qSellerEn = document.getElementById('sig_q_seller_enabled');
+            if (qSellerEn) qSellerEn.checked = cfg?.quotation?.seller?.enabled !== false;
+            const qSellerTitle = document.getElementById('sig_q_seller_title');
+            if (qSellerTitle) qSellerTitle.value = cfg?.quotation?.seller?.title || 'ขอแสดงความนับถือ / Sincerely Yours,';
+            const qSellerName = document.getElementById('sig_q_seller_name');
+            if (qSellerName) qSellerName.value = cfg?.quotation?.seller?.name || defaultSigner || '';
+            const qSellerRole = document.getElementById('sig_q_seller_role');
+            if (qSellerRole) qSellerRole.value = cfg?.quotation?.seller?.role || 'ผู้เสนอราคา';
+
+            // Invoice
+            const invRecEn = document.getElementById('sig_inv_recipient_enabled');
+            if (invRecEn) invRecEn.checked = cfg?.invoice?.recipient?.enabled !== false;
+            const invRecTitle = document.getElementById('sig_inv_recipient_title');
+            if (invRecTitle) invRecTitle.value = cfg?.invoice?.recipient?.title || 'ผู้รับของ';
+            const invRecName = document.getElementById('sig_inv_recipient_name');
+            if (invRecName) invRecName.value = cfg?.invoice?.recipient?.name !== undefined ? cfg.invoice.recipient.name : '( .................................................... )';
+
+            const invDelEn = document.getElementById('sig_inv_deliverer_enabled');
+            if (invDelEn) invDelEn.checked = cfg?.invoice?.deliverer?.enabled !== false;
+            const invDelTitle = document.getElementById('sig_inv_deliverer_title');
+            if (invDelTitle) invDelTitle.value = cfg?.invoice?.deliverer?.title || 'ผู้ส่งของ';
+            const invDelName = document.getElementById('sig_inv_deliverer_name');
+            if (invDelName) invDelName.value = cfg?.invoice?.deliverer?.name !== undefined ? cfg.invoice.deliverer.name : '( .................................................... )';
+
+            const invAuthEn = document.getElementById('sig_inv_auth_enabled');
+            if (invAuthEn) invAuthEn.checked = cfg?.invoice?.authorized?.enabled !== false;
+            const invAuthTitle = document.getElementById('sig_inv_auth_title');
+            if (invAuthTitle) invAuthTitle.value = cfg?.invoice?.authorized?.title || 'ผู้มีอำนาจลงนาม';
+            const invAuthName = document.getElementById('sig_inv_auth_name');
+            if (invAuthName) invAuthName.value = cfg?.invoice?.authorized?.name || defaultSigner || '';
+
+            // Receipt
+            const recPayEn = document.getElementById('sig_rec_payer_enabled');
+            if (recPayEn) recPayEn.checked = cfg?.receipt?.payer?.enabled !== false;
+            const recPayTitle = document.getElementById('sig_rec_payer_title');
+            if (recPayTitle) recPayTitle.value = cfg?.receipt?.payer?.title || 'ผู้จ่ายเงิน';
+            const recPayName = document.getElementById('sig_rec_payer_name');
+            if (recPayName) recPayName.value = cfg?.receipt?.payer?.name !== undefined ? cfg.receipt.payer.name : '( .................................................... )';
+
+            const recColEn = document.getElementById('sig_rec_collector_enabled');
+            if (recColEn) recColEn.checked = cfg?.receipt?.collector?.enabled !== false;
+            const recColTitle = document.getElementById('sig_rec_collector_title');
+            if (recColTitle) recColTitle.value = cfg?.receipt?.collector?.title || 'ผู้รับเงิน';
+            const recColName = document.getElementById('sig_rec_collector_name');
+            if (recColName) recColName.value = cfg?.receipt?.collector?.name !== undefined ? cfg.receipt.collector.name : '( .................................................... )';
+
+            const recAuthEn = document.getElementById('sig_rec_auth_enabled');
+            if (recAuthEn) recAuthEn.checked = cfg?.receipt?.authorized?.enabled !== false;
+            const recAuthTitle = document.getElementById('sig_rec_auth_title');
+            if (recAuthTitle) recAuthTitle.value = cfg?.receipt?.authorized?.title || 'ผู้มีอำนาจลงนาม';
+            const recAuthName = document.getElementById('sig_rec_auth_name');
+            if (recAuthName) recAuthName.value = cfg?.receipt?.authorized?.name || defaultSigner || '';
+
+            // Sync legacy fields
+            if (document.getElementById('settingLeftSignerTitle')) document.getElementById('settingLeftSignerTitle').value = qBuyerTitle ? qBuyerTitle.value : 'ผู้สั่งซื้อ';
+            if (document.getElementById('settingBuyerName')) document.getElementById('settingBuyerName').value = qBuyerName ? qBuyerName.value : '';
+            if (document.getElementById('settingBuyerRole')) document.getElementById('settingBuyerRole').value = qBuyerRole ? qBuyerRole.value : '';
+            if (document.getElementById('settingSincerelyYours')) document.getElementById('settingSincerelyYours').value = qSellerTitle ? qSellerTitle.value : 'ขอแสดงความนับถือ / Sincerely Yours,';
+            if (document.getElementById('settingSellerName')) document.getElementById('settingSellerName').value = qSellerName ? qSellerName.value : defaultSigner;
+            if (document.getElementById('settingSellerRole')) document.getElementById('settingSellerRole').value = qSellerRole ? qSellerRole.value : 'ผู้เสนอราคา';
+
+            renderDocumentSignatures();
+        }
+
+        function renderDocumentSignatures() {
+            const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
+            const pMiddleBlock = document.getElementById('pMiddleSignatureBlock');
+            const pSellerBlock = document.getElementById('pSellerSignatureBlock');
+            const pSignatureSection = document.getElementById('pSignatureSection');
+            const pSigRow = document.getElementById('pSignatureRow') || document.querySelector('#pSignatureSection > div');
+            if (!pBuyerBlock || !pSellerBlock || !pSignatureSection) return;
+
+            const sigCfg = (typeof getCurrentDocSignaturesConfig === 'function') 
+                ? getCurrentDocSignaturesConfig() 
+                : null;
+            if (!sigCfg) return;
+
+            const showSigDate = document.getElementById('settingShowSignatureDate') ? document.getElementById('settingShowSignatureDate').checked : false;
+            const pBuyerSpace = document.getElementById('pBuyerSignatureSpace');
+            const pMiddleSpace = document.getElementById('pMiddleSignatureSpace');
+            const pSellerSpace = document.getElementById('pSellerSignatureSpace');
+            const sigSize = document.getElementById('settingSignatureSize') ? parseInt(document.getElementById('settingSignatureSize').value) : 55;
+            
+            if (pBuyerSpace) pBuyerSpace.style.height = sigSize + 'px';
+            if (pMiddleSpace) pMiddleSpace.style.height = sigSize + 'px';
+            if (pSellerSpace) pSellerSpace.style.height = sigSize + 'px';
+
+            const pLeftTitle = document.getElementById('pLeftSignerTitle');
+            const pBuyerName = document.getElementById('pBuyerName');
+            const pBuyerRole = document.getElementById('pBuyerRole');
+            const pBuyerDate = document.getElementById('pBuyerSignatureDate');
+
+            const pMiddleTitle = document.getElementById('pMiddleSignerTitle');
+            const pMiddleName = document.getElementById('pMiddleSignerName');
+            const pMiddleDate = document.getElementById('pMiddleSignatureDate');
+
+            const pRightTitle = document.getElementById('pRightSignerTitle');
+            const pSellerName = document.getElementById('pSellerName');
+            const pSellerRole = document.getElementById('pSellerRole');
+            const pSellerDate = document.getElementById('pSellerSignatureDate');
+
+            const currentIssuer = document.getElementById('templateSettingShopSelect')?.value || 
+                                  document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 
+                                  'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+            const companySigner = formatSignerDisplay(getAuthorizedSignerForCompany(currentIssuer));
+
+            let visibleCount = 0;
+
+            if (currentDocType === 'quotation') {
+                const bCfg = sigCfg.quotation?.buyer || { enabled: true, title: 'ผู้สั่งซื้อ', name: '', role: '' };
+                const sCfg = sigCfg.quotation?.seller || { enabled: true, title: 'ขอแสดงความนับถือ / Sincerely Yours,', name: companySigner, role: 'ผู้เสนอราคา' };
+
+                // 1. Buyer (Left)
+                if (bCfg.enabled !== false) {
+                    pBuyerBlock.style.display = 'flex';
+                    pBuyerBlock.style.visibility = 'visible';
+                    if (pLeftTitle) pLeftTitle.innerText = bCfg.title || 'ผู้สั่งซื้อ';
+                    if (pBuyerName) {
+                        pBuyerName.innerText = bCfg.name ? formatSignerDisplay(bCfg.name) : '';
+                        pBuyerName.style.display = bCfg.name ? 'flex' : 'none';
+                    }
+                    if (pBuyerRole) {
+                        pBuyerRole.innerText = bCfg.role || '';
+                        pBuyerRole.style.display = bCfg.role ? 'flex' : 'none';
+                    }
+                    if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
+                    visibleCount++;
+                } else {
+                    pBuyerBlock.style.display = 'none';
+                }
+
+                // 2. Middle (Hidden for quotation)
+                if (pMiddleBlock) pMiddleBlock.style.display = 'none';
+
+                // 3. Seller (Right)
+                if (sCfg.enabled !== false) {
+                    pSellerBlock.style.display = 'flex';
+                    pSellerBlock.style.visibility = 'visible';
+                    if (pRightTitle) pRightTitle.innerText = sCfg.title || 'ขอแสดงความนับถือ / Sincerely Yours,';
+                    const sNameVal = sCfg.name || companySigner;
+                    if (pSellerName) {
+                        pSellerName.innerText = sNameVal ? formatSignerDisplay(sNameVal) : '';
+                        pSellerName.style.display = sNameVal ? 'flex' : 'none';
+                    }
+                    if (pSellerRole) {
+                        pSellerRole.innerText = sCfg.role || 'ผู้เสนอราคา';
+                        pSellerRole.style.display = sCfg.role ? 'flex' : 'none';
+                    }
+                    if (pSellerDate) pSellerDate.style.display = showSigDate ? 'flex' : 'none';
+                    visibleCount++;
+                } else {
+                    pSellerBlock.style.display = 'none';
+                }
+
+                // Widths & Row Layout
+                if (visibleCount === 2) {
+                    pBuyerBlock.style.width = '280px';
+                    pSellerBlock.style.width = '280px';
+                    if (pSigRow) pSigRow.style.justifyContent = 'space-between';
+                    pSignatureSection.style.display = 'block';
+                } else if (visibleCount === 1) {
+                    if (bCfg.enabled !== false) {
+                        pBuyerBlock.style.width = '280px';
+                        if (pSigRow) pSigRow.style.justifyContent = 'flex-start';
+                    } else {
+                        pSellerBlock.style.width = '280px';
+                        if (pSigRow) pSigRow.style.justifyContent = 'flex-end';
+                    }
+                    pSignatureSection.style.display = 'block';
+                } else {
+                    pSignatureSection.style.display = 'none';
+                }
+
+            } else if (currentDocType === 'invoice') {
+                const rCfg = sigCfg.invoice?.recipient || { enabled: true, title: 'ผู้รับของ', name: '( .................................................... )' };
+                const dCfg = sigCfg.invoice?.deliverer || { enabled: true, title: 'ผู้ส่งของ', name: '( .................................................... )' };
+                const aCfg = sigCfg.invoice?.authorized || { enabled: true, title: 'ผู้มีอำนาจลงนาม', name: companySigner };
+
+                // 1. Recipient (Left)
+                if (rCfg.enabled !== false) {
+                    pBuyerBlock.style.display = 'flex';
+                    pBuyerBlock.style.visibility = 'visible';
+                    if (pLeftTitle) pLeftTitle.innerText = rCfg.title || 'ผู้รับของ';
+                    if (pBuyerName) {
+                        pBuyerName.innerText = rCfg.name || '( .................................................... )';
+                        pBuyerName.style.display = 'flex';
+                    }
+                    if (pBuyerRole) {
+                        pBuyerRole.innerText = '';
+                        pBuyerRole.style.display = 'none';
+                    }
+                    if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
+                    visibleCount++;
+                } else {
+                    pBuyerBlock.style.display = 'none';
+                }
+
+                // 2. Deliverer (Middle)
+                if (pMiddleBlock) {
+                    if (dCfg.enabled !== false) {
+                        pMiddleBlock.style.display = 'flex';
+                        pMiddleBlock.style.visibility = 'visible';
+                        if (pMiddleTitle) pMiddleTitle.innerText = dCfg.title || 'ผู้ส่งของ';
+                        if (pMiddleName) {
+                            pMiddleName.innerText = dCfg.name || '( .................................................... )';
+                            pMiddleName.style.display = 'flex';
+                        }
+                        if (pMiddleDate) pMiddleDate.style.display = showSigDate ? 'flex' : 'none';
+                        visibleCount++;
+                    } else {
+                        pMiddleBlock.style.display = 'none';
+                    }
+                }
+
+                // 3. Authorized (Right)
+                if (aCfg.enabled !== false) {
+                    pSellerBlock.style.display = 'flex';
+                    pSellerBlock.style.visibility = 'visible';
+                    if (pRightTitle) pRightTitle.innerText = aCfg.title || 'ผู้มีอำนาจลงนาม';
+                    const aNameVal = aCfg.name || companySigner;
+                    if (pSellerName) {
+                        pSellerName.innerText = aNameVal ? formatSignerDisplay(aNameVal) : '( .................................................... )';
+                        pSellerName.style.display = 'flex';
+                    }
+                    if (pSellerRole) {
+                        pSellerRole.innerText = '';
+                        pSellerRole.style.display = 'none';
+                    }
+                    if (pSellerDate) pSellerDate.style.display = showSigDate ? 'flex' : 'none';
+                    visibleCount++;
+                } else {
+                    pSellerBlock.style.display = 'none';
+                }
+
+                // Widths & Row Layout
+                const targetWidth = visibleCount === 3 ? '215px' : '260px';
+                pBuyerBlock.style.width = targetWidth;
+                if (pMiddleBlock) pMiddleBlock.style.width = targetWidth;
+                pSellerBlock.style.width = targetWidth;
+
+                if (visibleCount === 3 || visibleCount === 2) {
+                    if (pSigRow) pSigRow.style.justifyContent = 'space-between';
+                    pSignatureSection.style.display = 'block';
+                } else if (visibleCount === 1) {
+                    if (aCfg.enabled !== false) {
+                        if (pSigRow) pSigRow.style.justifyContent = 'flex-end';
+                    } else if (dCfg.enabled !== false) {
+                        if (pSigRow) pSigRow.style.justifyContent = 'center';
+                    } else {
+                        if (pSigRow) pSigRow.style.justifyContent = 'flex-start';
+                    }
+                    pSignatureSection.style.display = 'block';
+                } else {
+                    pSignatureSection.style.display = 'none';
+                }
+
+            } else if (currentDocType === 'receipt') {
+                const pCfg = sigCfg.receipt?.payer || { enabled: true, title: 'ผู้จ่ายเงิน', name: '( .................................................... )' };
+                const cCfg = sigCfg.receipt?.collector || { enabled: true, title: 'ผู้รับเงิน', name: '( .................................................... )' };
+                const aCfg = sigCfg.receipt?.authorized || { enabled: true, title: 'ผู้มีอำนาจลงนาม', name: companySigner };
+
+                // 1. Payer (Left)
+                if (pCfg.enabled !== false) {
+                    pBuyerBlock.style.display = 'flex';
+                    pBuyerBlock.style.visibility = 'visible';
+                    if (pLeftTitle) pLeftTitle.innerText = pCfg.title || 'ผู้จ่ายเงิน';
+                    if (pBuyerName) {
+                        pBuyerName.innerText = pCfg.name || '( .................................................... )';
+                        pBuyerName.style.display = 'flex';
+                    }
+                    if (pBuyerRole) {
+                        pBuyerRole.innerText = '';
+                        pBuyerRole.style.display = 'none';
+                    }
+                    if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
+                    visibleCount++;
+                } else {
+                    pBuyerBlock.style.display = 'none';
+                }
+
+                // 2. Collector (Middle)
+                if (pMiddleBlock) {
+                    if (cCfg.enabled !== false) {
+                        pMiddleBlock.style.display = 'flex';
+                        pMiddleBlock.style.visibility = 'visible';
+                        if (pMiddleTitle) pMiddleTitle.innerText = cCfg.title || 'ผู้รับเงิน';
+                        if (pMiddleName) {
+                            pMiddleName.innerText = cCfg.name || '( .................................................... )';
+                            pMiddleName.style.display = 'flex';
+                        }
+                        if (pMiddleDate) pMiddleDate.style.display = showSigDate ? 'flex' : 'none';
+                        visibleCount++;
+                    } else {
+                        pMiddleBlock.style.display = 'none';
+                    }
+                }
+
+                // 3. Authorized (Right)
+                if (aCfg.enabled !== false) {
+                    pSellerBlock.style.display = 'flex';
+                    pSellerBlock.style.visibility = 'visible';
+                    if (pRightTitle) pRightTitle.innerText = aCfg.title || 'ผู้มีอำนาจลงนาม';
+                    const aNameVal = aCfg.name || companySigner;
+                    if (pSellerName) {
+                        pSellerName.innerText = aNameVal ? formatSignerDisplay(aNameVal) : '( .................................................... )';
+                        pSellerName.style.display = 'flex';
+                    }
+                    if (pSellerRole) {
+                        pSellerRole.innerText = '';
+                        pSellerRole.style.display = 'none';
+                    }
+                    if (pSellerDate) pSellerDate.style.display = showSigDate ? 'flex' : 'none';
+                    visibleCount++;
+                } else {
+                    pSellerBlock.style.display = 'none';
+                }
+
+                // Widths & Row Layout
+                const targetWidth = visibleCount === 3 ? '215px' : '260px';
+                pBuyerBlock.style.width = targetWidth;
+                if (pMiddleBlock) pMiddleBlock.style.width = targetWidth;
+                pSellerBlock.style.width = targetWidth;
+
+                if (visibleCount === 3 || visibleCount === 2) {
+                    if (pSigRow) pSigRow.style.justifyContent = 'space-between';
+                    pSignatureSection.style.display = 'block';
+                } else if (visibleCount === 1) {
+                    if (aCfg.enabled !== false) {
+                        if (pSigRow) pSigRow.style.justifyContent = 'flex-end';
+                    } else if (cCfg.enabled !== false) {
+                        if (pSigRow) pSigRow.style.justifyContent = 'center';
+                    } else {
+                        if (pSigRow) pSigRow.style.justifyContent = 'flex-start';
+                    }
+                    pSignatureSection.style.display = 'block';
+                } else {
+                    pSignatureSection.style.display = 'none';
+                }
+            }
+        }
+
         // --- Interactive Dragging on Live Preview Signature ---
         function initSignatureDraggable() {
             const containers = [
@@ -8125,6 +8786,11 @@
                 if (!hasMentra) registeredShopsCache.unshift(MENTRA_OFFICIAL);
             }
             window.registeredShopsCache = registeredShopsCache;
+            if (document.getElementById('templateSettingsModal')?.style.display === 'flex') {
+                if (typeof populateTemplateSettingShopSelector === 'function') {
+                    populateTemplateSettingShopSelector();
+                }
+            }
             return registeredShopsCache;
         }
 
@@ -8222,6 +8888,23 @@
             } catch(e) {}
             applyIssuerTemplate(companyName);
             closeIssuerSelectionModal();
+
+            // If templateSettingsModal is open, sync its selector and live preview
+            const modal = document.getElementById('templateSettingsModal');
+            if (modal && modal.style.display === 'flex') {
+                const select = document.getElementById('templateSettingShopSelect');
+                if (select) select.value = companyName;
+                if (typeof updateTemplateSettingShopBadge === 'function') {
+                    updateTemplateSettingShopBadge(companyName);
+                }
+                syncFormToPrintArea();
+                applyLivePreview();
+                setTimeout(() => {
+                    if (typeof initHeaderResizers === 'function') initHeaderResizers();
+                    if (typeof initSignatureDraggable === 'function') initSignatureDraggable();
+                }, 60);
+            }
+
             if (typeof triggerLiveSync === 'function') triggerLiveSync();
             if (typeof showToast === 'function') {
                 showToast(`เลือกผู้ออกเอกสารเป็น "${companyName}" เรียบร้อยแล้ว`, 'success');
@@ -8410,6 +9093,22 @@
                     validity: 'ยืนราคา / Validity:',
                     delivery: 'ส่งมอบ / Delivery:',
                     payment: 'ชำระเงิน / Payment:'
+                },
+                docSignatures: {
+                    quotation: {
+                        buyer: { enabled: true, title: 'ผู้สั่งซื้อ', name: '', role: '' },
+                        seller: { enabled: true, title: 'ขอแสดงความนับถือ / Sincerely Yours,', name: shopSigner, role: 'ผู้เสนอราคา' }
+                    },
+                    invoice: {
+                        recipient: { enabled: true, title: 'ผู้รับของ', name: '( .................................................... )' },
+                        deliverer: { enabled: true, title: 'ผู้ส่งของ', name: '( .................................................... )' },
+                        authorized: { enabled: true, title: 'ผู้มีอำนาจลงนาม', name: shopSigner }
+                    },
+                    receipt: {
+                        payer: { enabled: true, title: 'ผู้จ่ายเงิน', name: '( .................................................... )' },
+                        collector: { enabled: true, title: 'ผู้รับเงิน', name: '( .................................................... )' },
+                        authorized: { enabled: true, title: 'ผู้มีอำนาจลงนาม', name: shopSigner }
+                    }
                 }
             };
 
@@ -8417,12 +9116,44 @@
             const savedSettings = (window.quotationTemplates && window.quotationTemplates[safeCompanyName]) 
                                   ? window.quotationTemplates[safeCompanyName] 
                                   : null;
-            if (savedSettings && savedSettings.sellerName && isEmail(savedSettings.sellerName)) {
-                delete savedSettings.sellerName;
+            if (savedSettings) {
+                if (savedSettings.sellerName && isEmail(savedSettings.sellerName)) {
+                    delete savedSettings.sellerName;
+                }
+                const isCurrentMentra = safeCompanyName.includes('เมนทร้า') || safeCompanyName.toLowerCase().includes('mentra');
+                if (!isCurrentMentra) {
+                    const hasMentraName = (savedSettings.issuerCustomName && (savedSettings.issuerCustomName.includes('เมนทร้า') || savedSettings.issuerCustomName.toLowerCase().includes('mentra'))) ||
+                                          (savedSettings.issuerName && (savedSettings.issuerName.includes('เมนทร้า') || savedSettings.issuerName.toLowerCase().includes('mentra')));
+                    const hasMentraAddr = savedSettings.issuerAddress && (savedSettings.issuerAddress.includes('บางแก้ว') || savedSettings.issuerAddress.includes('พาทิโอ้') || savedSettings.issuerAddress.includes('115/123'));
+                    if (hasMentraName || hasMentraAddr) {
+                        delete savedSettings.issuerCustomName;
+                        delete savedSettings.issuerName;
+                        delete savedSettings.issuerAddress;
+                        delete savedSettings.issuerContact;
+                        delete savedSettings.primaryColor;
+                        delete savedSettings.sellerName;
+                        delete savedSettings.sellerRole;
+                        delete savedSettings.showLogo;
+                        delete savedSettings.logoSize;
+                        delete savedSettings.signatureImage;
+                        delete savedSettings.activeSignatures;
+                    }
+                }
             }
             
             // 4. Merge and apply
             const finalSettings = Object.assign({}, defaultSettings, savedSettings);
+
+            // Enforce valid custom shop details if empty
+            if (!finalSettings.issuerCustomName || !finalSettings.issuerCustomName.trim()) {
+                finalSettings.issuerCustomName = safeCompanyName;
+            }
+            if (!finalSettings.issuerName || !finalSettings.issuerName.trim()) {
+                finalSettings.issuerName = safeCompanyName;
+            }
+            if (!finalSettings.primaryColor) {
+                finalSettings.primaryColor = shopTheme;
+            }
 
             // If template had no signer or an email, enforce the company authorized signer
             if (!finalSettings.sellerName || isEmail(finalSettings.sellerName)) {
@@ -8462,6 +9193,20 @@
             
             applyTemplateSettings(finalSettings);
 
+            // Keep banner, select, badge, and preview synchronized
+            const bannerName = document.getElementById('currentIssuerDisplay');
+            if (bannerName) {
+                bannerName.innerText = safeCompanyName;
+                bannerName.title = safeCompanyName;
+            }
+            const modalSelect = document.getElementById('templateSettingShopSelect');
+            if (modalSelect && modalSelect.value !== safeCompanyName) {
+                modalSelect.value = safeCompanyName;
+            }
+            if (typeof updateTemplateSettingShopBadge === 'function') {
+                updateTemplateSettingShopBadge(safeCompanyName);
+            }
+
             // Also keep left form inputs and preview synchronized to company authorized signer
             const inputSeller = document.getElementById('sellerName');
             if (inputSeller) inputSeller.value = getCleanSignerRaw(finalSettings.sellerName);
@@ -8489,6 +9234,122 @@
 
         let sortables = [];
 
+        function populateTemplateSettingShopSelector(selectedCompany) {
+            const select = document.getElementById('templateSettingShopSelect');
+            if (!select) return;
+
+            const activeCompany = selectedCompany || getCurrentIssuerName();
+            if ((!registeredShopsCache || registeredShopsCache.length === 0) && typeof fetchRegisteredShops === 'function') {
+                fetchRegisteredShops().then(() => {
+                    populateTemplateSettingShopSelector(activeCompany);
+                }).catch(() => {});
+            }
+
+            const shops = (registeredShopsCache && registeredShopsCache.length > 0)
+                ? registeredShopsCache
+                : [ MENTRA_OFFICIAL ];
+
+            let foundActive = false;
+            select.innerHTML = '';
+            shops.forEach(shop => {
+                const sName = typeof shop === 'string' ? shop : (shop.name || '-');
+                const sCode = ((typeof shop === 'object' && shop && shop.code) ? shop.code : 'MT').toUpperCase();
+                const opt = document.createElement('option');
+                opt.value = sName;
+                opt.textContent = `[${sCode}] ${sName}`;
+                if (sName === activeCompany) {
+                    opt.selected = true;
+                    foundActive = true;
+                }
+                select.appendChild(opt);
+            });
+
+            // If activeCompany is a custom name not in list yet, append it so it's selected
+            if (!foundActive && activeCompany) {
+                const opt = document.createElement('option');
+                opt.value = activeCompany;
+                opt.textContent = activeCompany;
+                opt.selected = true;
+                select.appendChild(opt);
+            }
+
+            select.value = activeCompany;
+            updateTemplateSettingShopBadge(activeCompany);
+        }
+
+        function updateTemplateSettingShopBadge(companyName) {
+            const badge = document.getElementById('templateCurrentShopBadge');
+            const dot = document.getElementById('templateShopColorDot');
+            const statusText = document.getElementById('templateShopStatusText');
+            const shop = findRegisteredShop(companyName);
+
+            const sCode = ((shop && shop.code) ? shop.code : 'MT').toUpperCase();
+            const sColor = (shop && shop.themeColor) ? shop.themeColor : '#1A6FBF';
+
+            if (badge) {
+                badge.innerText = sCode;
+                badge.style.color = sColor;
+                badge.style.borderColor = sColor;
+            }
+            if (dot) {
+                dot.style.background = sColor;
+            }
+            if (statusText) {
+                const hasSaved = !!(window.quotationTemplates && window.quotationTemplates[companyName]);
+                statusText.innerText = hasSaved ? `ปรับแต่ง (${sCode} - มีเทมเพลตที่บันทึกแล้ว)` : `ปรับแต่ง (${sCode} - ค่าเริ่มต้น)`;
+            }
+        }
+
+        async function onTemplateSettingShopChange(newShopName) {
+            if (!newShopName) return;
+
+            const safeShopName = newShopName.trim();
+            window._isSwitchingTemplateShop = true;
+
+            try {
+                // 1. Persist selection to localStorage
+                try {
+                    localStorage.setItem('selected_issuer_company', safeShopName);
+                } catch(e) {}
+
+                // 2. Synchronize main page banner text
+                const bannerName = document.getElementById('currentIssuerDisplay');
+                if (bannerName) {
+                    bannerName.innerText = safeShopName;
+                    bannerName.title = safeShopName;
+                }
+
+                // 3. Update modal selector value & shop status badge
+                const select = document.getElementById('templateSettingShopSelect');
+                if (select && select.value !== safeShopName) {
+                    select.value = safeShopName;
+                }
+                updateTemplateSettingShopBadge(safeShopName);
+
+                // 4. Apply issuer template & settings for this shop
+                applyIssuerTemplate(safeShopName);
+
+                // 5. Ensure the live preview printArea reflects all changes immediately
+                syncFormToPrintArea();
+                applyLivePreview();
+
+                // 6. Refresh draggable signatures and header resizers
+                setTimeout(() => {
+                    if (typeof initHeaderResizers === 'function') initHeaderResizers();
+                    if (typeof initSignatureDraggable === 'function') initSignatureDraggable();
+                }, 60);
+
+                // 7. Show toast notification
+                if (typeof showToast === 'function') {
+                    const shop = findRegisteredShop(safeShopName);
+                    const sCode = ((shop && shop.code) ? shop.code : 'MT').toUpperCase();
+                    showToast(`สลับฟอร์มสำหรับ [${sCode}] ${safeShopName}`, 'info');
+                }
+            } finally {
+                window._isSwitchingTemplateShop = false;
+            }
+        }
+
         function openTemplateSettingsModal() {
             syncFormToPrintArea();
             
@@ -8512,13 +9373,19 @@
             const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
             const savedTemplate = (window.quotationTemplates && window.quotationTemplates[currentIssuer]) ? window.quotationTemplates[currentIssuer] : null;
 
+            // Populate the shop selector inside the form settings modal
+            populateTemplateSettingShopSelector(currentIssuer);
+            applyIssuerTemplate(currentIssuer);
+
             const setIssuerName = document.getElementById('settingIssuerName');
             const pName = document.getElementById('pIssuerName');
             if (setIssuerName) {
                 if (savedTemplate && savedTemplate.issuerCustomName) {
                     setIssuerName.value = savedTemplate.issuerCustomName;
-                } else if (!setIssuerName.value && pName) {
+                } else if (pName && pName.innerText.trim()) {
                     setIssuerName.value = pName.innerText.trim();
+                } else {
+                    setIssuerName.value = currentIssuer;
                 }
             }
 
@@ -8527,7 +9394,7 @@
             if (setIssuerAddr) {
                 if (savedTemplate && savedTemplate.issuerAddress !== undefined) {
                     setIssuerAddr.value = savedTemplate.issuerAddress;
-                } else if (!setIssuerAddr.value && pAddr) {
+                } else if (pAddr) {
                     let temp = document.createElement('div');
                     temp.innerHTML = pAddr.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
                     setIssuerAddr.value = (temp.textContent || temp.innerText || '').trim();
@@ -8544,7 +9411,7 @@
             if (setIssuerContact) {
                 if (savedTemplate && savedTemplate.issuerContact !== undefined) {
                     setIssuerContact.value = savedTemplate.issuerContact;
-                } else if (!setIssuerContact.value && pContact) {
+                } else if (pContact) {
                     let temp = document.createElement('div');
                     temp.innerHTML = pContact.innerHTML.replace(/<br\s*[\/]?>/gi, '\n').replace(/&nbsp;/g, ' ');
                     setIssuerContact.value = (temp.textContent || temp.innerText || '').trim();
@@ -8638,6 +9505,9 @@
             const p2El = document.getElementById('settingItemsPage2Plus');
             if (p2El) p2El.value = globalTypoModal.itemsPage2Plus || savedTemplate?.itemsPage2Plus || '18';
 
+            if (typeof switchSigSettingsTab === 'function') {
+                switchSigSettingsTab(currentDocType || 'quotation');
+            }
             applyLivePreview(); // Sync the panel sliders to current preview
             renderSavedSignaturesGallery();
             // Show resizers for header width adjustment & init signature draggable
@@ -8682,7 +9552,9 @@
             const sellerNameInput = document.getElementById('settingSellerName');
             let sellerName = sellerNameInput ? sellerNameInput.value.trim() : '';
             if (!sellerName || isEmail(sellerName) || sellerName.includes('ธนภูมิ')) {
-                const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                const currentIssuer = document.getElementById('templateSettingShopSelect')?.value || 
+                                      document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 
+                                      'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
                 sellerName = formatSignerDisplay(getAuthorizedSignerForCompany(currentIssuer));
                 if (sellerNameInput) sellerNameInput.value = sellerName;
             }
@@ -8966,107 +9838,9 @@
                 }
             }
 
-            // Apply Signature Settings
-            const pBuyerBlock = document.getElementById('pBuyerSignatureBlock');
-            const pMiddleBlock = document.getElementById('pMiddleSignatureBlock');
-            const pSellerBlock = document.getElementById('pSellerSignatureBlock');
-            const pBuyerDots = document.getElementById('pBuyerSignatureDots');
-            const pBuyerName = document.getElementById('pBuyerName');
-            const pBuyerRole = document.getElementById('pBuyerRole');
-            const pBuyerSpace = document.getElementById('pBuyerSignatureSpace');
-            const pBuyerDate = document.getElementById('pBuyerSignatureDate');
-            const pLeftTitle = document.getElementById('pLeftSignerTitle');
+            // Apply Digital Signatures in Seller Space
             const pSellerSpace = document.getElementById('pSellerSignatureSpace');
-            const pSellerSigWrapper = document.getElementById('pSellerSignatureWrapper');
-            const pSellerSigImg = document.getElementById('pSellerSignatureImg');
-
-            const showSigDate = document.getElementById('settingShowSignatureDate') ? document.getElementById('settingShowSignatureDate').checked : false;
-            const pSellerDate = document.getElementById('pSellerSignatureDate');
-            if (pSellerDate) {
-                pSellerDate.style.display = showSigDate ? 'flex' : 'none';
-            }
-
-            const buyerNameInput = document.getElementById('settingBuyerName');
-            let buyerNameVal = buyerNameInput ? buyerNameInput.value.trim() : '';
-            if (pBuyerName) {
-                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                    pBuyerName.style.display = 'flex';
-                    pBuyerName.innerText = '( .................................................... )';
-                } else if (sigFormat === 'line_only' || !buyerNameVal) {
-                    pBuyerName.style.display = 'none';
-                    pBuyerName.innerText = '';
-                } else {
-                    pBuyerName.style.display = 'flex';
-                    pBuyerName.innerText = formatSignerDisplay(buyerNameVal);
-                }
-            }
-
-            if (pBuyerBlock) {
-                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                    pBuyerBlock.style.visibility = 'visible';
-                    pBuyerBlock.style.width = '215px';
-                    if (pBuyerDots) pBuyerDots.style.display = 'none';
-                    if (pBuyerRole) pBuyerRole.style.display = 'none';
-                    if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
-                } else if (sigFormat === 'hidden') {
-                    pBuyerBlock.style.visibility = 'hidden';
-                    pBuyerBlock.style.width = '280px';
-                } else if (sigFormat === 'line_only') {
-                    pBuyerBlock.style.visibility = 'visible';
-                    pBuyerBlock.style.width = '280px';
-                    if (pBuyerDots) pBuyerDots.style.display = 'none';
-                    if (pBuyerName) pBuyerName.style.display = 'none';
-                    if (pBuyerRole) pBuyerRole.style.display = 'none';
-                    if (pBuyerDate) pBuyerDate.style.display = 'none';
-                } else {
-                    pBuyerBlock.style.visibility = 'visible';
-                    pBuyerBlock.style.width = '280px';
-                    if (pBuyerDots) pBuyerDots.style.display = 'none';
-                    if (pBuyerName) pBuyerName.style.display = buyerNameVal ? 'flex' : 'none';
-                    if (pBuyerRole) pBuyerRole.style.display = buyerRole ? 'flex' : 'none';
-                    if (pBuyerDate) pBuyerDate.style.display = showSigDate ? 'flex' : 'none';
-                }
-            }
-
-            // Middle Signature Block (for invoice: ผู้ส่งของ, for receipt: ผู้รับเงิน)
-            if (pMiddleBlock) {
-                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                    pMiddleBlock.style.display = 'flex';
-                    pMiddleBlock.style.width = '215px';
-                    const pMiddleSignerTitle = document.getElementById('pMiddleSignerTitle');
-                    const pMiddleSignerName = document.getElementById('pMiddleSignerName');
-                    const pMiddleSignatureDate = document.getElementById('pMiddleSignatureDate');
-                    const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
-                    if (pMiddleSignerTitle) pMiddleSignerTitle.innerText = docConfig?.middleSignerTitle || (currentDocType === 'receipt' ? 'ผู้รับเงิน' : 'ผู้ส่งของ');
-                    if (pMiddleSignerName) pMiddleSignerName.innerText = '( .................................................... )';
-                    if (pMiddleSignatureDate) pMiddleSignatureDate.style.display = showSigDate ? 'flex' : 'none';
-                } else {
-                    pMiddleBlock.style.display = 'none';
-                }
-            }
-
-            if (pSellerBlock) {
-                pSellerBlock.style.width = (currentDocType === 'invoice' || currentDocType === 'receipt') ? '215px' : '280px';
-            }
-
-            const pMiddleTitle = document.getElementById('pMiddleSignerTitle');
             const pMiddleSpace = document.getElementById('pMiddleSignatureSpace');
-
-            if (pLeftTitle) {
-                pLeftTitle.style.marginBottom = '4px';
-            }
-            if (pMiddleTitle) {
-                pMiddleTitle.style.marginBottom = '4px';
-            }
-            if (pBuyerSpace) {
-                pBuyerSpace.style.height = sigSize + 'px';
-            }
-            if (pMiddleSpace) {
-                pMiddleSpace.style.height = sigSize + 'px';
-            }
-            if (pSellerSpace) {
-                pSellerSpace.style.height = sigSize + 'px';
-            }
             if (pSellerSpace) {
                 if (useSigImg && window.activeSignatures && window.activeSignatures.length > 0) {
                     pSellerSpace.innerHTML = window.activeSignatures.map((item, idx) => {
@@ -9081,8 +9855,6 @@
                     pSellerSpace.innerHTML = '';
                 }
             }
-
-            // ช่อง ผู้ส่งของ / ผู้รับเงิน (กลาง) เป็นช่องให้เซ็นสดเท่านั้น ไม่ใส่ลายเซ็นดิจิทัล
             if (pMiddleSpace) {
                 pMiddleSpace.innerHTML = '';
             }
@@ -9094,66 +9866,14 @@
                 pLogo.style.height = `${logoSize}px`;
             }
 
-            // Apply Seller & Buyer Info
-            const pSellerName = document.getElementById('pSellerName');
-            const pSellerRole = document.getElementById('pSellerRole');
-            const pLeftSigner = document.getElementById('pLeftSignerTitle');
-            const pRightSigner = document.getElementById('pRightSignerTitle');
-            const pBuyerRoleEl = document.getElementById('pBuyerRole');
-            
-            if (pSellerName) {
-                if (sigFormat === 'line_only' && currentDocType !== 'invoice' && currentDocType !== 'receipt') {
-                    pSellerName.style.display = 'none';
-                    pSellerName.innerText = '';
-                } else if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                    let sVal = sellerName;
-                    if (!sVal || isEmail(sVal) || sVal.includes('ธนภูมิ')) {
-                        const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
-                        sVal = getAuthorizedSignerForCompany(currentIssuer);
-                    }
-                    pSellerName.style.display = 'flex';
-                    pSellerName.innerText = formatSignerDisplay(sVal);
-                } else {
-                    pSellerName.style.display = 'flex';
-                    pSellerName.innerText = formatSignerDisplay(sellerName);
-                }
-            }
-            if (pSellerRole) {
-                if (currentDocType === 'invoice' || currentDocType === 'receipt' || sigFormat === 'line_only') {
-                    pSellerRole.style.display = 'none';
-                    pSellerRole.innerText = '';
-                } else {
-                    pSellerRole.style.display = 'flex';
-                }
-            }
             const formSellerName = document.getElementById('sellerName');
             if (formSellerName && (!formSellerName.value || isEmail(formSellerName.value))) {
                 formSellerName.value = getCleanSignerRaw(sellerName);
             }
 
-            const docConfig = (typeof DOC_TYPE_CONFIG !== 'undefined' && DOC_TYPE_CONFIG[currentDocType]) ? DOC_TYPE_CONFIG[currentDocType] : null;
-
-            if (docConfig && currentDocType !== 'quotation') {
-                if (currentDocType === 'invoice' || currentDocType === 'receipt') {
-                    if (pSellerRole) {
-                        pSellerRole.innerText = '';
-                        pSellerRole.style.display = 'none';
-                    }
-                    if (pBuyerRoleEl) {
-                        pBuyerRoleEl.innerText = '';
-                        pBuyerRoleEl.style.display = 'none';
-                    }
-                } else {
-                    if (pSellerRole) pSellerRole.innerText = docConfig.sellerRole;
-                    if (pBuyerRoleEl) pBuyerRoleEl.innerText = docConfig.buyerRole || '';
-                }
-                if (pLeftSigner) pLeftSigner.innerText = docConfig.leftSignerTitle;
-                if (pRightSigner) pRightSigner.innerText = docConfig.rightSignerTitle;
-            } else {
-                if (pSellerRole) pSellerRole.innerText = (sellerRole === 'ผู้มีอำนาจลงนาม' || !sellerRole) ? 'ผู้เสนอราคา' : sellerRole;
-                if (pLeftSigner) pLeftSigner.innerText = leftSignerTitle;
-                if (pRightSigner) pRightSigner.innerText = sincerelyYours;
-                if (pBuyerRoleEl) pBuyerRoleEl.innerText = buyerRole || '';
+            // Render Signatures based on per-document & per-company configuration
+            if (typeof renderDocumentSignatures === 'function') {
+                renderDocumentSignatures();
             }
 
             // Re-render table data
@@ -9202,7 +9922,9 @@
 
         async function saveTemplateSettings(showAlert = true) {
             try {
-                const currentIssuerDisplay = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+                const currentIssuerDisplay = document.getElementById('templateSettingShopSelect')?.value || 
+                                             document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 
+                                             'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
                 const useSigImg = document.getElementById('settingUseSignatureImage') ? document.getElementById('settingUseSignatureImage').checked : (window.activeSignatures && window.activeSignatures.length > 0);
                 const primarySigUrl = (window.activeSignatures && window.activeSignatures[0]) ? window.activeSignatures[0].dataUrl : '';
 
@@ -9253,6 +9975,7 @@
                     signatureImageSize: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].size || 45) : 45,
                     signatureOffsetX: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].offsetX || 0) : 0,
                     signatureOffsetY: (window.activeSignatures && window.activeSignatures[0]) ? (window.activeSignatures[0].offsetY || 0) : 0,
+                    docSignatures: (typeof getCurrentDocSignaturesConfig === 'function') ? getCurrentDocSignaturesConfig() : null,
                     introText: document.getElementById('settingIntroText')?.value || 'ทางบริษัทฯ มีความยินดีขอเสนอราคาเพื่อพิจารณา ดังมีรายละเอียดต่อไปนี้:',
                     issuerName: currentIssuerDisplay,
                     issuerCustomName: document.getElementById('settingIssuerName')?.value || '',
@@ -9333,6 +10056,10 @@
                         shop.signature = primarySigUrl;
                         shop.signatureImage = primarySigUrl;
                     }
+                }
+
+                if (typeof updateTemplateSettingShopBadge === 'function') {
+                    updateTemplateSettingShopBadge(currentIssuerDisplay);
                 }
 
                 if (currentUser) {
@@ -9827,7 +10554,10 @@
                 const tmtLbl = document.getElementById('tableMarginTopLabel');
                 if (tmtLbl) tmtLbl.innerText = settings.tableMarginTop;
             }
-            const currentIssuer = document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
+            const currentIssuer = (settings && (settings.issuerName || settings.issuerCustomName)) || 
+                                  document.getElementById('templateSettingShopSelect')?.value || 
+                                  document.getElementById('currentIssuerDisplay')?.innerText?.trim() || 
+                                  'บริษัท เมนทร้า โซลูชั่น จำกัด (สำนักงานใหญ่)';
             const companyAuthorizedSigner = getAuthorizedSignerForCompany(currentIssuer);
             const companyAuthorizedRole = getAuthorizedSignerRoleForCompany(currentIssuer);
 
@@ -9985,14 +10715,16 @@
                 if (pName) pName.innerText = settings.issuerCustomName;
             } else if (settings.issuerName) {
                 const el = document.getElementById('settingIssuerName');
-                if (el && !el.value) el.value = settings.issuerName;
+                if (el) el.value = settings.issuerName;
+                const pName = document.getElementById('pIssuerName');
+                if (pName) pName.innerText = settings.issuerName;
             }
 
-            if (settings.issuerAddress !== undefined && settings.issuerAddress.trim()) {
+            if (settings.issuerAddress !== undefined) {
                 const el = document.getElementById('settingIssuerAddress');
                 if (el) el.value = settings.issuerAddress;
                 const pAddr = document.getElementById('pIssuerAddress');
-                if (pAddr) pAddr.innerHTML = settings.issuerAddress.replace(/\n/g, '<br>');
+                if (pAddr) pAddr.innerHTML = settings.issuerAddress ? settings.issuerAddress.replace(/\n/g, '<br>') : '';
             }
 
             if (settings.contactBreakMode) {
@@ -10000,7 +10732,7 @@
                 if (el) el.value = settings.contactBreakMode;
             }
 
-            if (settings.issuerContact !== undefined && settings.issuerContact.trim()) {
+            if (settings.issuerContact !== undefined) {
                 const el = document.getElementById('settingIssuerContact');
                 if (el) el.value = settings.issuerContact;
                 const pContact = document.getElementById('pIssuerContact');
@@ -10008,6 +10740,10 @@
             }
 
             applyInfoPanelSettings();
+
+            if (typeof applyDocSignaturesConfig === 'function') {
+                applyDocSignaturesConfig(settings.docSignatures, companyAuthorizedSigner);
+            }
 
             // Re-run apply function to update styles silently if modal is closed
             applyLivePreview();
@@ -10222,11 +10958,13 @@
         }
 
         async function autoImportProject(projectId, source) {
-            if (isImportingProject || hasAutoImported) {
+            // Guard: Must have an explicit projectId and not already importing or imported
+            if (!projectId || !String(projectId).trim() || isImportingProject || hasAutoImported) {
                 return;
             }
             isImportingProject = true;
             try {
+                const targetProjId = String(projectId).trim();
                 const collectionName = (source === 'company') ? 'company_material_projects' : 'material_projects';
                 
                 // Helper to safely convert any items collection (Array or Object) to Array
@@ -10237,38 +10975,38 @@
                     return [];
                 };
 
-                // 1. Check pending_quotation_project from sessionStorage and localStorage first
+                // Helper for async calls with timeout to prevent hanging the page
+                const fetchWithTimeout = (promise, ms = 4000) => Promise.race([
+                    promise,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), ms))
+                ]);
+
+                // 1. Check pending_quotation_project ONLY if it matches targetProjId
                 let pendingProj = null;
                 try {
                     const pendingRaw = sessionStorage.getItem('pending_quotation_project') || localStorage.getItem('pending_quotation_project');
                     if (pendingRaw) {
                         const parsed = JSON.parse(pendingRaw);
                         const isFresh = parsed && (!parsed.timestamp || (Date.now() - parsed.timestamp < 10 * 60 * 1000));
-                        if (parsed && isFresh) {
-                            if (!projectId || String(parsed.projectId) === String(projectId) || !parsed.projectId) {
-                                pendingProj = parsed;
-                                if (!projectId && parsed.projectId) projectId = String(parsed.projectId);
-                                if (!source && parsed.source) source = parsed.source;
-                            }
+                        if (parsed && isFresh && String(parsed.projectId) === targetProjId) {
+                            pendingProj = parsed;
+                            if (!source && parsed.source) source = parsed.source;
                         }
                     }
                 } catch (e) {
                     console.warn("Could not read pending_quotation_project:", e);
                 }
 
-                // 1.1 Check pending_load_quotation fallback if pendingProj has no items
+                // 1.1 Check pending_load_quotation fallback only if matching targetProjId
                 if (!pendingProj || toItemsArray(pendingProj.items).length === 0) {
                     try {
                         const loadRaw = localStorage.getItem('pending_load_quotation');
                         if (loadRaw) {
                             const parsedLoad = JSON.parse(loadRaw);
                             const isFresh = parsedLoad && (!parsedLoad.timestamp || (Date.now() - parsedLoad.timestamp < 10 * 60 * 1000));
-                            if (parsedLoad && isFresh && toItemsArray(parsedLoad.items).length > 0) {
-                                if (!projectId || !parsedLoad.projectId || String(parsedLoad.projectId) === String(projectId)) {
-                                    pendingProj = Object.assign({}, parsedLoad, pendingProj || {});
-                                    if (!projectId && parsedLoad.projectId) projectId = String(parsedLoad.projectId);
-                                    if (!source && parsedLoad.source) source = parsedLoad.source;
-                                }
+                            if (parsedLoad && isFresh && String(parsedLoad.projectId) === targetProjId && toItemsArray(parsedLoad.items).length > 0) {
+                                pendingProj = Object.assign({}, parsedLoad, pendingProj || {});
+                                if (!source && parsedLoad.source) source = parsedLoad.source;
                             }
                         }
                     } catch(e) {
@@ -10283,7 +11021,7 @@
                     if (cacheRaw) {
                         const list = JSON.parse(cacheRaw);
                         if (Array.isArray(list)) {
-                            localCacheProj = list.find(p => String(p.id) === String(projectId));
+                            localCacheProj = list.find(p => String(p.id) === targetProjId);
                         }
                     }
                 } catch(e) {
@@ -10298,29 +11036,33 @@
                     finalItems = toItemsArray(localCacheProj.items);
                 }
 
-                // 3. Fallback to Firestore ONLY if no items found locally and projectId is provided
+                // 3. Fallback to Firestore with timeout ONLY if no items found locally
                 let firestoreProj = null;
-                if (finalItems.length === 0 && projectId) {
-                    try {
-                        const projSnap = await getDoc(doc(db, collectionName, String(projectId)));
-                        if (projSnap.exists()) {
-                            firestoreProj = projSnap.data();
-                        } else {
-                            // Secondary scan in case document was stored with an auto ID
-                            try {
-                                const allSnaps = await getDocs(collection(db, collectionName));
-                                allSnaps.forEach(d => {
-                                    const dData = d.data();
-                                    if (d.id === String(projectId) || String(dData.id) === String(projectId)) {
-                                        firestoreProj = { id: d.id, ...dData };
+                if (finalItems.length === 0 && targetProjId) {
+                    const collectionsToTry = [collectionName, (collectionName === 'material_projects' ? 'company_material_projects' : 'material_projects')];
+                    for (const col of collectionsToTry) {
+                        if (firestoreProj && toItemsArray(firestoreProj.items).length > 0) break;
+                        try {
+                            const projSnap = await fetchWithTimeout(getDoc(doc(db, col, targetProjId)), 4000);
+                            if (projSnap.exists()) {
+                                firestoreProj = projSnap.data();
+                                break;
+                            } else {
+                                // Fast indexed query by 'id' field instead of scanning whole collection
+                                try {
+                                    const q = query(collection(db, col), where('id', '==', targetProjId));
+                                    const qSnap = await fetchWithTimeout(getDocs(q), 3000);
+                                    if (!qSnap.empty) {
+                                        firestoreProj = { id: qSnap.docs[0].id, ...qSnap.docs[0].data() };
+                                        break;
                                     }
-                                });
-                            } catch(scanErr) {
-                                console.warn("Collection scan fallback failed:", scanErr);
+                                } catch(qErr) {
+                                    console.warn("Targeted id query fallback failed:", qErr);
+                                }
                             }
+                        } catch (snapErr) {
+                            console.warn(`Could not fetch project from ${col}:`, snapErr);
                         }
-                    } catch (snapErr) {
-                        console.warn("Could not fetch project from Firestore:", snapErr);
                     }
 
                     if (firestoreProj && toItemsArray(firestoreProj.items).length > 0) {
@@ -10353,11 +11095,10 @@
                     finalItems = toItemsArray(proj.items);
                 }
 
-                // Populate table using standard addHeaderRow / addTableRow
+                // Populate table
                 const tbody = document.getElementById('itemsBody');
-                if (tbody) tbody.innerHTML = '';
-
                 if (finalItems.length > 0) {
+                    if (tbody) tbody.innerHTML = '';
                     finalItems.forEach(item => {
                         const rawPrice = item.unitPrice !== undefined && item.unitPrice !== null && item.unitPrice !== '' ? Number(item.unitPrice) : (item.price !== undefined && item.price !== null && item.price !== '' ? Number(item.price) : (item.targetPrice !== undefined && item.targetPrice !== null && item.targetPrice !== '' ? Number(item.targetPrice) : (item.foundPrice !== undefined && item.foundPrice !== null && item.foundPrice !== '' ? Number(item.foundPrice) : '')));
                         const hasPrice = rawPrice !== '' && !isNaN(Number(rawPrice)) && Number(rawPrice) > 0;
@@ -10382,9 +11123,10 @@
                         }
                     });
                 } else {
-                    // No items found in project yet: do NOT claim hasAutoImported = true so onAuthStateChanged can retry!
-                    console.warn("autoImportProject: No items found yet for", projectId);
-                    return;
+                    console.warn("autoImportProject: No items found for", targetProjId);
+                    if (tbody && tbody.children.length === 0) {
+                        addTableRow();
+                    }
                 }
 
                 // Apply Issuer Theme:
@@ -11313,6 +12055,9 @@
         window.openTemplateSettingsModal = openTemplateSettingsModal;
         window.closeTemplateSettingsModal = closeTemplateSettingsModal;
         window.saveTemplateSettings = saveTemplateSettings;
+        window.populateTemplateSettingShopSelector = populateTemplateSettingShopSelector;
+        window.updateTemplateSettingShopBadge = updateTemplateSettingShopBadge;
+        window.onTemplateSettingShopChange = onTemplateSettingShopChange;
         window.openIssuerSelectionModal = openIssuerSelectionModal;
         window.closeIssuerSelectionModal = closeIssuerSelectionModal;
         window.selectIssuerFromModal = selectIssuerFromModal;
@@ -11645,6 +12390,11 @@
         window.importQuotationSettingsFromFile = importQuotationSettingsFromFile;
         window.applyImportedSettingsJSON = applyImportedSettingsJSON;
         window.getCompleteQuotationSettingsPayload = getCompleteQuotationSettingsPayload;
+        window.switchSigSettingsTab = switchSigSettingsTab;
+        window.handleSigConfigChange = handleSigConfigChange;
+        window.getCurrentDocSignaturesConfig = getCurrentDocSignaturesConfig;
+        window.applyDocSignaturesConfig = applyDocSignaturesConfig;
+        window.renderDocumentSignatures = renderDocumentSignatures;
 
         function startApp() {
             fetchRegisteredShops();
