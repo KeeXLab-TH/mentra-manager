@@ -742,6 +742,40 @@
 
         .doc-meta-no {
             width: 50%;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-docno-auto {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1A6FBF;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kanit', sans-serif !important;
+            vertical-align: middle;
+            transition: all 0.15s ease;
+            user-select: none;
+            line-height: 1.2;
+        }
+
+        .btn-docno-auto:hover {
+            background: #1A6FBF;
+            color: #ffffff;
+            border-color: #1A6FBF;
+            box-shadow: 0 1px 3px rgba(26,111,191,0.25);
+        }
+
+        .a4-sheet.view-mode .btn-docno-auto {
+            display: none !important;
         }
 
         .doc-meta-date {
@@ -1326,7 +1360,7 @@
                 width: 100% !important;
             }
 
-            .sidebar, .topbar, .doc-editor-toolbar, .help-banner, .history-card, #toastContainer, .sidebar-overlay, .drag-badge, .drag-controls-pill, .logo-controls-pill, .company-controls-pill, .meta-controls-pill, .text-break-modal-overlay, .margin-popover, .template-modal-overlay, .swal2-container {
+            .sidebar, .topbar, .doc-editor-toolbar, .help-banner, .history-card, #toastContainer, .sidebar-overlay, .drag-badge, .drag-controls-pill, .logo-controls-pill, .company-controls-pill, .meta-controls-pill, .text-break-modal-overlay, .margin-popover, .template-modal-overlay, .swal2-container, .btn-docno-auto {
                 display: none !important;
             }
 
@@ -1616,16 +1650,19 @@
                     <i class='bx bx-check-circle'></i> บันทึกอัตโนมัติแล้ว
                 </span>
 
+                <button type="button" class="btn-action" id="btnAutoDocNoTopbar" onclick="applyNextDocNo(true)" style="color: #0369a1; border-color: #bae6fd; background: #f0f9ff; font-weight: 600;" title="รันเลขที่หนังสืออัตโนมัติต่อจากรายการล่าสุด (26/XX)">
+                    <i class='bx bx-hash'></i> รันเลขที่อัตโนมัติ
+                </button>
                 <button type="button" class="btn-action" id="btnSaveDocData" onclick="saveDocData(true)" style="color: #1A6FBF; font-weight: 600; border-color: #bfdbfe; background: #eff6ff;" title="บันทึกข้อมูลแบบฟอร์มและรูปแบบเอกสารทั้งหมดขึ้น Cloud ให้ทุกคนใช้งานร่วมกัน">
                     <i class='bx bx-save'></i> บันทึกแบบฟอร์ม
                 </button>
                 <button type="button" class="btn-action" onclick="scrollToHistory()" title="ดูรายการหนังสือที่เคยบันทึกไว้">
                     <i class='bx bx-history'></i> ประวัติหนังสือ
                 </button>
-                <button type="button" class="btn-action btn-primary" onclick="exportToPdfA4()" title="พิมพ์เอกสาร A4 (เปิดหน้าต่าง Print Preview เหมือนหน้าใบเสนอราคา)">
+                <button type="button" class="btn-action btn-primary" onclick="confirmIssueLetter()" title="พิมพ์เอกสาร A4 (เปิดหน้าต่างยืนยันก่อนพิมพ์)">
                     <i class='bx bx-printer'></i> พิมพ์เอกสาร
                 </button>
-                <button type="button" class="btn-action btn-success" onclick="exportToPdfA4()" style="background:#059669; border-color:#059669; color:#fff; font-weight:600;" title="ออก PDF / พิมพ์ (A4) ผ่านหน้าต่าง Print Preview เหมือนหน้าใบเสนอราคา">
+                <button type="button" class="btn-action btn-success" onclick="confirmIssueLetter()" style="background:#059669; border-color:#059669; color:#fff; font-weight:600;" title="ออก PDF / พิมพ์ (A4) ผ่านหน้าต่างยืนยันการออกหนังสือ">
                     <i class='bx bxs-file-pdf'></i> ออก PDF (A4)
                 </button>
             </div>
@@ -2000,6 +2037,9 @@
                     <!-- 2. Meta: Letter No (Left) & Date (Right) with Date Layout & Spacing Controls -->
                     <div class="doc-meta-row layout-same-line" id="docMetaRow">
                         <div class="meta-controls-pill" id="metaControlsPill">
+                            <span class="pill-drag-label"><i class='bx bx-hash'></i> เลขที่:</span>
+                            <button type="button" class="pill-btn" onclick="applyNextDocNo(true)" title="รันเลขที่หนังสืออัตโนมัติต่อจากรายการล่าสุด (26/XX)" style="width:auto; padding:0 6px;"><i class='bx bx-refresh'></i> รันเลขต่อ</button>
+                            <span style="opacity:0.4; margin:0 2px;">|</span>
                             <span class="pill-drag-label"><i class='bx bx-calendar'></i> วันที่:</span>
                             <button type="button" class="pill-btn" onclick="setDateLayout('same-line')" title="บรรทัดเดียวกัน" style="width:auto; padding:0 6px;">บรรทัดเดียว</button>
                             <button type="button" class="pill-btn" onclick="setDateLayout('newline-center')" title="ย้ายวันที่ขึ้นบรรทัดใหม่ (กึ่งกลาง)" style="width:auto; padding:0 6px;">บรรทัดใหม่ (กลาง)</button>
@@ -2009,6 +2049,9 @@
                         </div>
                         <div class="doc-meta-no">
                             <span class="doc-label-prefix" contenteditable="true" id="lblDocNoPrefix">เลขที่ </span><span contenteditable="true" id="fDocNo">26/020</span>
+                            <button type="button" class="btn-docno-auto" onclick="applyNextDocNo(true)" title="คลิกเพื่อรันเลขที่หนังสืออัตโนมัติต่อจากรายการล่าสุดในระบบ (26/XX)">
+                                <i class='bx bx-refresh'></i> รันเลขต่อ
+                            </button>
                         </div>
                         <div class="doc-meta-date">
                             <span class="doc-label-prefix" contenteditable="true" id="lblDocDatePrefix">วันที่ </span><span contenteditable="true" id="fDocDate">1 ตุลาคม 2569</span>
@@ -2079,22 +2122,35 @@
 
             <!-- History Section -->
             <div class="history-card" id="historySection">
-                <div class="card-header">
-                    <h3><i class='bx bx-history' style="color:var(--primary);"></i> ประวัติหนังสือส่งมอบงานที่บันทึกไว้</h3>
-                    <button type="button" class="btn-action" style="font-size:0.8rem; padding:4px 10px;" onclick="clearHistory()">
-                        <i class='bx bx-trash'></i> ล้างประวัติ
-                    </button>
+                <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <h3><i class='bx bx-history' style="color:var(--primary);"></i> ประวัติหนังสือส่งมอบงาน</h3>
+                        <span id="historyCountBadge" style="background:#e0f2fe; color:#0369a1; font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:999px;">0 ฉบับ</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <div style="position: relative;">
+                            <i class='bx bx-search' style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.95rem;"></i>
+                            <input type="text" id="historySearchInput" placeholder="ค้นหาเลขที่, เรื่อง, ผู้รับ..." oninput="filterHistoryTable()" style="padding: 4px 10px 4px 28px; font-size: 0.82rem; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; width: 180px; font-family: inherit;">
+                        </div>
+                        <button type="button" class="btn-action" style="font-size:0.8rem; padding:4px 10px; color:#1A6FBF; border-color:#bfdbfe; background:#eff6ff;" onclick="applyNextDocNo(true)" title="รันเลขที่ถัดไป (26/XX) เพื่อเตรียมทำเล่มใหม่">
+                            <i class='bx bx-plus-circle'></i> รันเลขเล่มใหม่
+                        </button>
+                        <button type="button" class="btn-action" style="font-size:0.8rem; padding:4px 10px;" onclick="clearHistory()" title="ล้างประวัติทั้งหมด">
+                            <i class='bx bx-trash'></i> ล้างประวัติ
+                        </button>
+                    </div>
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="history-table">
                         <thead>
                             <tr>
-                                <th>วันที่</th>
-                                <th>เลขที่หนังสือ</th>
+                                <th style="width: 125px;">วันที่ในหนังสือ</th>
+                                <th style="width: 110px;">เลขที่หนังสือ</th>
                                 <th>เรื่อง</th>
                                 <th>เรียน (ผู้รับ)</th>
                                 <th>อ้างถึง</th>
-                                <th style="text-align:center;">การจัดการ</th>
+                                <th style="width: 120px;">บันทึกเมื่อ</th>
+                                <th style="text-align:center; width: 160px;">การจัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody">
@@ -3753,15 +3809,151 @@
             });
         }
 
+        // ==============================================================================
+        // AUTO-RUNNING DOCUMENT NUMBER (รันเลขที่อัตโนมัติ YY/XX เช่น 26/01, 26/02)
+        // ==============================================================================
+        function getNextDocNo(targetYear = null) {
+            const year = targetYear || new Date().getFullYear().toString().slice(-2);
+            const history = getHistory();
+            let maxNum = 0;
+            const regex = new RegExp('^' + year + '\\/(\\d+)', 'i');
+
+            if (Array.isArray(history)) {
+                history.forEach(item => {
+                    if (item && item.docNo) {
+                        const clean = stripTags(item.docNo).trim();
+                        const match = clean.match(regex);
+                        if (match && match[1]) {
+                            const n = parseInt(match[1], 10);
+                            if (!isNaN(n) && n > maxNum) {
+                                maxNum = n;
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Also check current value in #fDocNo in case user just typed or has default 26/020
+            const curEl = document.getElementById('fDocNo');
+            if (curEl) {
+                const curText = stripTags(curEl.innerText || curEl.innerHTML || '').trim();
+                const curMatch = curText.match(regex);
+                if (curMatch && curMatch[1]) {
+                    const cn = parseInt(curMatch[1], 10);
+                    if (!isNaN(cn) && cn > maxNum) {
+                        maxNum = cn;
+                    }
+                }
+            }
+
+            const nextNum = maxNum + 1;
+            const padded = String(nextNum).padStart(2, '0');
+            return `${year}/${padded}`;
+        }
+
+        function applyNextDocNo(showToast = true) {
+            const nextNo = getNextDocNo();
+            const el = document.getElementById('fDocNo');
+            if (el) {
+                el.innerHTML = nextNo;
+            }
+            triggerAutoSave();
+
+            if (showToast) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: `รันเลขที่หนังสืออัตโนมัติ: ${nextNo} เรียบร้อย`,
+                    showConfirmButton: false,
+                    timer: 1600
+                });
+            }
+            return nextNo;
+        }
+
+        // ==============================================================================
+        // ISSUE DOCUMENT & CONFIRMATION MODAL (ยืนยันก่อนออกหนังสือ & พิมพ์ A4)
+        // ==============================================================================
+        function confirmIssueLetter() {
+            const docNo = stripTags(document.getElementById('fDocNo')?.innerHTML || '').trim();
+            const docDate = stripTags(document.getElementById('fDocDate')?.innerHTML || '').trim();
+            const subject = stripTags(document.getElementById('fSubject')?.innerHTML || '').trim();
+            const recipient = stripTags(document.getElementById('fRecipient')?.innerHTML || '').trim();
+            const reference = stripTags(document.getElementById('fReference')?.innerHTML || '').trim();
+
+            if (!docNo) {
+                Swal.fire({
+                    title: 'ยังไม่ได้ระบุเลขที่หนังสือ',
+                    text: 'ต้องการให้ระบบรันเลขที่ให้อัตโนมัติ (เช่น 26/01) เลยหรือไม่?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#1A6FBF',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'รันเลขที่อัตโนมัติ',
+                    cancelButtonText: 'พิมพ์ระบุเอง'
+                }).then((r) => {
+                    if (r.isConfirmed) {
+                        applyNextDocNo(true);
+                        setTimeout(() => confirmIssueLetter(), 300);
+                    }
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'ยืนยันการออกหนังสือส่งมอบงาน',
+                html: `
+                    <div style="text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; margin: 12px 0; font-size: 0.9rem; line-height: 1.6;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 8px;">
+                            <span style="color: #64748b; font-weight: 500;">เลขที่หนังสือ:</span>
+                            <strong style="color: #1A6FBF; font-family: monospace; font-size: 1.15rem; background: #eff6ff; padding: 2px 8px; border-radius: 6px; border: 1px solid #bfdbfe;">${escapeHtml(docNo)}</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: #64748b; font-weight: 500;">วันที่:</span>
+                            <span style="color: #0f172a; font-weight: 500;">${escapeHtml(docDate || '-')}</span>
+                        </div>
+                        <div style="margin-bottom: 6px;">
+                            <span style="color: #64748b; font-size: 0.8rem; display: block;">เรื่อง:</span>
+                            <strong style="color: #0f172a;">${escapeHtml(subject || '-')}</strong>
+                        </div>
+                        <div>
+                            <span style="color: #64748b; font-size: 0.8rem; display: block;">เรียน:</span>
+                            <span style="color: #334155;">${escapeHtml(recipient || '-')}</span>
+                        </div>
+                        ${reference ? `
+                        <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dotted #e2e8f0;">
+                            <span style="color: #64748b; font-size: 0.8rem; display: block;">อ้างถึง:</span>
+                            <span style="color: #475569; font-size: 0.82rem;">${escapeHtml(reference)}</span>
+                        </div>` : ''}
+                    </div>
+                    <p style="font-size: 0.82rem; color: #64748b; margin: 0; line-height: 1.4;">
+                        <i class='bx bx-check-shield' style="color: #10b981;"></i> ระบบจะบันทึกหนังสือฉบับนี้ลงในตารางประวัติ (เชื่อมต่อ Cloud Firestore สำหรับทุกคนในระบบ) และเปิดหน้าต่างสั่งพิมพ์ / PDF (A4)
+                    </p>
+                `,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1A6FBF',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="bx bx-check-circle"></i> ยืนยันออกหนังสือ & สั่งพิมพ์',
+                cancelButtonText: 'กลับไปแก้ไข'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    saveToHistory(false);
+                    proceedExportPdfA4(docNo);
+                }
+            });
+        }
+
         // Export PDF A4 Portrait (Print preview dialog like quotation.html)
-        async function exportToPdfA4() {
+        async function proceedExportPdfA4(issuedDocNo = '') {
             const sheet = document.getElementById('a4PrintSheet');
             if (!sheet) {
                 window.print();
                 return;
             }
 
-            const docNo = (document.getElementById('fDocNo')?.textContent || '26_020').trim().replace(/[\/\\:*?"<>|]/g, '_');
+            const docNo = (issuedDocNo || document.getElementById('fDocNo')?.textContent || '26_01').trim().replace(/[\/\\:*?"<>|]/g, '_');
             const subject = stripTags(document.getElementById('fSubject')?.innerHTML || '').trim().replace(/[\/\\:*?"<>|]/g, '_');
             const filenameStr = subject ? `หนังสือส่งมอบงาน_${docNo}_${subject}` : `หนังสือส่งมอบงาน_${docNo}`;
 
@@ -3804,6 +3996,23 @@
                         if (prevMode !== 'view') {
                             setDocMode(prevMode, false);
                         }
+
+                        // Offer option to auto-run next doc number for creating next letter
+                        Swal.fire({
+                            title: 'ออกหนังสือส่งมอบงานเรียบร้อย',
+                            html: `หนังสือเลขที่ <strong>${escapeHtml(docNo)}</strong> ถูกบันทึกลงในประวัติเรียบร้อยแล้ว<br><br>ต้องการรันเลขที่ถัดไปเพื่อเตรียมทำเล่มใหม่ต่อเลยหรือไม่?`,
+                            icon: 'success',
+                            showCancelButton: true,
+                            confirmButtonColor: '#1A6FBF',
+                            cancelButtonColor: '#64748b',
+                            confirmButtonText: '<i class="bx bx-plus-circle"></i> รันเลขถัดไปทำเล่มใหม่',
+                            cancelButtonText: 'คงเอกสารนี้ไว้'
+                        }).then((r) => {
+                            if (r.isConfirmed) {
+                                applyNextDocNo(true);
+                            }
+                        });
+
                     }, 500);
                 }, 150);
             };
@@ -3813,6 +4022,10 @@
             } else {
                 executePrint();
             }
+        }
+
+        async function exportToPdfA4() {
+            confirmIssueLetter();
         }
 
         // History Management
@@ -4320,15 +4533,41 @@
             }
         }
 
+        function formatDateTimeThai(isoStr) {
+            if (!isoStr) return '-';
+            try {
+                const d = new Date(isoStr);
+                if (isNaN(d.getTime())) return '-';
+                const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                const day = d.getDate();
+                const m = months[d.getMonth()];
+                const y = (d.getFullYear() + 543).toString().slice(-2);
+                const h = String(d.getHours()).padStart(2, '0');
+                const min = String(d.getMinutes()).padStart(2, '0');
+                return `${day} ${m} ${y} ${h}:${min} น.`;
+            } catch (e) {
+                return '-';
+            }
+        }
+
         function renderHistoryTable(customList = null) {
             const tbody = document.getElementById('historyTableBody');
-            const list = customList || getHistory();
+            const badge = document.getElementById('historyCountBadge');
+            const list = customList !== null ? customList : getHistory();
+
+            if (badge) {
+                const total = Array.isArray(list) ? list.length : 0;
+                badge.textContent = `${total} ฉบับ`;
+            }
+
+            if (!tbody) return;
 
             if (!list || list.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align:center; color:var(--text-muted); padding:24px;">
-                            ยังไม่มีประวัติหนังสือที่บันทึกไว้
+                        <td colspan="7" style="text-align:center; color:var(--text-muted); padding:32px 16px;">
+                            <i class='bx bx-file-blank' style="font-size: 2rem; opacity: 0.35; display: block; margin-bottom: 6px;"></i>
+                            ยังไม่มีประวัติหนังสือส่งมอบงานที่บันทึกไว้ในระบบ
                         </td>
                     </tr>
                 `;
@@ -4337,15 +4576,19 @@
 
             tbody.innerHTML = list.map(item => `
                 <tr>
-                    <td><span style="font-size:0.82rem; color:#64748b;">${escapeHtml(item.date || '-')}</span></td>
-                    <td><strong style="color:var(--primary); font-family:monospace; font-size:0.95rem;">${escapeHtml(item.docNo || '-')}</strong></td>
-                    <td>${escapeHtml(stripTags(item.subject || '-'))}</td>
-                    <td>${escapeHtml(stripTags(item.recipient || '-'))}</td>
-                    <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(stripTags(item.reference))}">${escapeHtml(stripTags(item.reference || '-'))}</td>
+                    <td><span style="font-size:0.82rem; color:#475569; font-weight:500;">${escapeHtml(item.date || '-')}</span></td>
+                    <td><strong style="color:var(--primary); font-family:monospace; font-size:0.95rem; background:#eff6ff; padding:2px 8px; border-radius:6px; border:1px solid #bfdbfe; display:inline-block;">${escapeHtml(item.docNo || '-')}</strong></td>
+                    <td style="max-width:210px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(stripTags(item.subject))}">${escapeHtml(stripTags(item.subject || '-'))}</td>
+                    <td style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(stripTags(item.recipient))}">${escapeHtml(stripTags(item.recipient || '-'))}</td>
+                    <td style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(stripTags(item.reference))}">${escapeHtml(stripTags(item.reference || '-'))}</td>
+                    <td><span style="font-size:0.75rem; color:#64748b;">${formatDateTimeThai(item.createdAt)}</span></td>
                     <td style="text-align:center;">
                         <div style="display:flex; justify-content:center; gap:4px;">
                             <button type="button" class="btn-action" style="padding:4px 8px; font-size:0.78rem;" onclick="loadHistoryItem('${item.id}')" title="ดึงข้อมูลมาแสดงบนกระดาษ">
                                 <i class='bx bx-edit'></i> ดึงข้อมูล
+                            </button>
+                            <button type="button" class="btn-action" style="padding:4px 8px; font-size:0.78rem; color:#059669; border-color:#a7f3d0; background:#ecfdf5;" onclick="printHistoryItem('${item.id}')" title="สั่งพิมพ์หนังสือฉบับนี้">
+                                <i class='bx bx-printer'></i> พิมพ์
                             </button>
                             <button type="button" class="btn-action" style="padding:4px 8px; font-size:0.78rem; color:#ef4444; border-color:#fca5a5;" onclick="deleteHistoryItem('${item.id}')" title="ลบรายการนี้">
                                 <i class='bx bx-trash'></i>
@@ -4354,6 +4597,31 @@
                     </td>
                 </tr>
             `).join('');
+        }
+
+        function filterHistoryTable() {
+            const query = (document.getElementById('historySearchInput')?.value || '').trim().toLowerCase();
+            const all = getHistory();
+            if (!query) {
+                renderHistoryTable(all);
+                return;
+            }
+            const filtered = all.filter(item => {
+                const no = stripTags(item.docNo || '').toLowerCase();
+                const subj = stripTags(item.subject || '').toLowerCase();
+                const recp = stripTags(item.recipient || '').toLowerCase();
+                const ref = stripTags(item.reference || '').toLowerCase();
+                const dt = stripTags(item.date || '').toLowerCase();
+                return no.includes(query) || subj.includes(query) || recp.includes(query) || ref.includes(query) || dt.includes(query);
+            });
+            renderHistoryTable(filtered);
+        }
+
+        function printHistoryItem(id) {
+            loadHistoryItem(id);
+            setTimeout(() => {
+                confirmIssueLetter();
+            }, 350);
         }
 
         function deleteHistoryItem(id) {

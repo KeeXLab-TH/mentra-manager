@@ -117,6 +117,11 @@
             orgInitialsEl.textContent = ((ws && ws.shortCode) || (ws && ws.name ? ws.name.charAt(0) : 'M')).toUpperCase();
             orgInitialsEl.style.display = 'block';
         }
+
+        // Apply ERP Core dynamic branding to rail logo and title
+        if (window.ERPCore) {
+            window.ERPCore.applyBrandingToDOM();
+        }
     }
     window.updateSidebarShopDisplay = updateSidebarShopDisplay;
 

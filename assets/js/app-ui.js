@@ -61,20 +61,32 @@ window.getDeptUrl = function(page) {
     }
 };
 
-// Ensure Session Security Guard is active across all pages
-(function ensureSessionGuard() {
-    if (typeof window !== 'undefined' && !window.MentraSessionGuard) {
-        const path = (location.pathname || '').replace(/\\/g, '/');
-        let prefix = 'assets/js/session-guard.js';
-        if (path.includes('/pages/admin/') || path.includes('/pages/purchasing/') ||
-            path.includes('/pages/accounting/') || path.includes('/pages/schedule/')) {
-            prefix = '../../assets/js/session-guard.js';
-        } else if (path.includes('/pages/')) {
-            prefix = '../assets/js/session-guard.js';
-        }
+// Ensure Session Security Guard & ERP Core Branding Engine are active across all pages
+(function ensureCoreScripts() {
+    if (typeof window === 'undefined') return;
+    const path = (location.pathname || '').replace(/\\/g, '/');
+    let prefix = '';
+    if (path.includes('/pages/admin/') || path.includes('/pages/purchasing/') ||
+        path.includes('/pages/accounting/') || path.includes('/pages/schedule/')) {
+        prefix = '../../assets/js/';
+    } else if (path.includes('/pages/')) {
+        prefix = '../assets/js/';
+    } else {
+        prefix = 'assets/js/';
+    }
+
+    if (!window.MentraSessionGuard) {
         const s = document.createElement('script');
-        s.src = prefix;
+        s.src = prefix + 'session-guard.js';
         document.head.appendChild(s);
+    }
+    if (!window.ERPCore) {
+        const s2 = document.createElement('script');
+        s2.src = prefix + 'erp-core.js';
+        s2.onload = function() {
+            if (window.ERPCore) window.ERPCore.applyBrandingToDOM();
+        };
+        document.head.appendChild(s2);
     }
 })();
 

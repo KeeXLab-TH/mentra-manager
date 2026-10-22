@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th" style="background-color:#f0f4f9">
 
 <head>
@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="../../assets/css/dashboard-dual-sidebar.css?v=2.5">
     <!-- Dual-Rail Sidebar & Multi-Shop Controller -->
     <script src="../../assets/js/session-guard.js"></script>
+    <script src="../../assets/js/erp-core.js"></script>
 <script src="../../assets/js/dashboard-dual-sidebar.js?v=2.5"></script>
     <script src="../../assets/js/app-ui.js?v=1780248654607" defer></script>
     
@@ -916,6 +917,86 @@
             </div>
         </div>
 
+        <!-- ================= WHITE-LABEL & SYSTEM BRANDING CARD ================= -->
+        <div class="card" style="background: #ffffff; border-radius: 18px; border: 1px solid #c7dcf7; padding: 24px 28px; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(26, 111, 191, 0.08); position: relative; overflow: hidden;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #1A6FBF 0%, #0d4a7a 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 6px 16px rgba(26, 111, 191, 0.25);">
+                        <i class='bx bx-slider-alt'></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.18rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span>ตั้งค่าชื่อระบบ & แบรนด์ประจำบริษัท (Company Custom Branding)</span>
+                            <span style="font-size: 11.5px; background: #eff6ff; color: #1A6FBF; border: 1px solid #bfdbfe; padding: 2px 10px; border-radius: 999px; font-weight: 600;">White-Label System</span>
+                        </div>
+                        <div style="font-size: 0.84rem; color: #64748b; margin-top: 3px;">
+                            แพลตฟอร์มแกนกลาง: <b style="color: #0f172a;">ERP SMART INITIAL R1</b> — Admin แต่ละบริษัทสามารถตั้งชื่อระบบและกำหนดแบรนด์ของตนเองได้อย่างอิสระ
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <span style="font-size: 12px; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 12px; border-radius: 999px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class='bx bx-check-shield' style="font-size: 15px;"></i> สิทธิ์จัดการเต็มรูปแบบ: Admin ประจำบริษัท
+                    </span>
+                </div>
+            </div>
+
+            <form id="systemBrandingForm" onsubmit="event.preventDefault(); saveSystemBrandingSettings();">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="brandingSystemTitle" style="font-weight: 600; font-size: 0.88rem; color: #0f172a; margin-bottom: 6px; display: block;">
+                            ชื่อระบบของบริษัทคุณ (Custom System Name) <span style="color: #ef4444;">*</span>
+                        </label>
+                        <input type="text" id="brandingSystemTitle" class="form-input" placeholder="เช่น Mentra Manager, Point Studio OS หรือ ERP SMART INITIAL R1" required style="font-weight: 600; font-size: 0.95rem; border-color: #93c5fd; background: #f8fafc; height: 42px;">
+                        <div style="font-size: 0.76rem; color: #64748b; margin-top: 5px;">
+                            💡 ชื่อนี้จะไปแสดงบนแท็บเบราว์เซอร์ (&lt;title&gt;), แถบเมนูด้านข้าง (Sidebar), และหัวเอกสารของบริษัทคุณ
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="brandingSystemSubtitle" style="font-weight: 600; font-size: 0.88rem; color: #0f172a; margin-bottom: 6px; display: block;">
+                            คำบรรยาย / สโลแกนระบบ (System Tagline)
+                        </label>
+                        <input type="text" id="brandingSystemSubtitle" class="form-input" placeholder="เช่น ระบบบริหารจัดการธุรกิจและโครงการ" style="background: #f8fafc; height: 42px;">
+                        <div style="font-size: 0.76rem; color: #64748b; margin-top: 5px;">
+                            คำอธิบายย่อยที่จะแสดงใต้ชื่อระบบและในหน้ายินดีต้อนรับ
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Logo Settings Strip -->
+                <div style="margin-top: 18px; padding: 14px 18px; background: #f8fafc; border-radius: 14px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div style="width: 52px; height: 52px; border-radius: 12px; background: #ffffff; border: 1.5px solid #cbd5e1; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                            <img id="brandingLogoPreview" src="../../assets/img/logo.png" style="width: 100%; height: 100%; object-fit: contain;" alt="System Logo" onerror="this.src='../../assets/img/logo.png'">
+                        </div>
+                        <div>
+                            <div style="font-size: 0.9rem; font-weight: 600; color: #0f172a;">ตราสัญลักษณ์/โลโก้ระบบ (System Brand Logo)</div>
+                            <div style="font-size: 0.78rem; color: #64748b;">ภาพโลโก้จะไปแสดงที่มุมซ้ายบนของแถบเมนูหลัก (Rail Logo) และหน้า Login</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="file" id="brandingLogoInput" accept="image/*" style="display: none;" onchange="handleBrandingLogoSelect(this)">
+                        <button type="button" class="btn btn-outline" onclick="document.getElementById('brandingLogoInput').click()" style="font-size: 0.82rem; padding: 7px 14px; font-weight: 600;">
+                            <i class='bx bx-upload'></i> เปลี่ยนโลโก้ระบบ
+                        </button>
+                        <button type="button" class="btn btn-outline" id="btnResetBrandingLogo" onclick="resetBrandingLogo()" style="font-size: 0.82rem; padding: 7px 12px; color: #64748b;" title="คืนค่าโลโก้เดิม">
+                            <i class='bx bx-refresh'></i> โลโก้มาตรฐาน
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 18px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                    <button type="button" class="btn btn-outline" onclick="resetToPlatformDefault()" style="font-size: 0.84rem; padding: 8px 16px; color: #64748b;">
+                        <i class='bx bx-undo'></i> คืนค่าชื่อมาตรฐาน (ERP SMART INITIAL R1)
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveBranding" style="font-size: 0.9rem; font-weight: 600; padding: 9px 24px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(26, 111, 191, 0.3);">
+                        <i class='bx bx-check-circle' style="font-size: 18px;"></i> บันทึกชื่อระบบ & แบรนด์บริษัท
+                    </button>
+                </div>
+            </form>
+        </div>
+
         <!-- KPI Metrics Bar -->
         <div class="kpi-grid">
             <div class="kpi-card">
@@ -1150,7 +1231,130 @@
             }
 
             loadShops();
+            loadSystemBrandingUI();
         });
+
+        // Initialize branding form immediately on DOM ready
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSystemBrandingUI();
+        });
+
+        // ================================================================
+        // WHITE-LABEL & SYSTEM BRANDING METHODS (ERP SMART INITIAL R1)
+        // ================================================================
+        let currentUploadedBrandingLogo = '';
+
+        function loadSystemBrandingUI() {
+            if (!window.ERPCore) return;
+            const branding = window.ERPCore.getBranding();
+            const titleInput = document.getElementById('brandingSystemTitle');
+            const subtitleInput = document.getElementById('brandingSystemSubtitle');
+            const logoPreview = document.getElementById('brandingLogoPreview');
+
+            if (titleInput) titleInput.value = branding.systemTitle || window.ERPCore.PLATFORM_DEFAULT_NAME;
+            if (subtitleInput) subtitleInput.value = branding.systemSubtitle || '';
+            if (logoPreview && branding.systemLogo) {
+                logoPreview.src = branding.systemLogo;
+                currentUploadedBrandingLogo = branding.systemLogo;
+            }
+        }
+
+        window.handleBrandingLogoSelect = function(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            if (file.size > 2 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ขนาดไฟล์ใหญ่เกินไป',
+                    text: 'กรุณาเลือกไฟล์ภาพขนาดไม่เกิน 2MB',
+                    confirmButtonColor: '#1A6FBF'
+                });
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentUploadedBrandingLogo = e.target.result;
+                const logoPreview = document.getElementById('brandingLogoPreview');
+                if (logoPreview) logoPreview.src = currentUploadedBrandingLogo;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.resetBrandingLogo = function() {
+            currentUploadedBrandingLogo = '../../assets/img/logo.png';
+            const logoPreview = document.getElementById('brandingLogoPreview');
+            if (logoPreview) logoPreview.src = currentUploadedBrandingLogo;
+        };
+
+        window.resetToPlatformDefault = function() {
+            const titleInput = document.getElementById('brandingSystemTitle');
+            const subtitleInput = document.getElementById('brandingSystemSubtitle');
+            if (titleInput) titleInput.value = window.ERPCore ? window.ERPCore.PLATFORM_DEFAULT_NAME : 'ERP SMART INITIAL R1';
+            if (subtitleInput) subtitleInput.value = window.ERPCore ? window.ERPCore.PLATFORM_DEFAULT_TAGLINE : '';
+            resetBrandingLogo();
+        };
+
+        window.saveSystemBrandingSettings = async function() {
+            const titleInput = document.getElementById('brandingSystemTitle');
+            const subtitleInput = document.getElementById('brandingSystemSubtitle');
+            const newTitle = titleInput ? titleInput.value.trim() : '';
+            const newSubtitle = subtitleInput ? subtitleInput.value.trim() : '';
+
+            if (!newTitle) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณากรอกชื่อระบบ',
+                    text: 'โปรดระบุชื่อระบบของบริษัทคุณ หรือใช้ค่าเริ่มต้น "ERP SMART INITIAL R1"',
+                    confirmButtonColor: '#1A6FBF'
+                });
+                return;
+            }
+
+            const btnSave = document.getElementById('btnSaveBranding');
+            if (btnSave) {
+                btnSave.disabled = true;
+                btnSave.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> กำลังบันทึก...";
+            }
+
+            const newBranding = {
+                systemTitle: newTitle,
+                systemSubtitle: newSubtitle,
+                systemLogo: currentUploadedBrandingLogo || ''
+            };
+
+            // 1. บันทึกผ่าน ERPCore (Local Cache & Broadcast)
+            if (window.ERPCore) {
+                window.ERPCore.setBranding(newBranding);
+            }
+
+            // 2. ซิงค์ลง Cloud Firestore
+            try {
+                if (typeof setDoc !== 'undefined' && typeof doc !== 'undefined' && typeof db !== 'undefined') {
+                    await setDoc(doc(db, 'material_settings', 'system_branding'), {
+                        systemTitle: newTitle,
+                        systemSubtitle: newSubtitle,
+                        systemLogo: currentUploadedBrandingLogo || '',
+                        updatedBy: currentUser ? currentUser.uid : 'admin',
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                }
+            } catch (err) {
+                console.warn('[CompanySettings] Firestore branding save notice:', err);
+            }
+
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.innerHTML = "<i class='bx bx-check-circle'></i> บันทึกชื่อระบบ & แบรนด์บริษัท";
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'บันทึกการตั้งค่าสำเร็จ!',
+                html: `ระบบได้รับการเปลี่ยนชื่อเป็น <b>"${newTitle}"</b> เรียบร้อยแล้ว<br><small style="color:#64748b;">ระบบซิงค์ชื่อและโลโก้ไปยังทุกหน้าทันที</small>`,
+                confirmButtonColor: '#1A6FBF',
+                timer: 2500
+            });
+        };
 
         // Load Shops from Firestore with local fallback
         async function loadShops() {

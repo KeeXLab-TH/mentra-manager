@@ -23,7 +23,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mentra Manager — ระบบบริหารจัดการธุรกิจและโครงการ</title>
+    <title>ERP SMART INITIAL R1 — ระบบบริหารจัดการธุรกิจและโครงการ</title>
     
     <!-- Google Fonts: Prompt, Kanit, Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,8 +34,9 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Enterprise Session Security Guard -->
+    <!-- Enterprise Session Security Guard & Core Platform Engine -->
     <script src="assets/js/session-guard.js"></script>
+    <script src="assets/js/erp-core.js"></script>
 
     <style>
         /* ================================================================
@@ -700,27 +701,27 @@
 
             <!-- Top Brand Identifier -->
             <div class="art-content-top">
-                <div class="company-pill">
+                <div class="company-pill" id="artCompanyPill">
                     <img src="assets/img/logo.png" alt="Mentra Solution Logo">
                     <span><b>Mentra</b> <span>Solution</span></span>
                 </div>
-                <div class="version-badge">Enterprise Suite v3.2</div>
+                <div class="version-badge">ERP SMART INITIAL R1</div>
             </div>
 
             <!-- Center Brand & Platform Typography -->
             <div class="art-center-box">
-                <span class="art-sub-welcome">Enterprise ERP Solution</span>
-                <h1 class="art-main-welcome">MENTRA MANAGER</h1>
+                <span class="art-sub-welcome">Multi-Tenant Cloud ERP Platform</span>
+                <h1 class="art-main-welcome" style="font-size: 32px; letter-spacing: 1px;">ERP SMART INITIAL R1</h1>
                 <div class="art-dash"></div>
                 <p class="art-desc">
-                    ระบบบริหารจัดการธุรกิจ โครงการ ใบเสนอราคา และงานจัดซื้อวัสดุระดับองค์กร ครบวงจรในที่เดียว
+                    แพลตฟอร์มกลางระบบบริหารจัดการธุรกิจ โครงการ ใบเสนอราคา และงานจัดซื้อระดับองค์กร ปรับแต่งชื่อระบบและเอกสารแยกอิสระตามแต่ละบริษัท
                 </p>
             </div>
 
             <!-- Bottom Node Status -->
             <div class="art-bottom-bar">
-                <span><i class='bx bx-check-shield'></i> Mentra Enterprise Platform</span>
-                <span><i class='bx bx-lock-alt'></i> SSL 256-Bit Protection</span>
+                <span><i class='bx bx-check-shield'></i> ERP SMART INITIAL R1 Platform</span>
+                <span><i class='bx bx-lock-alt'></i> SSL 256-Bit Multi-Tenant Security</span>
             </div>
 
         </div>
@@ -732,7 +733,7 @@
                 <!-- Form Header -->
                 <div class="form-header">
                     <h2 id="formHeading">Login <span>Account</span></h2>
-                    <p id="formSubheading">ยินดีต้อนรับสู่ระบบ Mentra Manager กรุณากรอกข้อมูลบัญชีเพื่อเข้าใช้งาน</p>
+                    <p id="formSubheading">ยินดีต้อนรับสู่ระบบ ERP SMART INITIAL R1 กรุณากรอกข้อมูลบัญชีเพื่อเข้าใช้งาน</p>
                 </div>
 
                 <!-- Tab Switcher -->
