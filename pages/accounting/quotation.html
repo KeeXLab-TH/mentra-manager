@@ -6947,8 +6947,9 @@
                 let totalEstimatedH = sections.headerHeight + theadH + totalRowsH + sections.bottomHeight + tableMarginTop;
 
                 // ── INTELLIGENT AUTO-COMPACTING FOR 1-PAGE FITTING (12 to 20 items) ──
-                // If items can fit on 1 page with compacting, compact table and margins
-                if (totalEstimatedH > sections.usablePageHeight && rowsDataArray.length <= 20 && rowsDataArray.length >= 12) {
+                // If items can fit on 1 page with compacting, compact table and margins (skip override if user is customizing in modal)
+                const isModalOpen = (document.getElementById('templateSettingsModal')?.style.display === 'flex');
+                if (!isModalOpen && totalEstimatedH > sections.usablePageHeight && rowsDataArray.length <= 20 && rowsDataArray.length >= 12) {
                     // Level 1 Compact
                     rowPadding = Math.min(rowPadding, rowsDataArray.length >= 17 ? 3 : 3.5);
                     hdrPadding = Math.min(hdrPadding, 4);
@@ -7132,12 +7133,12 @@
                 const zebraColor = (zebraStripes && idx % 2 === 1) ? '#f8fafc' : 'transparent';
                 return `
                     <tr style="${rowBorder} letter-spacing: normal; background-color: ${zebraColor}; page-break-inside: avoid;">
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; text-align: center; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
-                        <td style="padding: ${Math.max(2, rowPadding - 1)}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${rowPadding}px 6px; text-align: center; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${rowPadding}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${rowPadding}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${rowPadding}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${rowPadding}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
+                        <td style="padding: ${rowPadding}px 6px; line-height: 1.35 !important; vertical-align: middle; ${cellBorder} font-family: inherit !important; font-size: inherit; letter-spacing: normal !important;">&nbsp;</td>
                     </tr>
                 `;
             };
@@ -9712,21 +9713,41 @@
                 #printArea, #printArea *, .print-area, .print-area *, #pPageWrapper, #pPageWrapper *, #__printOnlyWrapper, #__printOnlyWrapper * {
                     font-family: '${fontFamily}', 'Sarabun', 'Tahoma', sans-serif !important;
                 }
-                #pPageWrapper, .print-area > div, #__printOnlyWrapper > div {
+                #pPageWrapper, .print-area > div, #__printOnlyWrapper > div,
+                .print-area .pItemsTable td,
+                .print-area .pItemsTable td *,
+                .print-area #pInfoRow td,
+                .print-area #pInfoRow span,
+                .print-area #pInfoRow div,
+                .print-area #pIntroText,
+                .print-area #pSummaryTotalsBox table,
+                .print-area #pSummaryTotalsBox td,
+                .print-area #pSummaryTotalsBox div,
+                .print-area #pRemark,
+                .print-area #pRemarkContainer div,
+                .print-area #pBuyerSignatureBlock div:not(#pBuyerSignatureDots),
+                .print-area #pSellerSignatureBlock div:not(.sig-drag-item),
+                .print-area #pMiddleSignatureBlock div {
                     font-size: ${fontSize}px !important;
+                }
+                #pPageWrapper, .print-area > div, #__printOnlyWrapper > div {
                     font-weight: ${fontWeight} !important;
                 }
                 .print-area .pItemsTable {
                     ${outerBorder}
+                    margin-top: ${tableMarginTop}px !important;
                 }
                 .print-area .pTableHeadRow {
                     background-color: ${thBg} !important;
                     ${thBottomBdr}
                 }
-                .print-area .pTableHeadRow th {
+                .print-area .pTableHeadRow th,
+                .print-area .pTableHeadRow th * {
                     background-color: ${thBg} !important;
                     color: ${thColor} !important;
                     font-size: ${headerFontSize}px !important;
+                    padding-top: ${hdrPadding}px !important;
+                    padding-bottom: ${hdrPadding}px !important;
                     ${thBorderCSS}
                     line-height: 1.35 !important;
                     vertical-align: middle !important;
@@ -9736,6 +9757,9 @@
                 }
                 .print-area .pItemsTable td {
                     ${cellBorderCSS}
+                    padding-top: ${rowPadding}px !important;
+                    padding-bottom: ${rowPadding}px !important;
+                    font-size: ${fontSize}px !important;
                     line-height: 1.35 !important;
                     vertical-align: middle !important;
                 }
